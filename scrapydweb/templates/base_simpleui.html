@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - ScrapydWeb</title>
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='simpleui/style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='common/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='common/common.js') }}"></script>
+    {% block head %}{% endblock %}
+</head>
+
+
+<body>
+    {% block loader %}
+    <div class="loader" style="display: none;" onclick="hideLoader();"></div>
+    {% endblock %}
+
+    {% block link %}
+    <h2><a href="/?ui=simple" class="button" style="width: 115px; height: 21px;">ScrapydWeb</a></h2>
+    {% endblock %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul class=flashes>
+        {% for category, message in messages %}
+            <li class="{{ category }}" style="color: red;">{{ message|safe }}</li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block body %}{% endblock %}
+</body>
+
+</html>

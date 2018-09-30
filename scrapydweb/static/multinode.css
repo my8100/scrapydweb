@@ -1,0 +1,11 @@
+input[type=checkbox] {zoom: 150%}
+.button {
+    padding-top:12px;
+    padding-bottom:12px;
+}
+table {
+    margin-top: 10px;
+    margin-bottom: 30px;
+}
+.action {margin: 20px 0;}
+.state.normal, .state.safe {display: table-cell;}

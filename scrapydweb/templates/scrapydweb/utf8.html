@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}utf8{% endblock %}
+
+{% block head %}
+    <style>
+        /* See stats.css */
+        #content pre {white-space: pre-wrap;}
+    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='utf8.css') }}">
+{% endblock %}
+
+{% block loader %}
+<div class="loader" style="display: block;" onclick="hideLoader();"></div>
+{% endblock %}
+
+
+{% block body %}
+<div class="go-top">
+    <div class="arrow"></div>
+    <div class="stick"></div>
+</div>
+<div class="go-bottom">
+    <div class="arrow"></div>
+    <div class="stick"></div>
+</div>
+
+<h2>PROJECT({{ project }})&nbsp;&nbsp;&nbsp;&nbsp;SPIDER({{ spider }})</h2>
+
+<div class="wrap collapse-wrap">
+    <!-- <h3>INFO</h3> -->
+    <ul class="collapse">
+        <li>
+            <div class="title">
+                <h4>Source</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+            <p><a class="link" target="_blank" href="{{ url_source }}">{{ url_source }}</a></p>
+        </li>
+        <li>
+            <div class="title">
+                <h4>Stats</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+            <p><a class="link" href="{{ url_stats }}" onclick="showLoader();">{{ url_stats }}</a></p>
+        </li>
+    </ul>
+</div>
+
+{% if refresh_url %}
+<a id='refresh_button' class="button normal" href="{{ refresh_url }}" onclick="showLoader();">
+Using cached version. Click to refresh.
+</a>
+{% endif %}
+
+<div id='log'>
+    <pre>{{ text }}</pre>
+</div>
+
+
+<script>
+$(function() {
+    //$(window).scroll(function() {
+    $(document).ready(function() {
+        {% if refresh_url %}
+        var kwargs = parseQueryString(location.search);
+        history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
+        {% endif %}
+
+        hideLoader();
+        $('div.go-top').show();
+        $('div.go-bottom').show();
+    });
+
+    $('div.go-top').click(function() {
+        $('#content').animate({scrollTop: 0}, 300);
+    });
+    $('div.go-bottom').click(function() {
+        //$('#content').animate({scrollTop: $(document).height()}, 300);
+        $('#content').animate({scrollTop: $('#log').height()}, 300);
+    });
+});
+</script>
+
+
+<script>
+const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
+const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
+
+{% if refresh_url %}
+setInterval(function() {
+    var now_timestamp = Date.now() / 1000;
+    var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
+    my$('#refresh_button').innerHTML = "Cached " + seconds + " seconds ago, Click to refresh.";
+    if(seconds > LAST_LOG_ALERT_SECONDS) {
+        my$('#refresh_button').className = "button warning";
+    } else {
+        my$('#refresh_button').className = "button safe";
+    }
+}, 1000);
+{% endif %}
+</script>
+
+
+<script>
+// handle collapse components
+(function () {
+    var collapse = my$('.collapse')
+    var titles = my$$('.collapse .title')
+    var lis = my$$('.collapse li')
+    titles.forEach(function(title) {
+        title.addEventListener('click', function(e){
+            var index = [].indexOf.call(titles, this)
+            lis[index].classList.toggle('active')
+        })
+    })
+})();
+</script>
+{% endblock %}

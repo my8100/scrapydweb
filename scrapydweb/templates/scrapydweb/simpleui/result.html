@@ -1,0 +1,25 @@
+{% extends 'base_simpleui.html' %}
+
+{% block title %}result{% endblock %}
+
+
+{% block body %}
+
+{% if url %}
+<h2><a class="link" target="_blank" href="{{ url }}">{{ url }}</a></h2>
+{% endif %}
+
+{% if status_code %}
+<h3>status_code: {{ status_code }}</h3>
+{% endif %}
+
+<pre>
+{{ text }}
+{{ message }}
+</pre>
+
+{% if url %}
+<iframe src="{{ url }}" style="width: 100%; height: 600px;">{{ url }}</iframe>
+{% endif %}
+
+{% endblock %}

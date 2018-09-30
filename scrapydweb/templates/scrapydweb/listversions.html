@@ -1,0 +1,57 @@
+<div class="table wrap">
+    <div style="margin-bottom: 15px;">
+        {% if SCRAPYD_SERVERS|length > 1 %}
+        <a class="button danger"
+            href="{{ url_for('overview.overview', node=node, opt='delproject', project=project) }}">
+            multinode
+        </a>
+        {% endif %}
+
+        <a class="button danger" href="javascript:;"
+        onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}', 'Delete project \'{{ project }}\' ?');">
+        DELETE Project
+        </a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Version</th>
+                <th>Run spider</th>
+                <th>List spiders</th>
+                <th>Delete version</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for version, version_readable, url_listspiders, url_delversion in results %}
+            <tr>
+                <td>{{ version + version_readable }}</td>
+                <td id="listspiders{{ project + version }}" class="spiders"></td>
+                <td>
+                    <a class="state normal" href="javascript:;"
+                    onclick="execXHR('{{ url_listspiders }}', 'listspiders{{ project + version }}');">
+                    LIST Spiders
+                    </a>
+                </td>
+                <td id="delversion{{ project + version }}">
+                    {% if SCRAPYD_SERVERS|length > 1 %}
+                    <a class="state warning"
+                    href="{{ url_for('overview.overview', node=node, opt='delversion', project=project, version_job=version) }}">
+                    multinode
+                    </a>
+                    {% endif %}
+
+                    <a class="state warning" href="javascript:;"
+                    onclick="execXHR(
+                                '{{ url_delversion }}',
+                                'delversion{{ project + version }}',
+                                'Delete the version \'{{ version }}\' of project \'{{ project }}\' ?'
+                            );">
+                    DELETE Version
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

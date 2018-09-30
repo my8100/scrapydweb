@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}deploy results{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='multinode.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+{% endblock %}
+
+
+{% block body %}
+<h2>DEPLOY PROJECT results</h2>
+<div class="table wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>
+                    <input type="checkbox" id="checkall" />
+                    <a class="state danger" href="javascript:;" onclick="invertSelection();">invert selection</a>
+                </th>
+                <th>Index</th>
+                <th>Manage projects</th>
+                <th>Node name</th>
+                <th>Status</th>
+                <th>Project</th>
+                <th>Version</th>
+                <th>Spiders</th>
+            </tr>
+        </thead>
+    <form method="post" enctype="multipart/form-data">
+        <input type="text" name="project" value="{{ project }}" hidden />
+        <input type="text" name="version" value="{{ version }}" hidden />
+
+        <tbody>
+            <tr>
+                <td><input type="checkbox" id="checkbox_{{ first_selected_node }}" name="{{ first_selected_node }}" checked /></td>
+                <td>{{ first_selected_node }}</td>
+                <td>
+                    <a
+                    {% if first_selected_node == node %}
+                    class="state safe"
+                    {% else %}
+                    class="state normal"
+                    {% endif %}
+
+                    href="{{ url_for('manage.manage', node=node) }}"
+                    target="_blank">
+                    {{ SCRAPYD_SERVERS[first_selected_node-1] }}
+                    </a>
+                </td>
+                <td>{{ js['node_name'] }}</td>
+                <td><em>{{ js['status'] }}</em></td>
+                <td>{{ js['project'] }}</td>
+                <td>{{ js['version'] }}</td>
+                <td>{{ js['spiders'] }}</td>
+            </tr>
+    {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+        {% if loop.index in selected_nodes and loop.index != first_selected_node %}
+            <tr>
+                <td><input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}" /></td>
+                <td >{{ loop.index }}</td>
+                <td>
+                    <a
+                    {% if loop.index == node %}
+                    class="state safe"
+                    {% else %}
+                    class="state normal"
+                    {% endif %}
+
+                    href="{{ url_for('manage.manage', node=loop.index) }}"
+                    target="_blank">
+                    {{ SCRAPYD_SERVERS[loop.index-1] }}
+                    </a>
+                </td>
+                <td id="node_name_{{ loop.index }}"></td>
+                <td><em id="status_{{ loop.index }}"></em></td>
+                <td id="project_{{ loop.index }}"></td>
+                <td id="version_{{ loop.index }}"></td>
+                <td id="spiders_{{ loop.index }}"></td>
+            </tr>
+        {% endif %}
+    {% endfor %}
+        </tbody>
+    <form>
+    </table>
+
+    <div class="action">
+        <a class="button normal" href="javascript:;" onclick="multinodeRunSpider();">multinode RUN Spider</a>
+        <a class="button safe" href="javascript:;" onclick="passToOverview();">pass to Overview</a>
+    </div>
+</div>
+
+
+<script>
+var first_selected_node = {{ first_selected_node }};
+var selected_nodes = {{ selected_nodes }};
+
+var url_xhr = "{{ url_for('deploy.deploy_xhr', node=1, filename=filename, project=project, version=version) }}";
+var url_schedule = "{{ url_for('schedule.schedule', node=node, project=project, version=version, first_selected_node=first_selected_node) }}";
+var url_overview = "{{ url_for('overview.overview', node=node, opt='schedule', project=project, version_job=version) }}";
+
+
+window.onload = function(){
+    $('#checkall').click(function () {
+        $('input:checkbox').not(this).prop('checked', this.checked);
+    });
+
+{% if selected_nodes|length >1 %}
+    var r = confirm("Start to execute command on multinode?");
+    if(r == false) {
+        return;
+    }
+
+    for(idx in selected_nodes){
+        if(selected_nodes[idx] != first_selected_node){
+            var url = url_xhr.replace(/\/\d+/, '/'+selected_nodes[idx]);
+            execXHR(selected_nodes[idx], url);
+        }
+    }
+{% endif %}
+}
+
+
+function execXHR(idx, url){
+    my$('#'+'status_'+idx).innerHTML = "loading...";
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            if (this.status == 200) {
+                var obj = JSON.parse(this.responseText);
+                if(obj.status == 'ok') {
+                    console.log('#'+'node_name_'+idx, obj.node_name);
+                    my$('#'+'node_name_'+idx).innerHTML = obj.node_name;
+                    my$('#'+'status_'+idx).innerHTML = obj.status;
+                    my$('#'+'project_'+idx).innerHTML = obj.project;
+                    my$('#'+'version_'+idx).innerHTML = obj.version;
+                    my$('#'+'spiders_'+idx).innerHTML = obj.spiders;
+                    my$('#'+'checkbox_'+idx).checked = true;
+                } else {
+                    my$('#'+'status_'+idx).innerHTML = "<a target='_blank' class='link' href='"+url+"'>"+"REQUEST</a> got status: "+obj.status;
+                    my$('#'+'status_'+idx).style.color = 'red';
+                }
+            } else {
+                my$('#'+'status_'+idx).innerHTML = "<a target='_blank' class='link' href='"+url+"'>"+"REQUEST</a> got code: "+this.status;
+                my$('#'+'status_'+idx).style.color = 'red';
+            }
+        }
+    };
+    req.open("post", url, Async=true);
+    req.send();
+}
+</script>
+{% endblock %}

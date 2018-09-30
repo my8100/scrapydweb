@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}result{% endblock %}
+
+{% block head %}
+{% if jump_url %}
+<meta http-equiv="refresh" content="3; url='{{ jump_url }}'">
+{% endif %}
+{% endblock %}
+
+
+{% block body %}
+
+{% if url %}
+<h2><a class="link" target="_blank" href="{{ url }}">{{ url }}</a></h2>
+{% endif %}
+
+{% if status_code %}
+<h3>status_code: {{ status_code }}</h3>
+{% endif %}
+
+<pre>{{ text }}</pre>
+
+{% if message %}
+<pre>{{ message }}</pre>
+{% endif %}
+
+{% if jump_url %}
+<h4>Redirecting to <a class="link" href="{{ jump_url }}">{{ jump_url }}</a> in 3 seconds...</h4>
+{% endif %}
+
+{% if url %}
+<iframe src="{{ url }}" style="width: 100%; height: 600px;">{{ url }}</iframe>
+{% endif %}
+
+
+{% if alert %}
+<script>
+window.onload = function(){
+    alert("{{ alert }}");
+}
+</script>
+{% endif %}
+
+{% endblock %}

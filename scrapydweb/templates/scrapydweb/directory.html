@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}directory{% endblock %}
+
+{% block head %}
+    <style>
+        table {margin-bottom: 16px;}
+        .back-forward {margin: 16px 0;}
+        td.filename {
+            font-size: x-large;
+            display: grid;
+        }
+        .action {margin: 16px 0;}
+    </style>
+{% endblock %}
+
+
+{% block body %}
+<h2>
+    <a class="link" target="_blank" href="{{ url }}">
+    Directory listing for /logs/{% if project %}{{ project }}/{% endif %}{% if spider %}{{ spider }}/{% endif %}
+    </a>
+</h2>
+
+
+<div class="wrap">
+    <div class="back-forward">
+        <a class="button normal" href="javascript:;" onclick="window.history.back();">&laquo; Back</a>
+        <a class="button normal" href="javascript:;" onclick="window.history.forward();">Forward &raquo;</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Project</th>
+                <th>Spider</th>
+
+                {% if project and spider %}
+                <th>UTF8</th>
+                <th>Stats</th>
+                {% endif %}
+
+                <th>Size</th>
+                <th>Content type</th>
+                <th>Content encoding</th>
+            </tr>
+        </thead>
+
+        <tbody>
+    {% for row in rows %}
+        <tr class="{{ row['odd_even'] }}">
+            <td class="filename">{{ row['filename']|safe }}</td>
+
+            {% if project %}
+            <td>{{ project }}</td>
+            {% else %}
+            <td>{{ row['filename']|regex_replace('<a.*?>(.*?)/</a>', '\\1') }}</td>
+            {% endif %}
+
+            {% if spider %}
+            <td>{{ spider }}</td>
+            {% elif project %}
+            <td>{{ row['filename']|regex_replace('<a.*?>(.*?)/</a>', '\\1') }}</td>
+            {% else %}
+            <td></td>
+            {% endif %}
+
+            {% if project and spider %}
+            <td><a class="state normal" href="{{ row['url_logs_utf8'] }}" onclick="showLoader();">UTF8</a></td>
+            <td><a class="state normal" href="{{ row['url_logs_stats'] }}" onclick="showLoader();">Stats</a></td>
+            {% endif %}
+
+            <td>{{ row['size'] }}</td>
+            <td>{{ row['content_type'] }}</td>
+            <td>{{ row['content_encoding'] }}</td>
+        </tr>
+    {% endfor %}
+        </tbody>
+    </table>
+
+
+{% if project and spider and rows %}
+    <div class="action">
+        {% if SCRAPYD_SERVERS|length > 1 %}
+        <a class="button safe" href="{{ rows[0]['url_multinode_start'] }}" onclick="showLoader();">multinode</a>
+        {% endif %}
+
+        <a class="button safe" href="{{ rows[0]['url_start'] }}" onclick="showLoader();">RUN SPIDER {{ spider }}</a>
+    </div>
+{% endif %}
+</div>
+{% endblock %}

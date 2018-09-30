@@ -1,0 +1,323 @@
+{% extends 'base.html' %}
+
+{% block title %}stats{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stats.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font_804951_mlqq1xmdyc.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='common/stats.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='common/echarts.min.js') }}"></script>
+    <style>
+        .tab-header {margin-left: 8px;}
+        div {word-break: break-all;}
+        th {
+            text-align: left;
+            background-color: #ddd;
+        }
+    </style>
+{% endblock %}
+
+
+{% block loader %}
+<div class="loader" style="display: block;" onclick="hideLoader();"></div>
+
+<script>
+window.onload = function(){
+    // Clear no_cache=True in href after clicking refresh cache button
+    {% if refresh_url %}
+    var kwargs = parseQueryString(location.search);
+    history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
+    {% endif %}
+
+    hideLoader();
+};
+</script>
+{% endblock %}
+
+
+{% block body %}
+<h2>PROJECT({{ project }})&nbsp;&nbsp;&nbsp;&nbsp;SPIDER({{ spider }})</h2>
+
+<div class="wrap collapse-wrap">
+    <ul class="collapse">
+        <li>
+            <div class="title">
+                <h4>Source</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+            <p><a class="link" target="_blank" href="{{ url_source }}">{{ url_source }}</a></p>
+        </li>
+
+        {% if url_utf8 %}
+        <li>
+            <div class="title">
+                <h4>UTF8</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+            <p><a class="link" href="{{ url_utf8 }}" onclick="showLoader();">{{ url_utf8 }}</a></p>
+        </li>
+        {% endif %}
+    </ul>
+</div>
+
+{% if refresh_url %}
+<a id='refresh_button' class="button normal" href="{{ refresh_url }}" onclick="showLoader();">
+Using cached version. Click to refresh.
+</a>
+{% endif %}
+
+<div class="tab-wrap wrap">
+    <ul class="tab tab-header clear-float">
+        <li class="active">Statistics</li>
+
+        {% if datas and datas[-1][1] %}
+        <li>Crawl and Scrape</li>
+        {% endif %}
+
+        <li>Key Logs</li>
+    </ul>
+    <ul class="tab tab-content">
+        <li class="active">
+            <div class="table vertical-table">
+                <table>
+                    <tr><th>project</th><td>{{ project }}</td></tr>
+                    <tr><th>spider</th><td>{{ spider }}</td></tr>
+                    <tr><th>job</th><td>{{ job }}</td></tr>
+                    <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
+                    <tr><th>last_log_time</th><td>{{ last_log_time }}</td></tr>
+                    <tr><th>elasped</th><td>{{ elasped }}</td></tr>
+                    <tr><th>crawled_pages</th><td>{{ crawled_pages }}</td></tr>
+                    <tr><th>scraped_items</th><td>{{ scraped_items }}</td></tr>
+
+                    <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_critical_count }}</td></tr>
+                    <tr><th>log_error_count</th><td id="log_error_count">{{ log_error_count }}</td></tr>
+                    <tr><th>log_warning_count</th><td id="log_warning_count">{{ log_warning_count }}</td></tr>
+                    <tr><th>retry_count</th><td id="retry_count">{{ retry_count }}</td></tr>
+                    <tr><th>redirect_count</th><td id="redirect_count">{{ redirect_count }}</td></tr>
+                    <tr><th>ignore_count</th><td id="ignore_count">{{ ignore_count }}</td></tr>
+
+                    <tr><th>last_crawl</th><td id="last_crawl"></td></tr>
+                    <tr><th>last_scrape</th><td id="last_scrape"></td></tr>
+                    <tr><th>last_log</th><td id="last_log"></td></tr>
+                    <tr><th>current_time</th><td id="current_time"></td></tr>
+                </table>
+            </div>
+        </li>
+
+        {% if datas and datas[-1][1] %}
+        <li>
+            <div id="chart_total" style="width: 100%; height: 400px;"></div>
+            <div id="chart_minute" style="width: 100%; height: 400px;"></div>
+        </li>
+        {% endif %}
+
+        <li>
+            <div class="wrap collapse-wrap">
+                <h3 style="color: #409EFF;">cat logs</h3>
+                <ul class="collapse">
+                    <li>
+                        <div class="title">
+                            <h4>head -50</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <pre>{{ head_lines }}</pre>
+                    </li>
+                   <li>
+                        <div class="title">
+                            <h4>tail -50</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <pre>{{ tail_lines }}</pre>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="wrap collapse-wrap">
+                <ul class="collapse">
+                    <h3 style="color: red;">WARNING+</h3>
+                {% for item in re_matchs[:3] %}
+                    {% if not item['count'] %}
+                    {% else %}
+                    <li>
+                        <div class="title">
+                            <h4>
+                                <div style="width: 200px; display: inline-block;">{{ item['log_title'] }}</div>
+                                {{ item['count'] }} in total
+                            </h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+
+                        {% for line in item['lines'] %}
+                        <pre>{{ line }}</pre>
+                        {% endfor %}
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="wrap collapse-wrap">
+                <ul class="collapse">
+                    <h3 style="color: orange;">INFO</h3>
+
+                {% for item in re_matchs[3:] %}
+                    {% if not item['count'] %}
+                    {% else %}
+                    <li>
+                        <div class="title">
+                            <h4>
+                                <div style="width: 200px; display: inline-block;">{{ item['log_title'] }}</div>
+                                {{ item['count'] }} in total
+                            </h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+
+                        {% for line in item['lines'] %}
+                        <pre>{{ line }}</pre>
+                        {% endfor %}
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            </div>
+
+            <div class="wrap collapse-wrap">
+                <ul class="collapse">
+                    <h3 style="color: #67c23a;">DEBUG</h3>
+
+                {% for title, line in last_matchs %}
+                    {% if not line %}
+                    {% else %}
+                    <li>
+                        <div class="title">
+                            <h4>{{ title }}</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <pre>{{ line }}</pre>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                </ul>
+            </div>
+        </li>
+    </ul>
+</div>
+
+
+<script>
+var last_crawl_timestamp = {{ last_crawl_timestamp }};
+var last_scrape_timestamp = {{ last_scrape_timestamp }};
+var last_log_timestamp = {{ last_log_timestamp }};
+
+const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
+const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
+
+//var now_timestamp = Date.now() / 1000;
+setTime();
+setColor(LAST_LOG_ALERT_SECONDS, 'font');
+</script>
+
+
+<script>
+{% if refresh_url %}
+setInterval(function() {
+    var now_timestamp = Date.now() / 1000;
+    var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
+    my$('#refresh_button').innerHTML = "Cached " + seconds + " seconds ago, Click to refresh.";
+    if(seconds > LAST_LOG_ALERT_SECONDS) {
+        my$('#refresh_button').className = "button warning";
+    } else {
+        my$('#refresh_button').className = "button safe";
+    }
+}, 1000);
+{% endif %}
+</script>
+
+
+<script>
+var datas = {{ datas|safe }};
+
+{% if datas and datas[-1][1] %}
+var chartsArr = [{
+    dom: my$('#chart_total'),
+    echart: echarts.init(my$('#chart_total')),
+    data: datas,
+    title: 'count / total',
+    label1: 'pages',
+    index1: 1,
+    label2: 'items',
+    index2: 3
+}, {
+    dom: my$('#chart_minute'),
+    echart: echarts.init(my$('#chart_minute')),
+    data: datas,
+    title: 'count / minute',
+    label1: 'pages / minute',
+    index1: 2,
+    label2: 'items / minute',
+    index2: 4
+}]
+
+chartsArr.forEach(function(chart) {
+    draw(chart.echart, chart.data, chart.title, chart.label1, chart.index1, chart.label2, chart.index2)
+    chart.dom.addEventListener('resize', function() {
+        chart.echart.resize({ width: chart.dom.clientWidth })
+    })
+})
+
+window.addEventListener('optimizedResize', function() {
+    if (chartsArr[0].dom) {
+        chartsArr.forEach(function(chart) {
+            //console.log(chart)
+            chart.dom.dispatchEvent(new Event('resize'))
+        })
+    }
+})
+{% endif %}
+</script>
+
+
+<script>
+// tab switcher
+(function() {
+    var index = -1
+    var tabHeaders = my$$('.tab-header>li')
+    var tabContents = my$$('.tab-content>li')
+    my$('.tab-header').addEventListener('click', function(e) {
+        var target = e.target
+        if (target.tagName.toLowerCase() !== 'li') return;
+        index = Array.prototype.indexOf.call(tabHeaders, target)
+        tabHeaders.forEach(function(el) {
+            el.classList.remove('active')
+        })
+        target.classList.add('active')
+        tabContents.forEach(function(el) {
+            el.classList.remove('active')
+        })
+        tabContents[index].classList.add('active')
+
+        // When switch to echarts tab
+        if (my$('#chart_total')) {
+            my$('#chart_total').dispatchEvent(new Event('resize'))
+            my$('#chart_minute').dispatchEvent(new Event('resize'))
+        }
+    })
+})()
+</script>
+
+
+<script>
+// handle collapse components
+(function () {
+    var collapse = my$('.collapse')
+    var titles = my$$('.collapse .title')
+    var lis = my$$('.collapse li')
+    titles.forEach(function(title) {
+        title.addEventListener('click', function(e){
+            var index = [].indexOf.call(titles, this)
+            lis[index].classList.toggle('active')
+        })
+    })
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+/* loader */
+/* https://www.w3schools.com/howto/howto_css_loader.asp */
+/* https://stackoverflow.com/questions/6256043/css-position-loading-indicator-in-the-center-of-the-screen */
+.loader {
+    z-index:99;
+    cursor: pointer;
+    position: fixed;
+    left: 50%;
+    top: 35%;
+    border: 16px solid #f3f3f37a;
+    border-radius: 50%;
+    border-top: 16px solid #409EFF;
+    width: 120px;
+    height: 120px;
+    -webkit-animation: spin 2s linear infinite; /* Safari */
+    animation: spin 2s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -1,0 +1,72 @@
+.button, .fileContainer, input[type=button]{
+    font-size: 16px;
+    background: #3498db;
+    padding: 10px;
+    text-align: center;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.button {
+    display: block;
+    text-decoration: none;
+}
+
+#uploadFile {
+    width: 350px;
+    height: 36px;
+}
+
+.fileContainer {
+    overflow: hidden;
+    position: relative;
+}
+
+.fileContainer [type=file] {
+    cursor: inherit;
+    display: block;
+    font-size: 999px;
+    filter: alpha(opacity=0);
+    min-height: 100%;
+    min-width: 100%;
+    opacity: 0;
+    position: absolute;
+    right: 0;
+    text-align: right;
+    top: 0;
+}
+
+.fileContainer {
+    float: left;
+}
+
+
+/* Select a log or txt file */
+::-webkit-input-placeholder {
+   text-align: center;
+   color: black;
+}
+
+
+.submenu {
+    padding: 3px 5px;
+    font-size: 18px;
+    background-color: white;
+    color: black;
+    border: 2px solid #008CBA;
+    margin-left:3px;
+    margin-right:3px;
+    cursor: pointer;
+}
+
+.submenu:hover {
+    background-color: #008CBA;
+    /* color: white; */
+}
+
+.submenu-pressed {
+    background-color: #008CBA;
+    color: white;
+}

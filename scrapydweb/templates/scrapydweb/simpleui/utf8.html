@@ -1,0 +1,79 @@
+{% extends 'base_simpleui.html' %}
+
+{% block title %}utf8{% endblock %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='simpleui/utf8.css') }}">
+{% endblock %}
+
+{% block loader %}
+<div class="loader" style="display: block;" onclick="hideLoader();"></div>
+{% endblock %}
+
+
+{% block body %}
+<div class="go-top">
+    <div class="arrow"></div>
+    <div class="stick"></div>
+</div>
+<div class="go-bottom">
+    <div class="arrow"></div>
+    <div class="stick"></div>
+</div>
+
+{% if refresh_url %}
+<a id="refresh" href="{{ refresh_url }}" class="button" onclick="showLoader();">
+Using cached version. Click to refresh.
+</a>
+{% endif %}
+
+<h3><a href="{{ url_source }}">Source: {{ url_source }}</a></h3>
+<h3><a href="{{ url_stats }}" onclick="showLoader();">Stats: {{ url_stats }}</a></h3>
+
+<div id='log'>
+    <pre>{{ text }}</pre>
+</div>
+
+
+<script>
+$(function() {
+    //$(window).scroll(function() {
+    $(document).ready(function() {
+        {% if refresh_url %}
+        var kwargs = parseQueryString(location.search);
+        history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
+        {% endif %}
+
+        hideLoader();
+        $('div.go-top').show();
+        $('div.go-bottom').show();
+    });
+
+    $('div.go-top').click(function() {
+        $('html, body').animate({scrollTop: 0}, 300);
+    });
+    $('div.go-bottom').click(function() {
+        $('html, body').animate({scrollTop: $(document).height()}, 300);
+    });
+});
+</script>
+
+
+<script>
+const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
+const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
+
+{% if refresh_url %}
+setInterval(function() {
+    var now_timestamp = Date.now() / 1000;
+    var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
+    my$('#refresh').innerHTML = "Cached " + seconds + " seconds ago, Click to refresh.";
+    if(seconds > LAST_LOG_ALERT_SECONDS) {
+        my$('#refresh').style = "background:orange;";
+    } else {
+        my$('#refresh').style = "background:#8BC34A;";
+    }
+}, 1000);
+{% endif %}
+</script>
+{% endblock %}

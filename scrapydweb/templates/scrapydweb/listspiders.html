@@ -1,0 +1,15 @@
+<table style="display: inline;">
+{% for spider, url_schedule, url_multinode_schedule in results %}
+    <tr style="margin: 10px 0;">
+        {% if SCRAPYD_SERVERS|length > 1 %}
+        <td style="width: 100px;">
+            <a class="state safe" href="{{ url_multinode_schedule }}">multinode</a>
+        </td>
+        {% endif %}
+
+        <td>
+            <a class="state safe"style="display: table-cell;" href="{{ url_schedule }}">RUN SPIDER {{ spider }}</a>
+        </td>
+    </tr>
+{% endfor %}
+</table>

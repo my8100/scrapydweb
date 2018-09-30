@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}addversion{% endblock %}
+
+{% block head %}
+    <style>
+        form {margin: 16px 0;}
+        .multiselect {padding-bottom: 24px;}
+        .table {padding-right: 16px;}
+        #version{
+            cursor: not-allowed;
+            background-color: #eee;
+            opacity: 1;
+        }
+    </style>
+
+    {% if SCRAPYD_SERVERS|length > 1 %}
+    <script>var SCRAPYD_SERVERS_length = {{ SCRAPYD_SERVERS|length }};</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+    {% endif %}
+{% endblock %}
+
+
+{% block body %}
+<h2>
+    <a class="link" target="_blank" href="{{ url }}">
+    Add a version to a project, creating the project if it doesn't exist.
+    </a>
+</h2>
+
+
+<div class="wrap collapse-wrap">
+    <ul class="collapse">
+        <li>
+            <div class="title">
+                <h4>INFO</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+
+            <ul>
+                <p>Deploying your project involves eggifying it and uploading the egg to Scrapyd.
+                    (See <a class="link" target="_blank" href="https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json">Scrapyd addversion.json</a>)
+                    You can do this manually, but the easiest way is to use the scrapyd-deploy tool.
+                    (See <a class="link" target="_blank" href="https://github.com/scrapy/scrapyd-client">scrapyd-client</a>)
+                </p>
+                <br>
+                <p>Note: Scrapyd uses the distutils LooseVersion to interpret the version numbers you provide.
+                    (See <a class="link" target="_blank" href="http://epydoc.sourceforge.net/stdlib/distutils.version.LooseVersion-class.html">_ClassType LooseVersion</a>)
+                    And setting the version arbitrarily may cause the scrapyd API 'listversions' to raise error like "builtins.TypeError: '&lt;' not supported between instances of 'str' and 'int'".
+                </p>
+                <br>
+                <li>Step 0: execute "pip install scrapyd-client"</li>
+                <li>Step 1: cd into your project's root, then execute "scrapyd-deploy --build-egg projectname.egg"</li>
+                <li>Step 2: upload the built egg via this page</li>
+            </ul>
+        </li>
+    </ul>
+</div>
+
+
+<div class="wrap">
+    <form method="post" action="{{ url_for('deploy.upload', node=node) }}" enctype="multipart/form-data">
+    {% if SCRAPYD_SERVERS|length > 1 %}
+        <input type="text" name="checked_amount" value="1" hidden />
+        <div class="multiselect">
+            <div class="selectBox" onclick="showCheckboxes()">
+                <select>
+                    <option id="selected_nodes_statement">{{ SCRAPYD_SERVERS[node-1] }}</option>
+                </select>
+                <div class="overSelect"></div>
+            </div>
+            <div id="checkboxes">
+                <label for="checkall">
+                    <input type="checkbox" id="checkall" />
+                    CheckAll / UncheckAll
+                </label>
+                <div id="nodes_checkboxes">
+                {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+                    {% if loop.changed(SCRAPYD_SERVERS_GROUP[loop.index-1]) and loop.index != 1%}
+                    <span>{{ SCRAPYD_SERVERS_GROUP[loop.index-1] }}</span>
+                    {% endif %}
+
+                    <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}">
+                        <input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}"
+                        {% if loop.index in selected_nodes %}
+                        checked
+                        {% endif %}
+                        />
+                        {{ SCRAPYD_SERVER }}
+                    </label>
+                {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+
+        <div class="upload">
+            <label class="upload-button">
+                <input id="file" type="file" name="file" accept=".egg" required />
+                Select
+            </label>
+            <span class="filename">a Python egg containing the project’s code</span>
+
+            <div class="table vertical-table">
+                <table>
+                    <tr>
+                        <th>project</th>
+                        <td><input id="project" name="project" placeholder="the project name" required /></td>
+                    </tr>
+                    <tr>
+                        <th>version</th>
+                        <td><input readonly="readonly" id="version" name="version" placeholder="the project version" required /></td>
+                    </tr>
+                </table>
+            </div>
+
+            <a href="javascript:;" class="submit" onclick="uploadEggfile();">
+                <i class="iconfont icon-upload"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+
+<script>
+{% if SCRAPYD_SERVERS|length > 1 %}
+    // Delay
+    window.onload = function() {
+    {% if selected_nodes == [] %}
+        <!-- if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) { -->
+            <!-- var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]"); -->
+            <!-- var nodesSelected_new = []; -->
+            <!-- for (idx in nodesSelected) { -->
+                <!-- try { -->
+                    <!-- var node = nodesSelected[idx]; -->
+                    <!-- my$('#checkbox_'+node).checked = true; -->
+                    <!-- nodesSelected_new.push(node); -->
+                <!-- } catch {} -->
+            <!-- } -->
+            <!-- localStorage.setItem('nodesSelected', JSON.stringify(nodesSelected_new)); -->
+            <!-- console.log(localStorage.nodesSelected); -->
+        <!-- } else { -->
+            my$('#checkbox_'+{{ node }}).checked = true;
+        <!-- } -->
+    {% endif %}
+
+        $('#checkall').click(function () {
+            $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
+        });
+
+        $('#checkboxes input[type=checkbox]').change(checkCheckboxes);
+
+        checkCheckboxes(); //For navigate back
+    }
+{% endif %}
+
+my$("#file").onchange = function() {
+    my$('.filename').innerText = "a Python egg containing the project’s code";
+
+    var eggfile = my$('#file').files[0];
+    if(eggfile === undefined) {
+        my$('form').reset();
+        return;
+    }
+
+    var parts = eggfile.name.split('.');
+    var filetype = parts[parts.length - 1];
+    if(['egg'].indexOf(filetype) == -1) {
+        my$('form').reset();
+        alert("Select a Python egg containing the project’s code");
+        return;
+    }
+
+    my$('.filename').innerText = eggfile.name;
+    my$('#project').value = parts[0];
+    my$('#version').value = eggfile.lastModifiedDate.toISOString().slice(0,19).replace(/:/g, "_");
+    console.log(my$('#version').value);
+};
+
+
+function uploadEggfile() {
+    if(my$('#file').files[0] === undefined) {
+        alert("Select a Python egg file");
+        return;
+    } else if(my$('#project').value == '') {
+        alert("the project name is required");
+        return;
+    } else if(my$('#version').value == '') {
+        alert("the project version is required");
+        return;
+    }
+
+    {% if SCRAPYD_SERVERS|length > 1 %}
+    if (checked_amount == 0) {
+        alert("Select at least one node");
+        return;
+    }
+    {% endif %}
+
+    my$('form').submit();
+    showLoader();
+}
+</script>
+
+<script>
+// handle collapse components
+(function () {
+    var collapse = my$('.collapse')
+    var titles = my$$('.collapse .title')
+    var lis = my$$('.collapse li')
+    titles.forEach(function(title) {
+        title.addEventListener('click', function(e){
+            var index = [].indexOf.call(titles, this)
+            lis[index].classList.toggle('active')
+        })
+    })
+})();
+</script>
+{% endblock %}

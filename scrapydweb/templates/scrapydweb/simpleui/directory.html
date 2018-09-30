@@ -1,0 +1,63 @@
+{% extends 'base_simpleui.html' %}
+
+{% block title %}directory{% endblock %}
+
+{% block head %}
+    <style>
+    .even-dir { background-color: #efe0ef }
+    .even { background-color: #eee }
+    .odd-dir {background-color: #f0d0ef }
+    .odd { background-color: #dedede }
+    .icon { text-align: center }
+    .listing {
+        margin-left: auto;
+        margin-right: auto;
+        width: 50%;
+        padding: 0.1em;
+        }
+
+    body { border: 0; padding: 0; margin: 0; background-color: #efefef; }
+    h1 {padding: 0.1em; background-color: #777; color: white; border-bottom: thin white dashed;}
+    </style>
+{% endblock %}
+
+
+{% block body %}
+<h2>Directory listing for /logs/{% if project %}{{ project }}/{% endif %}{% if spider %}{{ spider }}/{% endif %}</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Filename</th>
+
+            {% if project and spider %}
+            <th>UTF8</th>
+            <th>Stats</th>
+            <th>Action</th>
+            {% endif %}
+
+            <th>Size</th>
+            <th>Content type</th>
+            <th>Content encoding</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    {% for row in rows %}
+        <tr class="{{ row['odd_even'] }}">
+            <td>{{ row['filename']|safe }}</td>
+
+            {% if project and spider %}
+            <td><a href="{{ row['url_logs_utf8'] }}" onclick="showLoader();">UTF8</a></td>
+            <td><a href="{{ row['url_logs_stats'] }}" onclick="showLoader();">Stats</a></td>
+            <td><a class="button" style="background: #8BC34A;" href="{{ row['url_start'] }}">START</a></td>
+            {% endif %}
+
+            <td>{{ row['size'] }}</td>
+            <td>{{ row['content_type'] }}</td>
+            <td>{{ row['content_encoding'] }}</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,762 @@
+body,
+div,
+ul,
+ol,
+li,
+p,
+input {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    min-width: 600px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgb(241, 245, 248);
+    font-size: 16px;
+    font-family: Cambria, Georgia, Times, "Times New Roman", serif;
+    color: #555;
+}
+
+a {
+    text-decoration: none;
+    color: #909090;
+}
+
+a:hover {
+    color: #3d3d3d;
+}
+
+ul,
+ol {
+    list-style: none;
+}
+
+.clear-float {
+    zoom: 1;
+}
+
+/* ==for IE6/7 Maxthon2== */
+.clear-float:after {
+    clear: both;
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    visibility: hidden;
+}
+
+
+/* ==for FF/chrome/opera/IE8== */
+nav {
+    height: 50px;
+    min-height: 50px;
+    line-height: 50px;
+    box-shadow: 0 0 18px 0 #d4dee6;
+    color: #909090;
+    padding-right: 60px;
+    display: flex;
+
+    background: #fff;
+    /* background-color: rgba(218, 227, 234, .24); */
+}
+
+nav>.title {
+    display: inline-block;
+    font-size: 20px;
+    width: 160px;
+    min-width: 160px;
+    color: #fff;
+    background: #feb324; /* rgb(252, 209, 51); */
+    text-align: center;
+    position: relative;
+}
+
+nav>.title:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-top: 10px solid #feb324;  /* rgb(252, 209, 51); */
+    border-bottom: 10px solid transparent;
+    top: 100%;
+    left: 0;
+}
+
+nav>.title>.version {
+    font-size: 14px;
+    color: #aaa;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 1;
+}
+
+nav>.menu {
+    text-align: center;
+}
+
+nav>.menu>a {
+    line-height: 50px;
+    font-size: 20px;
+    padding: 0 10px;
+}
+
+
+/*nav > .menu > a:hover {
+  color: #3d3d3d;
+}*/
+
+main {
+    display: flex;
+    flex-grow: 1;
+}
+
+main>aside {
+    box-sizing: border-box;
+    min-width: 160px;
+    background-color: rgba(218, 227, 234, .24);
+    border-right: 1px solid #d9e3ea;
+    padding: 50px 0;
+}
+
+main>aside h3 {
+    color: #444;
+    line-height: 40px;
+    cursor: default;
+    font-size: 16px;
+    padding: 0 20px;
+    margin: 0;
+}
+
+main>aside a {
+    box-sizing: border-box;
+    width: 100%;
+    display: inline-block;
+    line-height: 30px;
+    padding-left: 20px;
+    font-size: 14px;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+main>aside li a:hover {
+    background: #fff;
+    fill: #555;
+}
+
+main>aside li a.active {
+    color: #409EFF;
+    fill: #409EFF;
+    font-weight: 500;
+}
+
+main>aside li a > span {
+    padding-left: 5px;
+}
+
+main>.content-wrap {
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+}
+
+#content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /*align-items: center;*/
+    box-sizing: border-box;
+    /* height: 100%; */
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin-right: -15px;
+    padding: 16px 48px;
+    /*font-family: Consolas, 'Lucida Console', 'DejaVu Sans Mono', monospace;*/
+    font-family: "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 300;
+}
+
+.upload {
+    display: flex;
+    font-size: 14px;
+}
+
+.upload>.upload-button {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 25px;
+    outline: 0;
+    background: #feb324; /* rgb(252, 209, 51); */
+    color: #3d3d3d;
+    /*font-weight: 100;*/
+    transition: all .3s ease-out;
+    box-shadow: 1px 1px 1px 0 #d4dee6, -1px -1px 1px 0 #d4dee6;
+}
+
+.upload>.upload-button:hover {
+    /* background: #ffe06c; */
+    /* opacity: 0.9; */
+    opacity: 0.7;
+}
+
+.upload>.upload-button>input {
+    width: 1px;
+    position: absolute;
+    opacity: 0.01;
+}
+
+.upload>.filename {
+    cursor: default;
+    width: 265px;
+    line-height: 30px;
+    padding: 0 25px;
+}
+
+.upload>.submit {
+    display: inline-block;
+    padding: 0 20px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 24px;
+    text-align: center;
+    background: #fcfcfc;
+    box-shadow: 1px 1px 1px 0 #d4dee6, -1px -1px 1px 0 #d4dee6;
+    transition: all .3s ease-out;
+}
+
+.upload>.submit:hover {
+    background: #fff;
+}
+
+
+.iconfont.icon-upload::before {
+    font-size: 26px;
+    font-weight: 500;
+    color: #feb324; /* rgb(252, 209, 51); */
+    text-align: center;
+    vertical-align: middle;
+}
+
+.wrap {
+    padding: 8px 16px;   /* 8px; */
+    margin-bottom: 20px; /* 8px */
+    /*border: 1px solid red;*/
+    box-shadow: 1px 2px 3px 0 #d4dee6;
+    background: #fcfcfc;
+}
+
+.table>h3 {
+    margin: 5px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    /*border: 1px solid red;*/
+}
+
+table tr {
+    text-align: center;
+    height: 30px;
+    border-bottom: 1px solid #ebeef5;
+    padding: 0 20px;
+    position: relative;
+}
+
+table th {
+    font-weight: 500;
+    background: #faf8e9;
+}
+
+table>tbody>tr {
+    font-size: 14px;
+    font-weight: 300;
+}
+
+.popover {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/*table >tbody tr .hover {
+  display: none;
+}*/
+
+table>tbody tr .hover {
+    display: inline-block;
+    position: absolute;
+    /*  width: 100%;*/
+    left: 0;
+    top: 100%;
+    background: red;
+}
+
+table>tbody tr:nth-child(2n) {
+    background: #fafafa;
+}
+
+table>tbody tr:nth-child(2n+1) {
+}
+
+table>tbody tr:last-child {
+    border-bottom: 0;
+}
+
+.vertical-table th,
+.vertical-table td {
+    padding-left: 20px; /* 10px */
+    padding-right: 20px; /* 10px */
+}
+
+/* added by llx --start */
+.vertical-table th {
+    font-weight: 700;
+}
+
+.vertical-table td {
+    text-align: left;
+}
+
+.vertical-table {
+    width: fit-content;
+}
+/* added by llx --end */
+
+
+.state,
+.button {
+    border-radius: 3px;
+    padding: 3px 10px;
+    opacity: 1; /* 0.7 */
+    color: #fff;
+    transition: all 0.1s ease-out;
+}
+
+.state:hover,
+.button:hover {
+    opacity: 0.7; /* 1 */
+    color: #fff;
+}
+
+.button {
+    font-size: 20px;
+    font-weight: 400;
+    /* background: #ea795e; */
+    padding: 5px 20px;
+}
+
+.state.normal{
+    background: #409EFF;
+}
+
+.state.safe {
+    background: #67c23a;
+}
+
+.state.danger {
+    background: #fd6b6e;
+}
+
+.state.warning {
+    background: #feb324; /* orange */
+}
+
+.button.normal{
+    background: #409EFF;
+}
+
+.button.safe {
+    background: #67c23a;
+}
+
+.button.danger {
+    background: #fd6b6e;
+}
+
+.button.warning {
+    background: #feb324; /* orange */
+}
+
+
+.tab-header {
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-header>li {
+    float: left;
+    padding: 10px 20px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.tab-header>li.active {
+    color: #409EFF;
+    box-shadow: 0 2px 0 0 #409EFF;
+    /*box-shadow: 0 2px 0 0 rgb(252, 209, 51)*/
+}
+
+.tab-header>li:hover {
+  color: #409EFF;
+}
+
+.tab-content>li {
+  display: none;
+  padding: 10px;
+  /*visibility: hidden;*/
+}
+
+.tab-content>li.active {
+  display: block;
+  /*visibility: visible;*/
+}
+
+
+.collapse >li {
+    border-bottom: 1px solid #ebeef5;
+    padding: 10px 0;
+    overflow-y: hidden;
+    height: 45px;
+}
+
+.collapse >li:last-child {
+    border-bottom: none;
+}
+.collapse > li.active {
+    height: auto;
+}
+.collapse-wrap h3 {
+    color: #f7d945;
+    /*color: #409EFF;*/
+    border-bottom: 2px solid #ddd;
+    padding: 10px 0;
+    margin: 0;
+}
+.collapse .title {
+    position: relative;
+}
+.collapse h4{
+    margin: 0;
+    line-height: 50px;
+    cursor: pointer;
+    font-weight: 400;
+    color: #707070;
+}
+
+.collapse-wrap h4:hover {
+    color: #3d3d3d;
+}
+.collapse > li.active h4 {
+    color: #3d3d3d;
+}
+
+.collapse p{
+    line-height: 30px;
+}
+.collapse i.icon-right{
+    position: absolute;
+    right: 10px;
+    top: 0;
+    font-weight: 300;
+    width: 50px;
+    line-height: 50px;
+    text-align: center;
+    color: #707070;
+    transition: .2s all ease-in-out;
+}
+
+.collapse > li.active i.icon-right{
+    transform: rotate(90deg);
+}
+
+
+/*.collapse-wrap li.active .icon-right {
+    transform: rotate(90deg);
+}*/
+/*.collapse-wrap i.icon-right:hover:before{
+    color: #409EFF;
+}*/
+
+
+/* added by llx --start */
+a.link {
+    color: #2980B9;
+    text-decoration: none;
+    cursor: pointer
+}
+
+a.link:hover {
+    color: #3091d1
+}
+
+/* a.link:visited { */
+    /* color: #9B59B6 */
+/* }   */
+
+
+
+
+/* https://www.w3schools.com/css/css_dropdowns.asp */
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    margin-left: 15px;
+    width: 220px;
+    height: 32px;
+    align-self: center;
+    border: 1px solid #379392;
+    border-radius: 2px;
+}
+
+.dropdown:hover{
+    background: #9DC8C8;
+    border: 1px solid #9DC8C8;
+}
+
+.dropdown:hover .icon.anchor {
+    transform: rotate(90deg)
+}
+
+/* Style The Dropdown Button */
+.dropbtn {
+    /* background-color: #4CAF50; */
+    /* background-color: #67c23a; */
+    color: #379392;
+    /* padding: 8px 16px; */
+    line-height: 32px;
+    padding: 0 16px;
+    font-size: 16px;
+
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.dropbtn>span {
+    flex-grow: 1;
+
+}
+
+.dropbtn>.ip{
+    width: 1.5rem;
+    height: 1.5rem;
+    padding-right: .5rem;
+}
+
+.dropbtn>.icon.anchor{
+    width: 1rem;
+    height: 1rem;
+    transition: all .3s ease-out;
+}
+
+.dropdown-content-wrap {
+    display: none;
+    width: 220px;
+    max-height: 360px;
+    overflow: hidden;
+    z-index: 9999;
+    position: absolute;
+    top: 100%;
+    transform: translateY(1px);
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    background-color: #ebf0f5;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    min-width: 160px;
+    /* margin-right: -15px; */
+    overflow-y: hidden;
+    flex-grow: 1;
+}
+
+.dropdown-content:hover {
+    overflow-y: scroll;
+}
+
+/* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp */
+/* width */
+.dropdown-content::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+.dropdown-content::-webkit-scrollbar-track {
+    /* box-shadow: inset 0 0 5px grey;  */
+    border-radius: 10px;
+}
+
+/* Handle */
+.dropdown-content::-webkit-scrollbar-thumb {
+    background: #9093994d;
+    border-radius: 10px;
+}
+
+/* Handle on hover */
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+    background: #90939980;
+}
+
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: #777;
+    padding: 4px 16px;
+    text-decoration: none;
+    display: block;
+    line-height: 32px;
+    text-align: left;
+}
+
+.dropdown-content div {
+    color: red;
+    line-height: 16px;
+    padding: 4px 16px;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    /* background-color: #f1f1f1; */
+    background-color:#fff;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content-wrap {
+    display: flex;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    /* background-color: #3e8e41; */
+    /* */
+    color: #fff;
+
+}
+
+.dropdown:hover .dropbtn icon {
+    opacity: 0.9;
+}
+
+
+nav>#nav_daemonstatus{
+    flex-grow: 1;
+    text-align: right;
+}
+
+nav>#nav_daemonstatus>li{
+    display: inline-block;
+}
+
+/* https://www.w3schools.com/howto/howto_css_arrows.asp */
+nav i {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  font-size: 16px;
+  width: 4px;
+  height: 4px;
+}
+
+#nav_daemonstatus span {
+    margin-left: 4px;
+    margin-right: 24px;
+}
+
+
+
+
+/* https://stackoverflow.com/questions/17714705/how-to-use-checkbox-inside-select-option#answer-27547021 */
+/* https://stackoverflow.com/questions/15632287/set-max-height-on-inner-div-so-scroll-bars-appear-but-not-on-parent-div */
+.multiselect {
+    width: 210px;
+}
+
+.selectBox {
+    position: relative;
+}
+
+.selectBox select {
+    width: 100%;
+    font-weight: bold;
+    height: 30px; /*  */
+}
+
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+#checkboxes {
+    /* display: none; */
+    display: block;
+    border: 1px #dadada solid;
+    /*  */
+    overflow-y: hidden;
+    max-height: 240px;
+}
+
+#checkboxes:hover{
+    overflow-y: scroll;
+}
+
+
+/* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp */
+/* width */
+#checkboxes::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+#checkboxes::-webkit-scrollbar-track {
+    /* box-shadow: inset 0 0 5px grey;  */
+    border-radius: 10px;
+}
+
+/* Handle */
+#checkboxes::-webkit-scrollbar-thumb {
+    background: #9093994d;
+    border-radius: 10px;
+}
+
+/* Handle on hover */
+#checkboxes::-webkit-scrollbar-thumb:hover {
+    background: #90939980;
+}
+
+#checkboxes label {
+    display: block;
+    /*  */
+    padding: 2px;
+    cursor: pointer;
+}
+
+#checkboxes label:hover {
+    /* background-color: #1e90ff; */
+    background-color: #f1f5f8;
+}
+
+#checkboxes span {
+    color: red;
+    padding-left: 16px;
+}
+
+/* added by llx --end */
