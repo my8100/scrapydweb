@@ -4,9 +4,6 @@ import logging
 from flask import Flask
 from flask_compress import Compress
 
-__version__ = '0.9.2'
-__author__ = 'my8100@gmail.com'
-
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)

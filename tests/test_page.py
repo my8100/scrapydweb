@@ -9,7 +9,7 @@ def test_index(client):
 
 def test_overview(client):
     response = client.get('/1/overview/')
-    title = b'Monitor and interactive with'
+    title = b'Monitor and control'
     # with open('a.html', 'wb') as f:
         # f.write(response.data)
     assert (title in response.data

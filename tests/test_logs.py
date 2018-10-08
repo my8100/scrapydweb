@@ -21,7 +21,7 @@ def test_logs_source_demo_txt(client):
 
 def test_logs_uploaded_demo_txt(client):
     response = client.get('/1/logs/uploaded/demo.txt')
-    assert b"Statistics" in response.data and not simple_ui(response.data)
+    assert b"Stats collection" in response.data and not simple_ui(response.data)
 
 
 # Location: http://127.0.0.1:5000/logs/uploaded/ttt.txt

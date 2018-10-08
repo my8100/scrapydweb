@@ -41,10 +41,10 @@ Using cached version. Click to refresh.
 <h3><a href="{{ url_utf8 }}" onclick="showLoader();">UTF8: {{ url_utf8 }}</a></h3>
 {% endif %}
 
-<button id="btn_table" onclick="switchTab('table')" class="submenu submenu-pressed">Statistics</button>
-<button id="btn_logs" onclick="switchTab('logs')" class="submenu">Key Logs</button>
+<button id="btn_table" onclick="switchTab('table')" class="submenu submenu-pressed">Stats collection</button>
+<button id="btn_logs" onclick="switchTab('logs')" class="submenu">Logs categorization</button>
 {% if datas and datas[-1][1] %}
-<button id="btn_chart" onclick="switchTab('chart')" class="submenu">Crawl and Scrape</button>
+<button id="btn_chart" onclick="switchTab('chart')" class="submenu">Progress visualization</button>
 {% endif %}
 
 <hr>

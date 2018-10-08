@@ -4,7 +4,7 @@ from pprint import pprint
 from flask import Blueprint, render_template, flash, request
 from flask import current_app as app
 
-from .. import __version__
+from ..__version__ import __version__
 from ..vars import INFO
 
 bp = Blueprint('overview', __name__, url_prefix='/')

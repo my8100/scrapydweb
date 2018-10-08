@@ -1,7 +1,7 @@
 # coding: utf8
 """
 BROWSER_HOST >>> SCRAPYDWEB_HOST:SCRAPYDWEB_PORT >>> SCRAPYD_SERVERS
-Run 'scrapydweb.run -h' or check 'scrapydweb/run.py' to get help
+Run 'scrapydweb -h' or check 'scrapydweb/run.py' to get help
 """
 
 # Set True to enable debug mode and debugger would be available in the browser

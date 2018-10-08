@@ -9,7 +9,8 @@ import shutil
 import json
 
 from .vars import CACHE_PATH, DEFAULT_LATEST_VERSION
-from scrapydweb import __version__, create_app
+from scrapydweb import create_app
+from scrapydweb.__version__ import __version__, __description__, __url__
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -55,6 +56,7 @@ def main():
             'SCRAPYD_SERVERS': app.config['SCRAPYD_SERVERS'],
             'SCRAPYD_SERVERS_GROUP': app.config['SCRAPYD_SERVERS_GROUP'],
             'DEFAULT_LATEST_VERSION': DEFAULT_LATEST_VERSION,
+            'GITHUB_URL': __url__
         }
 
     # /site-packages/flask/app.py
@@ -74,8 +76,7 @@ def find_scrapydweb_settings_py(path='.', prevpath=None):
 
 
 def parse_args(config):
-    parser = argparse.ArgumentParser(description='ScrapydWeb -- \
-            Full-featured web UI for monitoring and controlling your Scrapyd servers')
+    parser = argparse.ArgumentParser(description='ScrapydWeb -- %s' % __description__)
 
     default = config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
     parser.add_argument(

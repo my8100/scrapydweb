@@ -21,7 +21,7 @@ def test_directory(client):
 
 def test_logs_uploaded_demo_txt(client):
     response = client.get('/1/logs/uploaded/demo.txt?ui=simple')
-    assert b"Statistics" in response.data and simple_ui(response.data)
+    assert b"Stats collection" in response.data and simple_ui(response.data)
 
 
 def test_logs_upload(client):

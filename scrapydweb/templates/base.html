@@ -57,7 +57,7 @@
 
 <body>
     <nav>
-        <a href="{{ url_for('overview.overview', node=node) }}" class="title">
+        <a class="title" target="_blank" href="{{ GITHUB_URL }}">
         {% if scrapydweb_version %}
         ScrapydWeb <span class="version">v{{ scrapydweb_version }}</span>
         {% else %}

@@ -25,7 +25,7 @@
     </style>
 
     {% if check_latest_version %}
-    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ scrapydweb_version }}&once=true"></script>
+    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ scrapydweb_version }}&n={{ SCRAPYD_SERVERS|length }}"></script>
     {% endif %}
 
     <script type="text/javascript" src="{{ url_for('static', filename='vue.js') }}"></script>
@@ -35,7 +35,7 @@
 
 {% block body %}
 <h2><a class="link" target="_blank" href="{{ url_for('api.api', node=node, opt='daemonstatus') }}">
-    Monitor and interactive with all Scrapyd servers</a>
+    Monitor and control all Scrapyd servers</a>
 </h2>
 
 
@@ -853,7 +853,7 @@ function checkChrome() {
        // is Google Chrome
     } else {
        // not Google Chrome
-       alert("Use Chrome on PC to get better experience");
+       alert("Use Google Chrome on PC to get better experience");
     }
 }
 
@@ -867,11 +867,17 @@ function checkChrome() {
 
 
 function checkLatestVersion() {
-    if (typeof(latest_version) !== 'undefined' && latest_version != "{{ scrapydweb_version }}" ) {
-        alert(update_info);
-        console.log(update_info);
-    } else {
-        console.log("{{ scrapydweb_version }}");
+    if(typeof(latest_version) !== 'undefined') {
+        if(latest_version != "{{ scrapydweb_version }}") {
+            console.log(update_info);
+            alert(update_info);
+        } else {
+            console.log("{{ scrapydweb_version }}");
+            if (window.confirm('Would you like to star the repository and help improve project "scrapydweb"?')) {
+                var win = window.open("{{ GITHUB_URL }}", '_blank');
+                win.focus();
+            }
+        }
     }
 }
 
