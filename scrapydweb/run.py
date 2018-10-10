@@ -8,9 +8,12 @@ import subprocess
 import shutil
 import json
 
+from flask import request, Response
+
 from .vars import CACHE_PATH, DEFAULT_LATEST_VERSION
 from scrapydweb import create_app
 from scrapydweb.__version__ import __version__, __description__, __url__
+
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -50,14 +53,27 @@ def main():
     print('>>> Visit ScrapydWeb at http://{host}:{port} or http://127.0.0.1:{port}'.format(
         host="IP-OF-THE-HOST-WHERE-SCRAPYDWEB-RUNS-ON", port=app.config['SCRAPYDWEB_PORT']))
 
+
+    username = str(app.config.get('USERNAME', ''))
+    password = str(app.config.get('PASSWORD', ''))
+
     @app.context_processor
     def inject_variable():
         return {
             'SCRAPYD_SERVERS': app.config['SCRAPYD_SERVERS'],
             'SCRAPYD_SERVERS_GROUP': app.config['SCRAPYD_SERVERS_GROUP'],
             'DEFAULT_LATEST_VERSION': DEFAULT_LATEST_VERSION,
-            'GITHUB_URL': __url__
+            'GITHUB_URL': __url__,
+            'REQUIRE_LOGIN': True if username and password else False
         }
+
+    # https://stackoverflow.com/questions/34164464/flask-decorate-every-route-at-once
+    @app.before_request
+    def require_login():
+        if username and password:
+            auth = request.authorization
+            if not auth or not (auth.username == username and auth.password == password):
+                return authenticate()
 
     # /site-packages/flask/app.py
     # run(host=None, port=None, debug=None, load_dotenv=True, **options)
@@ -102,6 +118,20 @@ def parse_args(config):
         '-p', '--port',
         default=default,
         help="default: %s, the port where ScrapydWeb server run at" % default
+    )
+
+    default = config.get('USERNAME', '')
+    parser.add_argument(
+        '--username',
+        default=default,
+        help="default: %s, the username of basic auth for web UI" % default
+    )
+
+    default = config.get('PASSWORD', '')
+    parser.add_argument(
+        '--password',
+        default=default,
+        help="default: %s, the password of basic auth for web UI" % default
     )
 
     default = config.get('SCRAPYD_LOGS_DIR', '')
@@ -153,8 +183,18 @@ def parse_args(config):
 def check_args(args):
     print(">>> Settings from command line: %s" % args)
 
-    if args.scrapyd_logs_dir:
-        scrapyd_logs_dir = args.scrapyd_logs_dir
+    username = args.username
+    password = args.password
+    if username or password:
+        if not username:
+            sys.exit("!!! username should NOT be empty string: %s" % username)
+        elif not password:
+            sys.exit("!!! password should NOT be empty string: %s" % password)
+        else:
+            print(">>> Using basic auth username/password: '%s'/'%s'" % (username, password))
+
+    scrapyd_logs_dir = args.scrapyd_logs_dir
+    if scrapyd_logs_dir:
         if not os.path.isdir(scrapyd_logs_dir):
             sys.exit("!!! scrapyd_logs_dir NOT found: %s" % scrapyd_logs_dir)
         else:
@@ -212,6 +252,14 @@ def update_app_config(config, args):
     config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for group, ip, port in servers]
     config['SCRAPYD_SERVERS_GROUP'] = [group for group, ip, port in servers]
     print(">>> SCRAPYD_SERVERS: %s" % config['SCRAPYD_SERVERS'])
+
+
+# http://flask.pocoo.org/snippets/category/authentication/
+def authenticate():
+    """Sends a 401 response that enables basic auth"""
+    return Response('<script>alert("FAIL to login. Basic auth is enabled since ScrapydWeb is running with argument '
+                    '--username USERNAME and --password PASSWORD");</script>',
+                    401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
 
 def start_caching(config):

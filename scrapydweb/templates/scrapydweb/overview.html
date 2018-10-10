@@ -839,6 +839,7 @@ function checkChrome() {
     var vendorName = winNav.vendor;
     var isOpera = typeof window.opr !== "undefined";
     var isIEedge = winNav.userAgent.indexOf("Edge") > -1;
+    var isFirefox = winNav.userAgent.indexOf("Firefox") > -1;
     var isIOSChrome = winNav.userAgent.match("CriOS");
 
     //if (isIOSChrome) {
@@ -851,9 +852,11 @@ function checkChrome() {
         isIEedge === false
     ) {
        // is Google Chrome
+    } else if(isFirefox === true) {
+       // is Firefox
     } else {
-       // not Google Chrome
-       alert("Use Google Chrome on PC to get better experience");
+       // others
+       alert("Use Google Chrome or Firefox on PC to get better experience");
     }
 }
 
@@ -873,7 +876,7 @@ function checkLatestVersion() {
             alert(update_info);
         } else {
             console.log("{{ scrapydweb_version }}");
-            if (window.confirm('Would you like to star the repository and help improve project "scrapydweb"?')) {
+            if (window.confirm('Would you like to STAR the repository and help improve project "scrapydweb"?')) {
                 var win = window.open("{{ GITHUB_URL }}", '_blank');
                 win.focus();
             }

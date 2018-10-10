@@ -29,14 +29,14 @@ function uploadLogfile() {
         alert("Select a log or txt file");
         return;
     }
-    
+
     var parts = logfile.name.split('.');
     var filetype = parts[parts.length - 1];
     if(['log', 'txt'].indexOf(filetype) == -1) {
         alert("Select a log or txt file");
         return;
     }
-    
+
     my$('form').submit();
     showLoader();
 }
@@ -68,7 +68,7 @@ function setDaemonstatus(node_name, pending, running, finished) {
 }
 
 
-var refresh_daemonstatus_fail_times = 0;  //alert only when it's exactly 3
+var refresh_daemonstatus_fail_times = 0;
 function refreshDaemonstatus(url_daemonstatus) {
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
@@ -81,19 +81,60 @@ function refreshDaemonstatus(url_daemonstatus) {
                 } else {
                     refresh_daemonstatus_fail_times += 1;
                     setDaemonstatus('?', '?', '?', '?')
-                    if(refresh_daemonstatus_fail_times == 3){
-                        alert('Fail to refresh daemonstatus, check '+obj.url);
+                    if(refresh_daemonstatus_fail_times >= 3 && refresh_daemonstatus_fail_times % 3 == 0){
+                        //alert('FAIL to refresh daemonstatus, check '+obj.url);
+                        if (window.confirm("FAIL to refresh daemonstatus, open a new tab for details?")) {
+                            var win = window.open(obj.url, '_blank');
+                            win.focus();
+                        }
                     }
                 }
             } else {
                 refresh_daemonstatus_fail_times += 1;
                 setDaemonstatus('?', '?', '?', '?')
-                if(refresh_daemonstatus_fail_times == 3){
-                    alert('Fail to refresh daemonstatus, status code is '+this.status+', check ScrapydWeb log');
+                if(refresh_daemonstatus_fail_times >= 3 && refresh_daemonstatus_fail_times % 3 == 0){
+                    alert("FAIL to refresh daemonstatus, status code is "+this.status+", check the log of ScrapydWeb");
                 }
             }
         }
     };
     req.open("post", url_daemonstatus, Async = true);
     req.send();
+}
+
+
+
+//https://tuhrig.de/basic-auth-log-out-with-javascript/
+//Basic Auth log-out with JavaScript
+function logout() {
+
+	// To invalidate a basic auth login:
+	//
+	// 	1. Call this logout function.
+	//	2. It makes a GET request to an URL with false Basic Auth credentials
+	//	3. The URL returns a 401 Unauthorized
+	// 	4. Forward to some "you-are-logged-out"-page
+	// 	5. Done, the Basic Auth header is invalid now
+
+    // Added by llx
+    document.querySelector('html').innerHTML = "";
+
+	jQuery.ajax({
+            type: "GET",
+            url: "/",
+            async: false,
+            username: "logmeout",
+            password: "123456",
+            headers: { "Authorization": "Basic xxx" }
+	})
+	.done(function(){
+	    // If we don't get an error, we actually got an error as we expect an 401!
+	})
+	.fail(function(){
+	    // We expect to get an 401 Unauthorized error! In this case we are successfully
+            // logged out and we redirect the user.
+	    window.location = "/";
+    });
+
+    return false;
 }

@@ -11,10 +11,15 @@ DEBUG = False
 SCRAPYDWEB_HOST = '0.0.0.0'
 SCRAPYDWEB_PORT = 5000
 
+# Basic auth for web UI
+# The setting takes effect only when both USERNAME and PASSWORD are not empty string
+# USERNAME = 'admin'
+# PASSWORD = 'admin'
+
 # Support multinode, default port would be 6800 if not provided,
 # and group info is optional
 SCRAPYD_SERVERS = [
-    '127.0.0.1:6800',
+    '127.0.0.1',
     '192.168.0.101:6801@group1',
 ]
 

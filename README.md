@@ -18,11 +18,14 @@ Features
   - List projects/versions/spiders/running_jobs
   - Delete version/project
 
+- Others
+  - Basic auth for web UI
+
 
 Maintainer
 ---------------
 - [my8100](https://github.com/my8100)
-- [simplety](https://github.com/simplety) (frontend)
+- [simplety](https://github.com/simplety) (Front-End)
 
 
 Installation

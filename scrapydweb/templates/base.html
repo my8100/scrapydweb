@@ -5,11 +5,11 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %} - ScrapydWeb</title>
-    
+
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='icon/fav.ico') }}"  />
     <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='icon/fav.ico') }}"  />
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon/spiderman.png') }}"  />
-    
+
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font_804951_pwq5pv3hrpi.css') }}">
@@ -230,7 +230,7 @@ setInterval(function() {
             </ul>
 
             <!-- <h3>Links</h3> -->
-            <ul>
+            <!-- <ul> -->
                 <!-- <li> -->
                     <!-- <a target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}"> -->
                         <!-- <svg class="icon" aria-hidden="true"> -->
@@ -239,16 +239,30 @@ setInterval(function() {
                         <!-- <span>Scrapyd server</span> -->
                     <!-- </a> -->
                 <!-- </li> -->
+                <!-- <li> -->
+                    <!-- <a style="opacity: 0; cursor: default;" target="_blank" -->
+                        <!-- href="{{ url_for('index.index', node=node, ui='simple') }}"> -->
+                        <!-- <svg class="icon" aria-hidden="true"> -->
+                            <!-- <use xlink:href="#icon-ui"></use> -->
+                        <!-- </svg> -->
+                        <!-- <span>Simple UI</span> -->
+                    <!-- </a> -->
+                <!-- </li> -->
+            <!-- </ul> -->
+
+        {% if REQUIRE_LOGIN %}
+            <h3>System</h3>
+            <ul>
                 <li>
-                    <a style="opacity: 0; cursor: default;" target="_blank"
-                        href="{{ url_for('index.index', node=node, ui='simple') }}">
-                        <svg class="icon" aria-hidden="true">
+                    <a href="javascript:;" onclick="logout();">
+                        <svg class="icon" aria-hidden="true" style="opacity: 0;">
                             <use xlink:href="#icon-ui"></use>
                         </svg>
-                        <span>Simple UI</span>
+                        <span>Logout</span>
                     </a>
                 </li>
             </ul>
+        {% endif %}
 
         </aside>
         <div class="content-wrap">
