@@ -4,8 +4,10 @@ BROWSER_HOST >>> SCRAPYDWEB_HOST:SCRAPYDWEB_PORT >>> SCRAPYD_SERVERS
 Run 'scrapydweb -h' or check 'scrapydweb/run.py' to get help
 """
 
+
 # Set True to enable debug mode and debugger would be available in the browser
 DEBUG = False
+
 
 # '0.0.0.0' makes ScrapydWeb server visible externally, set '127.0.0.1' to disable that
 SCRAPYDWEB_HOST = '0.0.0.0'
@@ -14,13 +16,14 @@ SCRAPYDWEB_PORT = 5000
 # Basic auth for web UI
 # The setting takes effect only when both USERNAME and PASSWORD are not empty string
 # USERNAME = 'admin'
-# PASSWORD = 'admin'
+# PASSWORD = '12345'
+
 
 # Support multinode, default port would be 6800 if not provided,
 # and group info is optional
 SCRAPYD_SERVERS = [
     '127.0.0.1',
-    '192.168.0.101:6801@group1',
+    '192.168.123.123:6801@group1',
 ]
 
 # Set to speed up loading utf8 and stats html
@@ -30,6 +33,10 @@ SCRAPYD_SERVERS = [
 # See 'https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir'
 # to find out where the Scrapy logs are stored."
 SCRAPYD_LOGS_DIR = ''
+
+# The extension used to locate scrapy log in dashboard, and the order matters
+SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.gz', '.txt', '']
+
 
 # Set True to disable caching utf8 and stats files in the background periodically
 DISABLE_CACHE = False

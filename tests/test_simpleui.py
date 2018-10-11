@@ -14,18 +14,24 @@ def test_dashboard(client):
     assert b"Visit New UI" in response.data and simple_ui(response.data)
 
 
-def test_directory(client):
-    response = client.get('/1/directory/?ui=simple')
-    assert b"Directory listing" in response.data and simple_ui(response.data)
+def test_items(client):
+    response = client.get('/1/items/?ui=simple')
+    assert ((b"Directory listing for /items/" in response.data or b"No Such Resource" in response.data)
+           and simple_ui(response.data))
 
 
-def test_logs_uploaded_demo_txt(client):
-    response = client.get('/1/logs/uploaded/demo.txt?ui=simple')
+def test_logs(client):
+    response = client.get('/1/logs/?ui=simple')
+    assert b"Directory listing for /logs/" in response.data and simple_ui(response.data)
+
+
+def test_log_uploaded_demo_txt(client):
+    response = client.get('/1/log/uploaded/demo.txt?ui=simple')
     assert b"Stats collection" in response.data and simple_ui(response.data)
 
 
-def test_logs_upload(client):
-    response = client.get('/1/logs/upload/?ui=simple')
+def test_log_upload(client):
+    response = client.get('/1/log/upload/?ui=simple')
     assert b"Upload and parse" in response.data and simple_ui(response.data)
 
 
@@ -52,11 +58,11 @@ def test_api_forcestop(client):
     assert js['status'] == 'error' and js['message'] == "'fakeproject'" and js['times'] == 2
 
 
-def test_logs_utf8(client):
-    response = client.get('/1/logs/utf8/fakeproject/fakespider/fakejob/?ui=simple')
+def test_log_utf8(client):
+    response = client.get('/1/log/utf8/fakeproject/fakespider/fakejob/?ui=simple')
     assert b"No Such Resource" in response.data and simple_ui(response.data)
 
 
-def test_logs_stats(client):
-    response = client.get('/1/logs/stats/fakeproject/fakespider/fakejob/?ui=simple')
+def test_log_stats(client):
+    response = client.get('/1/log/stats/fakeproject/fakespider/fakejob/?ui=simple')
     assert b"No Such Resource" in response.data and simple_ui(response.data)

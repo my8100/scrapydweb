@@ -209,22 +209,30 @@ setInterval(function() {
                 </li>
             </ul>
 
-            <h3>Logs</h3>
+            <h3>Directory</h3>
             <ul>
                 <li>
-                    <a id="menu_directory" href="{{ url_for('directory.directory', node=node) }}" onclick="showLoader();">
+                    <a id="menu_items" href="{{ url_for('items.items', node=node) }}" onclick="showLoader();">
                         <svg class="icon" aria-hidden="true">
                             <use xlink:href="#icon-directory"></use>
                         </svg>
-                        <span>Directory</span>
+                        <span>Items</span>
                     </a>
                 </li>
                 <li>
-                    <a id="menu_logs_upload" href="{{ url_for('parse.upload', node=node) }}" onclick="showLoader();">
+                    <a id="menu_logs" href="{{ url_for('logs.logs', node=node) }}" onclick="showLoader();">
+                        <svg class="icon" aria-hidden="true">
+                            <use xlink:href="#icon-directory"></use>
+                        </svg>
+                        <span>Logs</span>
+                    </a>
+                </li>
+                <li>
+                    <a id="menu_log_upload" href="{{ url_for('parse.upload', node=node) }}" onclick="showLoader();">
                         <svg class="icon" aria-hidden="true">
                             <use xlink:href="#icon-parse"></use>
                         </svg>
-                        <span>Parse</span>
+                        <span>Parse log</span>
                     </a>
                 </li>
             </ul>

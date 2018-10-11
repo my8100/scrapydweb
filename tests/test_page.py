@@ -43,13 +43,20 @@ def test_manage(client):
     assert title in response.data and not simple_ui(response.data)
 
 
-def test_directory(client):
-    response = client.get('/1/directory/')
-    title = b'Directory listing for'
+def test_items(client):
+    response = client.get('/1/items/')
+    title = b'Directory listing for /items/'
+    assert ((title in response.data or b"No Such Resource" in response.data)
+           and not simple_ui(response.data))
+
+
+def test_logs(client):
+    response = client.get('/1/logs/')
+    title = b'Directory listing for /logs/'
     assert title in response.data and not simple_ui(response.data)
 
 
 def test_parse(client):
-    response = client.get('/1/logs/upload/')
+    response = client.get('/1/log/upload/')
     title = b'Upload to parse'
     assert title in response.data and not simple_ui(response.data)

@@ -26,14 +26,14 @@ function uploadLogfile() {
     //var filename = my$('form')['file'].value;
     var logfile = my$('#file').files[0];
     if(logfile === undefined) {
-        alert("Select a log or txt file");
+        alert("Select a log/log.gz/gz/txt file");
         return;
     }
 
     var parts = logfile.name.split('.');
     var filetype = parts[parts.length - 1];
-    if(['log', 'txt'].indexOf(filetype) == -1) {
-        alert("Select a log or txt file");
+    if(['log', 'log.gz', 'gz', 'txt'].indexOf(filetype) == -1) {
+        alert("Select a log/log.gz/gz/txt file");
         return;
     }
 

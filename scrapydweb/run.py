@@ -21,6 +21,7 @@ CWD = os.path.dirname(os.path.abspath(__file__))
 def main():
     print(">>> scrapydweb version: %s" % __version__)
     print(">>> Run 'scrapydweb -h' to get help")
+    print(">>> Run ScrapydWeb with argument '--username USERNAME and --password PASSWORD' to enable basic auth")
     print(">>> Run ScrapydWeb with argument '-ss 127.0.0.1 -ss 192.168.0.101:12345@group1' "
           "to set any number of Scrapyd servers to control.")
     print(">>> Run ScrapydWeb with argument '--scrapyd_logs_dir SCRAPYD_LOGS_DIR' to speed up loading utf8 and stats html")
@@ -46,16 +47,17 @@ def main():
     check_args(args)
     update_app_config(app.config, args)
     # print(app.config)
+    print('>>> SCRAPYD_LOG_EXTENSIONS: %s' % app.config.get('SCRAPYD_LOG_EXTENSIONS'))
 
     if not app.config['DISABLE_CACHE']:
         start_caching(app.config)
 
-    print('>>> Visit ScrapydWeb at http://{host}:{port} or http://127.0.0.1:{port}'.format(
-        host="IP-OF-THE-HOST-WHERE-SCRAPYDWEB-RUNS-ON", port=app.config['SCRAPYDWEB_PORT']))
+    print(">>> Visit ScrapydWeb at http://{host}:{port} or http://127.0.0.1:{port}".format(
+        host='IP-OF-THE-HOST-WHERE-SCRAPYDWEB-RUNS-ON', port=app.config['SCRAPYDWEB_PORT']))
 
 
-    username = str(app.config.get('USERNAME', ''))
-    password = str(app.config.get('PASSWORD', ''))
+    username = app.config.get('USERNAME', '')
+    password = app.config.get('PASSWORD', '')
 
     @app.context_processor
     def inject_variable():
@@ -109,7 +111,7 @@ def parse_args(config):
     parser.add_argument(
         '-H', '--host',
         default=default,
-        help=("default: %s, which makes ScrapydWeb server visible externally, "
+        help=("default: %s, 0.0.0.0 makes ScrapydWeb server visible externally, "
               "set to 127.0.0.1 to disable that") % default
     )
 
@@ -120,14 +122,14 @@ def parse_args(config):
         help="default: %s, the port where ScrapydWeb server run at" % default
     )
 
-    default = config.get('USERNAME', '')
+    default = str(config.get('USERNAME', '')) # May be 0 from config file
     parser.add_argument(
         '--username',
         default=default,
         help="default: %s, the username of basic auth for web UI" % default
     )
 
-    default = config.get('PASSWORD', '')
+    default = str(config.get('PASSWORD', '')) # May be 0 from config file
     parser.add_argument(
         '--password',
         default=default,
@@ -203,9 +205,9 @@ def check_args(args):
     if args.delete_cache:
         if os.path.isdir(CACHE_PATH):
             shutil.rmtree(CACHE_PATH, ignore_errors=True)
-            print('>>> Cache utf8 and stats files deleted')
+            print(">>> Cache utf8 and stats files deleted")
         else:
-            print('!!! Cache dir NOT found: %s' % CACHE_PATH)
+            print("!!! Cache dir NOT found: %s" % CACHE_PATH)
 
 
 def update_app_config(config, args):
@@ -217,8 +219,10 @@ def update_app_config(config, args):
         SCRAPYD_SERVERS=args.scrapyd_server,
         SCRAPYDWEB_HOST=args.host,
         SCRAPYDWEB_PORT=args.port,
+        USERNAME=args.username,
+        PASSWORD=args.password,
         SCRAPYD_LOGS_DIR=args.scrapyd_logs_dir,
-        CACHE_INTERVAl_SECONDS=args.cache_interval,
+        CACHE_INTERVAl_SECONDS=args.cache_interval
     ))
 
     # action='store_true': default False
@@ -232,8 +236,6 @@ def update_app_config(config, args):
     SCRAPYD_SERVERS = config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
     servers = []
     for idx, s in enumerate(SCRAPYD_SERVERS):
-        # if not re.search(r':\d{1,5}$', s):
-        # SCRAPYD_SERVERS[idx] = s + ':6800'
         ip, port, group = re.search(r'^(.*?)(?:\:(.*?))?(?:@(.*?))?$', s.strip()).groups()
         ip = ip.strip() if ip and ip.strip() else '127.0.0.1'
         port = port.strip() if port and port.strip() else '6800'
@@ -248,7 +250,6 @@ def update_app_config(config, args):
 
     servers = sorted(set(servers), key=key)
 
-    # config['SCRAPYD_SERVERS'] = sorted(set(SCRAPYD_SERVERS))
     config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for group, ip, port in servers]
     config['SCRAPYD_SERVERS_GROUP'] = [group for group, ip, port in servers]
     print(">>> SCRAPYD_SERVERS: %s" % config['SCRAPYD_SERVERS'])
@@ -257,8 +258,8 @@ def update_app_config(config, args):
 # http://flask.pocoo.org/snippets/category/authentication/
 def authenticate():
     """Sends a 401 response that enables basic auth"""
-    return Response('<script>alert("FAIL to login. Basic auth is enabled since ScrapydWeb is running with argument '
-                    '--username USERNAME and --password PASSWORD");</script>',
+    return Response("<script>alert('FAIL to login. Basic auth is enabled since ScrapydWeb is running with argument "
+                    '''"--username USERNAME" and "--password PASSWORD"');</script>''',
                     401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
 
 
@@ -270,10 +271,12 @@ def start_caching(config):
         json.dumps(config['SCRAPYD_SERVERS']),
         '127.0.0.1' if config['SCRAPYDWEB_HOST'] == '0.0.0.0' else config['SCRAPYDWEB_HOST'],
         str(config['SCRAPYDWEB_PORT']),
+        config['USERNAME'],
+        config['PASSWORD'],
         str(config['CACHE_INTERVAl_SECONDS']),
     ]
     subprocess.Popen(args)
-    print('>>> Caching utf8 and stats files in the background')
+    print(">>> Caching utf8 and stats files in the background")
 
 
 if __name__ == '__main__':

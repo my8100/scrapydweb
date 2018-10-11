@@ -9,11 +9,12 @@ import requests
 CWD = os.path.dirname(os.path.abspath(__file__))
 CACHE_FOLDER = os.path.join(CWD, 'cache')
 
-scrapyd_servers, scrapydweb_host, scrapydweb_port, cache_interval_seconds = sys.argv[1:]
+scrapyd_servers, scrapydweb_host, scrapydweb_port, username, password, cache_interval_seconds = sys.argv[1:]
 scrapyd_servers = json.loads(scrapyd_servers)
 cache_interval_seconds = float(cache_interval_seconds)
 
 session = requests.Session()
+session.auth = (username, password)
 
 
 def update_cache(state, timeout=60):
@@ -30,13 +31,13 @@ def update_cache(state, timeout=60):
                 try:
                     job = running_job['id']
                     spider = running_job['spider']
-                    # http://127.0.0.1:5000/logs/utf8/proxy/test/55f1f388a7ae11e8b9b114dda9e91c2f/
+                    # http://127.0.0.1:5000/log/utf8/proxy/test/55f1f388a7ae11e8b9b114dda9e91c2f/
                     for opt in ['utf8', 'stats']:
                         url = ('http://{scrapydweb_host}:{scrapydweb_port}/'
-                               '{node}/logs/{opt}/{project}/{spider}/{job}/').format(
+                               '{node}/log/{opt}/{project}/{spider}/{job}/').format(
                             scrapydweb_host=scrapydweb_host, scrapydweb_port=scrapydweb_port,
                             node=node, opt=opt, project=project, spider=spider, job=job)
-                        # 'POST' to avoid using cache, see logs.py
+                        # 'POST' to avoid using cache, see log.py
                         session.post(url, timeout=timeout)
                         print(">>> Cache %s" % url)
                 except Exception as err:

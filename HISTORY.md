@@ -1,6 +1,12 @@
 Release History
 ===============
 
+0.9.5 (2018-10-12)
+------------------
+
+- Add Items page
+- Fix the bug that auth argument from command line doesnot take effect
+
 0.9.4 (2018-10-10)
 ------------------
 

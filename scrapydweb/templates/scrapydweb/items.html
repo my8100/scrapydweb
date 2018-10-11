@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block title %}items{% endblock %}
+
+{% block head %}
+    <style>
+        table {margin-bottom: 16px;}
+        .back-forward {margin: 16px 0;}
+        td.filename {
+            font-size: x-large;
+            display: grid;
+        }
+        .action {margin: 16px 0;}
+    </style>
+{% endblock %}
+
+
+{% block body %}
+<h2>
+    <a class="link" target="_blank" href="{{ url }}">
+    Directory listing for /items/{% if project %}{{ project }}/{% endif %}{% if spider %}{{ spider }}/{% endif %}
+    </a>
+</h2>
+
+
+<div class="wrap">
+    <div class="back-forward">
+        <a class="button normal" href="javascript:;" onclick="window.history.back();">&laquo; Back</a>
+        <a class="button normal" href="javascript:;" onclick="window.history.forward();">Forward &raquo;</a>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Project</th>
+                <th>Spider</th>
+                <th>Size</th>
+                <th>Content type</th>
+                <th>Content encoding</th>
+            </tr>
+        </thead>
+
+        <tbody>
+    {% for row in rows %}
+        <tr class="{{ row['odd_even'] }}">
+            <td class="filename">{{ row['filename']|safe }}</td>
+
+            {% if project %}
+            <td>{{ project }}</td>
+            {% else %}
+            <td>{{ row['filename']|regex_replace('<a.*?>(.*?)/</a>', '\\1') }}</td>
+            {% endif %}
+
+            {% if spider %}
+            <td>{{ spider }}</td>
+            {% elif project %}
+            <td>{{ row['filename']|regex_replace('<a.*?>(.*?)/</a>', '\\1') }}</td>
+            {% else %}
+            <td></td>
+            {% endif %}
+
+            <td>{{ row['size'] }}</td>
+            <td>{{ row['content_type'] }}</td>
+            <td>{{ row['content_encoding'] }}</td>
+        </tr>
+    {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

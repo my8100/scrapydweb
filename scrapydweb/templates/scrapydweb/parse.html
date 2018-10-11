@@ -21,11 +21,11 @@
     <form method="post" enctype="multipart/form-data">
         <div class="upload">
             <label class="upload-button">
-                <input id='file' type="file" name="file" accept=".log, .txt" />
+                <input id='file' type="file" name="file" accept=".log, .log.gz, .gz, .txt" />
                 Select
             </label>
             
-            <span class="filename">a log or txt file</span>
+            <span class="filename">a log/log.gz/gz/txt file</span>
             
             <a href="javascript:;" class="submit" onclick="uploadLogfile();">
                 <i class="iconfont icon-upload"></i>
@@ -39,7 +39,7 @@
 <script>
 my$('#file').onchange = function () {
     //my$('.filename').innerText = this.value;
-    my$('.filename').innerText = "a log or txt file";
+    my$('.filename').innerText = "a log/log.gz/gz/txt file";
     
     var logfile = my$('#file').files[0];
     if(logfile === undefined) {

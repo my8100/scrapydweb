@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}directory{% endblock %}
+{% block title %}logs{% endblock %}
 
 {% block head %}
     <style>
@@ -67,8 +67,8 @@
             {% endif %}
 
             {% if project and spider %}
-            <td><a class="state normal" href="{{ row['url_logs_utf8'] }}" onclick="showLoader();">UTF8</a></td>
-            <td><a class="state normal" href="{{ row['url_logs_stats'] }}" onclick="showLoader();">Stats</a></td>
+            <td><a class="state normal" href="{{ row['url_log_utf8'] }}" onclick="showLoader();">UTF8</a></td>
+            <td><a class="state normal" href="{{ row['url_log_stats'] }}" onclick="showLoader();">Stats</a></td>
             {% endif %}
 
             <td>{{ row['size'] }}</td>

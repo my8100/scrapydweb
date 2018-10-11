@@ -28,19 +28,26 @@
 </p>
 
 <h2>
-    <a class="button" style="width: 120px; height: 21px;"
-    href="{{ url_for('directory.directory', node=node, ui=ui) }}" >
+    <a class="button" style="width: 125px; height: 21px;"
+    href="{{ url_for('items.items', node=node, ui=ui) }}" >
+    Items directory
+    </a>
+</h2>
+
+<h2>
+    <a class="button" style="width: 125px; height: 21px;"
+    href="{{ url_for('logs.logs', node=node, ui=ui) }}" >
     Logs directory
     </a>
 </h2>
 
 <form action="{{ url_for('parse.upload', node=node, ui=ui) }}" method="post" enctype="multipart/form-data">
     <label class="fileContainer">
-        <input id="uploadBtn" type="file" name="file" accept=".log, .txt" />
+        <input id="file" type="file" name="file" accept=".log, .log.gz, .gz, .txt" />
         Select
     </label>
 
-    <input id="uploadFile" placeholder="a log or txt file" disabled="disabled" style="margin-left: 5px; color: black;" />
+    <input id="uploadFile" placeholder="a log/log.gz/gz/txt file" disabled="disabled" style="margin-left: 5px; color: black;" />
     <input type="button" value="Upload and Parse" onclick="uploadLogfile();" />
     <a href="{{ url_for('parse.uploaded', node=node, filename='demo.txt', ui=ui) }}">demo</a>
 </form>
@@ -85,13 +92,13 @@
         <td>{{ row['start'] }}</td>
         <td>{{ row['runtime'] }}</td>
         <td>
-            <a href="{{ url_for('logs.logs', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
             UTF8
             </a>
         </td>
         <td>
-            <a href="{{ url_for('logs.logs', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
             Stats
             </a>
@@ -126,13 +133,13 @@
         <td>{{ row['start'] }}</td>
         <td>{{ row['runtime'] }}</td>
         <td>
-            <a href="{{ url_for('logs.logs', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
             UTF8
             </a>
         </td>
         <td>
-            <a href="{{ url_for('logs.logs', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
             Stats
             </a>
@@ -151,7 +158,7 @@
 
 
 <script>
-my$('#uploadBtn').onchange = function () {
+my$('#file').onchange = function () {
     my$('#uploadFile').value = this.value;
 };
 

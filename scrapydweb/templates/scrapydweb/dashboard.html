@@ -63,13 +63,13 @@
                 <td>{{ row['runtime'] }}</td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('logs.logs', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
                     UTF8
                     </a>
                 </td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('logs.logs', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
                     Stats
                     </a>
                 </td>
@@ -124,13 +124,13 @@
                 <td>{{ row['finish'] }}</td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('logs.logs', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
                     UTF8
                     </a>
                 </td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('logs.logs', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
                     Stats
                     </a>
                 </td>

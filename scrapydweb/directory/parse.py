@@ -14,12 +14,12 @@ from ..vars import UPLOAD_PATH
 from .utils import parse_log
 
 CWD = os.path.dirname(os.path.abspath(__file__))
-ALLOWED_EXTENSIONS = {'log', 'txt'}
+ALLOWED_EXTENSIONS = {'log', 'log.gz', 'gz', 'txt'}
 
 bp = Blueprint('parse', __name__, url_prefix='/')
 
 
-@bp.route('/<int:node>/logs/upload/', methods=('GET', 'POST'))
+@bp.route('/<int:node>/log/upload/', methods=('GET', 'POST'))
 def upload(node):
     def allowed_file(filename):
         return '.' in filename and \
@@ -58,7 +58,7 @@ def upload(node):
         return redirect(url_for('.uploaded', node=node, filename=filename, ui=UI))
 
 
-@bp.route('/<int:node>/logs/uploaded/<filename>')
+@bp.route('/<int:node>/log/uploaded/<filename>')
 def uploaded(node, filename):
     SIMPLEUI = True if request.args.get('ui', '') == 'simple' else False
     TEMPLATE = 'scrapydweb/simpleui/stats.html' if SIMPLEUI else 'scrapydweb/stats.html'
@@ -82,7 +82,7 @@ def uploaded(node, filename):
     spider = m.group(1) if m else ''
 
     # 'LOG_FILE': 'logs\\proxy\\test\\b2095ab0a4f911e8b98614dda9e91c2f.log',
-    m = re.search(r'LOG_FILE.*?([\w-]+)\.(?:log|txt)', text)
+    m = re.search(r'LOG_FILE.*?([\w-]+)\.(?:log|log\.gz|gz|txt)', text)
     job = m.group(1) if m else (filename.rpartition('.')[0] or filename)
 
     kwargs = {
@@ -90,7 +90,7 @@ def uploaded(node, filename):
         'spider': spider,
         'job': job,
         'url_source': url_for('.source', filename=filename),
-        # 'url_utf8': url_utf8, # to hide url_utf8 link in page http://127.0.0.1:5000/logs/uploaded/demo.txt
+        # 'url_utf8': url_utf8, # to hide url_utf8 link in page http://127.0.0.1:5000/log/uploaded/demo.txt
         'LAST_LOG_ALERT_SECONDS': app.config.get('LAST_LOG_ALERT_SECONDS', 60),
     }
     parse_log(text, kwargs)
@@ -98,6 +98,6 @@ def uploaded(node, filename):
     return render_template(TEMPLATE, node=node, **kwargs)
 
 
-@bp.route('/logs/source/<filename>')
+@bp.route('/log/source/<filename>')
 def source(filename):
     return send_from_directory(UPLOAD_PATH, filename, mimetype='text/plain')

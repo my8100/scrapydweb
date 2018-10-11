@@ -6,9 +6,9 @@
 {% block body %}
 <h2>Upload and parse scrapy log file</h2>
 
-<form method="post" enctype="multipart/form-data" accept="log, txt">
-    <input type="file" name="file" accept=".log, .txt">
-    <input type="submit" value="Upload and parse">
+<form method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".log, .log.gz, .gz, .txt" >
+    <input type="submit" value="Upload and parse" >
     <a href="{{ url_parse_demo }}">demo</a>
 </form>
 
