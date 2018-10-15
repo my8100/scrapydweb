@@ -10,11 +10,11 @@ from flask import (
 from flask import current_app as app
 from werkzeug.utils import secure_filename
 
-from ..vars import UPLOAD_PATH
+from ..vars import UPLOAD_PATH, WARN
 from .utils import parse_log
 
 CWD = os.path.dirname(os.path.abspath(__file__))
-ALLOWED_EXTENSIONS = {'log', 'log.gz', 'gz', 'txt'}
+ALLOWED_EXTENSIONS = {'log', 'txt'}
 
 bp = Blueprint('parse', __name__, url_prefix='/')
 

@@ -16,7 +16,8 @@ def app():
     def inject_variable():
         return {
             'SCRAPYD_SERVERS': app.config['SCRAPYD_SERVERS'],
-            'SCRAPYD_SERVERS_GROUP': ["" for s in app.config['SCRAPYD_SERVERS']],
+            'SCRAPYD_SERVERS_GROUPS': ['fakegroup' for s in app.config['SCRAPYD_SERVERS']],
+            'SCRAPYD_SERVERS_AUTHS': [('fakeusername', 'fakepassword') for s in app.config['SCRAPYD_SERVERS']],
             'DEFAULT_LATEST_VERSION': DEFAULT_LATEST_VERSION,
         }
 

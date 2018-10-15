@@ -20,10 +20,12 @@ and solve the problem in the "Projects > Manage" page."""
 @bp.route('/<int:node>/api/<opt>/', methods=('POST', 'GET'))
 def api(node, opt, project=None, version_spider_job=None):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
+
     if node < 1 or node > len(SCRAPYD_SERVERS):
         message = 'node index %s error, which should be between 1 and %s' % (node, len(SCRAPYD_SERVERS))
         app.logger.error('!!!!! %s' % message)
-        return json.dumps(dict(status='error', message=message, url=message, status_code=-1))
+        return json.dumps(dict(status_code=-1, status='error', message=message))
 
     SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
 
@@ -54,7 +56,7 @@ def api(node, opt, project=None, version_spider_job=None):
 
     times = 2 if opt == 'forcestop' else 1
     for t in range(times):
-        status_code, js = make_request(url, data, timeout=timeout, log=log)
+        status_code, js = make_request(url, data, timeout=timeout, log=log, auth=SCRAPYD_SERVERS_AUTHS[node - 1])
         if times != 1:
             js['times'] = times
             time.sleep(2)

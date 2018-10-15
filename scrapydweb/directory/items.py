@@ -29,15 +29,19 @@ def items(node, project=None, spider=None):
 
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
     SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     url = 'http://{}/items/{}{}'.format(SCRAPYD_SERVER,
                                        '%s/' % project if project else '',
                                        '%s/' % spider if spider else '')
-    status_code, text = make_request(url, api=False)
+    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
+    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
+    status_code, text = make_request(url, api=False, auth=auth)
 
     if status_code != 200 or not re.search(r'Directory', text):
         return render_template(TEMPLATE_RESULT, node=node,
-                               url=url, status_code=status_code, text=text)
+                               url=url_auth, status_code=status_code, text=text,
+                               message='See https://scrapyd.readthedocs.io/en/latest/config.html#items-dir for help')
 
     rows = [dict(zip(keys_directory, row)) for row in pattern_directory.findall(text)]
 
@@ -50,7 +54,7 @@ def items(node, project=None, spider=None):
             filename = m.group(1)
             # UnicodeEncodeError: 'ascii' codec can't encode characters in position 58-59: ordinal not in range(128)
             row['filename'] = u'<a class="link" target="_blank" href="{}">{}</a>'.format(
-                               url + filename, filename)
+                               url_auth + filename, filename)
         else:
             if SIMPLEUI:
                 row['filename'] = re.sub(r'href="(.*?)"', r'href="\1?ui=simple"', row['filename'])
@@ -58,4 +62,4 @@ def items(node, project=None, spider=None):
                 row['filename'] = re.sub(r'href=', 'class="link" href=', row['filename'])
 
     return render_template(TEMPLATE, node=node,
-                           project=project, spider=spider, rows=rows, url=url)
+                           project=project, spider=spider, rows=rows, url=url_auth)

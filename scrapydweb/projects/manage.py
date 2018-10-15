@@ -39,8 +39,14 @@ def manage(node, opt='listprojects', project=None, version_spider_job=None):
         for project in projects:
             url_listversions = url_for('.manage', node=node, opt='listversions', project=project)
             results.append((project, url_listversions))
+        if request.method == 'POST':
+            url = js['url']
+        else:
+            SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
+            auth = SCRAPYD_SERVERS_AUTHS[node - 1]
+            url = js['url'].replace('http://', 'http://%s:%s@' % auth) if auth else js['url']
         return render_template('scrapydweb/manage.html', node=node,
-                               url=js['url'], node_name=node_name, results=results,
+                               url=url, node_name=node_name, results=results,
                                url_deploy=url_for('deploy.deploy', node=node))
 
     elif opt == 'listversions':

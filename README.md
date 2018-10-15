@@ -1,6 +1,8 @@
 ScrapydWeb: Full-featured web UI for monitoring and controlling Scrapyd servers cluster, with Scrapy log analysis and visualization supported
 ==========================
 
+[![Coverage Status](https://coveralls.io/repos/github/my8100/scrapydweb/badge.svg)](https://coveralls.io/github/my8100/scrapydweb)
+
 Features
 ---------------
 
@@ -20,6 +22,7 @@ Features
 
 - Others
   - Basic auth for web UI
+  - Accessing Scrapyd servers protected by basic auth
 
 
 Maintainer

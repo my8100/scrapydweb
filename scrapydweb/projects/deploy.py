@@ -51,10 +51,13 @@ def prepare_data():
 @bp.route('/<int:node>/deploy/', methods=('GET', 'POST'))
 def deploy(node):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     # $ curl http://localhost:6800/addversion.json -F project=myproject -F version=r23 -F egg=@myproject.egg
     # {'node_name': 'win7-PC', 'status': 'ok', 'project': 'demo', 'version': '2018-09-05T03_13_50', 'spiders': 1}
     url = 'http://{}/{}.json'.format(SCRAPYD_SERVERS[node - 1], 'addversion')
+    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
+    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
 
     if request.method == 'GET':
         # first_selected_node = request.args.get('first_selected_node', None)
@@ -71,12 +74,13 @@ def deploy(node):
                 selected_nodes.append(i)
 
     return render_template('scrapydweb/deploy.html', node=node,
-                           url=url, selected_nodes=selected_nodes)
+                           url=url_auth, selected_nodes=selected_nodes)
 
 
 @bp.route('/<int:node>/deploy/upload/', methods=('POST',))
 def upload(node):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     selected_nodes_amount = request.form.get('checked_amount', None)
     # Deploy to the first selected node
@@ -96,7 +100,7 @@ def upload(node):
     # 'version': '2018-09-05T03_13_50'}
     pprint(request.form)
     filename, project, version, data = prepare_data()
-    status_code, js = make_request(url, data)
+    status_code, js = make_request(url, data, auth=SCRAPYD_SERVERS_AUTHS[node - 1])
 
     if js['status'] != 'ok':
         if selected_nodes_amount and int(selected_nodes_amount) > 1:
@@ -125,6 +129,7 @@ def upload(node):
 @bp.route('/<int:node>/deploy/xhr/<filename>/<project>/<version>/', methods=('POST', 'GET'))
 def deploy_xhr(node, filename, project, version):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     url = 'http://{}/{}.json'.format(SCRAPYD_SERVERS[node - 1], 'addversion')
 
@@ -139,5 +144,5 @@ def deploy_xhr(node, filename, project, version):
         'version': version,
         'egg': content
     }
-    status_code, js = make_request(url, data)
+    status_code, js = make_request(url, data, auth=SCRAPYD_SERVERS_AUTHS[node - 1])
     return json_dumps(js)

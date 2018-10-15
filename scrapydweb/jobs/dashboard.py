@@ -21,17 +21,21 @@ def dashboard(node):
     # http://flask.pocoo.org/docs/1.0/appcontext/#lifetime-of-the-context
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
     SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
     SCRAPYDWEB_HOST = app.config.get('SCRAPYDWEB_HOST', '0.0.0.0')
     SCRAPYDWEB_PORT = app.config.get('SCRAPYDWEB_PORT', 5000)
+    SHOW_DASHBOARD_JOB_COLUMN = app.config.get('SHOW_DASHBOARD_JOB_COLUMN', False)
 
     scrapydweb_url = 'http://%s:%s' % (SCRAPYDWEB_HOST, SCRAPYDWEB_PORT)
 
     url = 'http://%s/jobs' % SCRAPYD_SERVER
-    status_code, text = make_request(url, api=False)
+    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
+    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
+    status_code, text = make_request(url, api=False, auth=auth)
 
     if status_code != 200 or not re.search(r'Jobs', text):
         return render_template(TEMPLATE_RESULT, node=node,
-                               url=url, status_code=status_code, text=text)
+                               url=url_auth, status_code=status_code, text=text)
 
     rows = [dict(zip(keys_jobs, row)) for row in pattern_jobs.findall(text)]
 
@@ -39,6 +43,10 @@ def dashboard(node):
     running_rows = []
     finished_rows = []
     for row in rows:
+        # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
+        if row['items']:
+            row['url_items'] = url_auth[:-5] + re.search(r"href='(.*?)'>", row['items']).group(1)
+
         if not row['start']:
             pending_rows.append(row)
         elif not row['finish']:
@@ -58,6 +66,7 @@ def dashboard(node):
               to speed up loading utf8 and stats html.", INFO)
 
     return render_template(TEMPLATE, node=node,
-                           ui=UI, colspan=10, url=url,
+                           ui=UI, colspan=12, url=url_auth,
                            scrapydweb_url=scrapydweb_url, pending_rows=pending_rows,
-                           running_rows=running_rows, finished_rows=finished_rows)
+                           running_rows=running_rows, finished_rows=finished_rows,
+                           SHOW_DASHBOARD_JOB_COLUMN=SHOW_DASHBOARD_JOB_COLUMN)

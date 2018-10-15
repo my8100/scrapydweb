@@ -87,9 +87,12 @@ def generate_cmd(url, data):
 @bp.route('/<int:node>/schedule/', methods=('POST', 'GET'))
 def schedule(node, project=None, version=None, spider=None):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     # $ curl http://localhost:6800/schedule.json -d project=myproject -d spider=somespider
     url = 'http://%s/schedule.json' % SCRAPYD_SERVERS[node - 1]
+    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
+    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
 
     if request.method == 'GET':
         # RUN SPIDER button of DEPLOY PROJECT results(keep home url)
@@ -116,7 +119,7 @@ def schedule(node, project=None, version=None, spider=None):
         first_selected_node = selected_nodes[0]
 
     return render_template('scrapydweb/schedule.html', node=node,
-                           url=url, project=project, version=version, spider=spider,
+                           url=url_auth, project=project, version=version, spider=spider,
                            jobid=time.strftime('%Y-%m-%d_%H%M%S'),
                            selected_nodes=selected_nodes, first_selected_node=first_selected_node)
 
@@ -139,6 +142,7 @@ def check(node):
 @bp.route('/<int:node>/schedule/run/', methods=('POST', 'GET'))
 def run(node):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     selected_nodes_amount = request.form.get('checked_amount', None)
     # Schedule to the first selected node
@@ -161,7 +165,7 @@ def run(node):
         with io.open(filepath, 'rb') as f:
             data = pickle.loads(f.read())
 
-    status_code, js = make_request(url, data)
+    status_code, js = make_request(url, data, auth=SCRAPYD_SERVERS_AUTHS[node - 1])
 
     with io.open(HISTORY_LOG, 'r+', encoding='utf8') as f:
         history = f.read()
@@ -206,6 +210,7 @@ def run(node):
 @bp.route('/<int:node>/schedule/xhr/<filename>/', methods=('POST', 'GET'))
 def schedule_xhr(node, filename):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
 
     url = 'http://%s/schedule.json' % SCRAPYD_SERVERS[node - 1]
 
@@ -215,7 +220,7 @@ def schedule_xhr(node, filename):
         with io.open(filepath, 'rb') as f:
             data = pickle.loads(f.read())
 
-    status_code, js = make_request(url, data)
+    status_code, js = make_request(url, data, auth=SCRAPYD_SERVERS_AUTHS[node - 1])
     return json_dumps(js)
 
 

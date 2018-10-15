@@ -25,8 +25,9 @@
 window.onload = function(){
     // Clear no_cache=True in href after clicking refresh cache button
     {% if refresh_url %}
-    var kwargs = parseQueryString(location.search);
-    history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
+    //var kwargs = parseQueryString(location.search);
+    //history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
+    history.pushState(null, '', window.location.pathname + location.search.replace('no_cache=True', 'no_cache='));
     {% endif %}
 
     hideLoader();
@@ -68,16 +69,16 @@ Using cached version. Click to refresh.
 
 <div class="tab-wrap wrap">
     <ul class="tab tab-header clear-float">
-        <li class="active">Stats collection</li>
+        <li id="header_stats">Stats collection</li>
 
         {% if datas and datas[-1][1] %}
-        <li>Progress visualization</li>
+        <li id="header_charts">Progress visualization</li>
         {% endif %}
 
-        <li>Logs categorization</li>
+        <li id="header_logs">Logs categorization</li>
     </ul>
     <ul class="tab tab-content">
-        <li class="active">
+        <li id="content_stats">
             <div class="table vertical-table">
                 <table>
                     <tr><th>project</th><td>{{ project }}</td></tr>
@@ -105,13 +106,13 @@ Using cached version. Click to refresh.
         </li>
 
         {% if datas and datas[-1][1] %}
-        <li>
+        <li id="content_charts">
             <div id="chart_total" style="width: 100%; height: 400px;"></div>
             <div id="chart_minute" style="width: 100%; height: 400px;"></div>
         </li>
         {% endif %}
 
-        <li>
+        <li id="content_logs">
             <div class="wrap collapse-wrap">
                 <h3 style="color: #409EFF;">cat logs</h3>
                 <ul class="collapse">
@@ -280,29 +281,47 @@ window.addEventListener('optimizedResize', function() {
 <script>
 // tab switcher
 (function() {
-    var index = -1
-    var tabHeaders = my$$('.tab-header>li')
-    var tabContents = my$$('.tab-content>li')
+    var kwargs = parseQueryString(location.search);
+    var active_tab = kwargs['active_tab'] || 'stats';
+    if (my$('#header_'+active_tab)) {
+        my$('#header_'+active_tab).classList.add('active');
+        my$('#content_'+active_tab).classList.add('active');
+    } else {
+        my$('#header_stats').classList.add('active');
+        my$('#content_stats').classList.add('active');
+    }
+    if (my$('#chart_total')) {
+        my$('#chart_total').dispatchEvent(new Event('resize'));
+        my$('#chart_minute').dispatchEvent(new Event('resize'));
+    }
+
+
+    var index = -1;
+    var tabHeaders = my$$('.tab-header>li');
+    var tabContents = my$$('.tab-content>li');
     my$('.tab-header').addEventListener('click', function(e) {
-        var target = e.target
+        var target = e.target;
+        //console.log(target.id);
         if (target.tagName.toLowerCase() !== 'li') return;
-        index = Array.prototype.indexOf.call(tabHeaders, target)
+        index = Array.prototype.indexOf.call(tabHeaders, target);
         tabHeaders.forEach(function(el) {
-            el.classList.remove('active')
+            el.classList.remove('active');
         })
-        target.classList.add('active')
+        target.classList.add('active');
         tabContents.forEach(function(el) {
-            el.classList.remove('active')
+            el.classList.remove('active');
         })
-        tabContents[index].classList.add('active')
+        tabContents[index].classList.add('active');
 
         // When switch to echarts tab
         if (my$('#chart_total')) {
-            my$('#chart_total').dispatchEvent(new Event('resize'))
-            my$('#chart_minute').dispatchEvent(new Event('resize'))
+            my$('#chart_total').dispatchEvent(new Event('resize'));
+            my$('#chart_minute').dispatchEvent(new Event('resize'));
         }
+
+        history.pushState(null, '', location.pathname+"?active_tab="+target.id.split('_')[1]);
     })
-})()
+})();
 </script>
 
 

@@ -12,12 +12,14 @@ function my$$(selector) {
 
 function showLoader() {
     //console.log('showLoader');
+    loading = true;
     my$('.loader').style = 'display:block';
 }
 
 
 function hideLoader() {
     //console.log('hideLoader');
+    loading = false;
     my$('.loader').style = 'display:none';
 }
 
@@ -26,14 +28,14 @@ function uploadLogfile() {
     //var filename = my$('form')['file'].value;
     var logfile = my$('#file').files[0];
     if(logfile === undefined) {
-        alert("Select a log/log.gz/gz/txt file");
+        alert("Select a log or txt file");
         return;
     }
 
     var parts = logfile.name.split('.');
     var filetype = parts[parts.length - 1];
-    if(['log', 'log.gz', 'gz', 'txt'].indexOf(filetype) == -1) {
-        alert("Select a log/log.gz/gz/txt file");
+    if(['log', 'txt'].indexOf(filetype) == -1) {
+        alert("Select a log or txt file");
         return;
     }
 
@@ -118,6 +120,7 @@ function logout() {
 
     // Added by llx
     document.querySelector('html').innerHTML = "";
+    refresh_daemonstatus = false;
 
 	jQuery.ajax({
             type: "GET",

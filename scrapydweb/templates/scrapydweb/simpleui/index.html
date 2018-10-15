@@ -27,12 +27,14 @@
     <a target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">scrapyd@http://{{ SCRAPYD_SERVERS[node-1] }}</a>
 </p>
 
+{% if not HIDE_SCRAPYD_ITEMS %}
 <h2>
     <a class="button" style="width: 125px; height: 21px;"
     href="{{ url_for('items.items', node=node, ui=ui) }}" >
     Items directory
     </a>
 </h2>
+{% endif %}
 
 <h2>
     <a class="button" style="width: 125px; height: 21px;"
@@ -43,26 +45,34 @@
 
 <form action="{{ url_for('parse.upload', node=node, ui=ui) }}" method="post" enctype="multipart/form-data">
     <label class="fileContainer">
-        <input id="file" type="file" name="file" accept=".log, .log.gz, .gz, .txt" />
+        <input id="file" type="file" name="file" accept=".log, .txt" />
         Select
     </label>
 
-    <input id="uploadFile" placeholder="a log/log.gz/gz/txt file" disabled="disabled" style="margin-left: 5px; color: black;" />
+    <input id="uploadFile" placeholder="a log or txt file" disabled="disabled" style="margin-left: 5px; color: black;" />
     <input type="button" value="Upload and Parse" onclick="uploadLogfile();" />
     <a href="{{ url_for('parse.uploaded', node=node, filename='demo.txt', ui=ui) }}">demo</a>
 </form>
 
+<br>
 
 <table border="1">
     <tr>
         <th>Project</th>
         <th>Spider</th>
-        <!-- <th>Job</th> -->
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <th>Job</th>
+        {% endif %}
+
         <th>PID</th>
         <th>Start</th>
         <th>Runtime</th>
         <th>UTF8</th>
         <th>Stats</th>
+        {% if (not HIDE_SCRAPYD_ITEMS) and running_rows and running_rows[0]['url_items'] %}
+        <th>Items</th>
+        {% endif %}
+
         <th>Finish</th>
         <!-- <th>Log</th> -->
         <th>Action</th>
@@ -88,6 +98,10 @@
     <tr>
         <td>{{ row['project'] }}</td>
         <td>{{ row['spider'] }}</td>
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <td>{{ row['job'] }}</td>
+        {% endif %}
+
         <td>{{ row['pid'] }}</td>
         <td>{{ row['start'] }}</td>
         <td>{{ row['runtime'] }}</td>
@@ -103,6 +117,16 @@
             Stats
             </a>
         </td>
+
+    {% if (not HIDE_SCRAPYD_ITEMS) and row['url_items'] %}
+        <td>
+            <a href="{{ row['url_items'] }}"
+            target="_blank">
+            Items
+            </a>
+        </td>
+    {% endif %}
+
         <td>{{ row['finish'] }}</td>
         <td>
             <a id="{{ row['job'] }}" class="button" style="background: orange;"
@@ -129,6 +153,10 @@
     <tr>
         <td>{{ row['project'] }}</td>
         <td>{{ row['spider'] }}</td>
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <td>{{ row['job'] }}</td>
+        {% endif %}
+
         <td>{{ row['pid'] }}</td>
         <td>{{ row['start'] }}</td>
         <td>{{ row['runtime'] }}</td>
@@ -144,6 +172,16 @@
             Stats
             </a>
         </td>
+
+    {% if (not HIDE_SCRAPYD_ITEMS) and row['url_items'] %}
+        <td>
+            <a href="{{ row['url_items'] }}"
+            target="_blank">
+            Items
+            </a>
+        </td>
+    {% endif %}
+
         <td>{{ row['finish'] }}</td>
         <td>
             <a id="{{ row['job'] }}" class="button" style="background: #8BC34A;"

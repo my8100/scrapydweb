@@ -7,6 +7,16 @@ def test_config():
     assert create_app({'TESTING': True}).testing
 
 
+def test_group(client):
+    response = client.get('/1/overview/')
+    assert b'fakegroup' in response.data
+    
+   
+def test_scrapyd_auth(client):
+    response = client.get('/1/overview/')
+    assert b'fakeusername:fakepassword' in response.data   
+    
+
 def test_hello(client):
     response = client.get('/hello')
     assert response.data == b'Hello, World!'

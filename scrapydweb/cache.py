@@ -3,65 +3,101 @@ import os
 import sys
 import time
 import json
+# import traceback
 
 import requests
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-CACHE_FOLDER = os.path.join(CWD, 'cache')
 
-scrapyd_servers, scrapydweb_host, scrapydweb_port, username, password, cache_interval_seconds = sys.argv[1:]
-scrapyd_servers = json.loads(scrapyd_servers)
-cache_interval_seconds = float(cache_interval_seconds)
-
-session = requests.Session()
-session.auth = (username, password)
+ignore_finished = True
+dict_finished = {}
 
 
-def update_cache(state, timeout=60):
-    for node, scrapyd_server in enumerate(scrapyd_servers, 1):
+def refresh_cache(timeout=60):
+    for node, SCRAPYD_SERVER in enumerate(SCRAPYD_SERVERS, 1):
+        auth = SCRAPYD_SERVERS_AUTHS[node-1]
+        auth = tuple(auth) if auth else auth  # TypeError: 'list' object is not callable
         try:
-            r_projects = session.get('http://%s/listprojects.json' % scrapyd_server, timeout=timeout)
-        except:
+            r_projects = session.get('http://%s/listprojects.json' % SCRAPYD_SERVER, timeout=timeout, auth=auth)
+            projects = r_projects.json()['projects']
+        except Exception as err:
+            # print(traceback.format_exc())
+            print("!!! Cache projects fail: %s %s" % (err.__class__.__name__, err))
             continue
-        projects = r_projects.json()['projects']
 
         for project in projects:
-            r_jobs = session.get('http://%s/listjobs.json?project=%s' % (scrapyd_server, project), timeout=timeout)
-            for running_job in r_jobs.json()[state]:
+            try:
+                r_jobs = session.get('http://%s/listjobs.json?project=%s' % (SCRAPYD_SERVER, project), timeout=timeout, auth=auth)
+                jobs = r_jobs.json()
+            except Exception as err:
+                print("!!! Cache jobs fail: %s %s" % (err.__class__.__name__, err))
+                continue
+
+            running_jobs = jobs['running']
+            finished_jobs = []
+            for job_ in jobs['finished']:
+                key = '%s/%s/%s/%s' % (node, project, job_['spider'], job_['id'])
+                if ignore_finished:
+                    dict_finished[key] = ''
+                elif key not in dict_finished:
+                    dict_finished[key] = ''
+                    finished_jobs.append(job_)
+                else:
+                    pass
+
+
+            for job_ in running_jobs + finished_jobs:
                 try:
-                    job = running_job['id']
-                    spider = running_job['spider']
+                    spider = job_['spider']
+                    job = job_['id']
                     # http://127.0.0.1:5000/log/utf8/proxy/test/55f1f388a7ae11e8b9b114dda9e91c2f/
-                    for opt in ['utf8', 'stats']:
-                        url = ('http://{scrapydweb_host}:{scrapydweb_port}/'
-                               '{node}/log/{opt}/{project}/{spider}/{job}/').format(
-                            scrapydweb_host=scrapydweb_host, scrapydweb_port=scrapydweb_port,
-                            node=node, opt=opt, project=project, spider=spider, job=job)
-                        # 'POST' to avoid using cache, see log.py
-                        session.post(url, timeout=timeout)
-                        print(">>> Cache %s" % url)
+                    url = ('http://{scrapydweb_host}:{scrapydweb_port}/'
+                           '{node}/log/{opt}/{project}/{spider}/{job}/').format(
+                        scrapydweb_host=scrapydweb_host, scrapydweb_port=scrapydweb_port,
+                        node=node, opt='utf8', project=project, spider=spider, job=job)
+                    # 'POST' to avoid using cache, see log.py
+                    r = session.post(url, timeout=timeout)
+                    print(">>> Cache %s %s Bytes %s" % (r.status_code, len(r.content), url))
+                    time.sleep(cache_request_interval)
                 except Exception as err:
-                    print(">>> Cache html fail: %s %s" % (err.__class__.__name__, err))
+                    print("!!! Cache html fail: %s %s" % (err.__class__.__name__, err))
 
 
 def main():
+    global ignore_finished
     while True:
         start_time = time.time()
         try:
-            update_cache('running')
-            update_cache('finished')
+            refresh_cache()
         except Exception as err:
-            print(">>> Cache fail: %s %s" % (err.__class__.__name__, err))
+            print("!!! Cache fail: %s %s" % (err.__class__.__name__, err))
         else:
             print(">>> Cache done at %s" % time.ctime())
-        end_time = time.time()
-        lasting_time = end_time - start_time
-        if lasting_time < cache_interval_seconds:
-            wait_time = cache_interval_seconds - lasting_time
-            print(">>> Cache wait %s seconds" % int(wait_time))
-            time.sleep(wait_time)
+
+        print(">>> Cache cost %s seconds" % int(time.time() - start_time))
+        print(">>> Cache wait %s seconds" % cache_round_interval)
+        time.sleep(cache_round_interval)
+
+        if ignore_finished:
+            ignore_finished = False
+        if len(dict_finished) > 10000:
+            dict_finished.clear()
+            ignore_finished = True
 
 
 if __name__ == '__main__':
     time.sleep(10)
+
+    (scrapydweb_host, scrapydweb_port, username, password,
+    SCRAPYD_SERVERS, SCRAPYD_SERVERS_AUTHS,
+    cache_round_interval, cache_request_interval) = sys.argv[1:]
+
+    SCRAPYD_SERVERS = json.loads(SCRAPYD_SERVERS)
+    SCRAPYD_SERVERS_AUTHS = json.loads(SCRAPYD_SERVERS_AUTHS)
+    cache_round_interval = int(cache_round_interval)
+    cache_request_interval = int(cache_request_interval)
+
+    session = requests.Session()
+    if username and password:
+        session.auth = (username, password)
+
     main()

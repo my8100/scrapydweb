@@ -34,7 +34,7 @@
 
 
 {% block body %}
-<h2><a class="link" target="_blank" href="{{ url_for('api.api', node=node, opt='daemonstatus') }}">
+<h2><a class="link" target="_blank" href="{{ url }}">
     Monitor and control all Scrapyd servers</a>
 </h2>
 
@@ -308,7 +308,7 @@ var Main = {
         {
             selected: "no",
             index: {{ loop.index }},
-            group: "{{ SCRAPYD_SERVERS_GROUP[loop.index-1] }}",
+            group: "{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}",
             SCRAPYD_SERVER: "{{ SCRAPYD_SERVER }}",
 
             {% if loop.index == node %}
@@ -873,7 +873,11 @@ function checkLatestVersion() {
     if(typeof(latest_version) !== 'undefined') {
         if(latest_version != "{{ scrapydweb_version }}") {
             console.log(update_info);
-            alert(update_info);
+            //alert(update_info);
+            if (window.confirm(update_info)) {
+                var win = window.open("{{ GITHUB_URL }}/blob/master/HISTORY.md", '_blank');
+                win.focus();
+            }
         } else {
             console.log("{{ scrapydweb_version }}");
             if (window.confirm('Would you like to STAR the repository and help improve project "scrapydweb"?')) {

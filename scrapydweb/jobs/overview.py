@@ -22,9 +22,15 @@ def overview(node, opt=None, project=None, version_job=None, spider=None):
         check_latest_version = False
 
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+    SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
+    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
+    url = 'http://%s/daemonstatus.json' % SCRAPYD_SERVER
+    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
+    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
+
 
     if len(SCRAPYD_SERVERS) == 1:
-        flash("Run ScrapydWeb with argument '-ss 127.0.0.1 -ss 192.168.0.101:12345@group1' \
+        flash("Run ScrapydWeb with argument '-ss 127.0.0.1 -ss username:password@192.168.123.123:6801#group' \
               to set any number of Scrapyd servers to control.", INFO)
 
     if request.method == 'POST':
@@ -43,4 +49,4 @@ def overview(node, opt=None, project=None, version_job=None, spider=None):
                            scrapydweb_version=__version__,
                            check_latest_version=check_latest_version_,
                            opt=opt, project=project, version_job=version_job, spider=spider,
-                           selected_nodes=selected_nodes)
+                           selected_nodes=selected_nodes, url=url_auth)

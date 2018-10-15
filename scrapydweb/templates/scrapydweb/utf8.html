@@ -63,8 +63,7 @@ $(function() {
     //$(window).scroll(function() {
     $(document).ready(function() {
         {% if refresh_url %}
-        var kwargs = parseQueryString(location.search);
-        history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
+        history.pushState(null, '', window.location.pathname + location.search.replace('no_cache=True', 'no_cache='));
         {% endif %}
 
         hideLoader();

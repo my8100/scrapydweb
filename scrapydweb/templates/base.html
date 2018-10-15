@@ -44,6 +44,9 @@
             fill: currentColor;
             overflow: hidden;
         }
+        nav>.menu>a {font-size: 30px;}
+        nav>.menu>a:hover {color: #409EFF;}
+        .menu span {font-size: 18px;}
     </style>
 
     <script type="text/javascript" src="{{ url_for('static', filename='common/jquery.min.js') }}"></script>
@@ -57,12 +60,14 @@
 
 <body>
     <nav>
-        <a class="title" target="_blank" href="{{ GITHUB_URL }}">
-        {% if scrapydweb_version %}
+        <a class="title" target="_blank"
+    {% if scrapydweb_version %}
+        href="{{ GITHUB_URL }}/blob/master/HISTORY.md">
         ScrapydWeb <span class="version">v{{ scrapydweb_version }}</span>
-        {% else %}
+    {% else %}
+        href="{{ GITHUB_URL }}">
         ScrapydWeb
-        {% endif %}
+    {% endif %}
         </a>
 
 
@@ -79,8 +84,8 @@
             <div class="dropdown-content-wrap">
                 <div class="dropdown-content">
                 {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-                    {% if SCRAPYD_SERVERS_GROUP is defined and loop.changed(SCRAPYD_SERVERS_GROUP[loop.index-1]) and loop.index != 1%}
-                    <div>{{ SCRAPYD_SERVERS_GROUP[loop.index-1] }}</div>
+                    {% if SCRAPYD_SERVERS_GROUPS is defined and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) and loop.index != 1%}
+                    <div>{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}</div>
                     {% endif %}
 
                     <a href="{{ url_for('dashboard.dashboard', node=loop.index) }}"
@@ -97,8 +102,21 @@
             </div>
         </div>
 
+    {% if SCRAPYD_SERVERS|length > 1 %}
+        <div class="menu">
+            <a href="javascript:;" onclick="switchNode(-1);">&laquo;</a>
+            <span>{{ node }} / {{ SCRAPYD_SERVERS|length }}</span>
+            <a href="javascript:;" onclick="switchNode(1);">&raquo;</a>
+        </div>
+    {% endif %}
+
         <ul id="nav_daemonstatus">
-            <li><a class="link" target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">
+            <li><a class="link" target="_blank"
+                {% if SCRAPYD_SERVERS_AUTHS[node-1]%}
+                    href="{{ 'http://'+SCRAPYD_SERVERS_AUTHS[node-1][0]+':'+SCRAPYD_SERVERS_AUTHS[node-1][-1]+'@'+SCRAPYD_SERVERS[node-1] }}">
+                {% else %}
+                    href="http://{{ SCRAPYD_SERVERS[node-1] }}">
+                {% endif %}
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-host"></use>
                     </svg>
@@ -132,7 +150,10 @@
 
 
 <script>
+var loading = false;
+var refresh_daemonstatus = true;
 var node = {{ node }};
+var node_total = {{ SCRAPYD_SERVERS|length }};
 var url_daemonstatus = "{{ url_for('api.api', node=node, opt='daemonstatus') }}";
 //console.log('node: '+node);
 
@@ -149,10 +170,27 @@ $(function(){
     }
 })
 
+
 refreshDaemonstatus(url_daemonstatus);
 setInterval(function() {
-    refreshDaemonstatus(url_daemonstatus);
-}, 5000);
+    if(refresh_daemonstatus == true) {
+        refreshDaemonstatus(url_daemonstatus);
+    }
+}, 10000);
+
+
+function switchNode(change) {
+    if(node == 1 && change == -1) {
+        alert("Reaching the first node");
+        return;
+    } else if(node == node_total && change == 1) {
+        alert("Reaching the final node");
+        return;
+    }
+    //console.log(node+change);
+    location.href = location.pathname.replace(/\/\d+/, '/'+(node+change)) + location.search;
+    showLoader();
+}
 </script>
 
 
@@ -211,6 +249,7 @@ setInterval(function() {
 
             <h3>Directory</h3>
             <ul>
+            {% if not HIDE_SCRAPYD_ITEMS %}
                 <li>
                     <a id="menu_items" href="{{ url_for('items.items', node=node) }}" onclick="showLoader();">
                         <svg class="icon" aria-hidden="true">
@@ -219,6 +258,8 @@ setInterval(function() {
                         <span>Items</span>
                     </a>
                 </li>
+            {% endif %}
+
                 <li>
                     <a id="menu_logs" href="{{ url_for('logs.logs', node=node) }}" onclick="showLoader();">
                         <svg class="icon" aria-hidden="true">

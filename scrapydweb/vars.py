@@ -12,7 +12,7 @@ SCHEDULE_PATH = os.path.join(CWD, 'data/schedule')
 for p in [DATA_PATH, UPLOAD_PATH, CACHE_PATH, DEPLOY_PATH, SCHEDULE_PATH]:
     if not os.path.isdir(p):
         os.mkdir(p)
-        
+
 INFO = 'info'
 WARN = 'warning'
 DEFAULT_LATEST_VERSION = "default: the latest version"
@@ -26,6 +26,21 @@ UA_DICT = {
 }
 
 
+# For run.py
+# r'^(?:(?:(.*?)\:)(?:(.*?)@))?(.*?)(?:\:(.*?))?(?:#(.*?))?$'
+pattern_scrapyd_server = re.compile(r"""
+                        ^
+                        (?:
+                            (?:(.*?)\:)     # username:
+                            (?:(.*?)@)      # password@
+                        )?
+                        (.*?)               # ip
+                        (?:\:(.*?))?        # :port
+                        (?:\#(.*?))?        # #group
+                        $
+                    """, re.X)
+
+
 # For dashboard
 pattern_jobs = re.compile(r"""<tr>
                         <td>(?P<Project>.*?)</td>
@@ -36,9 +51,10 @@ pattern_jobs = re.compile(r"""<tr>
                         (?:<td>(?P<Runtime>.*?)</td>)?
                         (?:<td>(?P<Finish>.*?)</td>)?
                         (?:<td>(?P<Log>.*?)</td>)?
+                        (?:<td>(?P<Items>.*?)</td>)?
                         </tr>
                     """, re.X)
-keys_jobs = ['project', 'spider', 'job', 'pid', 'start', 'runtime', 'finish', 'log']
+keys_jobs = ['project', 'spider', 'job', 'pid', 'start', 'runtime', 'finish', 'log', 'items']
 
 
 # For directory
