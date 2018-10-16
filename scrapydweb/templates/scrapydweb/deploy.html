@@ -77,7 +77,7 @@
                 <div id="nodes_checkboxes">
                 {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
                     {% if loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) and loop.index != 1%}
-                    <span>{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}</span>
+                    <span> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </span>
                     {% endif %}
 
                     <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}">
@@ -174,7 +174,10 @@ my$("#file").onchange = function() {
 
     my$('.filename').innerText = eggfile.name;
     my$('#project').value = parts[0];
-    my$('#version').value = eggfile.lastModifiedDate.toISOString().slice(0,19).replace(/:/g, "_");
+    //my$('#version').value = eggfile.lastModifiedDate.toISOString().slice(0,19).replace(/:/g, "_");
+    var d = new Date(eggfile.lastModified);
+    d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+    my$('#version').value = d.toISOString().slice(0,19).replace(/:/g, "_");
     console.log(my$('#version').value);
 };
 

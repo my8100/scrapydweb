@@ -85,7 +85,7 @@
                 <div class="dropdown-content">
                 {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
                     {% if SCRAPYD_SERVERS_GROUPS is defined and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) and loop.index != 1%}
-                    <div>{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}</div>
+                    <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
                     {% endif %}
 
                     <a href="{{ url_for('dashboard.dashboard', node=loop.index) }}"

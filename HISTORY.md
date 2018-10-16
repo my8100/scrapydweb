@@ -1,5 +1,9 @@
 Release History
 ===============
+0.9.7 (2018-10-16)
+------------------
+- Fix the bug that fails to read lastModifiedDate of egg file in Firefox and Safari
+
 0.9.6 (2018-10-15)
 ------------------
 - Support accessing Scrapyd servers protected by basic auth

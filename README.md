@@ -1,8 +1,6 @@
 ScrapydWeb: Full-featured web UI for monitoring and controlling Scrapyd servers cluster, with Scrapy log analysis and visualization supported
 ==========================
 
-[![Coverage Status](https://coveralls.io/repos/github/my8100/scrapydweb/badge.svg)](https://coveralls.io/github/my8100/scrapydweb)
-
 Features
 ---------------
 
@@ -36,23 +34,19 @@ Installation
 
 To install ScrapydWeb, simply use pip:
 
-``` {.sourceCode .bash}
-$ pip install scrapydweb
+```
+pip install scrapydweb
 ```
 
 
 Start Up
 ------------
 
-Run "scrapydweb -h" to get help,
-and a config file named "scrapydweb_settings.py" would be copied to the working directory,
+1. Run `scrapydweb -h` to get help,
+and a config file named **scrapydweb_settings.py** would be copied to the working directory,
 then you can custom config with it.
-
-``` {.sourceCode .bash}
-$ scrapydweb
-```
-
-Visit [http://127.0.0.1:5000](http://127.0.0.1:5000)
+2. Run `scrapydweb`
+3. Visit [http://127.0.0.1:5000](http://127.0.0.1:5000) **(It's recommended to use Google Chrome to get better experience.)**
 
 
 Screenshot

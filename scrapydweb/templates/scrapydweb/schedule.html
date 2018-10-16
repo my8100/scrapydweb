@@ -216,7 +216,7 @@
                     <div id="nodes_checkboxes">
                     {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
                         {% if loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) and loop.index != 1%}
-                        <span>{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}</span>
+                        <span> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </span>
                         {% endif %}
 
                         <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}">
@@ -287,6 +287,7 @@ function runSpider(){
 }
 
 var now = new Date();
+now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
 
 var Main = {
     data() {
