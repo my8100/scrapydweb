@@ -1,10 +1,15 @@
-ScrapydWeb: Full-featured web UI for monitoring and controlling Scrapyd servers cluster, with Scrapy log analysis and visualization supported
+ScrapydWeb: Full-featured web UI for Scrapyd cluster management, Scrapy log analysis and visualization
 ==========================
+
+[![PyPI - scrapydweb Version](https://img.shields.io/pypi/v/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
+[![Coverage Status](https://coveralls.io/repos/github/my8100/scrapydweb/badge.svg?branch=master)](https://coveralls.io/github/my8100/scrapydweb?branch=master)
+[![GitHub license](https://img.shields.io/github/license/my8100/scrapydweb.svg)](https://github.com/my8100/scrapydweb/blob/master/LICENSE)
 
 Features
 ---------------
 
-- Multinode Scrapyd Servers
+- Scrapyd Cluster Management
   - Group, filter and select any numbers of nodes
   - Execute command on multinodes with one click
 
