@@ -328,8 +328,11 @@ table>tbody tr:last-child {
     text-align: left;
 }
 
+/* https://stackoverflow.com/questions/49095440/width-fit-content-working-on-chrome-but-not-explorer */
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/width#Browser_compatibility */
 .vertical-table {
-    width: fit-content;
+    /* width: fit-content; */
+    display: table;
 }
 /* added by llx --end */
 

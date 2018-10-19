@@ -1,6 +1,4 @@
 # coding: utf8
-from pprint import pprint
-
 from flask import Blueprint, render_template, flash, request
 from flask import current_app as app
 
@@ -33,8 +31,10 @@ def overview(node, opt=None, project=None, version_job=None, spider=None):
         flash("Run ScrapydWeb with argument '-ss 127.0.0.1 -ss username:password@192.168.123.123:6801#group' \
               to set any number of Scrapyd servers to control.", INFO)
 
+    if not(app.config.get('USERNAME', '') and app.config.get('PASSWORD', '')):
+        flash("Run ScrapydWeb with argument '--username USERNAME --password PASSWORD' to enable basic auth.", INFO)
+
     if request.method == 'POST':
-        pprint(request.form)
         selected_nodes = []
         for i in range(1, len(SCRAPYD_SERVERS) + 1):
             if request.form.get(str(i)) == 'on':

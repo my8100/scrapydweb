@@ -1,5 +1,9 @@
 Release History
 ===============
+0.9.8 (2018-10-19)
+------------------
+- Kill caching subprocess when main process is killed
+
 0.9.7 (2018-10-16)
 ------------------
 - Fix the bug that fails to read lastModifiedDate of egg file in Firefox and Safari

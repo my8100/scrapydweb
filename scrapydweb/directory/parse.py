@@ -29,11 +29,7 @@ def upload(node):
     UI = 'simple' if SIMPLEUI else None
     TEMPLATE = 'scrapydweb/simpleui/parse.html' if SIMPLEUI else 'scrapydweb/parse.html'
 
-    if request.method == 'GET':
-        url_parse_demo = url_for('.uploaded', node=node, filename='demo.txt', ui=UI)
-        return render_template(TEMPLATE, node=node,
-                               url_parse_demo=url_parse_demo)
-    elif request.method == 'POST':
+    if request.method == 'POST':
         # check if the post request has the file part
         if 'file' not in request.files:
             flash('No file selected', WARN)
@@ -56,6 +52,11 @@ def upload(node):
         file.save(os.path.join(UPLOAD_PATH, filename))
 
         return redirect(url_for('.uploaded', node=node, filename=filename, ui=UI))
+
+    else:
+        url_parse_demo = url_for('.uploaded', node=node, filename='demo.txt', ui=UI)
+        return render_template(TEMPLATE, node=node,
+                               url_parse_demo=url_parse_demo)
 
 
 @bp.route('/<int:node>/log/uploaded/<filename>')

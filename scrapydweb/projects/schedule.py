@@ -6,7 +6,6 @@ import re
 import json
 from collections import OrderedDict
 import pickle
-from pprint import pprint
 
 from flask import Blueprint, render_template, request, url_for, send_from_directory, redirect
 from flask import current_app as app
@@ -94,7 +93,13 @@ def schedule(node, project=None, version=None, spider=None):
     auth = SCRAPYD_SERVERS_AUTHS[node - 1]
     url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
 
-    if request.method == 'GET':
+    if request.method == 'POST':
+        selected_nodes = []
+        for i in range(1, len(SCRAPYD_SERVERS) + 1):
+            if request.form.get(str(i)) == 'on':
+                selected_nodes.append(i)
+        first_selected_node = selected_nodes[0]
+    else:
         # RUN SPIDER button of DEPLOY PROJECT results(keep home url)
         # first_selected_node = request.args.get('first_selected_node', None)
         # if first_selected_node:
@@ -105,18 +110,10 @@ def schedule(node, project=None, version=None, spider=None):
 
         first_selected_node = node
         if project:
-            # START button of dashboard or directory page, RUN SPIDER button of DEPLOY PROJECT results(change home url)
+            # START button of Dashboard or Logs page, RUN SPIDER button of DEPLOY PROJECT results(change home url)
             selected_nodes = [node]
         else:
             selected_nodes = []
-
-    elif request.method == 'POST':
-        pprint(request.form)
-        selected_nodes = []
-        for i in range(1, len(SCRAPYD_SERVERS) + 1):
-            if request.form.get(str(i)) == 'on':
-                selected_nodes.append(i)
-        first_selected_node = selected_nodes[0]
 
     return render_template('scrapydweb/schedule.html', node=node,
                            url=url_auth, project=project, version=version, spider=spider,
@@ -130,9 +127,8 @@ def check(node):
 
     url = 'http://%s/schedule.json' % SCRAPYD_SERVERS[node - 1]
 
-    pprint(request.form)
     filename, data = prepare_data()
-    pprint(data)
+    app.logger.debug(data)
 
     cmd = generate_cmd(url, data)
 
@@ -157,7 +153,6 @@ def run(node):
         selected_nodes = [node]
         url = 'http://%s/schedule.json' % SCRAPYD_SERVERS[node - 1]
 
-    pprint(request.form)
     filename = request.form['filename']
     data = slot.data.get(filename)
     if not data:

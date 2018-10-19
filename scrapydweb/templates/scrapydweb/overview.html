@@ -28,6 +28,7 @@
     <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ scrapydweb_version }}&n={{ SCRAPYD_SERVERS|length }}"></script>
     {% endif %}
 
+    <!-- <script type="text/javascript" src="{{ url_for('static', filename='polyfill.js') }}"></script> -->
     <script type="text/javascript" src="{{ url_for('static', filename='vue.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='element-ui@2.4.6/lib/index.js') }}"></script>
 {% endblock %}

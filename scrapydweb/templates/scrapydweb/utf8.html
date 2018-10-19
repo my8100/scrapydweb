@@ -47,15 +47,16 @@
     </ul>
 </div>
 
+
+<div id='log'>
+    <pre>{{ text }}</pre>
+</div>
+
 {% if refresh_url %}
 <a id='refresh_button' class="button normal" href="{{ refresh_url }}" onclick="showLoader();">
 Using cached version. Click to refresh.
 </a>
 {% endif %}
-
-<div id='log'>
-    <pre>{{ text }}</pre>
-</div>
 
 
 <script>
@@ -69,6 +70,7 @@ $(function() {
         hideLoader();
         $('div.go-top').show();
         $('div.go-bottom').show();
+        $('#content').animate({scrollTop: $('#log').height()}, 300);
     });
 
     $('div.go-top').click(function() {

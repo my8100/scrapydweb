@@ -9,6 +9,9 @@
     <style>
         div{word-break:break-all;}
         th{text-align:left; background-color: #ddd;}
+        #finish_reason {
+            background-color: #409EFF;
+        }
     </style>
 {% endblock %}
 
@@ -57,6 +60,7 @@ Using cached version. Click to refresh.
         <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
         <tr><th>last_log_time</th><td>{{ last_log_time }}</td></tr>
         <tr><th>elasped</th><td>{{ elasped }}</td></tr>
+        <tr><th>finish_reason</th><td id="finish_reason">{{ finish_reason }}</td></tr>
         <tr><th>crawled_pages</th><td>{{ crawled_pages }}</td></tr>
         <tr><th>scraped_items</th><td>{{ scraped_items }}</td></tr>
 
@@ -99,7 +103,7 @@ Using cached version. Click to refresh.
             {% endif %}
 
                 <li><b>{{ item['log_title'] }}</b>
-                
+
                 {% if item['lines'] and item['count'] > 1 %}
                     <a href="javascript:;" onclick="displaySwitcher('{{ item['log_details'] }}', '{{ item['log_title'] }}')">
                     +/- DETAILS of {{ item['count'] }} logs
@@ -113,7 +117,7 @@ Using cached version. Click to refresh.
                 {% else %}
                 </li>
                 {% endif %}
-                
+
                 <pre id="{{ item['log_title'] }}" style="color: red; font-size: 18px;">{{ item['line'] }}</pre>
             </div>
     {% endfor %}

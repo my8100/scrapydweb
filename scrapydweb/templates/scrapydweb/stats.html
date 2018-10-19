@@ -14,6 +14,10 @@
             text-align: left;
             background-color: #ddd;
         }
+        #finish_reason {
+            font-size: 30px;
+            color: #409EFF;
+        }
     </style>
 {% endblock %}
 
@@ -87,6 +91,7 @@ Using cached version. Click to refresh.
                     <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
                     <tr><th>last_log_time</th><td>{{ last_log_time }}</td></tr>
                     <tr><th>elasped</th><td>{{ elasped }}</td></tr>
+                    <tr><th>finish_reason</th><td><strong id="finish_reason">{{ finish_reason }}</strong></td></tr>
                     <tr><th>crawled_pages</th><td>{{ crawled_pages }}</td></tr>
                     <tr><th>scraped_items</th><td>{{ scraped_items }}</td></tr>
 

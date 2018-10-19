@@ -4,7 +4,6 @@ import io
 import time
 import re
 import json
-from pprint import pprint
 
 from flask import Blueprint, render_template, request, url_for, redirect
 from flask import current_app as app
@@ -59,19 +58,18 @@ def deploy(node):
     auth = SCRAPYD_SERVERS_AUTHS[node - 1]
     url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
 
-    if request.method == 'GET':
+    if request.method == 'POST':
+        selected_nodes = []
+        for i in range(1, len(SCRAPYD_SERVERS) + 1):
+            if request.form.get(str(i)) == 'on':
+                selected_nodes.append(i)
+    else:
         # first_selected_node = request.args.get('first_selected_node', None)
         # if first_selected_node:
         # selected_nodes = [int(first_selected_node)]
         # else:
         # selected_nodes = [node]
         selected_nodes = []
-    elif request.method == 'POST':
-        pprint(request.form)
-        selected_nodes = []
-        for i in range(1, len(SCRAPYD_SERVERS) + 1):
-            if request.form.get(str(i)) == 'on':
-                selected_nodes.append(i)
 
     return render_template('scrapydweb/deploy.html', node=node,
                            url=url_auth, selected_nodes=selected_nodes)
@@ -98,7 +96,6 @@ def upload(node):
     # 'checked_amount': '2',
     # 'project': 'demo',
     # 'version': '2018-09-05T03_13_50'}
-    pprint(request.form)
     filename, project, version, data = prepare_data()
     status_code, js = make_request(url, data, auth=SCRAPYD_SERVERS_AUTHS[node - 1])
 

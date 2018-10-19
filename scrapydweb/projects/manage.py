@@ -20,17 +20,18 @@ def manage(node, opt='listprojects', project=None, version_spider_job=None):
 
     # "listversions" NOT included
     if js['status'] != 'ok' and opt in ['listprojects', 'listspiders', 'delversion', 'delproject']:
-        if request.method == 'GET':
+        if request.method == 'POST':
+            # Pass request.url instead of js['url'], for GET method
+            return ('<a class="link" target="_blank" href="%s">REQUEST</a>'
+                    '<em style="color: red;"> got status: %s</em>') % (request.url, js['status'])
+        else:
             message = js.get('message', '')
             if message:
                 js.update({'message': 'See below'})
             return render_template('scrapydweb/result.html', node=node,
                                    text=json_dumps(js),
                                    message=message)
-        elif request.method == 'POST':
-            # Pass request.url instead of js['url'], for GET method
-            return ('<a class="link" target="_blank" href="%s">REQUEST</a>'
-                    '<em style="color: red;"> got status: %s</em>') % (request.url, js['status'])
+
 
     if opt == 'listprojects':
         node_name = js['node_name']

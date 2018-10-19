@@ -1,6 +1,4 @@
 # coding: utf8
-from pprint import pprint
-
 from flask import Blueprint, render_template, request
 from flask import current_app as app
 
@@ -19,7 +17,6 @@ def multinode(node, opt, project, version_job=None):
     elif opt == 'delversion':
         title = "DELETE Project(%s) Version(%s)" % (project, version_job)
 
-    pprint(request.form)
     selected_nodes = []
     for i in range(1, len(SCRAPYD_SERVERS) + 1):
         if request.form.get(str(i)) == 'on':

@@ -1,10 +1,11 @@
-ScrapydWeb: Full-featured web UI for Scrapyd cluster management, Scrapy log analysis and visualization
+ScrapydWeb: Full-featured web UI for Scrapyd cluster management, Scrapy log analysis & visualization
 ==========================
 
 [![PyPI - scrapydweb Version](https://img.shields.io/pypi/v/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![Coverage Status](https://coveralls.io/repos/github/my8100/scrapydweb/badge.svg?branch=master)](https://coveralls.io/github/my8100/scrapydweb?branch=master)
 [![GitHub license](https://img.shields.io/github/license/my8100/scrapydweb.svg)](https://github.com/my8100/scrapydweb/blob/master/LICENSE)
+[![Twitter](https://img.shields.io/twitter/url/https/github.com/my8100/scrapydweb.svg?style=social)](https://twitter.com/intent/tweet?text=ScrapydWeb:%20Full-featured%20web%20UI%20for%20Scrapyd%20cluster%20management,%20Scrapy%20log%20analysis%20%26%20visualization%20%23python%20%20%23scrapy%20%23scrapyd%20%23webscraping%20%23scrapydweb%20@my8100_%20&url=https%3A%2F%2Fgithub.com%2Fmy8100%2Fscrapydweb)
 
 Features
 ---------------
@@ -73,10 +74,10 @@ Screenshot
   - Logs categorization
 ![log_extracted](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/log_extracted.png)
 
-- Deploy Project
+- Deploy a Project
 ![deploy](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/deploy.png)
 
-- Run Spider
+- Run a Spider
 ![run](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/run.png)
 
 - Manage Projects

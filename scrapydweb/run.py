@@ -1,16 +1,17 @@
 # coding: utf8
 import os
 import sys
-from shutil import copyfile
+import platform
+from shutil import copyfile, rmtree
 import re
 import argparse
-import subprocess
-import shutil
+from subprocess import Popen
 import json
 
-from flask import request, Response
+from flask import request
 
 from .vars import CACHE_PATH, DEFAULT_LATEST_VERSION, pattern_scrapyd_server
+from .utils import json_dumps, authenticate, kill_child, on_parent_exit
 from scrapydweb import create_app
 from scrapydweb.__version__ import __version__, __description__, __url__
 
@@ -44,7 +45,10 @@ def main():
     # print(app.config)
 
     if not app.config['DISABLE_CACHE']:
-        start_caching(app.config)
+        import atexit
+        proc = start_caching(app.config)
+        print(">>> Caching utf8 and stats files in the background with pid: %s" % proc.pid)
+        atexit.register(kill_child, proc)
 
     print(">>> Visit ScrapydWeb at http://{host}:{port} or http://127.0.0.1:{port}".format(
         host='IP-OF-THE-HOST-WHERE-SCRAPYDWEB-RUNS-ON', port=app.config['SCRAPYDWEB_PORT']))
@@ -68,6 +72,8 @@ def main():
     # https://stackoverflow.com/questions/34164464/flask-decorate-every-route-at-once
     @app.before_request
     def require_login():
+        if request.form:
+            app.logger.debug(json_dumps(request.form))
         if username and password:
             auth = request.authorization
             if not auth or not (auth.username == username and auth.password == password):
@@ -192,7 +198,7 @@ def check_args(args):
 
     if args.delete_cache:
         if os.path.isdir(CACHE_PATH):
-            shutil.rmtree(CACHE_PATH, ignore_errors=True)
+            rmtree(CACHE_PATH, ignore_errors=True)
             print(">>> Cache utf8 and stats files deleted")
         else:
             print("!!! Cache dir NOT found: %s" % CACHE_PATH)
@@ -254,14 +260,6 @@ def update_app_config(config, args):
     config['SCRAPYD_SERVERS_AUTHS'] = [auth for group, ip, port, auth in servers]
 
 
-# http://flask.pocoo.org/snippets/category/authentication/
-def authenticate():
-    """Sends a 401 response that enables basic auth"""
-    return Response("<script>alert('FAIL to login. Basic auth is enabled since ScrapydWeb is running with argument "
-                    '''"--username USERNAME" and "--password PASSWORD"');</script>''',
-                    401, {'WWW-Authenticate': 'Basic realm="ScrapydWeb Basic Auth Required"'})
-
-
 def start_caching(config):
     args = [
         sys.executable,
@@ -276,8 +274,15 @@ def start_caching(config):
         str(config['CACHE_ROUND_INTERVAL']),
         str(config['CACHE_REQUEST_INTERVAL']),
     ]
-    subprocess.Popen(args)
-    print(">>> Caching utf8 and stats files in the background")
+
+    kwargs = {}
+    if platform.system() == 'Windows':
+        # ValueError: preexec_fn is not supported on Windows platforms
+        pass
+    else:
+        kwargs.update(preexec_fn=on_parent_exit('SIGKILL')) # 'SIGTERM'
+    proc = Popen(args, **kwargs)
+    return proc
 
 
 if __name__ == '__main__':

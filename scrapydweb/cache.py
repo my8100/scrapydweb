@@ -67,15 +67,19 @@ def main():
     while True:
         start_time = time.time()
         try:
+            if ignore_finished:
+                time.sleep(10)
             refresh_cache()
+            print(">>> Cache cost %s seconds" % int(time.time() - start_time))
+            print(">>> Cache wait %s seconds" % cache_round_interval)
+            time.sleep(cache_round_interval)
+        except KeyboardInterrupt:
+            sys.exit("!!! Cache cancelled by KeyboardInterrupt")
         except Exception as err:
             print("!!! Cache fail: %s %s" % (err.__class__.__name__, err))
         else:
             print(">>> Cache done at %s" % time.ctime())
 
-        print(">>> Cache cost %s seconds" % int(time.time() - start_time))
-        print(">>> Cache wait %s seconds" % cache_round_interval)
-        time.sleep(cache_round_interval)
 
         if ignore_finished:
             ignore_finished = False
@@ -85,8 +89,6 @@ def main():
 
 
 if __name__ == '__main__':
-    time.sleep(10)
-
     (scrapydweb_host, scrapydweb_port, username, password,
     SCRAPYD_SERVERS, SCRAPYD_SERVERS_AUTHS,
     cache_round_interval, cache_request_interval) = sys.argv[1:]

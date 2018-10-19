@@ -109,3 +109,7 @@ def parse_log(text, kwargs):
             'lines': matchs
         })
     kwargs['re_matchs'] = re_matchs
+
+    # 'finish_reason': 'closespider_timeout',
+    m = re.search(r":\s'(.*?)'", re_search_final_match(r"'finish_reason'"))
+    kwargs['finish_reason'] = m.group(1) if m else ''
