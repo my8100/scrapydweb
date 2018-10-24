@@ -45,7 +45,7 @@ def upload(node):
             flash('Only %s file type are supported' % ALLOWED_EXTENSIONS, WARN)
             return redirect(request.url)
 
-        # Non-ASCII would be omitted and may resulting filename to 'txt' or 'log'
+        # Non-ASCII would be omitted and may set the filename as 'log' or 'txt'
         filename = secure_filename(file.filename)
         if filename in ALLOWED_EXTENSIONS:
             filename = '%s.%s' % (time.strftime('%Y-%m-%d_%H%M%S'), filename)

@@ -95,7 +95,7 @@
 var first_selected_node = {{ first_selected_node }};
 var selected_nodes = {{ selected_nodes }};
 
-var url_xhr = "{{ url_for('deploy.deploy_xhr', node=1, filename=filename, project=project, version=version) }}";
+var url_xhr = "{{ url_for('deploy.deploy_xhr', node=1, eggname=eggname, project=project, version=version) }}";
 var url_schedule = "{{ url_for('schedule.schedule', node=node, project=project, version=version, first_selected_node=first_selected_node) }}";
 var url_overview = "{{ url_for('overview.overview', node=node, opt='schedule', project=project, version_job=version) }}";
 

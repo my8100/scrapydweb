@@ -34,6 +34,7 @@ setup(
         "flask >= 1.0.2",
         "flask-compress >= 1.4.0",
         "requests",
+        "setuptools",
     ],
 
     entry_points={

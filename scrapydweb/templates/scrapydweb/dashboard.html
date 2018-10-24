@@ -4,12 +4,15 @@
 
 {% block head %}
     <!-- <meta http-equiv="refresh" content="60"> -->
+    <style>
+        #pending_rows {color: red;}
+    </style>
 {% endblock %}
 
 {% block body %}
 <h2>
     <a class="link" target="_blank" href="{{ url }}">
-    Get the list of pending, running and finished jobs of all projects after Scrapyd started.
+    Get the list of pending, running and finished jobs of all projects after Scrapyd server started.
     </a>
 </h2>
 
@@ -24,7 +27,7 @@
                 <th>Job</th>
             </tr>
         </thead>
-        <tbody>
+        <tbody id="pending_rows">
         {% for row in pending_rows %}
             <tr>
                 <td>{{ row['project'] }}</td>
@@ -53,7 +56,7 @@
                 <th>Runtime</th>
                 <th>UTF8</th>
                 <th>Stats</th>
-                {% if (not HIDE_SCRAPYD_ITEMS) and running_rows and running_rows[0]['url_items'] %}
+                {% if SHOW_SCRAPYD_ITEMS and running_rows and running_rows[0]['url_items'] %}
                 <th>Items</th>
                 {% endif %}
 
@@ -86,7 +89,7 @@
                     </a>
                 </td>
 
-            {% if (not HIDE_SCRAPYD_ITEMS) and row['url_items'] %}
+            {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
                 <td>
                     <a class="state normal" target="_blank"
                     href="{{ row['url_items'] }}">
@@ -137,7 +140,7 @@
                 <th>Finish</th>
                 <th>UTF8</th>
                 <th>Stats</th>
-                {% if (not HIDE_SCRAPYD_ITEMS) and finished_rows and finished_rows[0]['url_items'] %}
+                {% if SHOW_SCRAPYD_ITEMS and finished_rows and finished_rows[0]['url_items'] %}
                 <th>Items</th>
                 {% endif %}
 
@@ -169,7 +172,7 @@
                     </a>
                 </td>
 
-            {% if (not HIDE_SCRAPYD_ITEMS) and row['url_items'] %}
+            {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
                 <td>
                     <a class="state normal" target="_blank"
                     href="{{ row['url_items'] }}">
@@ -201,7 +204,9 @@
 <script>
 //setTimeout("window.location.href = '/';", 60000);
 //setTimeout("window.location.reload(true);", 20000);
-setTimeout("console.log(loading);if(loading == false){window.location.reload(true);}else{}", 300000);
+{% if DASHBORAD_RELOAD_INTERVAL > 0%}
+setTimeout("console.log(loading);if(loading == false){window.location.reload(true);}else{}", {{ DASHBORAD_RELOAD_INTERVAL * 1000 }});
+{% endif %}
 
 function stopXHR(url, forcestop) {
     if (forcestop !== undefined) {

@@ -60,3 +60,10 @@ def test_parse(client):
     response = client.get('/1/log/upload/')
     title = b'Upload to parse'
     assert title in response.data and not simple_ui(response.data)
+
+
+def test_settings(client):
+    response = client.get('/1/settings/')
+    title = b'default_settings.py'
+    assert title in response.data and not simple_ui(response.data)
+

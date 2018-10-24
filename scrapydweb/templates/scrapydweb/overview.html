@@ -25,7 +25,7 @@
     </style>
 
     {% if check_latest_version %}
-    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ scrapydweb_version }}&n={{ SCRAPYD_SERVERS|length }}"></script>
+    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS|length }}"></script>
     {% endif %}
 
     <!-- <script type="text/javascript" src="{{ url_for('static', filename='polyfill.js') }}"></script> -->
@@ -231,6 +231,8 @@
 </div>
 
 
+
+<!-- <script type="text/babel"> -->
 <script>
 var Main = {
     data() {
@@ -364,7 +366,8 @@ var Main = {
                     var node = nodesSelected[idx];
                     this.toggleSelection([this.tableData[node-1]]);
                     nodesSelected_new.push(node);
-                } catch {}
+                } catch(err) {
+                }
             }
             localStorage.setItem('nodesSelected', JSON.stringify(nodesSelected_new));
             console.log(localStorage.nodesSelected);
@@ -875,7 +878,7 @@ function checkChrome() {
 
 function checkLatestVersion() {
     if(typeof(latest_version) !== 'undefined') {
-        if(latest_version != "{{ scrapydweb_version }}") {
+        if(latest_version != "{{ SCRAPYDWEB_VERSION }}") {
             console.log(update_info);
             //alert(update_info);
             if (window.confirm(update_info)) {
@@ -883,7 +886,7 @@ function checkLatestVersion() {
                 win.focus();
             }
         } else {
-            console.log("{{ scrapydweb_version }}");
+            console.log("{{ SCRAPYDWEB_VERSION }}");
             if (window.confirm('Would you like to STAR this repository and help improve project "scrapydweb"?')) {
                 var win = window.open("{{ GITHUB_URL }}", '_blank');
                 win.focus();

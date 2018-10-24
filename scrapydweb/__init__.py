@@ -28,6 +28,7 @@ def create_app(test_config=None):
     from .jobs import dashboard, overview, multinode
     from .projects import deploy, schedule, manage
     from .directory import log, logs, items, parse
+    from .system import settings
 
     app.register_blueprint(index.bp)
     app.register_blueprint(api.bp)
@@ -44,6 +45,8 @@ def create_app(test_config=None):
     app.register_blueprint(logs.bp)
     app.register_blueprint(items.bp)
     app.register_blueprint(parse.bp)
+    
+    app.register_blueprint(settings.bp)
 
     compress = Compress()
     compress.init_app(app)

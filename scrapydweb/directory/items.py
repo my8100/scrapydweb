@@ -41,7 +41,7 @@ def items(node, project=None, spider=None):
     if status_code != 200 or not re.search(r'Directory', text):
         return render_template(TEMPLATE_RESULT, node=node,
                                url=url_auth, status_code=status_code, text=text,
-                               message='See https://scrapyd.readthedocs.io/en/latest/config.html#items-dir for help')
+                               message='Check out https://scrapyd.readthedocs.io/en/latest/config.html#items-dir for help')
 
     rows = [dict(zip(keys_directory, row)) for row in pattern_directory.findall(text)]
 

@@ -22,11 +22,12 @@ def dashboard(node):
     SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
     SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
     SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
-    SCRAPYDWEB_HOST = app.config.get('SCRAPYDWEB_HOST', '0.0.0.0')
+    SCRAPYDWEB_BIND = app.config.get('SCRAPYDWEB_BIND', '0.0.0.0')
     SCRAPYDWEB_PORT = app.config.get('SCRAPYDWEB_PORT', 5000)
     SHOW_DASHBOARD_JOB_COLUMN = app.config.get('SHOW_DASHBOARD_JOB_COLUMN', False)
+    DASHBORAD_RELOAD_INTERVAL = int(app.config.get('DASHBORAD_RELOAD_INTERVAL', 300))
 
-    scrapydweb_url = 'http://%s:%s' % (SCRAPYDWEB_HOST, SCRAPYDWEB_PORT)
+    scrapydweb_url = 'http://%s:%s' % (SCRAPYDWEB_BIND, SCRAPYDWEB_PORT)
 
     url = 'http://%s/jobs' % SCRAPYD_SERVER
     auth = SCRAPYD_SERVERS_AUTHS[node - 1]
@@ -69,4 +70,5 @@ def dashboard(node):
                            ui=UI, colspan=12, url=url_auth,
                            scrapydweb_url=scrapydweb_url, pending_rows=pending_rows,
                            running_rows=running_rows, finished_rows=finished_rows,
-                           SHOW_DASHBOARD_JOB_COLUMN=SHOW_DASHBOARD_JOB_COLUMN)
+                           SHOW_DASHBOARD_JOB_COLUMN=SHOW_DASHBOARD_JOB_COLUMN,
+                           DASHBORAD_RELOAD_INTERVAL=DASHBORAD_RELOAD_INTERVAL)

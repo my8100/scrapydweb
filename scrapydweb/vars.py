@@ -8,8 +8,9 @@ UPLOAD_PATH = os.path.join(CWD, 'data/upload')
 CACHE_PATH = os.path.join(CWD, 'data/cache')
 DEPLOY_PATH = os.path.join(CWD, 'data/deploy')
 SCHEDULE_PATH = os.path.join(CWD, 'data/schedule')
+DEMO_PROJECTS_PATH = os.path.join(CWD, 'data', 'demo_projects')
 
-for p in [DATA_PATH, UPLOAD_PATH, CACHE_PATH, DEPLOY_PATH, SCHEDULE_PATH]:
+for p in [DATA_PATH, UPLOAD_PATH, CACHE_PATH, DEPLOY_PATH, SCHEDULE_PATH, DEMO_PROJECTS_PATH]:
     if not os.path.isdir(p):
         os.mkdir(p)
 
@@ -24,6 +25,10 @@ UA_DICT = {
     'iPad': 'Mozilla/5.0 (iPad; CPU OS 9_1 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1',
     'Android': 'Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Mobile Safari/537.36',
 }
+
+
+# For log.py
+ALLOWED_SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.gz', '.txt', '']
 
 
 # For run.py

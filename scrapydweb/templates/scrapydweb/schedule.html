@@ -215,7 +215,7 @@
                         <input type="checkbox" id="checkall" />CheckAll / UncheckAll</label>
                     <div id="nodes_checkboxes">
                     {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-                        {% if loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) and loop.index != 1%}
+                        {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
                         <span> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </span>
                         {% endif %}
 

@@ -1,4 +1,5 @@
 scrapydweb_settings.py
+scrapydweb_settings_v*.py
 scrapydweb/data/
 
 venv/

@@ -47,12 +47,42 @@
         nav>.menu>a {font-size: 30px;}
         nav>.menu>a:hover {color: #409EFF;}
         .menu span {font-size: 18px;}
+
+        ul#links{
+            position: absolute;
+            bottom: 0;
+            padding-bottom: 30px;
+        }
+        li#scrapydweb_version{
+            height: 30px;
+            padding-left: 20px;
+        }
+        li#pypi{height: 35px;}
+        li#pypi a{
+            padding-left: 0px;
+            margin-left: 20px;
+            margin-top: 5px;
+            width: min-content;
+            height: 20px;
+        }
+        li#pypi a:hover{
+            background: none;
+            opacity: 0.7;
+        }
+        li#github{
+            height: 25px;
+            padding-top: 5px;
+            padding-left: 20px;
+        }
     </style>
 
-    <!-- <script type="text/javascript" src="{{ url_for('static', filename='polyfill.js') }}"></script> -->
+    <!-- <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> -->
+    <!-- <script type="text/javascript" src="{{ url_for('static', filename='babel.min.js') }}"></script> -->
     <script type="text/javascript" src="{{ url_for('static', filename='common/jquery.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='common/common.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='font_842334_yo81eqsrze.js') }}"></script>
+    <!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='github_buttons.js') }}"></script>
     <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_804951_uohkv7stss7.js"></script>  -->
 
     {% block head %}{% endblock %}
@@ -61,16 +91,9 @@
 
 <body>
     <nav>
-        <a class="title" target="_blank"
-    {% if scrapydweb_version %}
-        href="{{ GITHUB_URL }}/blob/master/HISTORY.md">
-        ScrapydWeb <span class="version">v{{ scrapydweb_version }}</span>
-    {% else %}
-        href="{{ GITHUB_URL }}">
+        <a class="title" target="_blank" href="{{ GITHUB_URL }}">
         ScrapydWeb
-    {% endif %}
         </a>
-
 
         <div class="dropdown">
             <a class="dropbtn">
@@ -85,7 +108,7 @@
             <div class="dropdown-content-wrap">
                 <div class="dropdown-content">
                 {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-                    {% if SCRAPYD_SERVERS_GROUPS is defined and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) and loop.index != 1%}
+                    {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
                     <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
                     {% endif %}
 
@@ -173,11 +196,14 @@ $(function(){
 
 
 refreshDaemonstatus(url_daemonstatus);
+
+{% if DAEMONSTATUS_REFRESH_INTERVAL > 0 %}
 setInterval(function() {
     if(refresh_daemonstatus == true) {
         refreshDaemonstatus(url_daemonstatus);
     }
-}, 10000);
+}, {{ DAEMONSTATUS_REFRESH_INTERVAL * 1000 }});
+{% endif %}
 
 
 function switchNode(change) {
@@ -241,7 +267,7 @@ function switchNode(change) {
                 <li>
                     <a id="menu_manage" href="{{ url_for('manage.manage', node=node) }}" onclick="showLoader();">
                         <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-manage"></use>
+                            <use xlink:href="#icon-directory"></use>
                         </svg>
                         <span>Manage</span>
                     </a>
@@ -250,7 +276,7 @@ function switchNode(change) {
 
             <h3>Directory</h3>
             <ul>
-            {% if not HIDE_SCRAPYD_ITEMS %}
+            {% if SHOW_SCRAPYD_ITEMS %}
                 <li>
                     <a id="menu_items" href="{{ url_for('items.items', node=node) }}" onclick="showLoader();">
                         <svg class="icon" aria-hidden="true">
@@ -300,9 +326,18 @@ function switchNode(change) {
                 <!-- </li> -->
             <!-- </ul> -->
 
-        {% if REQUIRE_LOGIN %}
             <h3>System</h3>
             <ul>
+                <li>
+                    <a id="menu_settings" href="{{ url_for('settings.settings', node=node) }}" onclick="showLoader();">
+                        <svg class="icon" aria-hidden="true">
+                            <use xlink:href="#icon-manage"></use>
+                        </svg>
+                        <span>Settings</span>
+                    </a>
+                </li>  
+                
+                {% if REQUIRE_LOGIN %}
                 <li>
                     <a href="javascript:;" onclick="logout();">
                         <svg class="icon" aria-hidden="true" style="opacity: 0;">
@@ -311,8 +346,23 @@ function switchNode(change) {
                         <span>Logout</span>
                     </a>
                 </li>
+                {% endif %}
             </ul>
-        {% endif %}
+
+            <ul id="links">
+                <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }}</li>
+                <li id="pypi">
+                    <a target="_blank" href="https://pypi.org/project/scrapydweb/" >
+                        <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" />
+                    </a>
+                </li>
+                <li id="github">
+                    <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">
+                    scrapydweb
+                    </a>
+                </li>
+
+            </ul>
 
         </aside>
         <div class="content-wrap">

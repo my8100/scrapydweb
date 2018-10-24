@@ -43,11 +43,11 @@ def parse_log(text, kwargs):
             return default
 
     kwargs['first_log_time'] = re_search_final_match(r'^%s' % pattern_datetime, step=1)[:19] or fake_time
-    kwargs['last_log_time'] = re_search_final_match(r'^%s' % pattern_datetime)[:19] or fake_time
+    kwargs['latest_log_time'] = re_search_final_match(r'^%s' % pattern_datetime)[:19] or fake_time
     first_log_datetime = datetime.datetime.strptime(kwargs['first_log_time'], '%Y-%m-%d %H:%M:%S')
-    last_log_datetime = datetime.datetime.strptime(kwargs['last_log_time'], '%Y-%m-%d %H:%M:%S')
-    kwargs['last_log_timestamp'] = time.mktime(last_log_datetime.timetuple())
-    kwargs['elasped'] = str(last_log_datetime - first_log_datetime)
+    latest_log_datetime = datetime.datetime.strptime(kwargs['latest_log_time'], '%Y-%m-%d %H:%M:%S')
+    kwargs['latest_log_timestamp'] = time.mktime(latest_log_datetime.timetuple())
+    kwargs['elasped'] = str(latest_log_datetime - first_log_datetime)
 
     kwargs['head_lines'] = '\n'.join(lines[:50])
     kwargs['tail_lines'] = '\n'.join(lines[-50:])
@@ -61,27 +61,27 @@ def parse_log(text, kwargs):
     kwargs['scraped_items'] = datas[-1][3] if datas else 0
 
     # Extract only last log
-    last_tuples = [
+    latest_tuples = [
         # ('resuming_crawl', 'Resuming\scrawl'),
-        ('last_offsite', 'Filtered\soffsite'),
-        ('last_duplicate', 'Filtered\sduplicate'),
-        ('last_crawl', 'Crawled\s\(\d+'),
-        ('last_scrape', 'Scraped\sfrom\s'),
-        ('last_item', '^\{.*\}'),
-        ('last_stat', 'Crawled\s\d+\spages'),
+        ('latest_offsite', 'Filtered\soffsite'),
+        ('latest_duplicate', 'Filtered\sduplicate'),
+        ('latest_crawl', 'Crawled\s\(\d+'),
+        ('latest_scrape', 'Scraped\sfrom\s'),
+        ('latest_item', '^\{.*\}'),
+        ('latest_stat', 'Crawled\s\d+\spages'),
     ]
-    last_matchs = [('resuming_crawl', re_search_final_match('Resuming\scrawl', step=1))]
-    for k, v in last_tuples:
+    latest_matchs = [('resuming_crawl', re_search_final_match('Resuming\scrawl', step=1))]
+    for k, v in latest_tuples:
         ret = re_search_final_match(v)
-        last_matchs.append((k, ret))
-        if k == 'last_crawl':
-            last_crawl_datetime = datetime.datetime.strptime(ret[:19] or fake_time, '%Y-%m-%d %H:%M:%S')
-        elif k == 'last_scrape':
-            last_scrape_datetime = datetime.datetime.strptime(ret[:19] or fake_time, '%Y-%m-%d %H:%M:%S')
+        latest_matchs.append((k, ret))
+        if k == 'latest_crawl':
+            latest_crawl_datetime = datetime.datetime.strptime(ret[:19] or fake_time, '%Y-%m-%d %H:%M:%S')
+        elif k == 'latest_scrape':
+            latest_scrape_datetime = datetime.datetime.strptime(ret[:19] or fake_time, '%Y-%m-%d %H:%M:%S')
 
-    kwargs['last_crawl_timestamp'] = time.mktime(last_crawl_datetime.timetuple())
-    kwargs['last_scrape_timestamp'] = time.mktime(last_scrape_datetime.timetuple())
-    kwargs['last_matchs'] = last_matchs
+    kwargs['latest_crawl_timestamp'] = time.mktime(latest_crawl_datetime.timetuple())
+    kwargs['latest_scrape_timestamp'] = time.mktime(latest_scrape_datetime.timetuple())
+    kwargs['latest_matchs'] = latest_matchs
 
     # Extract log count and details
     logs_count_tuples = [

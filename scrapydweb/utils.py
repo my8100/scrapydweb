@@ -46,10 +46,11 @@ def make_request(url, data=None, timeout=60, api=True, log=True, auth=None):
             except json.JSONDecodeError: # When Scrapyd server reboot, listprojects got 502 html
                 r_json = {'status': 'error', 'message': r.text}
             finally:
+                r_json.update(dict(url=url, auth=auth, status_code=r.status_code, when=time.ctime()))
                 if log:
                     sign = '!!!!! ' if (r.status_code != 200 or r_json.get('status') != 'ok') else '<<<<< '
-                    app.logger.debug('%s%s %s' % (sign, r.status_code, r_json))
-                r_json.update(dict(url=url, auth=auth, status_code=r.status_code, when=time.ctime()))
+                    app.logger.debug('%s%s %s' % (sign, r.status_code, url))
+                    app.logger.debug(json_dumps(r_json))
 
                 return r.status_code, r_json
         else:
@@ -101,6 +102,7 @@ def on_parent_exit(signame):
     Return a function to be run in a child process which will trigger
     SIGNAME to be sent when the parent process dies
     """
+    # On Windows, signal() can only be called with SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, or SIGTERM.
     signum = getattr(signal, signame) # SIGTERM 15  SIGKILL 9
     def set_parent_exit_signal():
         # http://linux.die.net/man/2/prctl

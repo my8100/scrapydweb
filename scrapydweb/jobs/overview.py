@@ -2,7 +2,6 @@
 from flask import Blueprint, render_template, flash, request
 from flask import current_app as app
 
-from ..__version__ import __version__
 from ..vars import INFO
 
 bp = Blueprint('overview', __name__, url_prefix='/')
@@ -46,7 +45,6 @@ def overview(node, opt=None, project=None, version_job=None, spider=None):
             selected_nodes = []
 
     return render_template('scrapydweb/overview.html', node=node,
-                           scrapydweb_version=__version__,
                            check_latest_version=check_latest_version_,
                            opt=opt, project=project, version_job=version_job, spider=spider,
                            selected_nodes=selected_nodes, url=url_auth)

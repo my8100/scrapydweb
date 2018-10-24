@@ -1,12 +1,22 @@
 Release History
 ===============
+0.9.9 (2018-10-24)
+------------------
+- Fix the bug that **fails to start up on macOS** because of setting preexec_fn for caching subprocess in v0.9.8
+- Add **'Auto eggifying'** and 'Upload egg or compressed file' in Deploy page
+- Add Settings page
+- Change SCRAPYDWEB_SETTINGS_PY to 'scrapydweb_settings_v3.py'
+
+
 0.9.8 (2018-10-19)
 ------------------
 - Kill caching subprocess when main process is killed
 
+
 0.9.7 (2018-10-16)
 ------------------
 - Fix the bug that fails to read lastModifiedDate of egg file in Firefox and Safari
+
 
 0.9.6 (2018-10-15)
 ------------------

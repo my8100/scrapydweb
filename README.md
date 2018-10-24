@@ -25,11 +25,12 @@ Features
   - Delete version/project
 
 - Others
+  - Auto eggifying
   - Basic auth for web UI
   - Accessing Scrapyd servers protected by basic auth
 
 
-Maintainer
+Devolopers
 ---------------
 - [my8100](https://github.com/my8100)
 - [simplety](https://github.com/simplety) (Front-End)
@@ -49,36 +50,41 @@ Start Up
 ------------
 
 1. Run `scrapydweb -h` to get help,
-and a config file named **scrapydweb_settings.py** would be copied to the working directory,
-then you can custom config with it.
+and a config file named **scrapydweb_settings_vN.py** (N for a number) would be copied to current working directory,
+then you can custom settings in it.
 2. Run `scrapydweb`
 3. Visit [http://127.0.0.1:5000](http://127.0.0.1:5000) **(It's recommended to use Google Chrome to get better experience.)**
 
 
-Screenshot
+Settings
+---------------
+[default_settings.py](https://github.com/my8100/scrapydweb/blob/master/scrapydweb/default_settings.py)
+
+
+Screenshots
 ------------
 
 - Overview
-![overview](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/overview.png)
+![overview](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/overview.png)
 
 - Dashboard
-![dashboard](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/dashboard.png)
+![dashboard](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/dashboard.png)
 
 - Log Analysis
   - Stats collection
-![log_stats](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/log_stats.png)
+![log_stats](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/log_stats.png)
 
   - Progress visualization
-![log_chart](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/log_chart.png)
+![log_charts](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/log_charts.png)
 
   - Logs categorization
-![log_extracted](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/log_extracted.png)
+![log_logs](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/log_logs.png)
 
 - Deploy a Project
-![deploy](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/deploy.png)
+![deploy](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/deploy.png)
 
 - Run a Spider
-![run](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/run.png)
+![run](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/run.png)
 
 - Manage Projects
-![manage](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshot/manage.png)
+![manage](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/manage.png)

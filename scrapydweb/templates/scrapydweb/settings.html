@@ -1,0 +1,192 @@
+{% extends 'base.html' %}
+
+{% block title %}settings{% endblock %}
+
+{% block head %}
+    <style>
+    .collapse h4 {line-height: 55px;}
+    </style>
+{% endblock %}
+
+{% block body %}
+<h2>
+    <a class="link" target="_blank" href="{{ GITHUB_URL }}/blob/master/scrapydweb/default_settings.py">
+    Settings
+    </a>
+</h2>
+
+<div class="wrap collapse-wrap">
+    <ul class="collapse">
+        <li>
+            <div class="title">
+                <h4>default_settings.py</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+            <p>{{ default_settings_py }}</p>
+        </li>
+        <li>
+            <div class="title">
+                <h4>User settings</h4>
+                <i class="iconfont icon-right"></i>
+            </div>
+            <p>{{ scrapydweb_settings_py }}</p>
+        </li>
+    </ul>
+</div>
+
+<div class="wrap collapse-wrap">
+    <!-- <h3>Settings</h3> -->
+    <ul class="collapse">
+
+        <div class="wrap collapse-wrap">
+            <h3 style="color: #409EFF;">ScrapydWeb</h3>
+            <ul class="collapse">
+                <li>
+                    <div class="title">
+                        <h4>server</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ scrapydweb_server }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>* auth *</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ scrapydweb_auth }}</pre>
+                </li>
+            </ul>
+        </div>
+
+        <div class="wrap collapse-wrap">
+            <h3 style="color: #409EFF;">Scrapy</h3>
+            <ul class="collapse">
+               <li>
+                    <div class="title">
+                        <h4>SCRAPY_PROJECTS_DIR</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ SCRAPY_PROJECTS_DIR }}</pre>
+                </li>
+            </ul>
+        </div>
+
+        <div class="wrap collapse-wrap">
+            <h3 style="color: #409EFF;">Scrapyd</h3>
+            <ul class="collapse">
+               <li>
+                    <div class="title">
+                        <h4>* servers *</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ servers }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>SCRAPYD_LOGS_DIR</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ SCRAPYD_LOGS_DIR }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>SCRAPYD_LOG_EXTENSIONS</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ SCRAPYD_LOG_EXTENSIONS }}</pre>
+                </li>
+            </ul>
+        </div>
+
+        <div class="wrap collapse-wrap">
+            <h3 style="color: #409EFF;">Page display</h3>
+            <ul class="collapse">
+               <li>
+                    <div class="title">
+                        <h4>DEBUG</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ DEBUG }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>SHOW_SCRAPYD_ITEMS</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ SHOW_SCRAPYD_ITEMS }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>SHOW_DASHBOARD_JOB_COLUMN</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ SHOW_DASHBOARD_JOB_COLUMN }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>DASHBORAD_RELOAD_INTERVAL</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ DASHBORAD_RELOAD_INTERVAL }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>DAEMONSTATUS_REFRESH_INTERVAL</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ DAEMONSTATUS_REFRESH_INTERVAL }}</pre>
+                </li>
+            </ul>
+        </div>
+
+        <div class="wrap collapse-wrap">
+            <h3 style="color: #409EFF;">Html caching </h3>
+            <ul class="collapse">
+               <li>
+                    <div class="title">
+                        <h4>DISABLE_CACHE</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ DISABLE_CACHE }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>DELETE_CACHE</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ DELETE_CACHE }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>CACHE_ROUND_INTERVAL</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ CACHE_ROUND_INTERVAL }}</pre>
+                </li>
+               <li>
+                    <div class="title">
+                        <h4>CACHE_REQUEST_INTERVAL</h4>
+                        <i class="iconfont icon-right"></i>
+                    </div>
+                    <pre>{{ CACHE_REQUEST_INTERVAL }}</pre>
+                </li>
+            </ul>
+        </div>
+    </ul>
+</div>
+
+<script>
+// handle collapse components
+(function () {
+    var collapse = my$('.collapse')
+    var titles = my$$('.collapse .title')
+    var lis = my$$('.collapse li')
+    titles.forEach(function(title) {
+        title.addEventListener('click', function(e){
+            var index = [].indexOf.call(titles, this)
+            lis[index].classList.toggle('active')
+        })
+    })
+})();
+</script>
+{% endblock %}

@@ -7,12 +7,13 @@ import re
 from flask import Blueprint, render_template, url_for, request, send_from_directory, flash
 from flask import current_app as app
 
-from ..vars import CACHE_PATH, INFO, WARN
+from ..vars import CACHE_PATH, INFO, WARN, ALLOWED_SCRAPYD_LOG_EXTENSIONS
 from .utils import parse_log
 from ..utils import make_request
 
-ALLOWED_SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.gz', '.txt', '']
+
 bp = Blueprint('log', __name__, url_prefix='/')
+
 
 @bp.route('/<int:node>/log/<opt>/<project>/<spider>/<job>/<ext>/', methods=('GET', 'POST'))
 @bp.route('/<int:node>/log/<opt>/<project>/<spider>/<job>/', methods=('GET', 'POST'))
@@ -29,7 +30,7 @@ def log(node, opt, project, spider, job, ext=None):
     LAST_LOG_ALERT_SECONDS = app.config.get('LAST_LOG_ALERT_SECONDS', 60)
     SCRAPYD_LOGS_DIR = app.config.get('SCRAPYD_LOGS_DIR', '')
     if ext is None:
-        SCRAPYD_LOG_EXTENSIONS = app.config.get('SCRAPYD_LOG_EXTENSIONS', ALLOWED_SCRAPYD_LOG_EXTENSIONS) or ALLOWED_SCRAPYD_LOG_EXTENSIONS
+        SCRAPYD_LOG_EXTENSIONS = app.config.get('SCRAPYD_LOG_EXTENSIONS', []) or ALLOWED_SCRAPYD_LOG_EXTENSIONS
     else:
         SCRAPYD_LOG_EXTENSIONS = ['']
 

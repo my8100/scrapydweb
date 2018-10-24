@@ -14,7 +14,7 @@
             text-align: left;
             background-color: #ddd;
         }
-        #finish_reason {
+        .blue {
             font-size: 30px;
             color: #409EFF;
         }
@@ -89,11 +89,11 @@ Using cached version. Click to refresh.
                     <tr><th>spider</th><td>{{ spider }}</td></tr>
                     <tr><th>job</th><td>{{ job }}</td></tr>
                     <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
-                    <tr><th>last_log_time</th><td>{{ last_log_time }}</td></tr>
+                    <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
                     <tr><th>elasped</th><td>{{ elasped }}</td></tr>
-                    <tr><th>finish_reason</th><td><strong id="finish_reason">{{ finish_reason }}</strong></td></tr>
-                    <tr><th>crawled_pages</th><td>{{ crawled_pages }}</td></tr>
-                    <tr><th>scraped_items</th><td>{{ scraped_items }}</td></tr>
+                    <tr><th>finish_reason</th><td><strong class="blue">{{ finish_reason }}</strong></td></tr>
+                    <tr><th>crawled_pages</th><td><strong class="blue">{{ crawled_pages }}</strong></td></tr>
+                    <tr><th>scraped_items</th><td><strong class="blue">{{ scraped_items }}</strong></td></tr>
 
                     <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_critical_count }}</td></tr>
                     <tr><th>log_error_count</th><td id="log_error_count">{{ log_error_count }}</td></tr>
@@ -102,9 +102,9 @@ Using cached version. Click to refresh.
                     <tr><th>redirect_count</th><td id="redirect_count">{{ redirect_count }}</td></tr>
                     <tr><th>ignore_count</th><td id="ignore_count">{{ ignore_count }}</td></tr>
 
-                    <tr><th>last_crawl</th><td id="last_crawl"></td></tr>
-                    <tr><th>last_scrape</th><td id="last_scrape"></td></tr>
-                    <tr><th>last_log</th><td id="last_log"></td></tr>
+                    <tr><th>latest_crawl</th><td id="latest_crawl"></td></tr>
+                    <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
+                    <tr><th>latest_log</th><td id="latest_log"></td></tr>
                     <tr><th>current_time</th><td id="current_time"></td></tr>
                 </table>
             </div>
@@ -191,7 +191,7 @@ Using cached version. Click to refresh.
                 <ul class="collapse">
                     <h3 style="color: #67c23a;">DEBUG</h3>
 
-                {% for title, line in last_matchs %}
+                {% for title, line in latest_matchs %}
                     {% if not line %}
                     {% else %}
                     <li>
@@ -211,9 +211,9 @@ Using cached version. Click to refresh.
 
 
 <script>
-var last_crawl_timestamp = {{ last_crawl_timestamp }};
-var last_scrape_timestamp = {{ last_scrape_timestamp }};
-var last_log_timestamp = {{ last_log_timestamp }};
+var latest_crawl_timestamp = {{ latest_crawl_timestamp }};
+var latest_scrape_timestamp = {{ latest_scrape_timestamp }};
+var latest_log_timestamp = {{ latest_log_timestamp }};
 
 const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
 const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};

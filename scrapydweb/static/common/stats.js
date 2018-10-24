@@ -22,7 +22,7 @@
 function setColor(LAST_LOG_ALERT_SECONDS, font_or_bg) {
     var cew_count_arr = new Array('log_critical_count', 'log_error_count', 'log_warning_count');
     var log_count_arr = new Array('retry_count', 'redirect_count', 'ignore_count');
-    var last_time_arr = new Array('last_crawl', 'last_scrape', 'last_log');
+    var latest_time_arr = new Array('latest_crawl', 'latest_scrape', 'latest_log');
 
     for (idx in cew_count_arr) {
         item = cew_count_arr[idx];
@@ -47,8 +47,8 @@ function setColor(LAST_LOG_ALERT_SECONDS, font_or_bg) {
         }
     }
 
-    for (idx in last_time_arr) {
-        item = last_time_arr[idx];
+    for (idx in latest_time_arr) {
+        item = latest_time_arr[idx];
         x_secs_ago = my$('#' + item).innerHTML.match(/\d+/g)[0];
         if (parseInt(x_secs_ago) > LAST_LOG_ALERT_SECONDS) {
             if (font_or_bg == 'font') {
@@ -63,9 +63,9 @@ function setColor(LAST_LOG_ALERT_SECONDS, font_or_bg) {
 
 function setTime() {
     var now_timestamp = Date.now() / 1000;
-    my$('#last_crawl').innerHTML = Math.ceil((now_timestamp - last_crawl_timestamp)) + ' seconds ago';
-    my$('#last_scrape').innerHTML = Math.ceil((now_timestamp - last_scrape_timestamp)) + ' seconds ago';
-    my$('#last_log').innerHTML = Math.ceil((now_timestamp - last_log_timestamp)) + ' seconds ago';
+    my$('#latest_crawl').innerHTML = Math.ceil((now_timestamp - latest_crawl_timestamp)) + ' seconds ago';
+    my$('#latest_scrape').innerHTML = Math.ceil((now_timestamp - latest_scrape_timestamp)) + ' seconds ago';
+    my$('#latest_log').innerHTML = Math.ceil((now_timestamp - latest_log_timestamp)) + ' seconds ago';
     my$('#current_time').innerHTML = Date();
 }
 

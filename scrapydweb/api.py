@@ -11,7 +11,7 @@ from .utils import make_request, json_dumps
 bp = Blueprint('api', __name__, url_prefix='/')
 API_MAP = dict(start='schedule', stop='cancel', forcestop='cancel')
 INFO = """Maybe it's caused by failing to compare versions, \
-see INFO in the "Projects > Upload" page, \
+see INFO in the "Projects > Deploy" page, \
 and solve the problem in the "Projects > Manage" page."""
 
 

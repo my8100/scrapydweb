@@ -1,6 +1,8 @@
 include HISTORY.md
 include scrapydweb/data/upload/demo.txt
+include scrapydweb/data/demo_projects/demo/scrapy.cfg
 graft scrapydweb/static
 graft scrapydweb/templates
 graft tests
+graft scrapydweb/data/demo_projects/demo/demo
 global-exclude *.pyc
