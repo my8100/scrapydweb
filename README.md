@@ -1,6 +1,5 @@
 ScrapydWeb: Full-featured web UI for Scrapyd cluster management, Scrapy log analysis & visualization
 ==========================
-
 [![PyPI - scrapydweb Version](https://img.shields.io/pypi/v/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![Coverage Status](https://coveralls.io/repos/github/my8100/scrapydweb/badge.svg?branch=master)](https://coveralls.io/github/my8100/scrapydweb?branch=master)
@@ -9,12 +8,11 @@ ScrapydWeb: Full-featured web UI for Scrapyd cluster management, Scrapy log anal
 
 Features
 ---------------
-
 - Scrapyd Cluster Management
   - Group, filter and select any numbers of nodes
-  - Execute command on multinodes with one click
+  - **Execute command on multinodes with one click**
 
-- Scrapy Log Analysis
+- **Scrapy Log Analysis**
   - Stats collection
   - Progress visualization
   - Logs categorization
@@ -24,10 +22,11 @@ Features
   - List projects/versions/spiders/running_jobs
   - Delete version/project
 
-- Others
-  - Auto eggifying
-  - Basic auth for web UI
-  - Accessing Scrapyd servers protected by basic auth
+- Enhancements
+  - **Basic auth** for web UI
+  - HTML caching for the Log and Stats page
+  - **Auto eggify** your projects
+  - **Email notice** with multi-triggers provided
 
 
 Devolopers
@@ -38,7 +37,6 @@ Devolopers
 
 Installation
 ------------
-
 To install ScrapydWeb, simply use pip:
 
 ```
@@ -48,10 +46,9 @@ pip install scrapydweb
 
 Start Up
 ------------
-
 1. Run `scrapydweb -h` to get help,
-and a config file named **scrapydweb_settings_vN.py** (N for a number) would be copied to current working directory,
-then you can custom settings in it.
+then a config file named **scrapydweb_settings_vN.py** (N for a number) would be copied to current working directory,
+in which you can custom settings.
 2. Run `scrapydweb`
 3. Visit [http://127.0.0.1:5000](http://127.0.0.1:5000) **(It's recommended to use Google Chrome to get better experience.)**
 
@@ -63,7 +60,6 @@ Settings
 
 Screenshots
 ------------
-
 - Overview
 ![overview](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/overview.png)
 
@@ -71,19 +67,19 @@ Screenshots
 ![dashboard](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/dashboard.png)
 
 - Log Analysis
-  - Stats collection
+  - stats collection
 ![log_stats](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/log_stats.png)
 
-  - Progress visualization
+  - progress visualization
 ![log_charts](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/log_charts.png)
 
-  - Logs categorization
+  - logs categorization
 ![log_logs](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/log_logs.png)
 
-- Deploy a Project
+- Deploy Project
 ![deploy](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/deploy.png)
 
-- Run a Spider
+- Run Spider
 ![run](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/run.png)
 
 - Manage Projects

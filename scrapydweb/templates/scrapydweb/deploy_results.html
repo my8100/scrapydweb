@@ -3,13 +3,13 @@
 {% block title %}deploy results{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='multinode.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/multinode.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
 {% endblock %}
 
 
 {% block body %}
-<h2>DEPLOY PROJECT results</h2>
+<h2>Deploy Project</h2>
 <div class="table wrap">
     <table>
         <thead>
@@ -19,8 +19,8 @@
                     <a class="state danger" href="javascript:;" onclick="invertSelection();">invert selection</a>
                 </th>
                 <th>Index</th>
-                <th>Manage projects</th>
-                <th>Node name</th>
+                <th>Manage Projects</th>
+                <th>Node Name</th>
                 <th>Status</th>
                 <th>Project</th>
                 <th>Version</th>
@@ -43,7 +43,7 @@
                     class="state normal"
                     {% endif %}
 
-                    href="{{ url_for('manage.manage', node=node) }}"
+                    href="{{ url_for('manage', node=node) }}"
                     target="_blank">
                     {{ SCRAPYD_SERVERS[first_selected_node-1] }}
                     </a>
@@ -67,7 +67,7 @@
                     class="state normal"
                     {% endif %}
 
-                    href="{{ url_for('manage.manage', node=loop.index) }}"
+                    href="{{ url_for('manage', node=loop.index) }}"
                     target="_blank">
                     {{ SCRAPYD_SERVERS[loop.index-1] }}
                     </a>
@@ -85,8 +85,8 @@
     </table>
 
     <div class="action">
-        <a class="button normal" href="javascript:;" onclick="multinodeRunSpider();">multinode RUN Spider</a>
-        <a class="button safe" href="javascript:;" onclick="passToOverview();">pass to Overview</a>
+        <a class="button normal" href="javascript:;" onclick="multinodeRunSpider();">{% if selected_nodes|length >1 %}Multinode {% endif %}Run Spider</a>
+        <a class="button safe" href="javascript:;" onclick="passToOverview();">Pass to Overview</a>
     </div>
 </div>
 
@@ -97,7 +97,7 @@ var selected_nodes = {{ selected_nodes }};
 
 var url_xhr = "{{ url_for('deploy.deploy_xhr', node=1, eggname=eggname, project=project, version=version) }}";
 var url_schedule = "{{ url_for('schedule.schedule', node=node, project=project, version=version, first_selected_node=first_selected_node) }}";
-var url_overview = "{{ url_for('overview.overview', node=node, opt='schedule', project=project, version_job=version) }}";
+var url_overview = "{{ url_for('overview', node=node, opt='schedule', project=project, version_job=version) }}";
 
 
 window.onload = function(){
@@ -106,7 +106,7 @@ window.onload = function(){
     });
 
 {% if selected_nodes|length >1 %}
-    var r = confirm("Start to execute command on multinode?");
+    var r = confirm("Start to deploy project on remaining nodes?");
     if(r == false) {
         return;
     }

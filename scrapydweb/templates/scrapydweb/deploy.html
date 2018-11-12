@@ -15,9 +15,9 @@
         #project_selected, option { font-family: Consolas,  monospace; }
     </style>
 
-    {% if SCRAPYD_SERVERS|length > 1 %}
-    <script>var SCRAPYD_SERVERS_length = {{ SCRAPYD_SERVERS|length }};</script>
-    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+
+    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
     {% endif %}
 {% endblock %}
 
@@ -50,14 +50,14 @@
                     And setting the version arbitrarily may cause the scrapyd API 'listversions' to raise error like "builtins.TypeError: '&lt;' not supported between instances of 'str' and 'int'".
                 </p>
                 <br>
-                <p><strong>Auto eggifying (projects in SCRAPYDWEB_BIND)</strong></p>
-                <li>Step 0: execute "pip install setuptools"</li>
-                <li>Step 1: run ScrapydWeb with argument '--scrapy_projects_dir SCRAPY_PROJECTS_DIR' for searching projects</li>
+                <p><strong>Auto eggifying (projects in the host where ScrapydWeb runs)</strong></p>
+                <li>Step 0: execute command "pip install setuptools"</li>
+                <li>Step 1: set up item 'SCRAPY_PROJECTS_DIR' for locating projects before starting up ScrapydWeb</li>
                 <li>Step 2: select any project found in SCRAPY_PROJECTS_DIR to deploy via this page</li>
                 <br>
                 <p><strong>Upload egg file</strong></p>
-                <li>Step 0: execute "pip install scrapyd-client"</li>
-                <li>Step 1: cd into your project's root, then execute "scrapyd-deploy --build-egg projectname.egg"</li>
+                <li>Step 0: execute command "pip install scrapyd-client"</li>
+                <li>Step 1: cd into your project's root, then execute command "scrapyd-deploy --build-egg projectname.egg"</li>
                 <li>Step 2: upload the built egg via this page</li>
                 <br>
                 <p><strong>Upload compressed file</strong></p>
@@ -71,7 +71,7 @@
 </div>
 
 
-{% if SCRAPYD_SERVERS|length > 1 %}
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
 <div class="wrap">
     <form method="post" action="{{ url_for('deploy.upload', node=node) }}" enctype="multipart/form-data">
         <input type="text" name="checked_amount" value="1" hidden />
@@ -123,9 +123,9 @@
             <div class="upload">
                 <div>
                     {% if SCRAPY_PROJECTS_DIR == "" %}
-                    <h3>Run ScrapydWeb with argument '--scrapy_projects_dir SCRAPY_PROJECTS_DIR' to enable auto eggifying</h3>
+                    <h3>Set up item 'SCRAPY_PROJECTS_DIR' for locating projects before starting up ScrapydWeb</h3>
                     {% else %}
-                    <h3>{{ projects|length|string + " projects found in " + SCRAPY_PROJECTS_DIR + " of the SCRAPYDWEB_BIND" }}</h3>
+                    <h3>{{ projects|length|string + " projects found in '" + SCRAPY_PROJECTS_DIR + "' of the host where ScrapydWeb runs" }}</h3>
                     {% endif %}
 
                     <select id='project_selected' name='project'
@@ -185,15 +185,15 @@ var modification_times = {{ modification_times|safe }};
 function eggify(){
     {% if projects|length == 0 %}
         {% if SCRAPY_PROJECTS_DIR == "" %}
-            alert("Run ScrapydWeb with argument '--scrapy_projects_dir SCRAPY_PROJECTS_DIR' to enable auto eggifying");
+            alert("Set up the item 'SCRAPY_PROJECTS_DIR' to locate your projects and eggify them automatically");
             return;
         {% else %}
-            alert("NO projects found in {{ SCRAPY_PROJECTS_DIR }} of the SCRAPYDWEB_BIND");
+            alert("NO projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the host where ScrapydWeb runs");
             return;
         {% endif %}
     {% endif %}
 
-    {% if SCRAPYD_SERVERS|length > 1 %}
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
     if (checked_amount == 0) {
         alert("Select at least one node");
         return;
@@ -226,8 +226,8 @@ function eggify(){
 
 
 <script>
-{% if SCRAPYD_SERVERS|length > 1 %}
-    // Delay
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    // Put off
     window.onload = function() {
     {% if selected_nodes == [] %}
         <!-- if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) { -->
@@ -251,9 +251,11 @@ function eggify(){
             $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
         });
 
-        $('#checkboxes input[type=checkbox]').change(checkCheckboxes);
+        $('#checkboxes input[type=checkbox]').change(function() {
+            checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+        });
 
-        checkCheckboxes(); //For navigate back
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
     }
 {% endif %}
 
@@ -299,7 +301,7 @@ function uploadEggfile() {
         return;
     }
 
-    {% if SCRAPYD_SERVERS|length > 1 %}
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
     if (checked_amount == 0) {
         alert("Select at least one node");
         return;

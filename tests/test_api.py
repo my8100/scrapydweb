@@ -1,72 +1,102 @@
 # coding: utf8
-import json
+from flask import url_for
+
+from scrapydweb.vars import DEFAULT_LATEST_VERSION
+from tests.utils import PROJECT, VERSION, SPIDER, JOBID, OK, ERROR
+from tests.utils import load_json, upload_file_deploy
 
 
-# {'node_name': 'win7-PC', 'status': 'ok', 'pending': 0, 'running': 2, 'finished': 3}
-def test_daemonstatus(client):
-    response = client.get('/1/api/daemonstatus/')
-    js = json.loads(response.data)
-    assert js['status'] == 'ok' and 'running' in js
+# def test_node_out_of_index(app, client):
 
 
-# addversion
+# {'status': 'ok', 'pending': 0, 'running': 2, 'finished': 3}
+def test_daemonstatus(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='daemonstatus')
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and 'running' in js
 
 
-# schedule
+# def test_addversion(app, client):
 
 
-# {'node_name': 'win7-PC', 'status': 'error', 'message': "'fakeproject'"}
-def test_cancel(client):
-    response = client.get('/1/api/stop/fakeproject/fakejob/')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and js['message'] == "'fakeproject'" and 'times' not in js
+# def test_schedule(app, client):
 
 
-def test_forcestop(client):
-    response = client.get('/1/api/forcestop/fakeproject/fakejob/')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and js['message'] == "'fakeproject'" and js['times'] == 2
+# {u'status': u'ok', u'prevstate': None, u'url': u'http://127.0.0.1:6800/cancel.json', u'status_code': 200}
+def test_stop(app, client):
+    upload_file_deploy(app, client, filename='demo.egg', project=PROJECT, redirect_project=PROJECT)
+
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='stop', project=PROJECT, version_spider_job=JOBID)
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and 'prevstate' in js and 'times' not in js  # js['prevstate'] == 'running'
 
 
-# {'node_name': 'win7-PC', 'status': 'ok', 'projects': ['demo']}
-def test_listprojects(client):
-    response = client.get('/1/api/listprojects/')
-    js = json.loads(response.data)
-    assert js['status'] == 'ok' and 'projects' in js
+def test_forcestop(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='forcestop', project=PROJECT, version_spider_job=JOBID)
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and js['prevstate'] is None and js['times'] == 2
 
 
-# {'node_name': 'win7-PC', 'status': 'ok', 'versions': []}
-def test_listversions(client):
-    response = client.get('/1/api/listversions/fakeproject/')
-    js = json.loads(response.data)
-    assert js['status'] == 'ok' and 'versions' in js
+# {'status': 'ok', 'projects': ['demo']}
+def test_listprojects(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='listprojects')
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and 'projects' in js
 
 
-# {'node_name': 'win7-PC', 'status': 'error', 'message': 'Traceback (most recent call last):...
-# FileNotFoundError: [Errno 2] No such file or directory: \'eggs\\\\fakeproject\\\\fakeversion.egg\'\r\n'}
-def test_listspiders(client):
-    response = client.get('/1/api/listspiders/fakeproject/fakeversion/')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and 'FileNotFoundError' in js['message']
+# {'status': 'ok', 'versions': []}
+def test_listversions(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='listversions', project=PROJECT)
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and 'versions' in js
 
 
-# {'node_name': 'win7-PC', 'status': 'error', 'message': "'fakeproject'"}
-def test_listjobs(client):
-    response = client.get('/1/api/listjobs/fakeproject/')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and js['message'] == "'fakeproject'"
+def listspiders(app, client, version):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='listspiders', project=PROJECT, version_spider_job=version)
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and SPIDER in js['spiders']
 
 
-# {'node_name': 'win7-PC', 'status': 'error',
-# 'message': "[WinError 3] 系统找不到指定的路径。: 'eggs\\\\fakeproject\\\\fakeversion.egg'"}
-def test_delversion(client):
-    response = client.get('/1/api/delversion/fakeproject/fakeversion/')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and "fakeversion.egg" in js['message']
+def test_listspiders(app, client):
+    for version in [VERSION, DEFAULT_LATEST_VERSION]:
+        listspiders(app, client, version)
 
 
-# {'node_name': 'win7-PC', 'status': 'error', 'message': "[WinError 3] 系统找不到指定的路径。: 'eggs\\\\fakeproject'"}
-def test_delproject(client):
-    response = client.get('/1/api/delproject/fakeproject/')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and "fakeproject" in js['message']
+def test_listjobs(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='listjobs', project=PROJECT)
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and 'listjobs.json' in js['url']
+
+
+# "message": "[WinError 32] 另一个程序正在使用此文件，进程无法访问。: 'eggs\\\\demo\\\\2018-01-01T01_01_01.egg'",
+def test_delversion(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='delversion', project=PROJECT, version_spider_job=VERSION)
+        response = client.get(url)
+        js = load_json(response)
+        assert ((js['status'] == OK and 'delversion.json' in js['url']) or
+                (js['status'] == ERROR and '%s.egg' % VERSION in js['message']))
+
+
+# "message": "[WinError 3] 系统找不到指定的路径。: 'eggs\\\\demo'",
+def test_delproject(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='delproject', project=PROJECT)
+        response = client.get(url)
+        js = load_json(response)
+        assert ((js['status'] == OK and 'delproject.json' in js['url']) or
+                (js['status'] == ERROR and PROJECT in js['message']))

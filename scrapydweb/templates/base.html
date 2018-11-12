@@ -10,26 +10,35 @@
     <link rel="shortcut icon" type="image/x-icon" href="{{ url_for('static', filename='icon/fav.ico') }}"  />
     <link rel="apple-touch-icon" href="{{ url_for('static', filename='icon/spiderman.png') }}"  />
 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='common/common.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font_804951_pwq5pv3hrpi.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/font_804951_pwq5pv3hrpi.css') }}">
     <!-- <link rel="stylesheet" href="//at.alicdn.com/t/font_804951_uohkv7stss7.css -->
 
     <style type="text/css">
+        label.switch {
+            top: 15px;
+            margin-top: 0px;
+        }
+        #nav_daemonstatus a{
+            text-decoration: underline;
+            color: #409EFF;
+        }
         #content .flashes li{
             list-style: none;
+            font-size: 14px;
             margin:12px 0;
             padding: 6px 8px;
             width: fit-content;
-            font-size: 14px;
-        }
-        li.warning{
-            background-color: #fef0f0;
-            color: #f56c6c;
+            border-radius: 4px;
         }
         li.info{
-            background-color: #f0f9eb;
-            color: #67c23a;
+            color: #61b962; /* #67c23a #3c763d #61b962*/
+            background-color: #dff0d8; /* #f0f9eb */
+        }
+        li.warning{
+            color: #f56c6c; /* #f56c6c #c7254e*/
+            background-color: #fef0f0; /* #fef0f0 #f9f2f4*/
         }
 
         .collapse li{
@@ -77,12 +86,12 @@
     </style>
 
     <!-- <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script> -->
-    <!-- <script type="text/javascript" src="{{ url_for('static', filename='babel.min.js') }}"></script> -->
-    <script type="text/javascript" src="{{ url_for('static', filename='common/jquery.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='common/common.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='font_842334_yo81eqsrze.js') }}"></script>
+    <!-- <script type="text/javascript" src="{{ url_for('static', filename='js/babel.min.js') }}"></script> -->
+    <script type="text/javascript" src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/font_842334_yo81eqsrze.js') }}"></script>
     <!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
-    <script type="text/javascript" src="{{ url_for('static', filename='github_buttons.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/github_buttons.js') }}"></script>
     <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_804951_uohkv7stss7.js"></script>  -->
 
     {% block head %}{% endblock %}
@@ -90,99 +99,277 @@
 
 
 <body>
-    <nav>
-        <a class="title" target="_blank" href="{{ GITHUB_URL }}">
-        ScrapydWeb
+<nav>
+    <a class="title" target="_blank" href="{{ GITHUB_URL }}">
+    ScrapydWeb
+    </a>
+
+    <div class="dropdown">
+        <a class="dropbtn">
+            <!-- <svg class="icon ip" aria-hidden="true"> -->
+                <!-- <use xlink:href="#icon-ip"></use> -->
+            <!-- </svg> -->
+            <span>{{ SCRAPYD_SERVERS[node-1] }}</span>
+            <svg class="icon anchor" aria-hidden="true">
+                <use xlink:href="#icon-right"></use>
+            </svg>
         </a>
+        <div class="dropdown-content-wrap">
+            <div class="dropdown-content">
+            {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+                {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
+                <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
+                {% endif %}
 
-        <div class="dropdown">
-            <a class="dropbtn">
-                <!-- <svg class="icon ip" aria-hidden="true"> -->
-                    <!-- <use xlink:href="#icon-ip"></use> -->
-                <!-- </svg> -->
-                <span>{{ SCRAPYD_SERVERS[node-1] }}</span>
-                <svg class="icon anchor" aria-hidden="true">
-                    <use xlink:href="#icon-right"></use>
-                </svg>
-            </a>
-            <div class="dropdown-content-wrap">
-                <div class="dropdown-content">
-                {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-                    {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
-                    <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
-                    {% endif %}
+                <a href="{{ url_for('dashboard', node=loop.index) }}"
 
-                    <a href="{{ url_for('dashboard.dashboard', node=loop.index) }}"
+                {% if loop.index == node %}
+                style="color: #409EFF; font-weight: 700;"
+                {% endif %}
 
-                    {% if loop.index == node %}
-                    style="color: #409EFF; font-weight: 700;"
-                    {% endif %}
-
-                    onclick="showLoader();">
-                    {{ SCRAPYD_SERVER }}
-                    </a>
-                {% endfor %}
-                </div>
+                onclick="showLoader();">
+                {{ SCRAPYD_SERVER }}
+                </a>
+            {% endfor %}
             </div>
         </div>
+    </div>
 
-    {% if SCRAPYD_SERVERS|length > 1 %}
-        <div class="menu">
-            <a href="javascript:;" onclick="switchNode(-1);">&laquo;</a>
-            <span>{{ node }} / {{ SCRAPYD_SERVERS|length }}</span>
-            <a href="javascript:;" onclick="switchNode(1);">&raquo;</a>
-        </div>
-    {% endif %}
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    <div class="menu">
+        <a href="javascript:;" onclick="switchNode(-1);">&laquo;</a>
+        <span>{{ node }} / {{ SCRAPYD_SERVERS_AMOUNT }}</span>
+        <a href="javascript:;" onclick="switchNode(1);">&raquo;</a>
 
-        <ul id="nav_daemonstatus">
-            <li><a class="link" target="_blank"
-                {% if SCRAPYD_SERVERS_AUTHS[node-1]%}
-                    href="{{ 'http://'+SCRAPYD_SERVERS_AUTHS[node-1][0]+':'+SCRAPYD_SERVERS_AUTHS[node-1][-1]+'@'+SCRAPYD_SERVERS[node-1] }}">
-                {% else %}
-                    href="http://{{ SCRAPYD_SERVERS[node-1] }}">
-                {% endif %}
+        <label class="switch" title="skip unselected nodes in the Overview page">
+            <input id="skip_nodes_checkbox" type="checkbox">
+            <span class="slider round"></span>
+        </label>
+    </div>
+{% endif %}
+
+    <ul id="nav_daemonstatus">
+        <li><a target="_blank"
+            {% if SCRAPYD_SERVERS_AUTHS[node-1]%}
+                href="{{ 'http://'+SCRAPYD_SERVERS_AUTHS[node-1][0]+':'+SCRAPYD_SERVERS_AUTHS[node-1][-1]+'@'+SCRAPYD_SERVERS[node-1] }}">
+            {% else %}
+                href="http://{{ SCRAPYD_SERVERS[node-1] }}">
+            {% endif %}
+                <svg class="icon" aria-hidden="true">
+                    <use xlink:href="#icon-host"></use>
+                </svg>
+                <span id="nav_node_name"></span>
+            </a>
+        </li>
+        <li>
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-pending"></use>
+            </svg>
+            <span id="nav_pending"></span>
+        </li>
+        <li>
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-running"></use>
+            </svg>
+            <span id="nav_running"></span>
+        </li>
+        <li>
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-finished"></use>
+            </svg>
+            <span id="nav_finished"></span>
+        </li>
+    </ul>
+
+    <!-- <div class="menu"> -->
+        <!-- <a id="scrapyd_url" class="link" target="_blank" href="javascript:;">Scrapyd server</a> -->
+    <!-- </div> -->
+</nav>
+
+<main>
+    <aside>
+        <h3>Jobs</h3>
+        <ul>
+            <li>
+                <a id="menu_overview" href="{{ url_for('overview', node=node) }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-host"></use>
+                        <use xlink:href="#icon-overview"></use>
                     </svg>
-                    <span id="nav_node_name"></span>
+                    <span>Overview</span>
                 </a>
             </li>
+
             <li>
-                <svg class="icon" aria-hidden="true">
-                    <use xlink:href="#icon-pending"></use>
-                </svg>
-                <span id="nav_pending"></span>
-            </li>
-            <li>
-                <svg class="icon" aria-hidden="true">
-                    <use xlink:href="#icon-running"></use>
-                </svg>
-                <span id="nav_running"></span>
-            </li>
-            <li>
-                <svg class="icon" aria-hidden="true">
-                    <use xlink:href="#icon-finished"></use>
-                </svg>
-                <span id="nav_finished"></span>
+                <a id="menu_dashboard" href="{{ url_for('dashboard', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-dashboard"></use>
+                    </svg>
+                    <span>Dashboard</span>
+                </a>
             </li>
         </ul>
 
-        <!-- <div class="menu"> -->
-            <!-- <a id="scrapyd_url" class="link" target="_blank" href="javascript:;">Scrapyd server</a> -->
-        <!-- </div> -->
-    </nav>
+        <h3>Projects</h3>
+        <ul>
+            <li>
+                <a id="menu_deploy" href="{{ url_for('deploy.deploy', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-upload"></use>
+                    </svg>
+                    <span>Deploy</span>
+                </a>
+            </li>
 
+            <li>
+                <a id="menu_schedule" href="{{ url_for('schedule.schedule', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-run"></use>
+                    </svg>
+                    <span>Run</span>
+                </a>
+            </li>
+
+            <li>
+                <a id="menu_manage" href="{{ url_for('manage', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-directory"></use>
+                    </svg>
+                    <span>Manage</span>
+                </a>
+            </li>
+        </ul>
+
+        <h3>Files</h3>
+        <ul>
+        {% if SHOW_SCRAPYD_ITEMS %}
+            <li>
+                <a id="menu_items" href="{{ url_for('items', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-directory"></use>
+                    </svg>
+                    <span>Items</span>
+                </a>
+            </li>
+        {% endif %}
+
+            <li>
+                <a id="menu_logs" href="{{ url_for('logs', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-directory"></use>
+                    </svg>
+                    <span>Logs</span>
+                </a>
+            </li>
+            <li>
+                <a id="menu_parse" href="{{ url_for('parse.upload', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-parse"></use>
+                    </svg>
+                    <span>Parse log</span>
+                </a>
+            </li>
+        </ul>
+
+        <!-- <h3>Links</h3> -->
+        <!-- <ul> -->
+            <!-- <li> -->
+                <!-- <a target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}"> -->
+                    <!-- <svg class="icon" aria-hidden="true"> -->
+                        <!-- <use xlink:href="#icon-server"></use> -->
+                    <!-- </svg> -->
+                    <!-- <span>Scrapyd server</span> -->
+                <!-- </a> -->
+            <!-- </li> -->
+            <!-- <li> -->
+                <!-- <a style="opacity: 0; cursor: default;" target="_blank" -->
+                    <!-- href="{{ url_for('index', node=node, ui='simple') }}"> -->
+                    <!-- <svg class="icon" aria-hidden="true"> -->
+                        <!-- <use xlink:href="#icon-ui"></use> -->
+                    <!-- </svg> -->
+                    <!-- <span>Simple UI</span> -->
+                <!-- </a> -->
+            <!-- </li> -->
+        <!-- </ul> -->
+
+        <h3>System</h3>
+        <ul>
+            <li>
+                <a id="menu_settings" href="{{ url_for('settings', node=node) }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-manage"></use>
+                    </svg>
+                    <span>Settings</span>
+                </a>
+            </li>
+
+            {% if REQUIRE_LOGIN %}
+            <li>
+                <a href="javascript:;" onclick="logout();">
+                    <svg class="icon" aria-hidden="true" style="opacity: 0;">
+                        <use xlink:href="#icon-ui"></use>
+                    </svg>
+                    <span>Logout</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <ul id="links">
+            <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }}</li>
+            <li id="pypi">
+                <a target="_blank" href="https://pypi.org/project/scrapydweb/" >
+                    <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" />
+                </a>
+            </li>
+            <li id="github">
+                <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">
+                scrapydweb
+                </a>
+            </li>
+
+        </ul>
+
+    </aside>
+    <div class="content-wrap">
+        <div id="content">
+            {% block loader %}
+            <div class="loader" style="display: none;" onclick="hideLoader();"></div>
+            {% endblock %}
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                <ul class=flashes>
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+                {% endif %}
+            {% endwith %}
+
+            {% block body %}{% endblock %}
+        </div>
+    </div>
+</main>
 
 <script>
 var loading = false;
 var refresh_daemonstatus = true;
 var node = {{ node }};
-var node_total = {{ SCRAPYD_SERVERS|length }};
-var url_daemonstatus = "{{ url_for('api.api', node=node, opt='daemonstatus') }}";
-//console.log('node: '+node);
+var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
+var url_daemonstatus = "{{ url_for('api', node=node, opt='daemonstatus') }}";
 
-// Update menu class according to url
+
 $(function(){
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    if(window.localStorage) {
+        var skipNodesUnselected = localStorage.getItem('skipNodesUnselected') || "false";
+        if(skipNodesUnselected == 'true') {
+            my$('#skip_nodes_checkbox').checked = true;
+        }
+    }
+    {% endif %}
+
+    // Update menu class according to url
     var re_menu = location.pathname.match(/\/\d+\/(\w+)\//);
     if(re_menu && my$('#menu_'+re_menu[1])){
         my$('#menu_' + re_menu[1]).classList.add('active')
@@ -192,10 +379,11 @@ $(function(){
             my$('#menu_' + re_menu[1] + '_' + re_menu[2]).classList.add('active')
         }
     }
+
+    refreshDaemonstatus(url_daemonstatus);
+
 })
 
-
-refreshDaemonstatus(url_daemonstatus);
 
 {% if DAEMONSTATUS_REFRESH_INTERVAL > 0 %}
 setInterval(function() {
@@ -206,185 +394,75 @@ setInterval(function() {
 {% endif %}
 
 
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
 function switchNode(change) {
-    if(node == 1 && change == -1) {
+    var target = node + change;
+    if(my$('#skip_nodes_checkbox').checked) {
+        if(window.localStorage) {
+            var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+            if(nodesSelected.length == 0) {
+                my$('#skip_nodes_checkbox').checked = false;
+                localStorage.setItem('skipNodesUnselected', 'false');
+                alert("NO nodes selected in the Overview page");
+                return;
+            }
+            var minNodeSelected = Math.min.apply(null, nodesSelected);
+            var maxNodeSelected = Math.max.apply(null, nodesSelected);
+            if(target < minNodeSelected) {
+                if(nodesSelected.indexOf(node) == -1) {
+                    target = minNodeSelected;
+                } else {
+                    alert("Reaching the first selected node");
+                    return;
+                }
+            } else if(target > maxNodeSelected) {
+                if(nodesSelected.indexOf(node) == -1) {
+                    target = maxNodeSelected;
+                } else {
+                    alert("Reaching the final selected node");
+                    return;
+                }
+            } else {
+                var nodesSelectedFiltered = nodesSelected.filter(function (n) {
+                    return change == 1 ? n >= target : n <= target;
+                });
+                target = change == 1 ? Math.min.apply(null, nodesSelectedFiltered) : Math.max.apply(null, nodesSelectedFiltered);;
+            }
+        } else {
+            alert("Fail to read window.localStorage");
+        }
+    }
+
+    if(target < 1) {
         alert("Reaching the first node");
         return;
-    } else if(node == node_total && change == 1) {
+    } else if(target > node_total) {
         alert("Reaching the final node");
         return;
     }
-    //console.log(node+change);
-    location.href = location.pathname.replace(/\/\d+/, '/'+(node+change)) + location.search;
+
+    location.href = location.pathname.replace(/\/\d+/, '/'+target) + location.search;
     showLoader();
 }
+
+
+var skipNodesHandler = function() {
+    if (window.localStorage) {
+        var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+        if(this.checked && nodesSelected.length == 0) {
+            //this.checked = !this.checked;
+            this.checked = false;
+            alert("NO nodes selected in the Overview page");
+        }
+        localStorage.setItem('skipNodesUnselected', this.checked ? 'true' : 'false');
+        console.log(localStorage);
+    } else {
+        alert("Fail to read window.localStorage");
+    }
+}
+my$('#skip_nodes_checkbox').onclick = skipNodesHandler;
+{% endif %}
 </script>
 
-
-    <main>
-        <aside>
-            <h3>Jobs</h3>
-            <ul>
-                <li>
-                    <a id="menu_overview" href="{{ url_for('overview.overview', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-overview"></use>
-                        </svg>
-                        <span>Overview</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a id="menu_dashboard" href="{{ url_for('dashboard.dashboard', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-dashboard"></use>
-                        </svg>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-            </ul>
-
-            <h3>Projects</h3>
-            <ul>
-                <li>
-                    <a id="menu_deploy" href="{{ url_for('deploy.deploy', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-upload"></use>
-                        </svg>
-                        <span>Deploy</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a id="menu_schedule" href="{{ url_for('schedule.schedule', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-run"></use>
-                        </svg>
-                        <span>Run</span>
-                    </a>
-                </li>
-
-                <li>
-                    <a id="menu_manage" href="{{ url_for('manage.manage', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-directory"></use>
-                        </svg>
-                        <span>Manage</span>
-                    </a>
-                </li>
-            </ul>
-
-            <h3>Directory</h3>
-            <ul>
-            {% if SHOW_SCRAPYD_ITEMS %}
-                <li>
-                    <a id="menu_items" href="{{ url_for('items.items', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-directory"></use>
-                        </svg>
-                        <span>Items</span>
-                    </a>
-                </li>
-            {% endif %}
-
-                <li>
-                    <a id="menu_logs" href="{{ url_for('logs.logs', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-directory"></use>
-                        </svg>
-                        <span>Logs</span>
-                    </a>
-                </li>
-                <li>
-                    <a id="menu_log_upload" href="{{ url_for('parse.upload', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-parse"></use>
-                        </svg>
-                        <span>Parse log</span>
-                    </a>
-                </li>
-            </ul>
-
-            <!-- <h3>Links</h3> -->
-            <!-- <ul> -->
-                <!-- <li> -->
-                    <!-- <a target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}"> -->
-                        <!-- <svg class="icon" aria-hidden="true"> -->
-                            <!-- <use xlink:href="#icon-server"></use> -->
-                        <!-- </svg> -->
-                        <!-- <span>Scrapyd server</span> -->
-                    <!-- </a> -->
-                <!-- </li> -->
-                <!-- <li> -->
-                    <!-- <a style="opacity: 0; cursor: default;" target="_blank" -->
-                        <!-- href="{{ url_for('index.index', node=node, ui='simple') }}"> -->
-                        <!-- <svg class="icon" aria-hidden="true"> -->
-                            <!-- <use xlink:href="#icon-ui"></use> -->
-                        <!-- </svg> -->
-                        <!-- <span>Simple UI</span> -->
-                    <!-- </a> -->
-                <!-- </li> -->
-            <!-- </ul> -->
-
-            <h3>System</h3>
-            <ul>
-                <li>
-                    <a id="menu_settings" href="{{ url_for('settings.settings', node=node) }}" onclick="showLoader();">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-manage"></use>
-                        </svg>
-                        <span>Settings</span>
-                    </a>
-                </li>  
-                
-                {% if REQUIRE_LOGIN %}
-                <li>
-                    <a href="javascript:;" onclick="logout();">
-                        <svg class="icon" aria-hidden="true" style="opacity: 0;">
-                            <use xlink:href="#icon-ui"></use>
-                        </svg>
-                        <span>Logout</span>
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-
-            <ul id="links">
-                <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }}</li>
-                <li id="pypi">
-                    <a target="_blank" href="https://pypi.org/project/scrapydweb/" >
-                        <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" />
-                    </a>
-                </li>
-                <li id="github">
-                    <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">
-                    scrapydweb
-                    </a>
-                </li>
-
-            </ul>
-
-        </aside>
-        <div class="content-wrap">
-            <div id="content">
-                {% block loader %}
-                <div class="loader" style="display: none;" onclick="hideLoader();"></div>
-                {% endblock %}
-
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                    <ul class=flashes>
-                    {% for category, message in messages %}
-                        <li class="{{ category }}">{{ message }}</li>
-                    {% endfor %}
-                    </ul>
-                    {% endif %}
-                {% endwith %}
-
-                {% block body %}{% endblock %}
-            </div>
-        </div>
-    </main>
 </body>
-
 </html>

@@ -4,13 +4,22 @@
 
 {% block head %}
     <meta name="viewport" content="">
-    <script type="text/javascript" src="{{ url_for('static', filename='common/stats.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='common/echarts.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/stats.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/echarts.min.js') }}"></script>
     <style>
         div{word-break:break-all;}
         th{text-align:left; background-color: #ddd;}
         .blue {
-            background-color: #409EFF;
+            font-size: 30px;
+            color: #409EFF;
+        }
+        .blue a{
+            text-decoration: underline;
+            color: #409EFF;
+        }
+        .green {
+            font-size: 30px;
+            color: #67c23a;
         }
     </style>
 {% endblock %}
@@ -60,17 +69,24 @@ Using cached version. Click to refresh.
         <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
         <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
         <tr><th>elasped</th><td>{{ elasped }}</td></tr>
-        <tr><th>finish_reason</th><td class="blue">{{ finish_reason }}</td></tr>
-        <tr><th>crawled_pages</th><td class="blue">{{ crawled_pages }}</td></tr>
-        <tr><th>scraped_items</th><td class="blue">{{ scraped_items }}</td></tr>
+        <tr>
+            <th>finish_reason</th>
+            <td>
+                <strong class="blue">
+                <a href="{{ url_utf8 }}">{{ finish_reason or "NOT found in log" }}</a>
+                </strong>
+            </td>
+        </tr>
 
         <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_critical_count }}</td></tr>
         <tr><th>log_error_count</th><td id="log_error_count">{{ log_error_count }}</td></tr>
         <tr><th>log_warning_count</th><td id="log_warning_count">{{ log_warning_count }}</td></tr>
-        <tr><th>retry_count</th><td id="retry_count">{{ retry_count }}</td></tr>
-        <tr><th>redirect_count</th><td id="redirect_count">{{ redirect_count }}</td></tr>
-        <tr><th>ignore_count</th><td id="ignore_count">{{ ignore_count }}</td></tr>
+        <tr><th>log_redirect_count</th><td id="log_redirect_count">{{ log_redirect_count }}</td></tr>
+        <tr><th>log_retry_count</th><td id="log_retry_count">{{ log_retry_count }}</td></tr>
+        <tr><th>log_ignore_count</th><td id="log_ignore_count">{{ log_ignore_count }}</td></tr>
 
+        <tr><th>crawled_pages</th><td><strong class="green">{{ crawled_pages }}</strong></td></tr>
+        <tr><th>scraped_items</th><td><strong class="green">{{ scraped_items }}</strong></td></tr>
         <tr><th>latest_crawl</th><td id="latest_crawl"></td></tr>
         <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
         <tr><th>latest_log</th><td id="latest_log"></td></tr>
@@ -88,7 +104,7 @@ Using cached version. Click to refresh.
     <hr>
     <h4>WARNING+</h4>
     <ul>
-    {% for item in re_matchs %}
+    {% for item in re_matches %}
         {% if item['log_title'] == 'retry_logs' %}
         </ul>
         <hr>
@@ -126,7 +142,7 @@ Using cached version. Click to refresh.
     <hr>
     <h4>DEBUG</h4>
     <ul>
-    {% for title, line in latest_matchs %}
+    {% for title, line in latest_matches %}
         {% if not line %}
         <div hidden>
         {% else %}
@@ -170,9 +186,8 @@ var id_of_tabs = new Array('table', 'chart', 'logs');
 var id_of_tabs = new Array('table', 'logs');
 {% endif %}
 
-//var now_timestamp = Date.now() / 1000;
-setTime();
-setColor(LAST_LOG_ALERT_SECONDS);
+my$('#current_time').innerHTML = new Date();
+setColor();
 </script>
 
 

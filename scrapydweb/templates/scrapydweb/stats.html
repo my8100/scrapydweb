@@ -3,10 +3,10 @@
 {% block title %}stats{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stats.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='font_804951_mlqq1xmdyc.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='common/stats.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='common/echarts.min.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/stats.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/font_804951_mlqq1xmdyc.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/stats.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/echarts.min.js') }}"></script>
     <style>
         .tab-header {margin-left: 8px;}
         div {word-break: break-all;}
@@ -18,6 +18,14 @@
             font-size: 30px;
             color: #409EFF;
         }
+        .blue a{
+            text-decoration: underline;
+            color: #409EFF;
+        }
+        .green {
+            font-size: 30px;
+            color: #67c23a;
+        }
     </style>
 {% endblock %}
 
@@ -27,11 +35,11 @@
 
 <script>
 window.onload = function(){
-    // Clear no_cache=True in href after clicking refresh cache button
+    // Clear refresh_cache=True in href after clicking refresh cache button
     {% if refresh_url %}
     //var kwargs = parseQueryString(location.search);
     //history.pushState(null, '', window.location.pathname + ((kwargs.ui == 'simple') ? "?ui=simple" : ""));
-    history.pushState(null, '', window.location.pathname + location.search.replace('no_cache=True', 'no_cache='));
+    history.pushState(null, '', window.location.pathname + location.search.replace('refresh_cache=True', 'refresh_cache='));
     {% endif %}
 
     hideLoader();
@@ -41,7 +49,7 @@ window.onload = function(){
 
 
 {% block body %}
-<h2>PROJECT({{ project }})&nbsp;&nbsp;&nbsp;&nbsp;SPIDER({{ spider }})</h2>
+<h2>PROJECT ({{ project }})&nbsp;&nbsp;&nbsp;&nbsp;SPIDER ({{ spider }})</h2>
 
 <div class="wrap collapse-wrap">
     <ul class="collapse">
@@ -91,17 +99,24 @@ Using cached version. Click to refresh.
                     <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
                     <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
                     <tr><th>elasped</th><td>{{ elasped }}</td></tr>
-                    <tr><th>finish_reason</th><td><strong class="blue">{{ finish_reason }}</strong></td></tr>
-                    <tr><th>crawled_pages</th><td><strong class="blue">{{ crawled_pages }}</strong></td></tr>
-                    <tr><th>scraped_items</th><td><strong class="blue">{{ scraped_items }}</strong></td></tr>
+                    <tr>
+                        <th>finish_reason</th>
+                        <td>
+                            <strong class="blue">
+                            <a href="{{ url_utf8 }}">{{ finish_reason or "NOT found in log" }}</a>
+                            </strong>
+                        </td>
+                    </tr>
 
                     <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_critical_count }}</td></tr>
                     <tr><th>log_error_count</th><td id="log_error_count">{{ log_error_count }}</td></tr>
                     <tr><th>log_warning_count</th><td id="log_warning_count">{{ log_warning_count }}</td></tr>
-                    <tr><th>retry_count</th><td id="retry_count">{{ retry_count }}</td></tr>
-                    <tr><th>redirect_count</th><td id="redirect_count">{{ redirect_count }}</td></tr>
-                    <tr><th>ignore_count</th><td id="ignore_count">{{ ignore_count }}</td></tr>
+                    <tr><th>log_redirect_count</th><td id="log_redirect_count">{{ log_redirect_count }}</td></tr>
+                    <tr><th>log_retry_count</th><td id="log_retry_count">{{ log_retry_count }}</td></tr>
+                    <tr><th>log_ignore_count</th><td id="log_ignore_count">{{ log_ignore_count }}</td></tr>
 
+                    <tr><th>crawled_pages</th><td><strong class="green">{{ crawled_pages }}</strong></td></tr>
+                    <tr><th>scraped_items</th><td><strong class="green">{{ scraped_items }}</strong></td></tr>
                     <tr><th>latest_crawl</th><td id="latest_crawl"></td></tr>
                     <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
                     <tr><th>latest_log</th><td id="latest_log"></td></tr>
@@ -141,7 +156,7 @@ Using cached version. Click to refresh.
             <div class="wrap collapse-wrap">
                 <ul class="collapse">
                     <h3 style="color: red;">WARNING+</h3>
-                {% for item in re_matchs[:3] %}
+                {% for item in re_matches[:3] %}
                     {% if not item['count'] %}
                     {% else %}
                     <li>
@@ -166,7 +181,7 @@ Using cached version. Click to refresh.
                 <ul class="collapse">
                     <h3 style="color: orange;">INFO</h3>
 
-                {% for item in re_matchs[3:] %}
+                {% for item in re_matches[3:] %}
                     {% if not item['count'] %}
                     {% else %}
                     <li>
@@ -191,7 +206,7 @@ Using cached version. Click to refresh.
                 <ul class="collapse">
                     <h3 style="color: #67c23a;">DEBUG</h3>
 
-                {% for title, line in latest_matchs %}
+                {% for title, line in latest_matches %}
                     {% if not line %}
                     {% else %}
                     <li>
@@ -218,9 +233,8 @@ var latest_log_timestamp = {{ latest_log_timestamp }};
 const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
 const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
 
-//var now_timestamp = Date.now() / 1000;
-setTime();
-setColor(LAST_LOG_ALERT_SECONDS, 'font');
+my$('#current_time').innerHTML = new Date();
+setColor();
 </script>
 
 

@@ -7,7 +7,7 @@
         /* See stats.css */
         #content pre {white-space: pre-wrap;}
     </style>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='utf8.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/utf8.css') }}">
 {% endblock %}
 
 {% block loader %}
@@ -25,7 +25,7 @@
     <div class="stick"></div>
 </div>
 
-<h2>PROJECT({{ project }})&nbsp;&nbsp;&nbsp;&nbsp;SPIDER({{ spider }})</h2>
+<h2>PROJECT ({{ project }})&nbsp;&nbsp;&nbsp;&nbsp;SPIDER ({{ spider }})</h2>
 
 <div class="wrap collapse-wrap">
     <!-- <h3>INFO</h3> -->
@@ -64,7 +64,7 @@ $(function() {
     //$(window).scroll(function() {
     $(document).ready(function() {
         {% if refresh_url %}
-        history.pushState(null, '', window.location.pathname + location.search.replace('no_cache=True', 'no_cache='));
+        history.pushState(null, '', window.location.pathname + location.search.replace('refresh_cache=True', 'refresh_cache='));
         {% endif %}
 
         hideLoader();

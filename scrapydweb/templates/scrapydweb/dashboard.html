@@ -7,6 +7,11 @@
     <style>
         #pending_rows {color: red;}
     </style>
+
+    {% if SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0) %}
+    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ flag }}&pv={{ page_view }}"></script>
+    <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 3000);</script>
+    {% endif %}
 {% endblock %}
 
 {% block body %}
@@ -54,7 +59,7 @@
                 <th>PID</th>
                 <th>Start</th>
                 <th>Runtime</th>
-                <th>UTF8</th>
+                <th>Log</th>
                 <th>Stats</th>
                 {% if SHOW_SCRAPYD_ITEMS and running_rows and running_rows[0]['url_items'] %}
                 <th>Items</th>
@@ -78,13 +83,13 @@
                 <td>{{ row['runtime'] }}</td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
-                    UTF8
+                    href="{{ url_for('log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    Log
                     </a>
                 </td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    href="{{ url_for('log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
                     Stats
                     </a>
                 </td>
@@ -99,21 +104,21 @@
             {% endif %}
 
                 <td>
-                    {% if SCRAPYD_SERVERS|length > 1 %}
+                    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
                     <a class="state warning" style="margin-right: 5px;"
-                    href="{{ url_for('overview.overview', node=node, opt='stop', project=row['project'], version_job=row['job']) }}">
+                    href="{{ url_for('overview', node=node, opt='stop', project=row['project'], version_job=row['job']) }}">
                     multinode
                     </a>
                     {% endif %}
 
                     <a class="state warning" href="javascript:;"
-                    onclick="stopXHR('{{ url_for('api.api', node=node, opt='stop', project=row['project'], version_spider_job=row['job']) }}');">
+                    onclick="stopXHR('{{ url_for('api', node=node, opt='stop', project=row['project'], version_spider_job=row['job']) }}');">
                     STOP
                     </a>
                 </td>
                 <td>
                     <a class="state danger" href="javascript:;"
-                    onclick="stopXHR('{{ url_for('api.api', node=node, opt='forcestop', project=row['project'], version_spider_job=row['job']) }}', forcestop=1);">
+                    onclick="stopXHR('{{ url_for('api', node=node, opt='forcestop', project=row['project'], version_spider_job=row['job']) }}', forcestop=1);">
                     FORCESTOP
                     </a>
                 </td>
@@ -125,7 +130,7 @@
 
 
 <div class="table wrap">
-    <h3>Finished <strong style="color: red;">(latest to oldest)</strong></h3>
+    <h3>Finished <strong style="color: red;">(in the descending order)</strong></h3>
     <table>
         <thead>
             <tr>
@@ -138,7 +143,7 @@
                 <th>Start</th>
                 <th>Runtime</th>
                 <th>Finish</th>
-                <th>UTF8</th>
+                <th>Log</th>
                 <th>Stats</th>
                 {% if SHOW_SCRAPYD_ITEMS and finished_rows and finished_rows[0]['url_items'] %}
                 <th>Items</th>
@@ -161,13 +166,13 @@
                 <td>{{ row['finish'] }}</td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
-                    UTF8
+                    href="{{ url_for('log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], job_finished='True') }}">
+                    Log
                     </a>
                 </td>
                 <td>
                     <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
+                    href="{{ url_for('log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], job_finished='True') }}">
                     Stats
                     </a>
                 </td>
@@ -182,9 +187,9 @@
             {% endif %}
 
                 <td>
-                    {% if SCRAPYD_SERVERS|length > 1 %}
+                    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
                     <a class="state safe" style="margin-right: 5px;"
-                    href="{{ url_for('overview.overview', node=node, opt='schedule', project=row['project'], version_job=DEFAULT_LATEST_VERSION, spider=row['spider']) }}">
+                    href="{{ url_for('overview', node=node, opt='schedule', project=row['project'], version_job=DEFAULT_LATEST_VERSION, spider=row['spider']) }}">
                     multinode
                     </a>
                     {% endif %}
@@ -204,8 +209,8 @@
 <script>
 //setTimeout("window.location.href = '/';", 60000);
 //setTimeout("window.location.reload(true);", 20000);
-{% if DASHBORAD_RELOAD_INTERVAL > 0%}
-setTimeout("console.log(loading);if(loading == false){window.location.reload(true);}else{}", {{ DASHBORAD_RELOAD_INTERVAL * 1000 }});
+{% if DASHBOARD_RELOAD_INTERVAL > 0 %}
+setTimeout("console.log(loading);if(loading == false){window.location.reload(true);}else{}", {{ DASHBOARD_RELOAD_INTERVAL * 1000 }});
 {% endif %}
 
 function stopXHR(url, forcestop) {
@@ -247,5 +252,6 @@ function stopXHR(url, forcestop) {
     req.open("get", url, Async = true);
     req.send();
 }
+
 </script>
 {% endblock %}

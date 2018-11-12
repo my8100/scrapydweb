@@ -3,14 +3,14 @@
 {% block title %}multinode operation results{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='multinode.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/multinode.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
 {% endblock %}
 
 
 {% block body %}
 <h2>
-    <a id="title" class="link" target="_blank">{{ title }}</a>
+    <a id="title" class="link" target="_blank" href="{{ url_xhr }}">{{ title }}</a>
 </h2>
 
 
@@ -27,7 +27,7 @@
                 {% if opt == 'stop' %}
                 <th>Dashboard</th>
                 {% else %}
-                <th>Manage projects</th>
+                <th>Manage Projects</th>
                 {% endif %}
 
                 <th>Node name</th>
@@ -60,9 +60,9 @@
                     {% endif %}
 
                     {% if opt == 'stop' %}
-                    href="{{ url_for('dashboard.dashboard', node=loop.index) }}"
+                    href="{{ url_for('dashboard', node=loop.index) }}"
                     {% else %}
-                    href="{{ url_for('manage.manage', node=loop.index) }}"
+                    href="{{ url_for('manage', node=loop.index) }}"
                     {% endif %}
 
                     target="_blank">
@@ -87,26 +87,15 @@
     </table>
 
     <div class="action">
-        <a class="button safe" href="javascript:;" onclick="passToOverview();">pass to Overview</a>
+        <a class="button safe" href="javascript:;" onclick="passToOverview();">Pass to Overview</a>
     </div>
 </div>
 
 
 <script>
 var selected_nodes = {{ selected_nodes }};
-
-var url_xhr = "{{ url_for('api.api', node=selected_nodes[0], opt=opt, project=project, version_spider_job=version_job) }}";
-my$('#title').href = url_xhr;
-
-{% if opt == 'stop' %}
-var url_overview = "{{ url_for('overview.overview', node=node, opt='listjobs', project=project) }}";
-{% elif opt == 'delproject' %}
-var url_overview = "{{ url_for('overview.overview', node=node, opt='listprojects', project=project) }}";
-{% elif opt == 'delversion' %}
-var url_overview = "{{ url_for('overview.overview', node=node, opt='listversions', project=project) }}";
-{% else %}
-var url_overview = "{{ url_for('overview.overview', node=node) }}";
-{% endif %}
+var url_xhr = "{{ url_xhr }}";
+var url_overview = "{{ url_overview }}";
 
 
 window.onload = function(){
@@ -114,7 +103,7 @@ window.onload = function(){
         $('input:checkbox').not(this).prop('checked', this.checked);
     });
 
-    var r = confirm("Start to execute command on multinode?");
+    var r = confirm("Start to execute command on multinodes?");
     if(r == false) {
         return;
     }
@@ -124,6 +113,7 @@ window.onload = function(){
         execXHR(selected_nodes[idx], url);
     }
 }
+
 
 function execXHR(idx, url){
     my$('#'+'status_'+idx).innerHTML = "loading...";

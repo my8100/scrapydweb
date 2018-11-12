@@ -37,7 +37,7 @@
                 <th>Spider</th>
 
                 {% if project and spider %}
-                <th>UTF8</th>
+                <th>Log</th>
                 <th>Stats</th>
                 {% endif %}
 
@@ -67,7 +67,7 @@
             {% endif %}
 
             {% if project and spider %}
-            <td><a class="state normal" href="{{ row['url_log_utf8'] }}" onclick="showLoader();">UTF8</a></td>
+            <td><a class="state normal" href="{{ row['url_log_utf8'] }}" onclick="showLoader();">Log</a></td>
             <td><a class="state normal" href="{{ row['url_log_stats'] }}" onclick="showLoader();">Stats</a></td>
             {% endif %}
 
@@ -82,11 +82,11 @@
 
 {% if project and spider and rows %}
     <div class="action">
-        {% if SCRAPYD_SERVERS|length > 1 %}
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="button safe" href="{{ rows[0]['url_multinode_start'] }}" onclick="showLoader();">multinode</a>
         {% endif %}
 
-        <a class="button safe" href="{{ rows[0]['url_start'] }}" onclick="showLoader();">RUN SPIDER {{ spider }}</a>
+        <a class="button safe" href="{{ rows[0]['url_start'] }}" onclick="showLoader();">Run Spider ({{ spider }})</a>
     </div>
 {% endif %}
 </div>

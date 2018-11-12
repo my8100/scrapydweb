@@ -1,74 +1,95 @@
 # coding: utf8
 import re
+try:
+    from urllib.parse import urljoin
+except ImportError:
+    from urlparse import urljoin
 
-from flask import Blueprint, render_template, flash, request
-from flask import current_app as app
+from flask import render_template, flash
 
+from ..myview import MyView
 from ..vars import INFO, WARN, pattern_jobs, keys_jobs
-from ..utils import make_request
-
-bp = Blueprint('dashboard', __name__, url_prefix='/')
-check_latest_version = True
 
 
-@bp.route('/<int:node>/dashboard/')
-def dashboard(node):
-    SIMPLEUI = True if request.args.get('ui', '') == 'simple' else False
-    UI = 'simple' if SIMPLEUI else None
-    TEMPLATE = 'scrapydweb/simpleui/index.html' if SIMPLEUI else 'scrapydweb/dashboard.html'
-    TEMPLATE_RESULT = 'scrapydweb/simpleui/result.html' if SIMPLEUI else 'scrapydweb/result.html'
+page_view = 0
 
-    # http://flask.pocoo.org/docs/1.0/appcontext/#lifetime-of-the-context
-    SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
-    SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
-    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
-    SCRAPYDWEB_BIND = app.config.get('SCRAPYDWEB_BIND', '0.0.0.0')
-    SCRAPYDWEB_PORT = app.config.get('SCRAPYDWEB_PORT', 5000)
-    SHOW_DASHBOARD_JOB_COLUMN = app.config.get('SHOW_DASHBOARD_JOB_COLUMN', False)
-    DASHBORAD_RELOAD_INTERVAL = int(app.config.get('DASHBORAD_RELOAD_INTERVAL', 300))
 
-    scrapydweb_url = 'http://%s:%s' % (SCRAPYDWEB_BIND, SCRAPYDWEB_PORT)
+class DashboardView(MyView):
+    methods = ['GET']
 
-    url = 'http://%s/jobs' % SCRAPYD_SERVER
-    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
-    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
-    status_code, text = make_request(url, api=False, auth=auth)
+    def __init__(self):
+        super(self.__class__, self).__init__()
 
-    if status_code != 200 or not re.search(r'Jobs', text):
-        return render_template(TEMPLATE_RESULT, node=node,
-                               url=url_auth, status_code=status_code, text=text)
+        self.url = 'http://%s/jobs' % self.SCRAPYD_SERVER
+        self.template = 'scrapydweb/simpleui/index.html' if self.IS_SIMPLEUI else 'scrapydweb/dashboard.html'
+        self.text = ''
 
-    rows = [dict(zip(keys_jobs, row)) for row in pattern_jobs.findall(text)]
+    def dispatch_request(self, **kwargs):
+        global page_view
+        page_view += 1
 
-    pending_rows = []
-    running_rows = []
-    finished_rows = []
-    for row in rows:
-        # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
-        if row['items']:
-            row['url_items'] = url_auth[:-5] + re.search(r"href='(.*?)'>", row['items']).group(1)
+        status_code, self.text = self.make_request(self.url, api=False, auth=self.AUTH)
 
-        if not row['start']:
-            pending_rows.append(row)
-        elif not row['finish']:
-            running_rows.append(row)
+        if status_code != 200 or not re.search(r'Jobs', self.text):
+            return render_template(self.template_result, node=self.node,
+                                   url=self.url, status_code=status_code, text=self.text)
+
+        return self.generate_response()
+
+    def generate_response(self):
+        if self.IS_SIMPLEUI:
+            flash("<a href='/'>Visit desktop version</a> to experience full features.", INFO)
         else:
-            finished_rows.append(row)
+            if len(self.SCRAPYD_SERVERS) > 1 and page_view == 1:
+                flash("Use the navigation buttons above to fast switch to the same page of neighbouring node", INFO)
+            if not self.AUTH_ENABLED and len(self.SCRAPYD_SERVERS) == 1:
+                flash("Set 'DISABLE_AUTH = False' to enable basic auth for web UI", INFO)
+            if not self.SCRAPYD_LOGS_DIR and self.SCRAPYD_SERVER.split(':')[0] == '127.0.0.1':
+                flash("Set up the item 'SCRAPYD_LOGS_DIR' to speed up loading scrapy logs.", INFO)
+            if not self.CACHE_ENABLED:
+                flash("Set 'DISABLE_CACHE = False' to enable caching HTML for Log and Stats page", WARN)
+            if not self.EMAIL_ENABLED and len(self.SCRAPYD_SERVERS) == 1:
+                flash("Set 'DISABLE_EMAIL = False' to enable email notice", WARN)
 
-    if SIMPLEUI:
-        flash("<a href='/'>Visit New UI</a> to get full features.", INFO)
+        rows = [dict(zip(keys_jobs, row)) for row in pattern_jobs.findall(self.text)]
+        pending_rows = []
+        running_rows = []
+        finished_rows = []
+        for row in rows:
+            # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
+            if row['items']:
+                _url_items = re.search(r"href='(.*?)'>", row['items']).group(1)
+                # row['url_items'] = re.sub(r'/jobs$', _url_items, self.url) + _url_items
+                row['url_items'] = urljoin(self.url, _url_items)
 
-    if app.config.get('DISABLE_CACHE', False):
-        flash("Caching for utf8 and stats html is NOT working \
-              since ScrapydWeb is running with argument '--disable_cache'.", WARN)
+            if not row['start']:
+                pending_rows.append(row)
+            elif not row['finish']:
+                running_rows.append(row)
+            else:
+                finished_rows.append(row)
 
-    if SCRAPYD_SERVER.split(':')[0] == '127.0.0.1' and not app.config.get('SCRAPYD_LOGS_DIR', ''):
-        flash("Run ScrapydWeb with argument '--scrapyd_logs_dir SCRAPYD_LOGS_DIR' \
-              to speed up loading utf8 and stats html.", INFO)
-
-    return render_template(TEMPLATE, node=node,
-                           ui=UI, colspan=12, url=url_auth,
-                           scrapydweb_url=scrapydweb_url, pending_rows=pending_rows,
-                           running_rows=running_rows, finished_rows=finished_rows,
-                           SHOW_DASHBOARD_JOB_COLUMN=SHOW_DASHBOARD_JOB_COLUMN,
-                           DASHBORAD_RELOAD_INTERVAL=DASHBORAD_RELOAD_INTERVAL)
+        if self.EMAIL_ENABLED:
+            flag = 'E'
+        elif self.AUTH_ENABLED:
+            flag = 'A'
+        elif self.CACHE_ENABLED:
+            flag = 'C'
+        else:
+            flag = 'X'                
+                
+        kwargs = dict(
+            node=self.node,
+            colspan=12,
+            ui=self.UI,
+            url=self.url,
+            scrapydweb_url='http://%s:%s' % (self.SCRAPYDWEB_BIND, self.SCRAPYDWEB_PORT),
+            pending_rows=pending_rows,
+            running_rows=running_rows,
+            finished_rows=finished_rows,
+            SHOW_DASHBOARD_JOB_COLUMN=self.SHOW_DASHBOARD_JOB_COLUMN,
+            DASHBOARD_RELOAD_INTERVAL=self.DASHBOARD_RELOAD_INTERVAL,
+            page_view=page_view,
+            flag=flag
+        )
+        return render_template(self.template, **kwargs)

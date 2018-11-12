@@ -1,27 +1,44 @@
 # coding: utf8
-from flask import Blueprint, render_template, request
-from flask import current_app as app
+from flask import url_for, render_template
 
-bp = Blueprint('multinode', __name__, url_prefix='/')
+from ..myview import MyView
 
 
-@bp.route('/<int:node>/multinode/<opt>/<project>/<version_job>/', methods=('POST',))
-@bp.route('/<int:node>/multinode/<opt>/<project>/', methods=('POST',))
-def multinode(node, opt, project, version_job=None):
-    SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
+class MultinodeView(MyView):
+    methods = ['POST']
 
-    if opt == 'stop':
-        title = "STOP Project(%s) Job(%s)" % (project, version_job)
-    elif opt == 'delproject':
-        title = "DELETE Project(%s)" % project
-    elif opt == 'delversion':
-        title = "DELETE Project(%s) Version(%s)" % (project, version_job)
+    def __init__(self):
+        super(self.__class__, self).__init__()
 
-    selected_nodes = []
-    for i in range(1, len(SCRAPYD_SERVERS) + 1):
-        if request.form.get(str(i)) == 'on':
-            selected_nodes.append(i)
+        self.opt = self.view_args['opt']
+        self.project = self.view_args['project']
+        self.version_job = self.view_args['version_job']
 
-    return render_template('scrapydweb/multinode_results.html', node=node,
-                           opt=opt, project=project, version_job=version_job,
-                           title=title, selected_nodes=selected_nodes)
+        self.template = 'scrapydweb/multinode_results.html'
+
+    def dispatch_request(self, **kwargs):
+        selected_nodes = self.get_selected_nodes()
+        url_xhr = url_for('api', node=selected_nodes[0], opt=self.opt,
+                          project=self.project, version_spider_job=self.version_job)
+
+        if self.opt == 'stop':
+            title = "Stop Job (%s) of Project (%s)" % (self.project, self.version_job)
+            url_overview = url_for('overview', node=self.node, opt='listjobs', project=self.project)
+        elif self.opt == 'delversion':
+            title = "Delete Version (%s) of Project (%s)" % (self.version_job, self.project)
+            url_overview = url_for('overview', node=self.node, opt='listversions', project=self.project)
+        else:  # elif opt == 'delproject':
+            title = "Delete Project (%s)" % self.project
+            url_overview = url_for('overview', node=self.node, opt='listprojects', project=self.project)
+
+        kwargs = dict(
+            node=self.node,
+            opt=self.opt,
+            project=self.project,
+            version_job=self.version_job,
+            selected_nodes=selected_nodes,
+            url_xhr=url_xhr,
+            title=title,
+            url_overview=url_overview
+        )
+        return render_template(self.template, **kwargs)

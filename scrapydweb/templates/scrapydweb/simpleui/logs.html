@@ -31,7 +31,7 @@
             <th>Filename</th>
 
             {% if project and spider %}
-            <th>UTF8</th>
+            <th>Log</th>
             <th>Stats</th>
             <th>Action</th>
             {% endif %}
@@ -48,7 +48,7 @@
             <td>{{ row['filename']|safe }}</td>
 
             {% if project and spider %}
-            <td><a href="{{ row['url_log_utf8'] }}" onclick="showLoader();">UTF8</a></td>
+            <td><a href="{{ row['url_log_utf8'] }}" onclick="showLoader();">Log</a></td>
             <td><a href="{{ row['url_log_stats'] }}" onclick="showLoader();">Stats</a></td>
             <td><a class="button" style="background: #8BC34A;" href="{{ row['url_start'] }}">START</a></td>
             {% endif %}

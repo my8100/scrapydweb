@@ -1,50 +1,68 @@
 # coding: utf8
-from flask import Blueprint, render_template, flash, request
-from flask import current_app as app
+from flask import render_template, flash
 
-from ..vars import INFO
-
-bp = Blueprint('overview', __name__, url_prefix='/')
-check_latest_version = True
+from ..myview import MyView
+from ..vars import INFO, WARN
 
 
-@bp.route('/<int:node>/overview/<opt>/<project>/<version_job>/<spider>/', methods=('GET', 'POST'))
-@bp.route('/<int:node>/overview/<opt>/<project>/<version_job>/', methods=('GET', 'POST'))
-@bp.route('/<int:node>/overview/<opt>/<project>/', methods=('GET', 'POST'))
-@bp.route('/<int:node>/overview/', methods=('GET', 'POST'))
-def overview(node, opt=None, project=None, version_job=None, spider=None):
-    global check_latest_version
-    check_latest_version_ = check_latest_version
-    if check_latest_version:
-        check_latest_version = False
-
-    SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', ['127.0.0.1:6800'])
-    SCRAPYD_SERVER = SCRAPYD_SERVERS[node - 1]
-    SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
-    url = 'http://%s/daemonstatus.json' % SCRAPYD_SERVER
-    auth = SCRAPYD_SERVERS_AUTHS[node - 1]
-    url_auth = url.replace('http://', 'http://%s:%s@' % auth) if auth else url
+page_view = 0
 
 
-    if len(SCRAPYD_SERVERS) == 1:
-        flash("Run ScrapydWeb with argument '-ss 127.0.0.1 -ss username:password@192.168.123.123:6801#group' \
-              to set any number of Scrapyd servers to control.", INFO)
+class OverviewView(MyView):
 
-    if not(app.config.get('USERNAME', '') and app.config.get('PASSWORD', '')):
-        flash("Run ScrapydWeb with argument '--username USERNAME --password PASSWORD' to enable basic auth.", INFO)
+    def __init__(self):
+        super(self.__class__, self).__init__()
 
-    if request.method == 'POST':
-        selected_nodes = []
-        for i in range(1, len(SCRAPYD_SERVERS) + 1):
-            if request.form.get(str(i)) == 'on':
-                selected_nodes.append(i)
-    else:
-        if len(SCRAPYD_SERVERS) == 1:
-            selected_nodes = [1]
+        self.opt = self.view_args['opt']
+        self.project = self.view_args['project']
+        self.version_job = self.view_args['version_job']
+        self.spider = self.view_args['spider']
+
+        self.url = 'http://%s/daemonstatus.json' % self.SCRAPYD_SERVER
+        self.template = 'scrapydweb/overview.html'
+        self.selected_nodes = []
+
+    def dispatch_request(self, **kwargs):
+        global page_view
+        page_view += 1
+
+        if len(self.SCRAPYD_SERVERS) == 1:
+            flash("Run ScrapydWeb with argument '-ss 127.0.0.1 -ss username:password@192.168.123.123:6801#group' "
+                  "to set up any number of Scrapyd servers to control.", INFO)
         else:
-            selected_nodes = []
+            if not self.AUTH_ENABLED:
+                flash("Set 'DISABLE_AUTH = False' to enable basic auth for web UI", INFO)
+            if not self.CACHE_ENABLED:
+                flash("Set 'DISABLE_CACHE = False' to enable caching HTML for Log and Stats page", WARN)
+            if not self.EMAIL_ENABLED:
+                flash("Set 'DISABLE_EMAIL = False' to enable email notice", WARN)
 
-    return render_template('scrapydweb/overview.html', node=node,
-                           check_latest_version=check_latest_version_,
-                           opt=opt, project=project, version_job=version_job, spider=spider,
-                           selected_nodes=selected_nodes, url=url_auth)
+        if self.POST:
+            self.selected_nodes = self.get_selected_nodes()
+        else:
+            if len(self.SCRAPYD_SERVERS) == 1:
+                self.selected_nodes = [1]
+            else:
+                self.selected_nodes = []
+
+        if self.EMAIL_ENABLED:
+            flag = 'E'
+        elif self.AUTH_ENABLED:
+            flag = 'A'
+        elif self.CACHE_ENABLED:
+            flag = 'C'
+        else:
+            flag = 'X'
+            
+        kwargs = dict(
+            node=self.node,
+            opt=self.opt,
+            project=self.project,
+            version_job=self.version_job,
+            spider=self.spider,
+            url=self.url,
+            selected_nodes=self.selected_nodes,
+            page_view=page_view,
+            flag=flag
+        )
+        return render_template(self.template, **kwargs)

@@ -35,12 +35,12 @@
     </style>
 
 
-    <script type="text/javascript" src="{{ url_for('static', filename='vue.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
     <script type="text/javascript" src="{{ url_for('static', filename='element-ui@2.4.6/lib/index.js') }}"></script>
 
-    {% if SCRAPYD_SERVERS|length > 1 %}
-    <script>var SCRAPYD_SERVERS_length = {{ SCRAPYD_SERVERS|length }};</script>
-    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    <script>var SCRAPYD_SERVERS_AMOUNT = {{ SCRAPYD_SERVERS_AMOUNT }};</script>
+    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
     {% endif %}
 {% endblock %}
 
@@ -189,18 +189,18 @@
             </el-form-item>
 
             <el-form-item label-width="10px">
-                <el-button type="primary" style="font-size: 20px;" @click="checkCMD">CHECK CMD</el-button>
+                <el-button type="primary" style="font-size: 20px;" @click="checkCMD">Check CMD</el-button>
             </el-form-item>
 
             <el-form-item label-width="10px">
-                <el-input id="CMD" type="textarea" v-model="form.CMD" :autosize="{ minRows: 6, maxRows: 10}" readonly="readonly" placeholder="Press the 'CHECK CMD' button above to preview CMD"></el-input>
+                <el-input id="CMD" type="textarea" v-model="form.CMD" :autosize="{ minRows: 6, maxRows: 10}" readonly="readonly" placeholder="Press the 'Check CMD' button above to preview CMD"></el-input>
             </el-form-item>
 
         </el-form>
     </div>
 
     <form id="form_run_spider" method="post" action="{{ url_for('schedule.run', node=node) }}" enctype="multipart/form-data">
-    {% if SCRAPYD_SERVERS|length > 1 %}
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <div>
             <input type="text" name="checked_amount" value="1" hidden />
             <div class="multiselect" style="margin-left: 10px;">
@@ -238,21 +238,21 @@
         <input type="text" name="filename" hidden />
     </form>
     <div class="action">
-        <a id="run_spider" class="button safe" href="javascript:;" onclick="runSpider();">RUN SPIDER</a>
+        <a id="run_spider" class="button safe" href="javascript:;" onclick="runSpider();">Run Spider</a>
         <a id="history" class="link" target="_blank" href="{{ url_for('schedule.history', filename='history.log') }}">history</a>
     </div>
 </div>
 
 
 <script>
-var url_listprojects = "{{ url_for('api.api', node=node, opt='listprojects') }}";
-var url_listversions = "{{ url_for('api.api', node=node, opt='listversions', project='PROJECT_PLACEHOLDER') }}";
-var url_listspiders = "{{ url_for('api.api', node=node, opt='listspiders', project='PROJECT_PLACEHOLDER', version_spider_job='VERSION_PLACEHOLDER') }}";
+var url_listprojects = "{{ url_for('api', node=node, opt='listprojects') }}";
+var url_listversions = "{{ url_for('api', node=node, opt='listversions', project='PROJECT_PLACEHOLDER') }}";
+var url_listspiders = "{{ url_for('api', node=node, opt='listspiders', project='PROJECT_PLACEHOLDER', version_spider_job='VERSION_PLACEHOLDER') }}";
 var url_schedule_check = "{{ url_for('schedule.check', node=node) }}";
 
 
-{% if SCRAPYD_SERVERS|length > 1 %}
-    // Delay
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    // Put off
     window.onload = function(){
         {% if selected_nodes == [] %}
         my$('#checkbox_'+{{ first_selected_node }}).checked = true;
@@ -262,20 +262,22 @@ var url_schedule_check = "{{ url_for('schedule.check', node=node) }}";
             $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
         });
 
-        $('#checkboxes input[type=checkbox]').change(checkCheckboxes);
+        $('#checkboxes input[type=checkbox]').change(function() {
+            checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+        });
 
-        checkCheckboxes(); //For navigate back
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
     }
 {% endif %}
 
 
 function runSpider(){
     if(!my$('#form').CMD.value){
-        alert("CHECK CMD first");
+        alert("Press the 'Check CMD' button first");
         return;
     }
 
-{% if SCRAPYD_SERVERS|length > 1 %}
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
     if (checked_amount == 0) {
         alert("Select at least one node");
         return;
@@ -441,10 +443,13 @@ var Main = {
                             if(obj.status != 'ok') {
                                 alert("REQUEST got status: "+obj.status);
                                 var message = obj.message;
-                                obj.message = "See below";
+                                obj.message = "See details below";
                                 my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listprojects_new+"'>REQUEST</a><em> got status: "+obj.status+"</em><pre>"+JSON.stringify(obj, null, 4)+"</pre><pre>"+message+"</pre>";
                             } else {
                                 vm.projects = obj.projects;
+                                if(vm.projects.length == 0){
+                                    alert("NO projects found. Please check out the Manage page");
+                                }
                             }
                         } else {
                             alert("REQUEST got code: "+this.status);
@@ -488,7 +493,7 @@ var Main = {
                         if(obj.status != 'ok') {
                             alert("REQUEST got status: "+obj.status);
                             var message = obj.message;
-                            obj.message = "See below";
+                            obj.message = "See details below";
                             my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listversions_new+"'>REQUEST</a><em> got status: "+obj.status+"</em><pre>"+JSON.stringify(obj, null, 4)+"</pre><pre>"+message+"</pre>";
                         } else {
                             vm.versions = obj.versions;
@@ -522,7 +527,7 @@ var Main = {
                         if(obj.status != 'ok') {
                             alert("REQUEST got status: "+obj.status);
                             var message = obj.message;
-                            obj.message = "See below";
+                            obj.message = "See details below";
                             my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listspiders_new+"'>REQUEST</a><em> got status: "+obj.status+"</em><pre>"+JSON.stringify(obj, null, 4)+"</pre><pre>"+message+"</pre>";
                         } else {
                             vm.spiders = obj.spiders;

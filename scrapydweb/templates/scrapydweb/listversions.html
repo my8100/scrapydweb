@@ -1,15 +1,15 @@
 <div class="table wrap">
     <div style="margin-bottom: 15px;">
-        {% if SCRAPYD_SERVERS|length > 1 %}
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="button danger"
-            href="{{ url_for('overview.overview', node=node, opt='delproject', project=project) }}">
+            href="{{ url_for('overview', node=node, opt='delproject', project=project) }}">
             multinode
         </a>
         {% endif %}
 
         <a class="button danger" href="javascript:;"
-        onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}', 'Delete project \'{{ project }}\' ?');">
-        DELETE Project
+        onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}', 'Delete project \'{{ project }}\'?');">
+        Delete Project
         </a>
     </div>
 
@@ -17,9 +17,9 @@
         <thead>
             <tr>
                 <th>Version</th>
-                <th>Run spider</th>
-                <th>List spiders</th>
-                <th>Delete version</th>
+                <th>Run Spider</th>
+                <th>List Spiders</th>
+                <th>Delete Version</th>
             </tr>
         </thead>
         <tbody>
@@ -30,13 +30,13 @@
                 <td>
                     <a class="state normal" href="javascript:;"
                     onclick="execXHR('{{ url_listspiders }}', 'listspiders{{ project + version }}');">
-                    LIST Spiders
+                    List Spiders
                     </a>
                 </td>
                 <td id="delversion{{ project + version }}">
-                    {% if SCRAPYD_SERVERS|length > 1 %}
+                    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
                     <a class="state warning"
-                    href="{{ url_for('overview.overview', node=node, opt='delversion', project=project, version_job=version) }}">
+                    href="{{ url_for('overview', node=node, opt='delversion', project=project, version_job=version) }}">
                     multinode
                     </a>
                     {% endif %}
@@ -45,9 +45,9 @@
                     onclick="execXHR(
                                 '{{ url_delversion }}',
                                 'delversion{{ project + version }}',
-                                'Delete the version \'{{ version }}\' of project \'{{ project }}\' ?'
+                                'Delete the version \'{{ version }}\' of project \'{{ project }}\'?'
                             );">
-                    DELETE Version
+                    Delete Version
                     </a>
                 </td>
             </tr>

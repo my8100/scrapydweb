@@ -1,21 +1,22 @@
 # coding: utf8
 """
-REF: site-packages/scrapyd-client/scrapyd-deploy
+source: site-packages/scrapyd-client/scrapyd-deploy
 """
 import os
 import sys
 import glob
 import tempfile
 from subprocess import check_call
+import errno
+try:
+    from ConfigParser import SafeConfigParser
+except ImportError:
+    from configparser import ConfigParser as SafeConfigParser
 
 from flask import current_app as app
 
-from .scrapy.utils.python import retry_on_eintr
-from .scrapy.utils.conf import get_config
 
-
-_SETUP_PY_TEMPLATE = \
-"""# Automatically created by: scrapydweb X scrapyd-deploy
+_SETUP_PY_TEMPLATE = """# Automatically created by: scrapydweb X scrapyd-deploy
 
 from setuptools import setup, find_packages
 
@@ -27,7 +28,23 @@ setup(
 )
 """
 
-    
+
+def get_config(sources):
+    """Get Scrapy config file as a SafeConfigParser"""
+    # sources = get_sources(use_closest)
+    cfg = SafeConfigParser()
+    cfg.read(sources)
+    return cfg
+
+
+def retry_on_eintr(func, *args, **kw):
+    """Run a function and retry it while getting EINTR errors"""
+    while True:
+        try:
+            return func(*args, **kw)
+        except IOError as e:
+            if e.errno != errno.EINTR:
+                raise
 
 
 def _build_egg(scrapy_cfg_path):
@@ -38,7 +55,7 @@ def _build_egg(scrapy_cfg_path):
         # Content in myproject/scrapy.cfg
             # [settings]
             # default = demo.settings
-        settings = get_config(scrapy_cfg_path).get('settings', 'default') # demo.settings
+        settings = get_config(scrapy_cfg_path).get('settings', 'default')  # demo.settings
         _create_default_setup_py(settings=settings)
 
     d = tempfile.mkdtemp(prefix="scrapydweb-deploy-")
@@ -56,6 +73,6 @@ def _build_egg(scrapy_cfg_path):
 def _create_default_setup_py(**kwargs):
     with open('setup.py', 'w') as f:
         content = _SETUP_PY_TEMPLATE % kwargs
-        app.logger.debug('New setup.py:')
-        app.logger.debug(content)
+        app.logger.debug('New setup.py')
+        # app.logger.debug(content)
         f.write(content)

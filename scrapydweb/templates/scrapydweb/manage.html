@@ -20,7 +20,7 @@
     <h3>{{ node_name }}</h3>
     <ul class="collapse">
         {% if not results %}
-        <li>NO projects found, <a class="link" href="{{ url_deploy }}">jump to Deploy page</a> </li>
+        <li>NO projects found. Check out here to <a class="button safe" href="{{ url_deploy }}">Deploy Project</a></li>
         {% endif %}
 
     {% for project, url_listversions in results %}

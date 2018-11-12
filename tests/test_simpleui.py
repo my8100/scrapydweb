@@ -1,7 +1,11 @@
 # coding: utf8
-import json
+from flask import url_for
 
-from utils import simple_ui
+from tests.utils import PROJECT, SPIDER, OK
+from tests.utils import sleep, get_text, load_json, is_simple_ui, upload_file_deploy
+
+
+jobid = ''
 
 
 def test_index(client):
@@ -9,60 +13,85 @@ def test_index(client):
     assert '/1/dashboard/?ui=simple' in response.headers['Location']
 
 
-def test_dashboard(client):
-    response = client.get('/1/dashboard/?ui=simple')
-    assert b"Visit New UI" in response.data and simple_ui(response.data)
+def test_dashboard(app, client):
+    with app.test_request_context():
+        url = url_for('dashboard', node=1, ui='simple')
+        response = client.get(url)
+        assert 'Visit desktop version' in get_text(response) and is_simple_ui(response)
 
 
-def test_items(client):
-    response = client.get('/1/items/?ui=simple')
-    assert ((b"Directory listing for /items/" in response.data or b"No Such Resource" in response.data)
-           and simple_ui(response.data))
+def test_items(app, client):
+    title = 'Directory listing for /items/'
+    with app.test_request_context():
+        url = url_for('items', node=1, ui='simple')
+        response = client.get(url)
+        assert ((title in get_text(response) or 'No Such Resource' in get_text(response)) and is_simple_ui(response))
 
 
-def test_logs(client):
-    response = client.get('/1/logs/?ui=simple')
-    assert b"Directory listing for /logs/" in response.data and simple_ui(response.data)
+def test_logs(app, client):
+    title = 'Directory listing for /logs/'
+    with app.test_request_context():
+        url = url_for('logs', node=1, ui='simple')
+        response = client.get(url)
+        assert title in get_text(response) and is_simple_ui(response)
 
 
-def test_log_uploaded_demo_txt(client):
-    response = client.get('/1/log/uploaded/demo.txt?ui=simple')
-    assert b"Stats collection" in response.data and simple_ui(response.data)
+def test_parse_uploaded_demo_txt(app, client):
+    with app.test_request_context():
+        url = url_for('parse.uploaded', node=1, filename='demo.txt', ui='simple')
+        response = client.get(url)
+        assert 'Stats collection' in get_text(response) and is_simple_ui(response)
 
 
-def test_log_upload(client):
-    response = client.get('/1/log/upload/?ui=simple')
-    assert b"Upload and parse" in response.data and simple_ui(response.data)
+def test_parse_upload(app, client):
+    title = 'Upload a scrapy log file to parse'
+    with app.test_request_context():
+        url = url_for('parse.upload', node=1, ui='simple')
+        response = client.get(url)
+        assert title in get_text(response) and is_simple_ui(response)
 
 
-# { "message": "Scrapy 1.5.0 - no active project\r\n\r\n
-# Unknown command: list\r\n\r\nUse \"scrapy\" to see available commands\r\n",
-# "node_name": "win7-PC", "status": "error", "status_code": 200, "url": "http://127.0.0.1:6800/schedule.json" }
-def test_api_start(client):
-    response = client.get('/1/api/start/fakeproject/fakespider/?ui=simple')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and 'no active project' in js['message'] and 'times' not in js
+def test_api_start(app, client):
+    global jobid
+    upload_file_deploy(app, client, filename='demo.egg', project=PROJECT, redirect_project=PROJECT)
+
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='start', project=PROJECT, version_spider_job=SPIDER, ui='simple')
+        response = client.get(url)
+        js = load_json(response)
+        jobid = js['jobid']
+        assert js['status'] == OK and js['jobid']
 
 
-# { "message": "'fakeproject'", "node_name": "win7-PC", "status": "error",
-# "status_code": 200, "url": "http://127.0.0.1:6800/cancel.json" }
-def test_api_stop(client):
-    response = client.get('/1/api/stop/fakeproject/fakejob/?ui=simple')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and js['message'] == "'fakeproject'" and 'times' not in js
+# {'prevstate': running, 'status': 'ok',
+# 'status_code': 200, 'url': 'http://127.0.0.1:6800/cancel.json'}
+def test_api_stop(app, client):
+    sleep()
+
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='stop', project=PROJECT, version_spider_job=jobid, ui='simple')
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and js['prevstate'] == 'running' and 'times' not in js
 
 
-def test_api_forcestop(client):
-    response = client.get('/1/api/forcestop/fakeproject/fakejob/?ui=simple')
-    js = json.loads(response.data)
-    assert js['status'] == 'error' and js['message'] == "'fakeproject'" and js['times'] == 2
+def test_api_forcestop(app, client):
+    with app.test_request_context():
+        url = url_for('api', node=1, opt='forcestop', project=PROJECT, version_spider_job=jobid, ui='simple')
+        response = client.get(url)
+        js = load_json(response)
+        assert js['status'] == OK and js['prevstate'] is None and js['times'] == 2
 
 
-def test_log_utf8(client):
-    response = client.get('/1/log/utf8/fakeproject/fakespider/fakejob/?ui=simple')
-    assert b"No Such Resource" in response.data and simple_ui(response.data)
+def test_log_utf8(app, client):
+    with app.test_request_context():
+        url = url_for('log', node=1, opt='utf8', project=PROJECT, spider=SPIDER, job=jobid, ui='simple')
+        response = client.get(url)
+        assert 'utf8 - ScrapydWeb' in get_text(response) and is_simple_ui(response)
 
 
-def test_log_stats(client):
-    response = client.get('/1/log/stats/fakeproject/fakespider/fakejob/?ui=simple')
-    assert b"No Such Resource" in response.data and simple_ui(response.data)
+def test_log_stats(app, client):
+    with app.test_request_context():
+        url = url_for('log', node=1, opt='stats', project=PROJECT, spider=SPIDER, job=jobid, ui='simple')
+        response = client.get(url)
+        assert 'Stats collection' in get_text(response) and is_simple_ui(response)

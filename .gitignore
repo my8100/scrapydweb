@@ -1,6 +1,50 @@
 scrapydweb_settings.py
 scrapydweb_settings_v*.py
-scrapydweb/data/
+
+tests/*.html
+
+tests/data/*
+!tests/data/ScrapydWeb-demo/
+!tests/data/demo - 副本/
+!tests/data/demo - 副本.tar
+!tests/data/demo - 副本.zip
+!tests/data/demo.egg
+!tests/data/demo.tar
+!tests/data/demo.tar.gz
+!tests/data/demo.zip
+!tests/data/demo_inner.zip
+!tests/data/demo_only_scrapy_cfg.zip
+!tests/data/demo_outer.zip
+!tests/data/demo_without_scrapy_cfg.zip
+
+tests/data/ScrapydWeb-demo/*
+!tests/data/ScrapydWeb-demo/demo/
+!tests/data/ScrapydWeb-demo/scrapy.cfg
+
+tests/data/demo - 副本/*
+!tests/data/demo - 副本/demo/
+!tests/data/demo - 副本/scrapy.cfg
+
+scrapydweb/data/*
+!scrapydweb/data/parse/
+!scrapydweb/data/demo_projects/
+
+scrapydweb/data/parse/*
+!scrapydweb/data/parse/demo.txt
+!scrapydweb/data/parse/demo0.txt
+
+scrapydweb/data/demo_projects/*
+!scrapydweb/data/demo_projects/demo/
+!scrapydweb/data/demo_projects/demo - 副本/
+
+scrapydweb/data/demo_projects/demo/*
+!scrapydweb/data/demo_projects/demo/demo/
+!scrapydweb/data/demo_projects/demo/scrapy.cfg
+
+scrapydweb/data/demo_projects/demo - 副本/*
+!scrapydweb/data/demo_projects/demo - 副本/demo/
+!scrapydweb/data/demo_projects/demo - 副本/scrapy.cfg
+
 
 venv/
 

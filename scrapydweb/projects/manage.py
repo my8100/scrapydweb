@@ -2,99 +2,127 @@
 import datetime
 import json
 
-from flask import Blueprint, render_template, request, url_for
-from flask import current_app as app
+from flask import render_template, request, url_for
 
-from ..api import api
-from ..utils import json_dumps
-
-bp = Blueprint('manage', __name__, url_prefix='/')
+from ..myview import MyView
 
 
-@bp.route('/<int:node>/manage/<opt>/<project>/<version_spider_job>/', methods=('POST', 'GET'))  # GET for url_for ???
-@bp.route('/<int:node>/manage/<opt>/<project>/', methods=('POST', 'GET'))
-@bp.route('/<int:node>/manage/')  # /manage/ >>> listprojects
-def manage(node, opt='listprojects', project=None, version_spider_job=None):
-    text = api(node, opt, project, version_spider_job)
-    js = json.loads(text)
+template_listversions_error = """
+<a class="link" target="_blank" href="{url}">REQUEST</a>
+<em style="color: red;"> got status: {status}</em>
+<pre>{text}</pre>
+You can <a class="button safe" href="{url_deploy}">Deploy Project</a>
+with a new project name or
+<a class="button danger" href="javascript:;"
+onclick="execXHR('{url_delproject}', 'versions_of_{project}', 'Delete project \\'{project}\\'?');">
+Delete Project
+</a>
+"""
 
-    # "listversions" NOT included
-    if js['status'] != 'ok' and opt in ['listprojects', 'listspiders', 'delversion', 'delproject']:
-        if request.method == 'POST':
-            # Pass request.url instead of js['url'], for GET method
-            return ('<a class="link" target="_blank" href="%s">REQUEST</a>'
-                    '<em style="color: red;"> got status: %s</em>') % (request.url, js['status'])
+
+class ManageView(MyView):
+
+    def __init__(self):
+        super(self.__class__, self).__init__()
+
+        self.opt = self.view_args['opt']
+        self.project = self.view_args['project']
+        self.version_spider_job = self.view_args['version_spider_job']
+
+        self.text = ''
+        self.js = {}
+
+    def dispatch_request(self, **kwargs):
+        # self.text = api(self.node, self.opt, self.project, self.version_spider_job)
+        _url = url_for('api', node=self.node, opt=self.opt, project=self.project,
+                       version_spider_job=self.version_spider_job)  # '/1/api/listprojects/'
+        self.text = self.get_response_from_view(_url)
+        # _bind = '127.0.0.1' if self.SCRAPYDWEB_BIND == '0.0.0.0' else self.SCRAPYDWEB_BIND
+        # _url = 'http://{}:{}{}'.format(_bind, self.SCRAPYDWEB_PORT, _url)
+        # _auth = (self.USERNAME, self.PASSWORD) if self.AUTH_ENABLED else None
+        # status_code, self.text = self.make_request(_url, api=False, auth=_auth)
+        self.js = json.loads(self.text)
+
+        if self.js['status'] == 'ok':
+            return getattr(self, self.opt)()
         else:
-            message = js.get('message', '')
-            if message:
-                js.update({'message': 'See below'})
-            return render_template('scrapydweb/result.html', node=node,
-                                   text=json_dumps(js),
-                                   message=message)
+            return self.handle_status_error()
 
+    def handle_status_error(self):
+        if self.opt == 'listversions':
+            kwargs = dict(
+                url=self.js['url'],
+                status=self.js['status'],
+                url_deploy=url_for('deploy.deploy', node=self.node),
+                url_delproject=url_for('manage', node=self.node, opt='delproject', project=self.project),
+                project=self.project,
+                text=self.text
+            )
+            return template_listversions_error.format(**kwargs)
+        else:
+            if self.POST:
+                # Pass request.url instead of js['url'], for GET method
+                return ('<a class="link" target="_blank" href="%s">REQUEST</a>'
+                        '<em style="color: red;"> got status: %s</em>') % (request.url, self.js['status'])
+            else:
+                message = self.js.get('message', '')
+                if message:
+                    self.js.update({'message': 'See details below'})
+                return render_template('scrapydweb/result.html', node=self.node,
+                                       text=self.json_dumps(self.js), message=message)
 
-    if opt == 'listprojects':
-        node_name = js['node_name']
-        projects = js['projects']
+    def listprojects(self):
+        node_name = self.js['node_name']
+        projects = self.js['projects']
         results = []
-        for project in projects:
-            url_listversions = url_for('.manage', node=node, opt='listversions', project=project)
-            results.append((project, url_listversions))
-        if request.method == 'POST':
-            url = js['url']
+        for project_ in projects:
+            url_listversions = url_for('manage', node=self.node, opt='listversions', project=project_)
+            results.append((project_, url_listversions))
+        if self.POST:
+            url = self.js['url']
         else:
-            SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', [None])
-            auth = SCRAPYD_SERVERS_AUTHS[node - 1]
-            url = js['url'].replace('http://', 'http://%s:%s@' % auth) if auth else js['url']
-        return render_template('scrapydweb/manage.html', node=node,
+            url = self.js['url'].replace('http://', 'http://%s:%s@' % self.AUTH) if self.AUTH else self.js['url']
+
+        return render_template('scrapydweb/manage.html', node=self.node,
                                url=url, node_name=node_name, results=results,
-                               url_deploy=url_for('deploy.deploy', node=node))
+                               url_deploy=url_for('deploy.deploy', node=self.node))
 
-    elif opt == 'listversions':
-        if js['status'] != 'ok':
-            return ('<a class="link" target="_blank" href="{url}">REQUEST</a>'
-                    '<em style="color: red;"> got status: {status}</em>'
-                    '<br>Click to <a class="link" href="{url_deploy}">DEPLOY the project</a> '
-                    'with another project name or click to directly '
-                    '<a class="link" style="color: red;" target="_blank" href="{url_delproject}">'
-                    'DELETE current project</a>'
-                    '<pre>{text}</pre>').format(
-                url=js['url'], status=js['status'],
-                url_delproject=url_for('manage.manage', node=node, opt='delproject', project=project),
-                url_deploy=url_for('deploy.deploy', node=node), text=text)
-
-        node_name = js['node_name']
-        versions = js['versions']
-        url_delproject = url_for('.manage', node=node, opt='delproject', project=project)
+    def listversions(self):
+        node_name = self.js['node_name']
+        versions = self.js['versions']
+        url_delproject = url_for('manage', node=self.node, opt='delproject', project=self.project)
         results = []
-        for version in versions:
-            url_listspiders = url_for('.manage', node=node, opt='listspiders', project=project,
-                                      version_spider_job=version)
-            url_delversion = url_for('.manage', node=node, opt='delversion', project=project,
-                                     version_spider_job=version)
+        for version_ in versions:
+            url_listspiders = url_for('manage', node=self.node, opt='listspiders', project=self.project,
+                                      version_spider_job=version_)
+            url_delversion = url_for('manage', node=self.node, opt='delversion', project=self.project,
+                                     version_spider_job=version_)
             try:
-                version_readable = ' (%s)' % datetime.datetime.fromtimestamp(int(version)).isoformat()
+                version_readable = ' (%s)' % datetime.datetime.fromtimestamp(int(version_)).isoformat()
             except:
                 version_readable = ''
-            results.append((version, version_readable, url_listspiders, url_delversion))
-        return render_template('scrapydweb/listversions.html', node=node,
-                               url_delproject=url_delproject, project=project,
+            results.append((version_, version_readable, url_listspiders, url_delversion))
+
+        return render_template('scrapydweb/listversions.html', node=self.node,
+                               url_delproject=url_delproject, project=self.project,
                                node_name=node_name, results=results)
 
-    elif opt == 'listspiders':
-        spiders = js['spiders']
+    def listspiders(self):
+        spiders = self.js['spiders']
         results = []
-        for spider in spiders:
-            url_schedule = url_for('schedule.schedule', node=node, project=project, version=version_spider_job,
-                                   spider=spider)
-            url_multinode_schedule = url_for('overview.overview', node=node, opt='schedule', project=project,
-                                             version_job=version_spider_job, spider=spider)
-            results.append((spider, url_schedule, url_multinode_schedule))
-        return render_template('scrapydweb/listspiders.html', node=node,
-                               results=results)
+        for spider_ in spiders:
+            url_schedule = url_for('schedule.schedule', node=self.node,
+                                   project=self.project, version=self.version_spider_job, spider=spider_)
+            url_multinode_schedule = url_for('overview', node=self.node, opt='schedule',
+                                             project=self.project, version_job=self.version_spider_job, spider=spider_)
+            results.append((spider_, url_schedule, url_multinode_schedule))
 
-    elif opt == 'delversion':
+        return render_template('scrapydweb/listspiders.html', node=self.node, results=results)
+
+    @staticmethod
+    def delversion():
         return '<em style="color: red;">deleted</em>'
 
-    elif opt == 'delproject':
+    @staticmethod
+    def delproject():
         return '<em style="color: red;">deleted</em>'

@@ -4,7 +4,7 @@ import datetime
 import re
 
 
-pattern_datetime = '\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}'
+pattern_datetime = r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}'
 # 2018-06-25 18:12:49 [scrapy.extensions.logstats] INFO: Crawled 2318 pages (at 2 pages/min), scraped 68438 items (at 60 items/min)
 pattern_datas = re.compile(r"""\n(?P<time_>%s).*?
                             Crawled\s(?P<pages>\d+)\s+pages\s
@@ -14,12 +14,12 @@ pattern_datas = re.compile(r"""\n(?P<time_>%s).*?
                             """ % pattern_datetime, re.X)
 
 patterns = [
-    '\]\sCRITICAL:',
-    '\]\sERROR:',
-    '\]\sWARNING:',
-    'Retrying\s<',
-    'Redirecting\s\(',
-    'Ignoring\sresponse\s<',
+    r'\]\sCRITICAL:',
+    r'\]\sERROR:',
+    r'\]\sWARNING:',
+    r':\sRedirecting\s\(',
+    r':\sRetrying\s<',
+    r':\sIgnoring\sresponse\s<',
 ]
 pattern_logs_count_list = []
 for p in patterns:
@@ -31,7 +31,8 @@ for p in patterns:
 
 
 def parse_log(text, kwargs):
-    fake_time = '2018-01-01 00:00:01'
+    # fake_time = '2018-01-01 00:00:01'
+    fake_time = time.strftime('%Y-%m-%d %H:%M:%S')
     lines = re.split('\r*\n', text)
 
     def re_search_final_match(pattern, default='', step=-1):
@@ -54,26 +55,26 @@ def parse_log(text, kwargs):
 
     # Extract datas for chart
     datas = pattern_datas.findall(text)
-    # str(time_) to avoid [u'2018-08-22 18:43:05', 0, 0, 0, 0] in js using python2
+    # For compatibility with Python 2, str(time_) to avoid [u'2018-08-22 18:43:05', 0, 0, 0, 0] in JavaScript
     kwargs['datas'] = [[str(time_), int(pages), int(pages_min), int(items), int(items_min)]
                        for (time_, pages, pages_min, items, items_min) in datas]
-    kwargs['crawled_pages'] = datas[-1][1] if datas else 0
-    kwargs['scraped_items'] = datas[-1][3] if datas else 0
+    kwargs['crawled_pages'] = int(datas[-1][1]) if datas else 0
+    kwargs['scraped_items'] = int(datas[-1][3]) if datas else 0
 
     # Extract only last log
     latest_tuples = [
         # ('resuming_crawl', 'Resuming\scrawl'),
-        ('latest_offsite', 'Filtered\soffsite'),
-        ('latest_duplicate', 'Filtered\sduplicate'),
-        ('latest_crawl', 'Crawled\s\(\d+'),
-        ('latest_scrape', 'Scraped\sfrom\s'),
-        ('latest_item', '^\{.*\}'),
-        ('latest_stat', 'Crawled\s\d+\spages'),
+        ('latest_offsite', r'Filtered\soffsite'),
+        ('latest_duplicate', r'Filtered\sduplicate'),
+        ('latest_crawl', r'Crawled\s\(\d+'),
+        ('latest_scrape', r'Scraped\sfrom\s'),
+        ('latest_item', r'^\{.*\}'),
+        ('latest_stat', r'Crawled\s\d+\spages'),
     ]
-    latest_matchs = [('resuming_crawl', re_search_final_match('Resuming\scrawl', step=1))]
+    latest_matches = [('resuming_crawl', re_search_final_match(r'Resuming\scrawl', step=1))]
     for k, v in latest_tuples:
         ret = re_search_final_match(v)
-        latest_matchs.append((k, ret))
+        latest_matches.append((k, ret))
         if k == 'latest_crawl':
             latest_crawl_datetime = datetime.datetime.strptime(ret[:19] or fake_time, '%Y-%m-%d %H:%M:%S')
         elif k == 'latest_scrape':
@@ -81,35 +82,59 @@ def parse_log(text, kwargs):
 
     kwargs['latest_crawl_timestamp'] = time.mktime(latest_crawl_datetime.timetuple())
     kwargs['latest_scrape_timestamp'] = time.mktime(latest_scrape_datetime.timetuple())
-    kwargs['latest_matchs'] = latest_matchs
+    kwargs['latest_matches'] = latest_matches
 
     # Extract log count and details
     logs_count_tuples = [
-        ('log_critical_logs', 'log_critical_logs_details', 'log_critical_count'),
-        ('log_error_logs', 'log_error_logs_details', 'log_error_count'),
-        ('log_warning_logs', 'log_warning_logs_details', 'log_warning_count'),
-        ('retry_logs', 'retry_logs_details', 'retry_count'),
-        ('redirect_logs', 'redirect_logs_details', 'redirect_count'),
-        ('ignore_logs', 'ignore_logs_details', 'ignore_count'),
+        ('critical_logs', 'log_critical_logs_details', 'log_critical_count'),
+        ('error_logs', 'log_error_logs_details', 'log_error_count'),
+        ('warning_logs', 'log_warning_logs_details', 'log_warning_count'),
+        ('redirect_logs', 'redirect_logs_details', 'log_redirect_count'),
+        ('retry_logs', 'retry_logs_details', 'log_retry_count'),
+        ('ignore_logs', 'ignore_logs_details', 'log_ignore_count'),
     ]
     text += '2018 DEBUG'
-    re_matchs = []
+    re_matches = []
     for idx, (pattern, (log_title, log_details, log_count)) in enumerate(
             zip(pattern_logs_count_list, logs_count_tuples)):
-        matchs = pattern.findall(text)
-        count = len(matchs)
+        matches = pattern.findall(text)
+        count = len(matches)
         kwargs[log_count] = count
 
-        re_matchs.append({
+        re_matches.append({
             'log_title': log_title,
             'log_details': log_details,
             'count': count,
-            'line': matchs[-1] if matchs else '',
-            # 'lines': '\n'.join(matchs) #if idx < 3 else '',
-            'lines': matchs
+            'line': matches[-1] if matches else '',
+            # 'lines': '\n'.join(matches) #if idx < 3 else '',
+            'lines': matches
         })
-    kwargs['re_matchs'] = re_matchs
+    kwargs['re_matches'] = re_matches
 
     # 'finish_reason': 'closespider_timeout',
     m = re.search(r":\s'(.*?)'", re_search_final_match(r"'finish_reason'"))
     kwargs['finish_reason'] = m.group(1) if m else ''
+
+    if kwargs['finish_reason']:
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'downloader/response_status_count/200'"))
+        kwargs['crawled_pages'] = max(kwargs['crawled_pages'], int(m.group(1)) if m else 0)
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'item_scraped_count'"))
+        kwargs['scraped_items'] = (int(m.group(1)) if m else 0) or kwargs['scraped_items']
+
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'log_count/CRITICAL'"))
+        kwargs['log_critical_count'] = int(m.group(1)) if m else kwargs['log_critical_count']
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'log_count/ERROR'"))
+        kwargs['log_error_count'] = int(m.group(1)) if m else kwargs['log_error_count']
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'log_count/WARNING'"))
+        kwargs['log_warning_count'] = int(m.group(1)) if m else kwargs['log_warning_count']
+
+        m_301 = re.search(r":\s(\d+)", re_search_final_match(r"'downloader/response_status_count/301'"))
+        count_301 = int(m_301.group(1)) if m_301 else 0
+        m_302 = re.search(r":\s(\d+)", re_search_final_match(r"'downloader/response_status_count/302'"))
+        count_302 = int(m_302.group(1)) if m_302 else 0
+        kwargs['log_redirect_count'] = (count_301 + count_302) or kwargs['log_redirect_count']
+
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'retry/count'"))
+        kwargs['log_retry_count'] = int(m.group(1)) if m else kwargs['log_retry_count']
+        m = re.search(r":\s(\d+)", re_search_final_match(r"'httperror/response_ignored_count'"))
+        kwargs['log_ignore_count'] = int(m.group(1)) if m else kwargs['log_ignore_count']

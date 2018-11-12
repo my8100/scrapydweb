@@ -23,14 +23,14 @@
 
 
 {% block body %}
-<p>browser >>> scrapydweb@{{ scrapydweb_url }} >>>
-    <a target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">scrapyd@http://{{ SCRAPYD_SERVERS[node-1] }}</a>
+<p>Browser >>> ScrapydWeb@{{ scrapydweb_url }} >>>
+    <a target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">Scrapyd@http://{{ SCRAPYD_SERVERS[node-1] }}</a>
 </p>
 
 {% if SHOW_SCRAPYD_ITEMS %}
 <h2>
     <a class="button" style="width: 125px; height: 21px;"
-    href="{{ url_for('items.items', node=node, ui=ui) }}" >
+    href="{{ url_for('items', node=node, ui=ui) }}" >
     Items directory
     </a>
 </h2>
@@ -38,7 +38,7 @@
 
 <h2>
     <a class="button" style="width: 125px; height: 21px;"
-    href="{{ url_for('logs.logs', node=node, ui=ui) }}" >
+    href="{{ url_for('logs', node=node, ui=ui) }}" >
     Logs directory
     </a>
 </h2>
@@ -67,7 +67,7 @@
         <th>PID</th>
         <th>Start</th>
         <th>Runtime</th>
-        <th>UTF8</th>
+        <th>Log</th>
         <th>Stats</th>
         {% if SHOW_SCRAPYD_ITEMS and running_rows and running_rows[0]['url_items'] %}
         <th>Items</th>
@@ -106,13 +106,13 @@
         <td>{{ row['start'] }}</td>
         <td>{{ row['runtime'] }}</td>
         <td>
-            <a href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
-            UTF8
+            Log
             </a>
         </td>
         <td>
-            <a href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
             Stats
             </a>
@@ -131,14 +131,14 @@
         <td>
             <a id="{{ row['job'] }}" class="button" style="background: orange;"
             onclick="myFunction('{{ row['job'] }}')"
-            href="{{ url_for('api.api', node=node, opt='stop', project=row['project'], version_spider_job=row['job']) }}">
+            href="{{ url_for('api', node=node, opt='stop', project=row['project'], version_spider_job=row['job']) }}">
             STOP
             </a>
         </td>
         <td>
             <a id="{{ row['job'] }}force" class="button" style="background: red;"
             onclick="myFunction('{{ row['job'] }}force')"
-            href="{{ url_for('api.api', node=node, opt='forcestop', project=row['project'], version_spider_job=row['job']) }}">
+            href="{{ url_for('api', node=node, opt='forcestop', project=row['project'], version_spider_job=row['job']) }}">
             FORCESTOP
             </a>
         </td>
@@ -147,9 +147,11 @@
 
 
     <tr>
-        <th colspan="{{ colspan }}" style="background-color: #ddd;">Finished</th>
+        <th colspan="{{ colspan }}" style="background-color: #ddd;">
+        Finished <strong style="color: red;">(in the descending order)</strong>
+        </th>
     </tr>
-{% for row in finished_rows %}
+{% for row in finished_rows[::-1] %}
     <tr>
         <td>{{ row['project'] }}</td>
         <td>{{ row['spider'] }}</td>
@@ -161,13 +163,13 @@
         <td>{{ row['start'] }}</td>
         <td>{{ row['runtime'] }}</td>
         <td>
-            <a href="{{ url_for('log.log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
-            UTF8
+            Log
             </a>
         </td>
         <td>
-            <a href="{{ url_for('log.log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
+            <a href="{{ url_for('log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], ui=ui) }}"
             onclick="showLoader();">
             Stats
             </a>
@@ -186,7 +188,7 @@
         <td>
             <a id="{{ row['job'] }}" class="button" style="background: #8BC34A;"
             onclick="myFunction('{{ row['job'] }}')"
-            href="{{ url_for('api.api', node=node, opt='start', project=row['project'], version_spider_job=row['spider']) }}">
+            href="{{ url_for('api', node=node, opt='start', project=row['project'], version_spider_job=row['spider']) }}">
             START
             </a>
         </td>

@@ -1,5 +1,13 @@
 Release History
 ===============
+1.0.0rc1 (2018-11-12)
+------------------
+- Add **Email Notice**
+- Add switch for skipping unselected nodes when using navigation buttons
+- **Refactor codes**
+- Change SCRAPYDWEB_SETTINGS_PY to 'scrapydweb_settings_v4.py'
+
+
 0.9.9 (2018-10-24)
 ------------------
 - Fix the bug that **fails to start up on macOS** because of setting preexec_fn for caching subprocess in v0.9.8

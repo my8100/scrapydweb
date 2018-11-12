@@ -3,13 +3,13 @@
 {% block title %}run results{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='multinode.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='multinode.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/multinode.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
 {% endblock %}
 
 
 {% block body %}
-<h2>RUN SPIDER results</h2>
+<h2>Run Spider</h2>
 
 <div class="table wrap">
     <table>
@@ -21,7 +21,7 @@
                 </th>
                 <th>Index</th>
                 <th>Dashboard</th>
-                <th>Node name</th>
+                <th>Node Name</th>
                 <th>Status</th>
                 <th>Project</th>
                 <th>Version</th>
@@ -36,7 +36,7 @@
                 <td><input type="checkbox" id="checkbox_{{ first_selected_node }}" name="{{ first_selected_node }}" checked /></td>
                 <td>{{ first_selected_node }}</td>
                 <td>
-                    <a href="{{ url_for('dashboard.dashboard', node=first_selected_node) }}"
+                    <a href="{{ url_for('dashboard', node=first_selected_node) }}"
                     {% if first_selected_node == node %}
                     class="state safe"
                     {% else %}
@@ -69,7 +69,7 @@
                     class="state normal"
                     {% endif %}
 
-                    href="{{ url_for('dashboard.dashboard', node=loop.index) }}"
+                    href="{{ url_for('dashboard', node=loop.index) }}"
                     target="_blank">
                     {{ SCRAPYD_SERVERS[loop.index-1] }}
                     </a>
@@ -89,7 +89,7 @@
     </table>
 
     <div class="action">
-        <a class="button safe" href="javascript:;" onclick="passToOverview();">pass to Overview</a>
+        <a class="button safe" href="javascript:;" onclick="passToOverview();">Pass to Overview</a>
     </div>
 </div>
 
@@ -98,7 +98,7 @@ var first_selected_node = {{ first_selected_node }};
 var selected_nodes = {{ selected_nodes }};
 
 var url_xhr = "{{ url_for('schedule.schedule_xhr', node=1, filename=filename) }}";
-var url_overview = "{{ url_for('overview.overview', node=node, opt='stop', project=project, version_job=js['jobid']) }}";
+var url_overview = "{{ url_for('overview', node=node, opt='stop', project=project, version_job=js['jobid']) }}";
 
 
 window.onload = function(){
@@ -107,7 +107,7 @@ window.onload = function(){
     });
 
 {% if selected_nodes|length >1 %}
-    var r = confirm("Start to execute command on multinode?");
+    var r = confirm("Start to run spider on remaining nodes?");
     if(r == false) {
         return;
     }
