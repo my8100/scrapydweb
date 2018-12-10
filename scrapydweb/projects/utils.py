@@ -1,4 +1,6 @@
 # coding: utf8
+import os
+import errno
 from collections import OrderedDict
 
 
@@ -29,3 +31,14 @@ class Slot:
 
 
 slot = Slot()
+
+
+# https://stackoverflow.com/a/600612/10517783
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError as err:  # Python >2.5
+        if err.errno == errno.EEXIST and os.path.isdir(path):
+            pass
+        else:
+            raise

@@ -1,15 +1,15 @@
 {% extends 'base.html' %}
 
-{% block title %}upload logfile{% endblock %}
+{% block title %}parse log{% endblock %}
 
 {% block head %}
     <style>
         form {margin: 16px 0;}
         #demo {
-            padding-top: 8px;
             padding-left:12px;
-            opacity: 0;
-            cursor: default;
+            padding-top: 8px;
+            /* opacity: 0; */
+            /* cursor: default; */
         }
     </style>
 {% endblock %}
@@ -21,7 +21,7 @@
     <form method="post" enctype="multipart/form-data">
         <div class="upload">
             <label class="upload-button">
-                <input id='file' type="file" name="file" accept=".log, .txt" />
+                <input id="file" type="file" name="file" accept=".log, .txt" />
                 Select
             </label>
 
@@ -30,7 +30,7 @@
             <a href="javascript:;" class="submit" onclick="uploadLogfile();">
                 <i class="iconfont icon-upload"></i>
             </a>
-            <a id='demo' class="link" href="{{ url_parse_demo }}">demo</a>
+            <a id="demo" class="link" href="{{ url_parse_demo }}">demo</a>
         </div>
     </form>
 <div>

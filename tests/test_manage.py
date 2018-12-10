@@ -4,7 +4,7 @@ from collections import OrderedDict
 from flask import url_for
 
 from tests.utils import PROJECT, VERSION, FAKE_PROJECT, FAKE_VERSION
-from tests.utils import get_text, is_simple_ui, upload_file_deploy
+from tests.utils import get_text, is_mobileui, upload_file_deploy
 
 
 def test_listprojects(app, client):
@@ -15,7 +15,7 @@ def test_listprojects(app, client):
     with app.test_request_context():
         url = url_for('manage', node=1)
         response = client.get(url)
-        assert title in get_text(response) and not is_simple_ui(response)
+        assert title in get_text(response) and not is_mobileui(response)
 
 
 def test_listversions(app, client):
@@ -49,7 +49,7 @@ def test_listspiders_del(app, client):
         )
         d['listspiders_fail'] = dict(
             url=url_for('manage', node=1, opt='listspiders', project=FAKE_PROJECT, version_spider_job=FAKE_VERSION),
-            checks=['listspiders.json', 'FileNotFoundError']
+            checks=['listspiders.json', 'No such file or directory']
         )
 
         d['delversion'] = dict(

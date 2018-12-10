@@ -19,12 +19,19 @@ if not os.path.exists(HISTORY_LOG):
         f.write(u'history.log')
 
 
-def generate_cmd(url, data):
-    cmd = 'curl %s' % url
+def generate_cmd(auth, url, data):
+    if auth:
+        cmd = 'curl -u %s:%s %s' % (auth[0], auth[1], url)
+    else:
+        cmd = 'curl %s' % url
+
     for key, value in data.items():
         if key == 'setting':
             for v in value:
-                cmd += ' -d setting=%s=%s' % (tuple(v.split('=', 1)))
+                if re.match(r'USER_AGENT=', v):
+                    cmd += ' --data-urlencode "setting=%s=%s"' % (tuple(v.split('=', 1)))
+                else:
+                    cmd += ' -d setting=%s=%s' % (tuple(v.split('=', 1)))
         else:
             cmd += ' -d %s=%s' % (key, value)
 
@@ -57,7 +64,7 @@ class ScheduleView(MyView):
             first_selected_node = selected_nodes[0]
         else:
             if self.project:
-                # START button of Dashboard or Logs page, Run Spider button of Deploy Project results(change home url)
+                # START button of Dashboard page / Run Spider button of Logs page
                 selected_nodes = [self.node]
             else:
                 selected_nodes = []
@@ -71,7 +78,15 @@ class ScheduleView(MyView):
             # jobid=self.get_now_string(),
             url=self.url,
             selected_nodes=selected_nodes,
-            first_selected_node=first_selected_node
+            first_selected_node=first_selected_node,
+            url_overview=url_for('overview', node=self.node, opt='schedule'),
+            url_schedule_run=url_for('schedule.run', node=self.node),
+            url_schedule_history=url_for('schedule.history', filename='history.log'),
+            url_listprojects=url_for('api', node=self.node, opt='listprojects'),
+            url_listversions=url_for('api', node=self.node, opt='listversions', project='PROJECT_PLACEHOLDER'),
+            url_listspiders=url_for('api', node=self.node, opt='listspiders', project='PROJECT_PLACEHOLDER',
+                                    version_spider_job='VERSION_PLACEHOLDER'),
+            url_schedule_check=url_for('schedule.check', node=self.node)
         )
 
         return render_template(self.template, **kwargs)
@@ -93,9 +108,11 @@ class CheckView(MyView):
         self.prepare_data()
         self.logger.debug(self.data)
 
-        cmd = generate_cmd(self.url, self.data)
+        cmd = generate_cmd(self.AUTH, self.url, self.data)
         # '-d' may be in project name, like 'ScrapydWeb-demo'
-        return self.json_dumps({'filename': self.filename, 'cmd': re.sub(r'\s+-d\s+', '\r\n-d ', cmd)})
+        cmd = re.sub(r'\s+-d\s+', ' \\\r\n-d ', cmd)
+        cmd = re.sub(r'\s+--data-urlencode\s+', ' \\\r\n--data-urlencode ', cmd)
+        return self.json_dumps({'filename': self.filename, 'cmd': cmd})
 
     def prepare_data(self):
         for k, d in [('project', 'projectname'), ('_version', DEFAULT_LATEST_VERSION),
@@ -109,9 +126,9 @@ class CheckView(MyView):
         self.data['setting'] = []
         ua = UA_DICT.get(request.form.get('USER_AGENT', ''), '')
         if ua:
-            self.data['setting'].append('USER_AGENT="%s"' % ua)
+            self.data['setting'].append('USER_AGENT=%s' % ua)
 
-        for key in ['ROBOTSTXT_OBEY', 'CONCURRENT_REQUESTS', 'DOWNLOAD_DELAY']:
+        for key in ['COOKIES_ENABLED', 'ROBOTSTXT_OBEY', 'CONCURRENT_REQUESTS', 'DOWNLOAD_DELAY']:
             value = request.form.get(key, '')
             if value:
                 self.data['setting'].append("%s=%s" % (key, value))
@@ -131,6 +148,7 @@ class CheckView(MyView):
                 if m_arg and m_arg.group(1) != 'setting':
                     self.data[m_arg.group(1)] = m_arg.group(2)
 
+        self.data['setting'].sort()
         _version = self.data.get('_version', 'default-the-latest-version')
         _filename = '{project}_{version}_{spider}'.format(project=self.data['project'],
                                                           version=_version,
@@ -150,7 +168,6 @@ class RunView(MyView):
 
         self.url = ''
         self.template = 'scrapydweb/schedule_results.html'
-        self.template_result = 'scrapydweb/result.html'
 
         self.slot = slot
         self.selected_nodes_amount = 0
@@ -173,11 +190,14 @@ class RunView(MyView):
             self.selected_nodes = self.get_selected_nodes()
             self.first_selected_node = self.selected_nodes[0]
             self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVERS[self.first_selected_node - 1]
+            # Note that self.first_selected_node != self.node
+            self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.first_selected_node - 1]
         else:
             self.selected_nodes = [self.node]
             self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
 
         self.data = self.slot.data.get(self.filename)
+        # self.data = None  # For test only
         if not self.data:
             filepath = os.path.join(SCHEDULE_PATH, self.filename)
             with io.open(filepath, 'rb') as f:
@@ -191,7 +211,7 @@ class RunView(MyView):
                 '#' * 50,
                 time.ctime(),
                 str([self.SCRAPYD_SERVERS[i - 1] for i in self.selected_nodes]),
-                generate_cmd(self.url, self.data),
+                generate_cmd(self.AUTH, self.url, self.data),
                 self.json_dumps(self.js),
                 ''
             ])
@@ -208,10 +228,13 @@ class RunView(MyView):
                 project=self.data['project'],
                 version=self.data.get('_version', DEFAULT_LATEST_VERSION),
                 spider=self.data['spider'],
-                filename=self.filename,
                 selected_nodes=self.selected_nodes,
                 first_selected_node=self.first_selected_node,
-                js=self.js
+                js=self.js,
+                url_dashboard_first_selected_node=url_for('dashboard', node=self.first_selected_node),
+                url_xhr=url_for('schedule.schedule_xhr', node=self.node, filename=self.filename),
+                url_overview=url_for('overview', node=self.node, opt='stop', project=self.data['project'],
+                                     version_job=self.js['jobid'])
             )
             return render_template(self.template, **kwargs)
         else:
@@ -226,7 +249,7 @@ class RunView(MyView):
             else:
                 alert = "Fail to schedule, got status: " + self.js['status']
 
-            return render_template(self.template_result, node=self.node,
+            return render_template(self.template_fail, node=self.node,
                                    alert=alert, text=self.json_dumps(self.js), message=message)
 
 
@@ -244,6 +267,7 @@ class ScheduleXhrView(MyView):
 
     def dispatch_request(self, **kwargs):
         self.data = self.slot.data.get(self.filename)
+        # self.data = None  # For test only
         if not self.data:
             filepath = os.path.join(SCHEDULE_PATH, self.filename)
             with io.open(filepath, 'rb') as f:

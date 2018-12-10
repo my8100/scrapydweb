@@ -1,5 +1,13 @@
 Release History
 ===============
+1.0.0rc2 (2018-12-10)
+------------------
+- Fix the bug that mistakenly sets the auth for the first selected node when deploying project or scheduling spider
+- Add **Mobile UI** (Dashboard page only)
+- Add test codes for Scrapyd cluster
+- Change SCRAPYDWEB_SETTINGS_PY to 'scrapydweb_settings_v5.py'
+
+
 1.0.0rc1 (2018-11-12)
 ------------------
 - Add **Email Notice**
@@ -18,7 +26,7 @@ Release History
 
 0.9.8 (2018-10-19)
 ------------------
-- Kill caching subprocess when main process is killed
+- Add the mechanism of killing HTML caching subprocess when main process is killed
 
 
 0.9.7 (2018-10-16)
@@ -29,17 +37,17 @@ Release History
 0.9.6 (2018-10-15)
 ------------------
 - Support accessing Scrapyd servers protected by basic auth
-- Change SCRAPYDWEB_SETTINGS_PY to 'scrapydweb_settings_v2.py'
 - Update caching mechanism: finished job would be cached only once
 - Add navigation buttons for switching to same page (like 'Stats') of neighboring node
 - Remove .log.gz and .gz extension in 'Parse log' page
+- Change SCRAPYDWEB_SETTINGS_PY to 'scrapydweb_settings_v2.py'
 
 
 0.9.5 (2018-10-12)
 ------------------
+- Fix the bug that auth argument from command line doesnot take effect
 - Add Items page
 - Add SCRAPYD_LOG_EXTENSIONS for locating Scrapy log
-- Fix the bug that auth argument from command line doesnot take effect
 
 
 0.9.4 (2018-10-10)

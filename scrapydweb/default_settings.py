@@ -2,14 +2,19 @@
 """
 How ScrapydWeb works:
 BROWSER_HOST <<<>>> SCRAPYDWEB_BIND:SCRAPYDWEB_PORT <<<>>> SCRAPYD_SERVERS
-
-Run 'scrapydweb -h' to get help, then a config file named 'scrapydweb_settings_vN.py' (N for a number)
-would be copied to current working directory, in which you can custom settings.
-
-Note that 'scrapydweb_settings_vN.py' may contain only a portion of setting items of 'default_settings.py',
-you can check out here to get the latest version of default_settings.py:
-https://github.com/my8100/scrapydweb/blob/master/scrapydweb/default_settings.py
 """
+
+########################################################################
+########################################################################
+## QUICK SETUP: Simply search and update the SCRAPYD_SERVERS item, leave the rest as default.
+## Recommended Reading: [How to efficiently manage your distributed web scraping projects]
+## (https://medium.com/@my8100)
+########################################################################
+## 快速设置：搜索并更新 SCRAPYD_SERVERS 配置项即可，其余配置项保留默认值。
+## 推荐阅读：[如何简单高效地部署和监控分布式爬虫项目]
+## (https://juejin.im/post/5bebc5fd6fb9a04a053f3a0e)
+########################################################################
+########################################################################
 
 
 ############################## ScrapydWeb ##############################
@@ -18,8 +23,8 @@ https://github.com/my8100/scrapydweb/blob/master/scrapydweb/default_settings.py
 SCRAPYDWEB_BIND = '0.0.0.0'
 SCRAPYDWEB_PORT = 5000
 
-# Set False to enable basic auth for web UI
-DISABLE_AUTH = True
+# Set True to enable basic auth for web UI
+ENABLE_AUTH = False
 # In order to enable basic auth, both USERNAME and PASSWORD should be non-empty strings
 USERNAME = ''
 PASSWORD = ''
@@ -32,30 +37,36 @@ SCRAPY_PROJECTS_DIR = ''
 
 
 ############################## Scrapyd #################################
-# Support Multinode Scrapyd servers
-    # string format: username:password@ip:port#group
-        # default port would be 6800 if not provided,
-        # basic auth and group info are both optional.
-        # e.g., '127.0.0.1' or 'username:password@192.168.123.123:6801#group'
+# Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed and started on all of your hosts.
+# Note that if you want to visit Scrapyd remotely,
+# you have to manually set the [bind_address](https://scrapyd.readthedocs.io/en/latest/config.html#bind-address)
+# to 'bind_address = 0.0.0.0' and restart Scrapyd to make it visible externally.
+# ------------------------------------------------------------------------------------------------------------------
+# 请先确保所有主机都已经安装和启动 [Scrapyd](https://github.com/scrapy/scrapyd) ，
+# 如需远程访问 Scrapyd，则需将 Scrapyd 配置文件中的 [bind_address](https://scrapyd.readthedocs.io/en/latest/config.html#bind-address)
+# 修改为 'bind_address = 0.0.0.0'，然后重启 Scrapyd。
 
-    # tuple format: (username, password, ip, port, group)
-        # When username or password or group info is too complicated (e.g., contains ':@#'),
-        # or if ScrapydWeb fails to parse the string format passed in,
-        # it's recommended to pass in a 5 elements tuple
-        # e.g., ('', '', '127.0.0.1', '', '') or ('username', 'password', '192.168.123.123', '6801', 'group')
+# Support multiple Scrapyd servers:
+# - string format: username:password@ip:port#group
+#   - default port would be 6800 if not provided,
+#   - basic auth and group info are both optional.
+#   - e.g., '127.0.0.1' or 'username:password@192.168.123.123:6801#group'
+# - tuple format: (username, password, ip, port, group)
+#   - When username or password or group info is too complicated (e.g., contains ':@#'),
+#   - or if ScrapydWeb fails to parse the string format passed in,
+#   - it's recommended to pass in a tuple with 5 elements
+#   - e.g., ('', '', '127.0.0.1', '', '') or ('username', 'password', '192.168.123.123', '6801', 'group')
 SCRAPYD_SERVERS = [
-    '127.0.0.1',
+    '127.0.0.1:6800',
     # 'username:password@localhost:6801#group',
-
-    # ('', '', '127.0.0.1', '', ''),
     ('username', 'password', 'localhost', '6801', 'group'),
 ]
 
 # Set to speed up loading scrapy logs.
 # e.g., 'C:/Users/username/logs/' or '/home/username/logs/'
-# The setting takes effect only when both ScrapydWeb and Scrapyd run on the same machine,
+# The setting takes effect only when both ScrapydWeb and Scrapyd run on the same host,
 # and the Scrapyd server ip is added as '127.0.0.1'.
-# Check out here to find out where the Scrapy logs are stored:
+# Check out below link to find out where the Scrapy logs are stored:
 # https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir
 SCRAPYD_LOGS_DIR = ''
 
@@ -81,8 +92,8 @@ DAEMONSTATUS_REFRESH_INTERVAL = 10
 
 
 ############################## HTML Caching ############################
-# Set True to disable caching HTML for Log and Stats page in the background periodically
-DISABLE_CACHE = False
+# Set False to disable caching HTML for Log and Stats page in the background periodically
+ENABLE_CACHE = True
 
 # Sleep seconds between the end of last round of caching and the start of next round
 CACHE_ROUND_INTERVAL = 300
@@ -96,18 +107,21 @@ DELETE_CACHE = False
 
 ############################## Email Notice ############################
 # Keep in mind that "Email Notice" depends on "HTML Caching" to collect statistics,
-# so you have to enable "HTML Caching" by setting "DISABLE_CACHE = False"
-# before setting "DISABLE_EMAIL = False" (check out the "HTML Caching" section above).
+# so you have to enable "HTML Caching" by setting "ENABLE_CACHE = True"
+# before setting "ENABLE_EMAIL = True" (check out the "HTML Caching" section above).
 
-# In order to get noticed (and stop/forcestop a job when triggered) in time,
-# you may reduce the value of CACHE_ROUND_INTERVAL (and CACHE_REQUEST_INTERVAL),
+# In order to be notified (and stop/forcestop a job when triggered) in time,
+# you can reduce the value of CACHE_ROUND_INTERVAL (and CACHE_REQUEST_INTERVAL),
 # at the cost of burdening both CPU and bandwidth of your servers.
 
-# Check out here if you are using ECS of Alibaba Cloud and your SMTP server provides TCP port 25 only.
+# Tip: set SCRAPYDWEB_BIND to the actual IP of  your server, then you can visit ScrapydWeb via the links in the email.
+# (check out the "ScrapydWeb" section above)
+
+# Check out below link if you are using ECS of Alibaba Cloud and your SMTP server provides TCP port 25 only:
 # https://www.alibabacloud.com/help/doc-detail/56130.htm
 ########################################################################
-# Set False to enable email notice
-DISABLE_EMAIL = True
+# Set True to enable email notice
+ENABLE_EMAIL = False
 
 ############### smtp settings ###############
 SMTP_SERVER = ''
@@ -144,7 +158,7 @@ FROM_ADDR = ''
 # e.g., 'password4gmail'
 # As for different email service provider, you might have to get an APP password (like Gmail)
 # or an authorization code (like QQ mail) and set it as EMAIL_PASSWORD.
-# Check out here to get more help:
+# Check out below links to get more help:
 # https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as provider using Python?
 # https://stackoverflow.com/a/26053352/10517783 Python smtplib proxy support
 EMAIL_PASSWORD = ''
@@ -168,13 +182,13 @@ ON_JOB_RUNNING_INTERVAL = 0
 # Set True to enable trigger when job is finished
 ON_JOB_FINISHED = False
 
-# LOG_XXX_THRESHOLD: Set 0 to disable trigger, otherwise, set a positive integer as the threshold
-# for a specific kind of log. Then you will get email noticed the first time reaching the threshold.
-# LOG_XXX_TRIGGER_STOP: Set True to stop current job automatically when reaching LOG_XXX_THRESHOLD.
-# LOG_XXX_TRIGGER_FORCESTOP: Set True to forcestop current job automatically when reaching LOG_XXX_THRESHOLD.
+# - LOG_XXX_THRESHOLD: Set 0 to disable trigger, otherwise, set a positive integer as the threshold
+# for a specific kind of log. Then a corresponding email would be sent the first time reaching the threshold.
+# - LOG_XXX_TRIGGER_STOP: Set True to stop current job automatically when reaching LOG_XXX_THRESHOLD.
+# - LOG_XXX_TRIGGER_FORCESTOP: Set True to forcestop current job automatically when reaching LOG_XXX_THRESHOLD.
 
 # Note that LOG_XXX_TRIGGER_STOP would send SIGTERM only one time and try to shut down the crawler gracefully.
-# Whereas LOG_XXX_TRIGGER_FORCESTOP would force UNCLEAN shutdown, with no Scrapy stats dumped!
+# Whereas LOG_XXX_TRIGGER_FORCESTOP would force UNCLEAN shutdown, without Scrapy stats dumped!
 
 # When LOG_XXX_THRESHOLD is set non-zero and both LOG_XXX_TRIGGER_STOP and LOG_XXX_TRIGGER_FORCESTOP are set False,
 # a trigger email would be sent without executing 'STOP' or 'FORCESTOP'.
@@ -182,6 +196,9 @@ ON_JOB_FINISHED = False
 # no matter how many LOG_XXX_TRIGGER_STOP are triggered.
 # When any LOG_XXX_TRIGGER_STOP and any LOG_XXX_TRIGGER_FORCESTOP are triggered at the same time, 'FORCESTOP' would
 # be executed.
+
+# Note that LOG_XXX_TRIGGER_STOP and LOG_XXX_TRIGGER_FORCESTOP still would be executed even when current time
+# is not within EMAIL_WORKING_DAYS and EMAIL_WORKING_HOURS, though NO email would be sent.
 LOG_CRITICAL_THRESHOLD = 0
 LOG_CRITICAL_TRIGGER_STOP = False
 LOG_CRITICAL_TRIGGER_FORCESTOP = False
@@ -213,5 +230,5 @@ LOG_IGNORE_TRIGGER_FORCESTOP = False
 # since its side effects includes creating two caching subprocess in the background.
 DEBUG = False
 
-# Set True to set logging leverl to DEBUG for getting more information about how ScrapydWeb works
+# Set True to set logging level to DEBUG for getting more information about how ScrapydWeb works
 VERBOSE = False

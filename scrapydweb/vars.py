@@ -1,5 +1,7 @@
 # coding: utf8
 import os
+import io
+import time
 import glob
 import re
 
@@ -12,7 +14,6 @@ DEPLOY_PATH = os.path.join(DATA_PATH, 'deploy')
 SCHEDULE_PATH = os.path.join(DATA_PATH, 'schedule')
 DEMO_PROJECTS_PATH = os.path.join(DATA_PATH, 'demo_projects')
 
-
 for p in [DATA_PATH, PARSE_PATH, CACHE_PATH, DEPLOY_PATH, SCHEDULE_PATH, DEMO_PROJECTS_PATH]:
     if not os.path.isdir(p):
         os.mkdir(p)
@@ -20,6 +21,29 @@ for p in [DATA_PATH, PARSE_PATH, CACHE_PATH, DEPLOY_PATH, SCHEDULE_PATH, DEMO_PR
         for file in glob.glob(os.path.join(p, '*.*')):
             if not os.path.split(file)[-1] in ['demo.txt', 'history.log']:
                 os.remove(file)
+
+
+LAST_CHECK_UPDATE = os.path.join(DATA_PATH, 'last_check_update')
+
+try:
+    if not os.path.exists(LAST_CHECK_UPDATE):
+        with io.open(LAST_CHECK_UPDATE, 'w') as f:
+            f.write(u'{:.0f}'.format(time.time()))
+        CHECK_UPDATE = True
+    else:
+        with io.open(LAST_CHECK_UPDATE, 'r+') as f:
+            if time.time() - int(f.read()) > 3600 * 24 * 7:
+                f.seek(0)
+                f.write(u'{:.0f}'.format(time.time()))
+                CHECK_UPDATE = True
+            else:
+                CHECK_UPDATE = False
+except:
+    try:
+        os.remove(LAST_CHECK_UPDATE)
+    except:
+        pass
+    CHECK_UPDATE = True
 
 
 INFO = 'info'

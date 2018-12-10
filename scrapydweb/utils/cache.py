@@ -7,6 +7,7 @@ import re
 import json
 
 import requests
+from requests.adapters import HTTPAdapter
 try:
     from psutil import pid_exists
 except ImportError:
@@ -186,8 +187,8 @@ if __name__ == '__main__':
     verbose = True if verbose == 'True' else False
 
     session = requests.Session()
-    session.mount('http://', requests.adapters.HTTPAdapter(pool_connections=1000, pool_maxsize=1000))
-    session.mount('https://', requests.adapters.HTTPAdapter(pool_connections=1000, pool_maxsize=1000))
+    session.mount('http://', HTTPAdapter(pool_connections=1000, pool_maxsize=1000))
+    session.mount('https://', HTTPAdapter(pool_connections=1000, pool_maxsize=1000))
     if username and password:
         session.auth = (username, password)
     timeout = 60

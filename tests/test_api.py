@@ -1,8 +1,7 @@
 # coding: utf8
 from flask import url_for
 
-from scrapydweb.vars import DEFAULT_LATEST_VERSION
-from tests.utils import PROJECT, VERSION, SPIDER, JOBID, OK, ERROR
+from tests.utils import PROJECT, VERSION, SPIDER, JOBID, OK, ERROR, DEFAULT_LATEST_VERSION
 from tests.utils import load_json, upload_file_deploy
 
 

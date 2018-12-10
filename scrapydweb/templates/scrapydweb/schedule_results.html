@@ -3,8 +3,8 @@
 {% block title %}run results{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/multinode.css') }}">
-    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ static_css_multinode }}">
+    <script type="text/javascript" src="{{ static_js_multinode }}"></script>
 {% endblock %}
 
 
@@ -36,7 +36,7 @@
                 <td><input type="checkbox" id="checkbox_{{ first_selected_node }}" name="{{ first_selected_node }}" checked /></td>
                 <td>{{ first_selected_node }}</td>
                 <td>
-                    <a href="{{ url_for('dashboard', node=first_selected_node) }}"
+                    <a href="{{ url_dashboard_first_selected_node }}"
                     {% if first_selected_node == node %}
                     class="state safe"
                     {% else %}
@@ -48,7 +48,7 @@
                     </a>
                 </td>
                 <td>{{ js['node_name'] }}</td>
-                <td><em>{{ js['status'] }}</em></td>
+                <td><em class="pass">{{ js['status'] }}</em></td>
                 <td>{{ project }}</td>
                 <td>{{ version }}</td>
                 <td>{{ spider }}</td>
@@ -69,13 +69,13 @@
                     class="state normal"
                     {% endif %}
 
-                    href="{{ url_for('dashboard', node=loop.index) }}"
+                    href="{{ url_dashboard_list[loop.index-1] }}"
                     target="_blank">
                     {{ SCRAPYD_SERVERS[loop.index-1] }}
                     </a>
                 </td>
                 <td id="node_name_{{ loop.index }}"></td>
-                <td><em id="status_{{ loop.index }}"></em></td>
+                <td id="status_{{ loop.index }}"></td>
                 <td id="project_{{ loop.index }}"></td>
                 <td id="version_{{ loop.index }}"></td>
                 <td id="spider_{{ loop.index }}"></td>
@@ -85,7 +85,7 @@
     {% endfor %}
 
         </tbody>
-    <form>
+    </form>
     </table>
 
     <div class="action">
@@ -97,20 +97,27 @@
 var first_selected_node = {{ first_selected_node }};
 var selected_nodes = {{ selected_nodes }};
 
-var url_xhr = "{{ url_for('schedule.schedule_xhr', node=1, filename=filename) }}";
-var url_overview = "{{ url_for('overview', node=node, opt='stop', project=project, version_job=js['jobid']) }}";
+var url_xhr = "{{ url_xhr }}";
+var url_overview = "{{ url_overview }}";
 
 
 window.onload = function(){
     $('#checkall').click(function () {
-        $('input:checkbox').not(this).prop('checked', this.checked);
+        $('table input:checkbox').not(this).prop('checked', this.checked);
     });
 
-{% if selected_nodes|length >1 %}
-    var r = confirm("Start to run spider on remaining nodes?");
-    if(r == false) {
-        return;
-    }
+{% if selected_nodes|length > 1 %}
+    setTimeout("fireXHR();", 500);
+{% endif %}
+}
+
+
+{% if selected_nodes|length > 1 %}
+function fireXHR(){
+    //var r = confirm("Start to run spider on remaining nodes?");
+    //if(r == false) {
+    //    return;
+    //}
 
     for(idx in selected_nodes){
         if(selected_nodes[idx] != first_selected_node){
@@ -118,12 +125,11 @@ window.onload = function(){
             execXHR(selected_nodes[idx], url);
         }
     }
-{% endif %}
 }
 
 
 function execXHR(idx, url){
-    my$('#'+'status_'+idx).innerHTML = "loading...";
+    my$('#'+'status_'+idx).innerHTML = '<em class="normal">loading...</em>';
     var req = new XMLHttpRequest();
     req.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -132,24 +138,23 @@ function execXHR(idx, url){
                 if(obj.status == 'ok') {
                     console.log('#'+'node_name_'+idx, obj.node_name);
                     my$('#'+'node_name_'+idx).innerHTML = obj.node_name;
-                    my$('#'+'status_'+idx).innerHTML = obj.status;
+                    my$('#'+'status_'+idx).innerHTML = '<em class="pass">'+obj.status+'</em>';
                     my$('#'+'project_'+idx).innerHTML = "{{ project }}";
                     my$('#'+'version_'+idx).innerHTML = "{{ version }}";
                     my$('#'+'spider_'+idx).innerHTML = "{{ spider }}";
                     my$('#'+'jobid_'+idx).innerHTML = obj.jobid;
                     my$('#'+'checkbox_'+idx).checked = true;
                 } else {
-                    my$('#'+'status_'+idx).innerHTML = "<a target='_blank' class='link' href='"+url+"'>"+"REQUEST</a> got status: "+obj.status;
-                    my$('#'+'status_'+idx).style.color = 'red';
+                    my$('#'+'status_'+idx).innerHTML = getRequestFailHtml(url, 'status', obj.status);
                 }
             } else {
-                my$('#'+'status_'+idx).innerHTML = "<a target='_blank' class='link' href='"+url+"'>"+"REQUEST</a> got code: "+this.status;
-                my$('#'+'status_'+idx).style.color = 'red';
+                my$('#'+'status_'+idx).innerHTML = getRequestFailHtml(url, 'code', this.status);
             }
         }
     };
     req.open("post", url, Async=true);
     req.send();
 }
+{% endif %}
 </script>
 {% endblock %}

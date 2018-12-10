@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}manage projects{% endblock %}
+{% block title %}manage{% endblock %}
 
 {% block head %}
     <style>
@@ -20,7 +20,7 @@
     <h3>{{ node_name }}</h3>
     <ul class="collapse">
         {% if not results %}
-        <li>NO projects found. Check out here to <a class="button safe" href="{{ url_deploy }}">Deploy Project</a></li>
+        <li>NO projects found. Go to <a class="button safe" href="{{ url_deploy }}">Deploy Project</a></li>
         {% endif %}
 
     {% for project, url_listversions in results %}
@@ -52,7 +52,7 @@ function execXHR(url, id, popup){
             if (this.status == 200) {
                 my$('#'+id).innerHTML = this.responseText;
             } else {
-                my$('#'+id).innerHTML = '<a class="link" target="blank_" href="'+url+'">REQUEST</a><em style="color: red;"> got code: '+this.status+'</em>';
+                my$('#'+id).innerHTML = getRequestFailHtml(url, 'code', this.status);
                 //alert("REQUEST got code: " + this.status);
             }
         }
@@ -65,15 +65,15 @@ function execXHR(url, id, popup){
 <script>
 // handle collapse components
 (function () {
-    var collapse = my$('.collapse')
-    var titles = my$$('.collapse .title')
-    var lis = my$$('.collapse li')
+    var collapse = my$('.collapse');
+    var titles = my$$('.collapse .title');
+    var lis = my$$('.collapse li');
     titles.forEach(function(title) {
         title.addEventListener('click', function(e){
-            var index = [].indexOf.call(titles, this)
-            lis[index].classList.toggle('active')
-        })
-    })
+            var index = [].indexOf.call(titles, this);
+            lis[index].classList.toggle('active');
+        });
+    });
 })();
 </script>
 {% endblock %}

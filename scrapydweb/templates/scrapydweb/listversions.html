@@ -2,7 +2,7 @@
     <div style="margin-bottom: 15px;">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="button danger"
-            href="{{ url_for('overview', node=node, opt='delproject', project=project) }}">
+            href="{{ url_multinode_delproject }}">
             multinode
         </a>
         {% endif %}
@@ -23,7 +23,7 @@
             </tr>
         </thead>
         <tbody>
-        {% for version, version_readable, url_listspiders, url_delversion in results %}
+        {% for version, version_readable, url_listspiders, url_multinode_delversion, url_delversion in results %}
             <tr>
                 <td>{{ version + version_readable }}</td>
                 <td id="listspiders{{ project + version }}" class="spiders"></td>
@@ -35,10 +35,7 @@
                 </td>
                 <td id="delversion{{ project + version }}">
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state warning"
-                    href="{{ url_for('overview', node=node, opt='delversion', project=project, version_job=version) }}">
-                    multinode
-                    </a>
+                    <a class="state warning" href="{{ url_multinode_delversion }}">multinode</a>
                     {% endif %}
 
                     <a class="state warning" href="javascript:;"

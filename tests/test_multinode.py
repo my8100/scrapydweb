@@ -8,8 +8,12 @@ from tests.utils import get_text
 def multinode_command(app, client, opt, title, project, version_job=None):
     with app.test_request_context():
         url = url_for('multinode', node=1, opt=opt, project=project, version_job=version_job)
-        response = client.post(url, content_type='multipart/form-data', data={'1': 'on'})
-        assert title in get_text(response)
+        data = {'1': 'on', '2': 'on'}
+        response = client.post(url, content_type='multipart/form-data', data=data)
+        text = get_text(response)
+        assert (title in text
+                and 'id="checkbox_1"' in text
+                and 'id="checkbox_2"' in text)
 
 
 def test_multinode_stop(app, client):

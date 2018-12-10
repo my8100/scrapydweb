@@ -1,5 +1,6 @@
 # coding: utf8
 import os
+import io
 
 from setuptools import find_packages, setup
 
@@ -10,8 +11,8 @@ about = {}
 with open(os.path.join(CWD, 'scrapydweb', '__version__.py')) as f:
     exec(f.read(), about)
 
-with open("README.md", "r") as fh:
-    long_description = fh.read()
+with io.open("README.md", 'r', encoding='utf8') as f:
+    long_description = f.read()
 
 
 setup(
@@ -26,7 +27,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
 
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests", )),
     include_package_data=True,
     zip_safe=False,
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*",

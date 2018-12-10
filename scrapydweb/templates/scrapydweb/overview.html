@@ -3,15 +3,15 @@
 {% block title %}overview{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='element-ui@2.4.6/lib/theme-chalk/index.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
     <style>
         #app {margin-bottom: 20px;}
         .el-tabs {margin-bottom: 20px;}
         .switch {margin-top: 10px;}
         .item {
-            margin-top: 1px;
             margin-left: 20px;
             margin-right: 20px;
+            margin-top: 1px;
         }
         #invert_selection {margin-top: 7px;}
         #total .el-badge__content {background-color: #67c23a}
@@ -21,33 +21,41 @@
         .el-button.is-disabled:hover {cursor: default;}
         .el-button--danger {background-color: #fd6b6e}
         .el-button--warning {background-color: #feb324} /* orange */
-        .el-button {font-size: 18px; border: 0;}
+        .el-button {
+            border: 0;
+            font-size: 18px;
+        }
     </style>
 
-    {% if SCRAPYD_SERVERS_AMOUNT > 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0) %}
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0 or page_view % 10 == 0) %}
     <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ flag }}&pv={{ page_view }}"></script>
     <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 3000);</script>
+    {% else %}
+    <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
     {% endif %}
 
-    <!-- <script type="text/javascript" src="{{ url_for('static', filename='js/polyfill.js') }}"></script> -->
-    <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='element-ui@2.4.6/lib/index.js') }}"></script>
+    <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
+    <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 
 {% block body %}
-<h2><a class="link" target="_blank" href="{{ url }}">
-    Monitor and control all your Scrapyd servers</a>
-</h2>
+{% if (SCRAPYD_SERVERS_AMOUNT > 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0)) or IS_IE_EDGE %}
+<script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
+{% endif %}
 
+
+<h2><a class="link" target="_blank" href="{{ url }}">
+    Monitor and control all of your Scrapyd servers</a>
+</h2>
 
 <form method="post" enctype="multipart/form-data" hidden></form>
 
 <div id="app">
 <template>
     <el-tabs v-model="activeTab" type="border-card" @tab-click="handleTabClick">
-        <el-tab-pane label="Deploy Project" name="deploy_project">
-            <el-button type="primary" @click="deployProject">{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}Deploy Project</el-button>
+        <el-tab-pane label="Deploy Project" name="deploy">
+            <el-button type="primary" @click="deployProject">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Deploy Project</el-button>
         </el-tab-pane>
 
         <el-tab-pane label="Run Spider" name="schedule">
@@ -61,7 +69,7 @@
                 <el-input v-model="input.spider" placeholder="spider name(optional)" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="success" @click="runSpider">{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}Run Spider</el-button>
+                <el-button type="success" @click="runSpider">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Run Spider</el-button>
             </el-col>
         </el-tab-pane>
 
@@ -73,13 +81,13 @@
                 <el-input v-model="input.jobid" placeholder="jobid" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="danger" @click="stopJob">{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}Stop Job</el-button>
+                <el-button type="danger" @click="stopJob">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Stop Job</el-button>
             </el-col>
         </el-tab-pane>
 
 
         <el-tab-pane label="List Projects" name="listprojects">
-            <el-button type="primary" @click="listProjects" round>{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}List Projects</el-button>
+            <el-button type="primary" @click="listProjects" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Projects</el-button>
         </el-tab-pane>
 
         <el-tab-pane label="List Versions" name="listversions">
@@ -87,7 +95,7 @@
                 <el-input v-model="input.project" placeholder="project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="primary" @click="listVersions" round>{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}List Versions</el-button>
+                <el-button type="primary" @click="listVersions" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Versions</el-button>
             </el-col>
         </el-tab-pane>
 
@@ -99,7 +107,7 @@
                 <el-input v-model="input.version_schedule" placeholder="version({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="primary" @click="listSpiders" round>{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}List Spiders</el-button>
+                <el-button type="primary" @click="listSpiders" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Spiders</el-button>
             </el-col>
         </el-tab-pane>
 
@@ -108,7 +116,7 @@
                 <el-input v-model="input.project" placeholder="project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="primary" @click="listJobs" round>{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}Running Jobs</el-button>
+                <el-button type="primary" @click="listJobs" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Running Jobs</el-button>
             </el-col>
         </el-tab-pane>
 
@@ -121,7 +129,7 @@
                 <el-input v-model="input.version_delversion" placeholder="version" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="warning" @click="deleteVersion">{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}Delete Version</el-button>
+                <el-button type="warning" @click="deleteVersion">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Version</el-button>
             </el-col>
         </el-tab-pane>
 
@@ -130,7 +138,7 @@
                 <el-input v-model="input.project" placeholder="project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-button type="danger" @click="deleteProject">{% if SCRAPYD_SERVERS_AMOUNT > 1%}Multinode {% endif %}Delete Project</el-button>
+                <el-button type="danger" @click="deleteProject">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Project</el-button>
             </el-col>
         </el-tab-pane>
     </el-tabs>
@@ -207,10 +215,8 @@
 
         <el-table-column prop="listinfo" label="Status / List INFO" sortable min-width="190" align="center" :sort-method="sortListinfo" show-overflow-tooltip>
             <template slot-scope="scope">
-                <a target="_blank" class="link" v-bind:style="{ display: scope.row.display_listinfo }"
-                    :href="scope.row.url_listinfo"
-                >REQUEST</a>
-                <em class="listinfo" v-bind:style="{ color: scope.row.color_listinfo }">{{scope.row.return_listinfo}}</em>
+                <a target="_blank" class="request" v-bind:style="{ display: scope.row.display_listinfo }" :href="scope.row.url_listinfo">REQUEST</a>
+                <em v-bind:class="scope.row.emClass">{{scope.row.return_listinfo}}</em>
             </template>
         </el-table-column>
 
@@ -277,7 +283,7 @@ var Main = {
         filter: "",
         invert_filter: false,
 
-        activeTab: "{{ opt or 'deploy_project' }}",
+        activeTab: "{{ opt or 'deploy' }}",
 
         input: {
             project: "{{ project or '' }}",
@@ -321,13 +327,13 @@ var Main = {
             cls:"state normal",
             {% endif %}
 
-            dashboard: "{{ url_for('dashboard', node=loop.index) }}",
+            dashboard: "{{ url_dashboard_list[loop.index-1] }}",
             node_name: "",
 
             display_listinfo: "none",
             url_listinfo: "",
             return_listinfo: "loading...",
-            color_listinfo: "black",
+            emClass: "normal",
 
             pending: "",
             pendingStyleObject: {},
@@ -344,7 +350,7 @@ var Main = {
 
     created() {
         for(idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]){
-            var url_daemonstatus = "{{ url_for('api', node=node, opt='daemonstatus') }}".replace(/\/\d+/, '/'+(parseInt(idx)+1));
+            var url_daemonstatus = "{{ url_daemonstatus }}".replace(/\/\d+/, '/'+(parseInt(idx)+1));
             this.updateOverview(idx, url_daemonstatus);
         }
     },
@@ -367,8 +373,7 @@ var Main = {
                     var node = nodesSelected[idx];
                     this.toggleSelection([this.tableData[node-1]]);
                     nodesSelected_new.push(node);
-                } catch(err) {
-                }
+                } catch(err) {console.log(err);}
             }
             localStorage.setItem('nodesSelected', JSON.stringify(nodesSelected_new));
             console.log(localStorage.nodesSelected);
@@ -571,6 +576,7 @@ var Main = {
                             //console.log(vm.flag_listinfo);
                             if (vm.flag_listinfo == 'status') {
                                 //vm.tableData[idx]['status'] = obj.status;
+                                vm.tableData[idx]['emClass'] = "pass";
                                 vm.tableData[idx]['return_listinfo'] = obj.status;
                             }
 
@@ -590,7 +596,7 @@ var Main = {
                                 vm.tableData[idx]['display_listinfo'] = "";
                                 vm.tableData[idx]['url_listinfo'] = url;
                                 vm.tableData[idx]['return_listinfo'] = " got status: "+obj.status;
-                                vm.tableData[idx]['color_listinfo'] = "red";
+                                vm.tableData[idx]['emClass'] = "fail";
                             }
                         }
                     } else {
@@ -598,7 +604,7 @@ var Main = {
                             vm.tableData[idx]['display_listinfo'] = "";
                             vm.tableData[idx]['url_listinfo'] = url;
                             vm.tableData[idx]['return_listinfo'] = " got code: "+this.status;
-                            vm.tableData[idx]['color_listinfo'] = "red";
+                            vm.tableData[idx]['emClass'] = "fail";
                         }
                     }
                 }
@@ -610,8 +616,8 @@ var Main = {
         updateListinfo:function(idx, url, flag) {
             vm.tableData[idx]['display_listinfo'] = "none";
             vm.tableData[idx]['url_listinfo'] = "";
+            vm.tableData[idx]['emClass'] = "normal";
             vm.tableData[idx]['return_listinfo'] = "loading...";
-            vm.tableData[idx]['color_listinfo'] = "black";
             var req = new XMLHttpRequest();
             req.onreadystatechange = function() {
                 //console.log(vm.flag_listinfo);
@@ -638,13 +644,13 @@ var Main = {
                             vm.tableData[idx]['display_listinfo'] = "";
                             vm.tableData[idx]['url_listinfo'] = url;
                             vm.tableData[idx]['return_listinfo'] = " got status: "+obj.status;
-                            vm.tableData[idx]['color_listinfo'] = "red";
+                            vm.tableData[idx]['emClass'] = "fail";
                         }
                     } else {
                         vm.tableData[idx]['display_listinfo'] = "";
                         vm.tableData[idx]['url_listinfo'] = url;
                         vm.tableData[idx]['return_listinfo'] = " got code: "+this.status;
-                        vm.tableData[idx]['color_listinfo'] = "red";
+                        vm.tableData[idx]['emClass'] = "fail";
                     }
                 }
             };
@@ -682,7 +688,7 @@ var Main = {
                     this.tableData[idx]['display_listinfo'] = "none";
                     this.tableData[idx]['url_listinfo'] = "";
                     this.tableData[idx]['return_listinfo'] = "";
-                    this.tableData[idx]['color_listinfo'] = "black";
+                    this.tableData[idx]['emClass'] = "normal";
                 }
             }
         },
@@ -691,7 +697,7 @@ var Main = {
             if (this.checkNodesSelected()) {
                 return;
             }
-            var url_listprojects = "{{ url_for('api', node=node, opt='listprojects') }}"
+            var url_listprojects = "{{ url_listprojects }}"
             this.flag_listinfo = "listprojects";
             this.execUpdateListinfo(url_listprojects, "listprojects");
         },
@@ -703,7 +709,7 @@ var Main = {
             if (this.checkNodesSelected()) {
                 return;
             }
-            var url_listversions = "{{ url_for('api', node=node, opt='listversions', project='PROJECT_PLACEHOLDER') }}";
+            var url_listversions = "{{ url_listversions }}";
             this.flag_listinfo = "listversions";
             this.execUpdateListinfo(url_listversions.replace(/PROJECT_PLACEHOLDER/, this.input.project), "listversions");
         },
@@ -715,7 +721,7 @@ var Main = {
             if (this.checkNodesSelected()) {
                 return;
             }
-            var url_listspiders = "{{ url_for('api', node=node, opt='listspiders', project='PROJECT_PLACEHOLDER', version_spider_job='VERSION_PLACEHOLDER') }}";
+            var url_listspiders = "{{ url_listspiders }}";
             var DEFAULT_LATEST_VERSION = "{{ DEFAULT_LATEST_VERSION }}";
             this.flag_listinfo = "listspiders";
             if (this.input.version_schedule == DEFAULT_LATEST_VERSION || this.input.version_schedule == "") {
@@ -732,7 +738,7 @@ var Main = {
             if (this.checkNodesSelected()) {
                 return;
             }
-            var url_listjobs = "{{ url_for('api', node=node, opt='listjobs', project='PROJECT_PLACEHOLDER') }}";
+            var url_listjobs = "{{ url_listjobs }}";
             this.flag_listinfo = "listjobs";
             this.execUpdateListinfo(url_listjobs.replace(/PROJECT_PLACEHOLDER/, this.input.project), "listjobs");
         },
@@ -758,14 +764,14 @@ var Main = {
             if (this.checkNodesSelected()) {
                 return;
             }
-            this.updateSubmitForm("{{ url_for('deploy.deploy', node=node) }}");
+            this.updateSubmitForm("{{ url_deploy }}");
         },
 
         runSpider() {
             if (this.checkNodesSelected()) {
                 return;
             }
-            var url_schedule = "{{ url_for('schedule.schedule', node=node, project='PROJECT_PLACEHOLDER', version='VERSION_PLACEHOLDER', spider='SPIDER_PLACEHOLDER') }}";
+            var url_schedule = "{{ url_schedule }}";
             if (this.input.project && this.input.version_schedule && this.input.spider) {
                 this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_schedule).replace(/SPIDER_PLACEHOLDER/, this.input.spider));
             } else if (this.input.project && this.input.version_schedule) {
@@ -788,7 +794,7 @@ var Main = {
                 return;
             }
 
-            var url_stop = "{{ url_for('multinode', node=node, opt='stop', project='PROJECT_PLACEHOLDER', version_job='JOB_PLACEHOLDER') }}";
+            var url_stop = "{{ url_stop }}";
             this.updateSubmitForm(url_stop.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/JOB_PLACEHOLDER/, this.input.jobid));
         },
 
@@ -803,7 +809,7 @@ var Main = {
                 return;
             }
 
-            var url_delversion = "{{ url_for('multinode', node=node, opt='delversion', project='PROJECT_PLACEHOLDER', version_job='VERSION_PLACEHOLDER') }}";
+            var url_delversion = "{{ url_delversion }}";
             this.updateSubmitForm(url_delversion.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_delversion));
         },
 
@@ -815,63 +821,12 @@ var Main = {
                 return;
             }
 
-            var url_delproject = "{{ url_for('multinode', node=node, opt='delproject', project='PROJECT_PLACEHOLDER') }}";
+            var url_delproject = "{{ url_delproject }}";
             this.updateSubmitForm(url_delproject.replace(/PROJECT_PLACEHOLDER/, this.input.project));
         },
     }
   }
-var Ctor = Vue.extend(Main)
-vm = new Ctor().$mount('#app')
-</script>
-
-
-<script>
-//https://stackoverflow.com/questions/4565112/javascript-how-to-find-out-if-the-user-browser-is-chrome/13348618#13348618
-//https://stackoverflow.com/questions/3514784/what-is-the-best-way-to-detect-a-mobile-device-in-jquery
-function checkChrome() {
-    // 'iPad' NOT included
-    if( /Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-        var r = confirm("Mobile device detected, switch to simple UI?");
-        if(r == true) {
-            window.location.href = "/?ui=simple";
-            return;
-        }
-    }
-    var isChromium = window.chrome;
-    var winNav = window.navigator;
-    var vendorName = winNav.vendor;
-    var isOpera = typeof window.opr !== "undefined";
-    var isIEedge = winNav.userAgent.indexOf("Edge") > -1;
-    var isFirefox = winNav.userAgent.indexOf("Firefox") > -1;
-    var isSafari = winNav.userAgent.indexOf("Safari") > -1 && winNav.userAgent.indexOf("Chrome") == -1;
-    var isIOSChrome = winNav.userAgent.match("CriOS");
-
-    //if (isIOSChrome) {
-        // is Google Chrome on IOS
-    if(
-        isChromium !== null &&
-        typeof isChromium !== "undefined" &&
-        vendorName === "Google Inc." &&
-        isOpera === false &&
-        isIEedge === false
-    ) {
-       // is Google Chrome
-    } else if(isFirefox === true) {
-       // is Firefox
-    } else if(isSafari === true) {
-       // is Safari
-    } else {
-       // others
-       alert("Use Google Chrome, Firefox, or Safari to get better experience");
-    }
-}
-
-
-(function () {
-    try {
-       checkChrome();
-    } catch(err) {
-    }
-})();
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
 </script>
 {% endblock %}

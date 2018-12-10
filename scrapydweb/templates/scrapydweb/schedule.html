@@ -1,46 +1,53 @@
 {% extends 'base.html' %}
 
-{% block title %}schedule{% endblock %}
+{% block title %}run spider{% endblock %}
 
 {% block head %}
     <!-- <script src="//unpkg.com/vue/dist/vue.js"></script> -->
     <!-- <script src="//unpkg.com/element-ui@2.4.6/lib/index.js"></script> -->
     <!-- <link rel="stylesheet" type="text/css" href="//unpkg.com/element-ui@2.4.6/lib/theme-chalk/index.css"> -->
 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='element-ui@2.4.6/lib/theme-chalk/index.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
     <style>
         #parameters {margin-top: 8px;}
         #parameters li {margin-bottom: 8px;}
         #message {padding-top: 16px;}
         em {color: red;}
         #CMD {
-            cursor: not-allowed;
             background-color: #eee;
+            cursor: not-allowed;
             opacity: 1;
             width: 785px;
         }
         .parameter{
-            color: #E74C3C;
-            white-space: nowrap;
-            max-width: 100%;
             background: #fff;
             border: solid 1px #e1e4e5;
+            color: #E74C3C;
             font-size: 90%;
+            max-width: 100%;
             padding: 2px 5px;
+            white-space: nowrap;
         }
         .el-select {width: 300px}
-        .action {margin-top: 32px; margin-bottom: 20px;}
-        #run_spider {padding-top: 12px; padding-bottom: 12px; margin-left: 10px;}
+        .action {
+            margin-bottom: 20px;
+            margin-top: 32px;
+        }
+        #run_spider {
+            margin-left: 10px;
+            padding-bottom: 12px;
+            padding-top: 12px;
+        }
         #history {padding-left: 12px;}
+        h3 a {margin-left: 10px;}
     </style>
 
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/vue.min.js') }}"></script>
-    <script type="text/javascript" src="{{ url_for('static', filename='element-ui@2.4.6/lib/index.js') }}"></script>
+    <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
+    <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-    <script>var SCRAPYD_SERVERS_AMOUNT = {{ SCRAPYD_SERVERS_AMOUNT }};</script>
-    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
+    <script type="text/javascript" src="{{ static_js_multinode }}"></script>
     {% endif %}
 {% endblock %}
 
@@ -81,7 +88,7 @@
     <div id="message"></div>
 
     <div id="app">
-        <el-form id="form" ref="form" :model="form" label-width="200px">
+        <el-form id="form" :rules="rules" ref="form" :model="form" label-width="200px">
 
             <el-form-item label="Scrapyd server">
                 <el-select id="node" v-model="form.selectedSCRAPYD_SERVER" placeholder="Select a node" @change="loadSCRAPYD_SERVERS">
@@ -89,118 +96,128 @@
                 </el-select>
             </el-form-item>
 
-            <el-form-item label="project">
+            <el-form-item label="project" prop="selectedProject">
                 <el-select id="projects" v-model="form.selectedProject" placeholder="Select a project" @visible-change="loadProjects" @change="loadVersions" no-data-text="NO projects found">
                     <el-option v-for="project in projects" :key="project" :label="project" :value="project"></el-option>
                 </el-select>
             </el-form-item>
 
-            <el-form-item label="_version">
+            <el-form-item label="_version" prop="selectedVersion">
                 <el-select id="versions" v-model="form.selectedVersion" placeholder="Select a version" no-data-text="Select a project first..." @change="loadSpiders">
                     <el-option v-for="version in versions" :key="version" :label="version" :value="version"></el-option>
                 </el-select>
             </el-form-item>
 
-            <el-form-item label="spider">
+            <el-form-item label="spider" prop="selectedSpider">
                 <el-select id="spiders" v-model="form.selectedSpider" placeholder="Select a spider" no-data-text="Select a version first...">
                     <el-option v-for="spider in spiders" :key="spider" :label="spider" :value="spider"></el-option>
                 </el-select>
             </el-form-item>
 
-            <el-form-item label="jobid">
-                <el-col :span="11">
-                    <el-input v-model="form.jobid" placeholder="The job id used to identify the job"></el-input>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.jobid_switch"></el-switch>
-                </el-col>
+
+            <el-form-item label="settings & arguments">
+                <el-switch v-model="form.settingsAndArguments" active-color="#67c23a"></el-switch>
             </el-form-item>
 
-            <el-form-item label="USER_AGENT">
-                <el-col :span="11">
-                    <el-select v-model="form.USER_AGENT" placeholder="The default User-Agent to use when crawling">
-                        <el-option label="Mozilla/5.0 Windows NT Chrome..." value="chrome"></el-option>
-                        <el-option label="Mozilla/5.0 iPhone Safari..." value="iOS"></el-option>
-                        <el-option label="Mozilla/5.0 Linux; Android..." value="Android"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.USER_AGENT_switch"></el-switch>
-                </el-col>
-            </el-form-item>
+            <div v-show="form.settingsAndArguments">
+                <el-form-item label="jobid">
+                    <el-col :span="11">
+                        <el-input v-model="form.jobid" placeholder="The job id used to identify the job"></el-input>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.jobid_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
 
-            <el-form-item label="COOKIES_ENABLED">
-                <el-col :span="11">
-                    <el-select v-model="form.COOKIES_ENABLED" placeholder="Whether to enable cookies middleware.">
-                        <el-option label="True" value="True"></el-option>
-                        <el-option label="False" value="False"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.COOKIES_ENABLED_switch"></el-switch>
-                </el-col>
-            </el-form-item>
+                <el-form-item label="USER_AGENT">
+                    <el-col :span="11">
+                        <el-select v-model="form.USER_AGENT" placeholder="The default User-Agent to use when crawling">
+                            <el-option label="Mozilla/5.0 Windows NT Chrome..." value="chrome"></el-option>
+                            <el-option label="Mozilla/5.0 iPhone Safari..." value="iOS"></el-option>
+                            <el-option label="Mozilla/5.0 Linux; Android..." value="Android"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.USER_AGENT_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
 
-            <el-form-item label="ROBOTSTXT_OBEY">
-                <el-col :span="11">
-                    <el-select v-model="form.ROBOTSTXT_OBEY" placeholder="Whether to respect robots.txt policies">
-                        <el-option label="True" value="True"></el-option>
-                        <el-option label="False" value="False"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.ROBOTSTXT_OBEY_switch"></el-switch>
-                </el-col>
-            </el-form-item>
+                <el-form-item label="COOKIES_ENABLED">
+                    <el-col :span="11">
+                        <el-select v-model="form.COOKIES_ENABLED" placeholder="Whether to enable cookies middleware.">
+                            <el-option label="True" value="True"></el-option>
+                            <el-option label="False" value="False"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.COOKIES_ENABLED_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
 
-            <el-form-item label="CONCURRENT_REQUESTS">
-                <el-col :span="11">
-                    <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="Default: 16"></el-input>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.CONCURRENT_REQUESTS_switch"></el-switch>
-                </el-col>
-            </el-form-item>
+                <el-form-item label="ROBOTSTXT_OBEY">
+                    <el-col :span="11">
+                        <el-select v-model="form.ROBOTSTXT_OBEY" placeholder="Whether to respect robots.txt policies">
+                            <el-option label="True" value="True"></el-option>
+                            <el-option label="False" value="False"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.ROBOTSTXT_OBEY_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
+
+                <el-form-item label="CONCURRENT_REQUESTS">
+                    <el-col :span="11">
+                        <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="Default: 16"></el-input>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.CONCURRENT_REQUESTS_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
 
 
-            <el-form-item label="DOWNLOAD_DELAY">
-                <el-col :span="11">
-                    <el-input v-model="form.DOWNLOAD_DELAY" placeholder="Default: 0"></el-input>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.DOWNLOAD_DELAY_switch"></el-switch>
-                </el-col>
-            </el-form-item>
+                <el-form-item label="DOWNLOAD_DELAY">
+                    <el-col :span="11">
+                        <el-input v-model="form.DOWNLOAD_DELAY" placeholder="Default: 0"></el-input>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.DOWNLOAD_DELAY_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
 
-            <el-form-item label="additional">
-                <el-col :span="11">
-                    <el-input type="textarea" v-model="form.additional" :autosize="{ minRows: 6, maxRows: 10}" placeholder="-d setting=DOWNLOAD_DELAY=2 -d arg1=val1"></el-input>
-                </el-col>
-                <el-col class="line" :span="0.1">&nbsp;</el-col>
-                <el-col :span="11">
-                    <el-switch v-model="form.additional_switch"></el-switch>
-                </el-col>
-            </el-form-item>
+                <el-form-item label="additional">
+                    <el-col :span="11">
+                        <el-input type="textarea" v-model="form.additional" :autosize="{ minRows: 6, maxRows: 10}" placeholder="-d setting=DOWNLOAD_DELAY=2 -d arg1=val1"></el-input>
+                    </el-col>
+                    <el-col class="line" :span="0.1">&nbsp;</el-col>
+                    <el-col :span="11">
+                        <el-switch v-model="form.additional_switch"></el-switch>
+                    </el-col>
+                </el-form-item>
+            </div>
+
 
             <el-form-item label-width="10px">
-                <el-button type="primary" style="font-size: 20px;" @click="checkCMD">Check CMD</el-button>
+                <el-button type="primary" style="font-size: 20px;" @click="checkCMD('form')">Check CMD</el-button>
             </el-form-item>
 
-            <el-form-item label-width="10px">
+            <el-form-item label-width="10px" prop="CMD">
                 <el-input id="CMD" type="textarea" v-model="form.CMD" :autosize="{ minRows: 6, maxRows: 10}" readonly="readonly" placeholder="Press the 'Check CMD' button above to preview CMD"></el-input>
             </el-form-item>
 
         </el-form>
     </div>
 
-    <form id="form_run_spider" method="post" action="{{ url_for('schedule.run', node=node) }}" enctype="multipart/form-data">
+
+    <form id="form_run_spider" method="post" action="{{ url_schedule_run }}" enctype="multipart/form-data">
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        <h3><a href="{{ url_overview }}">Simply pass in a group of nodes from the Overview page &raquo;</a></h3>
         <div>
             <input type="text" name="checked_amount" value="1" hidden />
             <div class="multiselect" style="margin-left: 10px;">
@@ -211,8 +228,12 @@
                 <div class="overSelect"></div>
                 </div>
                 <div id="checkboxes">
+                    <label for="checkcurrent">
+                        <input type="checkbox" id="checkcurrent" />Check current node only
+                    </label>
                     <label for="checkall">
-                        <input type="checkbox" id="checkall" />CheckAll / UncheckAll</label>
+                        <input type="checkbox" id="checkall" />CheckAll / UncheckAll
+                    </label>
                     <div id="nodes_checkboxes">
                     {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
                         {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
@@ -238,42 +259,74 @@
         <input type="text" name="filename" hidden />
     </form>
     <div class="action">
-        <a id="run_spider" class="button safe" href="javascript:;" onclick="runSpider();">Run Spider</a>
-        <a id="history" class="link" target="_blank" href="{{ url_for('schedule.history', filename='history.log') }}">history</a>
+        <a id="run_spider" class="button safe" href="javascript:;" onclick="runSpider('form');">Run Spider</a>
+        <a id="history" class="link" target="_blank" href="{{ url_schedule_history }}">history</a>
     </div>
 </div>
 
 
 <script>
-var url_listprojects = "{{ url_for('api', node=node, opt='listprojects') }}";
-var url_listversions = "{{ url_for('api', node=node, opt='listversions', project='PROJECT_PLACEHOLDER') }}";
-var url_listspiders = "{{ url_for('api', node=node, opt='listspiders', project='PROJECT_PLACEHOLDER', version_spider_job='VERSION_PLACEHOLDER') }}";
-var url_schedule_check = "{{ url_for('schedule.check', node=node) }}";
+var url_listprojects = "{{ url_listprojects }}";
+var url_listversions = "{{ url_listversions }}";
+var url_listspiders = "{{ url_listspiders }}";
+var url_schedule_check = "{{ url_schedule_check }}";
 
 
+// Put off
 {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-    // Put off
-    window.onload = function(){
-        {% if selected_nodes == [] %}
+window.onload = function(){
+    {% if selected_nodes == [] %}
+    if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) {
+        var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+        var nodesSelected_new = [];
+        for (idx in nodesSelected) {
+            try {
+                var n = nodesSelected[idx];
+                my$('#checkbox_'+n).checked = true;
+                nodesSelected_new.push(n);
+            } catch(err) {console.log(err);}
+        }
+    } else {
+        //my$('#checkbox_'+{{ node }}).checked = true;
         my$('#checkbox_'+{{ first_selected_node }}).checked = true;
-        {% endif %}
-
-        $('#checkall').click(function () {
-            $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
-        });
-
-        $('#checkboxes input[type=checkbox]').change(function() {
-            checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
-        });
-
-        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
     }
+    {% endif %}
+
+    $('#checkall').click(function () {
+        $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
+        my$('#checkcurrent').checked = false;
+    });
+
+    $('#checkcurrent').click(function () {
+        $('#checkboxes input:checkbox').not(this).prop('checked', false);
+        my$('#checkcurrent').checked = true;
+        my$('#checkbox_'+{{ node }}).checked = true;
+    });
+
+    $('#checkboxes input[type=checkbox]').change(function() {
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+    });
+
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
+}
 {% endif %}
 
 
-function runSpider(){
+function runSpider(formName){
     if(!my$('#form').CMD.value){
-        alert("Press the 'Check CMD' button first");
+        //alert("Press the 'Check CMD' button first");
+        //vm.$refs[formName].validate();
+        vm.$refs[formName].validate((valid) => {
+            if (valid) {
+                console.log('validate pass');
+            } else {
+                console.log('validate fail');
+                vm.$refs[formName].validateField('selectedProject', (error) => {if(!error){console.log('selectedProject pass');} else {my$('h2').scrollIntoView(); return false;} });
+                vm.$refs[formName].validateField('selectedVersion', (error) => {if(!error){console.log('selectedVersion pass');} else {my$('h2').scrollIntoView(); return false;} });
+                vm.$refs[formName].validateField('selectedSpider', (error) => {if(!error){console.log('selectedSpider pass');} else {my$('h2').scrollIntoView(); return false;} });
+                return false;
+            }
+        });
         return;
     }
 
@@ -287,6 +340,7 @@ function runSpider(){
     my$('#form_run_spider').submit();
     showLoader();
 }
+
 
 var now = new Date();
 now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
@@ -302,9 +356,9 @@ var Main = {
 
             form: {
                 selectedSCRAPYD_SERVER: "{{ SCRAPYD_SERVERS[first_selected_node-1] }}",
-                selectedProject: "",
-                selectedVersion: "",
-                selectedSpider: "",
+                selectedProject: undefined,
+                selectedVersion: undefined,
+                selectedSpider: undefined,
                 jobid: now.toISOString().slice(0,19).replace(/:/g, "_"), jobid_switch:undefined,
                 USER_AGENT: "chrome", USER_AGENT_switch:undefined,
                 COOKIES_ENABLED: "", COOKIES_ENABLED_switch:undefined,
@@ -312,9 +366,17 @@ var Main = {
                 CONCURRENT_REQUESTS: "", CONCURRENT_REQUESTS_switch:undefined,
                 DOWNLOAD_DELAY: "", DOWNLOAD_DELAY_switch:undefined,
                 additional: "-d setting=CLOSESPIDER_TIMEOUT=60 \r\n-d setting=CLOSESPIDER_PAGECOUNT=10 \r\n-d arg1=val1", additional_switch:undefined,
-                CMD: "",
+                CMD: undefined,
+                settingsAndArguments: false,
+            },
+
+            rules: {
+                selectedProject: [{ required: true, message: 'project is required', trigger: 'change' }],
+                selectedVersion: [{ required: true, message: 'version is required', trigger: 'change' }],
+                selectedSpider: [{ required: true, message: 'spider is required', trigger: 'change' }],
+                CMD: [{ required: true, message: "Press the 'Check CMD' button above to preview CMD", trigger: 'change' }],
             }
-        }
+        };
     },
 
 
@@ -341,29 +403,26 @@ var Main = {
 
 
     methods: {
-        checkCMD() {
+        checkCMD(formName) {
+            this.$refs[formName].validate((valid) => {
+                if (valid) {
+                    console.log('validate pass');
+                } else {
+                    console.log('validate fail');
+                    return false;
+                }
+            });
+
             console.log(JSON.stringify(this.form));
 
             var formData = new FormData();
-            if(this.form.selectedProject) {
+            if(this.form.selectedProject && this.form.selectedVersion && this.form.selectedSpider) {
                 formData.append('project', this.form.selectedProject);
-            } else {
-                my$('#message').scrollIntoView()
-                alert('Select a project first');
-                return;
-            }
-            if(this.form.selectedVersion) {
                 formData.append('_version', this.form.selectedVersion);
-            } else {
-                my$('#message').scrollIntoView()
-                alert('Select a version first');
-                return;
-            }
-            if(this.form.selectedSpider) {
                 formData.append('spider', this.form.selectedSpider);
             } else {
-                my$('#message').scrollIntoView()
-                alert('Select a spider first');
+                my$('h2').scrollIntoView()
+                //alert('Select a project first');
                 return;
             }
 
@@ -389,6 +448,7 @@ var Main = {
                 formData.append('additional', this.form.additional);
             }
 
+            console.log(formData);
             my$('#message').innerHTML = '';
             showLoader();
             var req = new XMLHttpRequest();
@@ -398,8 +458,10 @@ var Main = {
                     if (this.status == 200) {
                         obj = JSON.parse(this.responseText);
                         my$('#form').CMD.value = obj.cmd;
-                        my$('#form_run_spider').filename.value = obj.filename
+                        my$('#form_run_spider').filename.value = obj.filename;
                         console.log(my$('#form_run_spider').filename.value);
+
+                        vm.$refs[formName].clearValidate('CMD');
                     } else {
                         alert("REQUEST got code: " + this.status);
                     }
@@ -444,7 +506,7 @@ var Main = {
                                 alert("REQUEST got status: "+obj.status);
                                 var message = obj.message;
                                 obj.message = "See details below";
-                                my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listprojects_new+"'>REQUEST</a><em> got status: "+obj.status+"</em><pre>"+JSON.stringify(obj, null, 4)+"</pre><pre>"+message+"</pre>";
+                                my$('#message').innerHTML = getRequestFailHtml(url_listprojects_new, 'status', obj.status)+'<pre>'+JSON.stringify(obj, null, 4)+'</pre><pre>'+message+'</pre>';
                             } else {
                                 vm.projects = obj.projects;
                                 if(vm.projects.length == 0){
@@ -453,7 +515,7 @@ var Main = {
                             }
                         } else {
                             alert("REQUEST got code: "+this.status);
-                            my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listprojects_new+"'>REQUEST</a><em> got code: "+this.status+".</em><pre>Check whether ScrapydWeb is working</pre>";
+                            my$('#message').innerHTML = getRequestFailHtml(url_listprojects_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>';
                         }
                     }
                 };
@@ -494,13 +556,13 @@ var Main = {
                             alert("REQUEST got status: "+obj.status);
                             var message = obj.message;
                             obj.message = "See details below";
-                            my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listversions_new+"'>REQUEST</a><em> got status: "+obj.status+"</em><pre>"+JSON.stringify(obj, null, 4)+"</pre><pre>"+message+"</pre>";
+                            my$('#message').innerHTML = getRequestFailHtml(url_listversions_new, 'status', obj.status)+'<pre>'+JSON.stringify(obj, null, 4)+'</pre><pre>'+message+'</pre>';
                         } else {
                             vm.versions = obj.versions;
                         }
                     } else {
                         alert("REQUEST got code: "+this.status);
-                        my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listversions_new+"'>REQUEST</a><em> got code: "+this.status+".</em><pre>Check whether ScrapydWeb is working</pre>";
+                        my$('#message').innerHTML = getRequestFailHtml(url_listversions_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>';
                     }
                 }
             };
@@ -528,13 +590,13 @@ var Main = {
                             alert("REQUEST got status: "+obj.status);
                             var message = obj.message;
                             obj.message = "See details below";
-                            my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listspiders_new+"'>REQUEST</a><em> got status: "+obj.status+"</em><pre>"+JSON.stringify(obj, null, 4)+"</pre><pre>"+message+"</pre>";
+                            my$('#message').innerHTML = getRequestFailHtml(url_listspiders_new, 'status', obj.status)+'<pre>'+JSON.stringify(obj, null, 4)+'</pre><pre>'+message+'</pre>';
                         } else {
                             vm.spiders = obj.spiders;
                         }
                     } else {
                         alert("REQUEST got code: "+this.status);
-                        my$('#message').innerHTML = "<a class='link' target='_blank' href='"+url_listspiders_new+"'>REQUEST</a><em> got code: "+this.status+".</em><pre>Check whether ScrapydWeb is working</pre>";
+                        my$('#message').innerHTML = getRequestFailHtml(url_listspiders_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>';
                     }
                 }
             };
@@ -551,15 +613,15 @@ vm = new Ctor().$mount('#app');
 <script>
 // handle collapse components
 (function () {
-    var collapse = my$('.collapse')
-    var titles = my$$('.collapse .title')
-    var lis = my$$('.collapse li')
+    var collapse = my$('.collapse');
+    var titles = my$$('.collapse .title');
+    var lis = my$$('.collapse li');
     titles.forEach(function(title) {
         title.addEventListener('click', function(e){
-            var index = [].indexOf.call(titles, this)
-            lis[index].classList.toggle('active')
-        })
-    })
+            var index = [].indexOf.call(titles, this);
+            lis[index].classList.toggle('active');
+        });
+    });
 })();
 </script>
 {% endblock %}

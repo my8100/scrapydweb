@@ -8,8 +8,8 @@ from ..myview import MyView
 
 
 template_listversions_error = """
-<a class="link" target="_blank" href="{url}">REQUEST</a>
-<em style="color: red;"> got status: {status}</em>
+<a class="request" target="_blank" href="{url}">REQUEST</a>
+<em class="fail"> got status: {status}</em>
 <pre>{text}</pre>
 You can <a class="button safe" href="{url_deploy}">Deploy Project</a>
 with a new project name or
@@ -39,7 +39,7 @@ class ManageView(MyView):
         self.text = self.get_response_from_view(_url)
         # _bind = '127.0.0.1' if self.SCRAPYDWEB_BIND == '0.0.0.0' else self.SCRAPYDWEB_BIND
         # _url = 'http://{}:{}{}'.format(_bind, self.SCRAPYDWEB_PORT, _url)
-        # _auth = (self.USERNAME, self.PASSWORD) if self.AUTH_ENABLED else None
+        # _auth = (self.USERNAME, self.PASSWORD) if self.ENABLE_AUTH else None
         # status_code, self.text = self.make_request(_url, api=False, auth=_auth)
         self.js = json.loads(self.text)
 
@@ -62,67 +62,75 @@ class ManageView(MyView):
         else:
             if self.POST:
                 # Pass request.url instead of js['url'], for GET method
-                return ('<a class="link" target="_blank" href="%s">REQUEST</a>'
-                        '<em style="color: red;"> got status: %s</em>') % (request.url, self.js['status'])
+                return ('<a class="request" target="_blank" href="%s">REQUEST</a>'
+                        '<em class="fail"> got status: %s</em>') % (request.url, self.js['status'])
             else:
                 message = self.js.get('message', '')
                 if message:
                     self.js.update({'message': 'See details below'})
-                return render_template('scrapydweb/result.html', node=self.node,
+                return render_template(self.template_fail, node=self.node,
                                        text=self.json_dumps(self.js), message=message)
 
     def listprojects(self):
-        node_name = self.js['node_name']
-        projects = self.js['projects']
         results = []
-        for project_ in projects:
-            url_listversions = url_for('manage', node=self.node, opt='listversions', project=project_)
-            results.append((project_, url_listversions))
+        for project in self.js['projects']:
+            url_listversions = url_for('manage', node=self.node, opt='listversions', project=project)
+            results.append((project, url_listversions))
         if self.POST:
             url = self.js['url']
         else:
             url = self.js['url'].replace('http://', 'http://%s:%s@' % self.AUTH) if self.AUTH else self.js['url']
 
-        return render_template('scrapydweb/manage.html', node=self.node,
-                               url=url, node_name=node_name, results=results,
-                               url_deploy=url_for('deploy.deploy', node=self.node))
+        kwargs = dict(
+            node=self.node,
+            url=url,
+            node_name=self.js['node_name'],
+            results=results,
+            url_deploy=url_for('deploy.deploy', node=self.node)
+        )
+        return render_template('scrapydweb/manage.html', **kwargs)
 
     def listversions(self):
-        node_name = self.js['node_name']
-        versions = self.js['versions']
-        url_delproject = url_for('manage', node=self.node, opt='delproject', project=self.project)
         results = []
-        for version_ in versions:
-            url_listspiders = url_for('manage', node=self.node, opt='listspiders', project=self.project,
-                                      version_spider_job=version_)
-            url_delversion = url_for('manage', node=self.node, opt='delversion', project=self.project,
-                                     version_spider_job=version_)
+        for version in self.js['versions']:
             try:
-                version_readable = ' (%s)' % datetime.datetime.fromtimestamp(int(version_)).isoformat()
+                version_readable = ' (%s)' % datetime.datetime.fromtimestamp(int(version)).isoformat()
             except:
                 version_readable = ''
-            results.append((version_, version_readable, url_listspiders, url_delversion))
 
-        return render_template('scrapydweb/listversions.html', node=self.node,
-                               url_delproject=url_delproject, project=self.project,
-                               node_name=node_name, results=results)
+            url_listspiders = url_for('manage', node=self.node, opt='listspiders', project=self.project,
+                                      version_spider_job=version)
+            url_multinode_delversion = url_for('overview', node=self.node, opt='delversion', project=self.project,
+                                               version_job=version)
+            url_delversion = url_for('manage', node=self.node, opt='delversion', project=self.project,
+                                     version_spider_job=version)
+            results.append((version, version_readable, url_listspiders, url_multinode_delversion, url_delversion))
+
+        kwargs = dict(
+            node=self.node,
+            project=self.project,
+            results=results,
+            url_multinode_delproject=url_for('overview', node=self.node, opt='delproject', project=self.project),
+            url_delproject=url_for('manage', node=self.node, opt='delproject', project=self.project)
+        )
+        return render_template('scrapydweb/listversions.html', **kwargs)
 
     def listspiders(self):
         spiders = self.js['spiders']
         results = []
-        for spider_ in spiders:
+        for spider in spiders:
             url_schedule = url_for('schedule.schedule', node=self.node,
-                                   project=self.project, version=self.version_spider_job, spider=spider_)
+                                   project=self.project, version=self.version_spider_job, spider=spider)
             url_multinode_schedule = url_for('overview', node=self.node, opt='schedule',
-                                             project=self.project, version_job=self.version_spider_job, spider=spider_)
-            results.append((spider_, url_schedule, url_multinode_schedule))
+                                             project=self.project, version_job=self.version_spider_job, spider=spider)
+            results.append((spider, url_schedule, url_multinode_schedule))
 
         return render_template('scrapydweb/listspiders.html', node=self.node, results=results)
 
     @staticmethod
     def delversion():
-        return '<em style="color: red;">deleted</em>'
+        return '<em class="pass">deleted</em>'
 
     @staticmethod
     def delproject():
-        return '<em style="color: red;">deleted</em>'
+        return '<em class="pass">deleted</em>'

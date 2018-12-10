@@ -1,29 +1,42 @@
 {% extends 'base.html' %}
 
-{% block title %}index{% endblock %}
+{% block title %}dashboard{% endblock %}
 
 {% block head %}
     <!-- <meta http-equiv="refresh" content="60"> -->
     <style>
-        #pending_rows {color: red;}
+        #tbody_pending {color: red;}
+        table>tbody td:nth-child(1) {word-break: break-all;}
+        table>tbody td:nth-child(2) {word-break: break-all;}
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        table>tbody td:nth-child(3) {word-break: break-all;}
+        {% endif %}
+        table>tbody td a {word-break: keep-all;}
     </style>
 
-    {% if SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0) %}
+    {% if SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0 or page_view % 10 == 0) %}
     <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ flag }}&pv={{ page_view }}"></script>
     <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 3000);</script>
+    {% else %}
+    <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
     {% endif %}
 {% endblock %}
 
+
 {% block body %}
+{% if (SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0)) or IS_IE_EDGE %}
+<script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
+{% endif %}
+
+
 <h2>
     <a class="link" target="_blank" href="{{ url }}">
     Get the list of pending, running and finished jobs of all projects after Scrapyd server started.
     </a>
 </h2>
 
-
 <div class="table wrap">
-    <h3>Pending</h3>
+    <h3>Pending ({{ pending_rows|length }})</h3>
     <table>
         <thead>
             <tr>
@@ -32,7 +45,7 @@
                 <th>Job</th>
             </tr>
         </thead>
-        <tbody id="pending_rows">
+        <tbody id="tbody_pending">
         {% for row in pending_rows %}
             <tr>
                 <td>{{ row['project'] }}</td>
@@ -46,7 +59,7 @@
 
 
 <div class="table wrap">
-    <h3>Running</h3>
+    <h3>Running ({{ running_rows|length }})</h3>
     <table>
         <thead>
             <tr>
@@ -81,46 +94,25 @@
                 <td>{{ row['pid'] }}</td>
                 <td>{{ row['start'] }}</td>
                 <td>{{ row['runtime'] }}</td>
-                <td>
-                    <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job']) }}">
-                    Log
-                    </a>
-                </td>
-                <td>
-                    <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job']) }}">
-                    Stats
-                    </a>
-                </td>
+                <td><a class="state normal" onclick="showLoader();" href="{{ row['url_utf8'] }}">Log</a></td>
+                <td><a class="state normal" onclick="showLoader();" href="{{ row['url_stats'] }}">Stats</a></td>
 
-            {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
-                <td>
-                    <a class="state normal" target="_blank"
-                    href="{{ row['url_items'] }}">
-                    Items
-                    </a>
-                </td>
-            {% endif %}
+                {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
+                <td><a class="state normal" target="_blank" href="{{ row['url_items'] }}">Items</a></td>
+                {% endif %}
 
-                <td>
+                <td id="running_stop_{{ loop.index }}">
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state warning" style="margin-right: 5px;"
-                    href="{{ url_for('overview', node=node, opt='stop', project=row['project'], version_job=row['job']) }}">
-                    multinode
-                    </a>
+                    <a class="state warning" style="margin-right: 5px;" href="{{ row['url_multinode_stop'] }}">multinode</a>
                     {% endif %}
-
                     <a class="state warning" href="javascript:;"
-                    onclick="stopXHR('{{ url_for('api', node=node, opt='stop', project=row['project'], version_spider_job=row['job']) }}');">
-                    STOP
-                    </a>
+                    onclick="dashboardXHR('{{ row['url_stop'] }}', forcestop=false, id='running_stop_{{ loop.index }}');">
+                    STOP</a>
                 </td>
-                <td>
+                <td id="running_forcestop_{{ loop.index }}">
                     <a class="state danger" href="javascript:;"
-                    onclick="stopXHR('{{ url_for('api', node=node, opt='forcestop', project=row['project'], version_spider_job=row['job']) }}', forcestop=1);">
-                    FORCESTOP
-                    </a>
+                    onclick="dashboardXHR('{{ row['url_forcestop'] }}', forcestop=true, id='running_forcestop_{{ loop.index }}');">
+                    FORCESTOP</a>
                 </td>
             </tr>
         {% endfor %}
@@ -130,7 +122,7 @@
 
 
 <div class="table wrap">
-    <h3>Finished <strong style="color: red;">(in the descending order)</strong></h3>
+    <h3>Finished ({{ finished_rows|length }}) <strong style="color: red;">in the descending order</strong></h3>
     <table>
         <thead>
             <tr>
@@ -164,40 +156,19 @@
                 <td>{{ row['start'] }}</td>
                 <td>{{ row['runtime'] }}</td>
                 <td>{{ row['finish'] }}</td>
-                <td>
-                    <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log', node=node, opt='utf8', project=row['project'], spider=row['spider'], job=row['job'], job_finished='True') }}">
-                    Log
-                    </a>
-                </td>
-                <td>
-                    <a class="state normal" onclick="showLoader();"
-                    href="{{ url_for('log', node=node, opt='stats', project=row['project'], spider=row['spider'], job=row['job'], job_finished='True') }}">
-                    Stats
-                    </a>
-                </td>
+                <td><a class="state normal" onclick="showLoader();" href="{{ row['url_utf8'] }}">Log</a></td>
+                <td><a class="state normal" onclick="showLoader();" href="{{ row['url_stats'] }}">Stats</a></td>
 
-            {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
-                <td>
-                    <a class="state normal" target="_blank"
-                    href="{{ row['url_items'] }}">
-                    Items
-                    </a>
-                </td>
-            {% endif %}
+                {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
+                <td><a class="state normal" target="_blank" href="{{ row['url_items'] }}">Items</a></td>
+                {% endif %}
 
                 <td>
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state safe" style="margin-right: 5px;"
-                    href="{{ url_for('overview', node=node, opt='schedule', project=row['project'], version_job=DEFAULT_LATEST_VERSION, spider=row['spider']) }}">
-                    multinode
-                    </a>
+                    <a class="state safe" style="margin-right: 5px;" href="{{ row['url_multinode_run'] }}">multinode</a>
                     {% endif %}
 
-                    <a class="state safe"
-                    href="{{ url_for('schedule.schedule', node=node, project=row['project'], version=DEFAULT_LATEST_VERSION, spider=row['spider']) }}">
-                    START
-                    </a>
+                    <a class="state safe" href="{{ row['url_schedule'] }}">START</a>
                 </td>
             </tr>
         {% endfor %}
@@ -212,46 +183,5 @@
 {% if DASHBOARD_RELOAD_INTERVAL > 0 %}
 setTimeout("console.log(loading);if(loading == false){window.location.reload(true);}else{}", {{ DASHBOARD_RELOAD_INTERVAL * 1000 }});
 {% endif %}
-
-function stopXHR(url, forcestop) {
-    if (forcestop !== undefined) {
-        var r = confirm("Force unclean shutdown?");
-        if(r == false) {
-            return;
-        }
-    }
-
-    showLoader();
-    var req = new XMLHttpRequest();
-    req.onreadystatechange = function() {
-        if (this.readyState == 4) {
-            hideLoader();
-            if (this.status == 200) {
-                obj = JSON.parse(this.responseText);
-                if (obj.status == 'ok') {
-                    alert(this.responseText);
-                    window.location.reload(true);
-                } else {
-                    //if (window.confirm(location.protocol+"//"+location.host+url+" got status: "+obj.status+", open a new tab for details?")) {
-                        //var win = window.open(url, '_blank');
-                        //win.focus();
-                    //}
-                    alert("REQUEST got status: "+obj.status);
-                    var left = (screen.width-600)/2;
-                    var top = (screen.height-800)/2;
-                    window.open(url, "_blank", "left="+left+", top="+top+", width=600, height=800, toolbar=yes, location=yes, directories=no, status=no, menubar=yes, scrollbars=yes, resizable=no, copyhistory=yes");
-                }
-            } else {
-                alert("REQUEST got code: "+this.status);
-                var left = (screen.width-600)/2;
-                var top = (screen.height-800)/2;
-                window.open(url, "_blank", "left="+left+", top="+top+", width=600, height=800, toolbar=yes, location=yes, directories=no, status=no, menubar=yes, scrollbars=yes, resizable=no, copyhistory=yes");
-            }
-        }
-    };
-    req.open("get", url, Async = true);
-    req.send();
-}
-
 </script>
 {% endblock %}

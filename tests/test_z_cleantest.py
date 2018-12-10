@@ -2,9 +2,10 @@
 from flask import url_for
 
 
-projects = ['ScrapydWeb-demo', 'demo-', 'demo_only_scrapy_cfg', 'fakeproject',
-            'test_demo_egg', 'test_demo_tar', 'test_demo_tar_gz',
-            'test_demo_zip', 'test_inner_zip', 'test_outer_zip']
+projects = ['demo-', 'demo--macOS', 'demo--Ubuntu', 'demo--Win10cp936', 'demo--Win7CN',
+            'demo--Win7CNsendzipped', 'demo-Win10cp1252', 'demo-Win7CNsendzipped',
+            'demo_egg', 'demo_inner', 'demo_only_scrapy_cfg', 'demo_outer',
+            'demo_tar_gz', 'demo_zip', 'fakeproject', 'ScrapydWeb-demo']
 
 
 def test_cleantest(app, client):

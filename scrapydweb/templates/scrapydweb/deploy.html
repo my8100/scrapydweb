@@ -1,23 +1,22 @@
 {% extends 'base.html' %}
 
-{% block title %}addversion{% endblock %}
+{% block title %}deploy project{% endblock %}
 
 {% block head %}
     <style>
         form {margin: 8px 0;}
         .table {padding-right: 16px;}
         #version{
-            cursor: not-allowed;
             background-color: #eee;
+            cursor: not-allowed;
             opacity: 1;
         }
         /* https://stackoverflow.com/questions/12441464/aligning-part-of-a-select-options-text-on-the-left-and-part-on-the-right */
-        #project_selected, option { font-family: Consolas,  monospace; }
+        #project_selected, option { font-family: Consolas,  monospace;}
     </style>
 
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-
-    <script type="text/javascript" src="{{ url_for('static', filename='js/multinode.js') }}"></script>
+    <script type="text/javascript" src="{{ static_js_multinode }}"></script>
     {% endif %}
 {% endblock %}
 
@@ -51,21 +50,22 @@
                 </p>
                 <br>
                 <p><strong>Auto eggifying (projects in the host where ScrapydWeb runs)</strong></p>
-                <li>Step 0: execute command "pip install setuptools"</li>
-                <li>Step 1: set up item 'SCRAPY_PROJECTS_DIR' for locating projects before starting up ScrapydWeb</li>
+                <li>Step 0: execute the "pip install setuptools" command</li>
+                <li>Step 1: set up the 'SCRAPY_PROJECTS_DIR' item for locating projects before starting up ScrapydWeb</li>
                 <li>Step 2: select any project found in SCRAPY_PROJECTS_DIR to deploy via this page</li>
                 <br>
                 <p><strong>Upload egg file</strong></p>
-                <li>Step 0: execute command "pip install scrapyd-client"</li>
-                <li>Step 1: cd into your project's root, then execute command "scrapyd-deploy --build-egg projectname.egg"</li>
+                <li>Step 0: execute the "pip install scrapyd-client" command</li>
+                <li>Step 1: cd into your project's root, then execute the "scrapyd-deploy --build-egg projectname.egg" command</li>
                 <li>Step 2: upload the built egg via this page</li>
                 <br>
                 <p><strong>Upload compressed file</strong></p>
-                <li>Step 1: compress your project folder into an archive file with an archiving software or by using the tar command:
-                    <pre>tar -czvf projectname.tar.gz /home/username/myprojects/projectname</pre>
+                <li>Step 1: compress your project folder into an archive file (.zip) with an archiving software or via the tar command:
+                    <pre>tar -czvf projectname.tar.gz /path/to/your/projectname</pre>
                 </li>
                 <li>Step 2: upload the compressed file via this page</li>
             </ul>
+            <br>
         </li>
     </ul>
 </div>
@@ -73,7 +73,8 @@
 
 {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
 <div class="wrap">
-    <form method="post" action="{{ url_for('deploy.upload', node=node) }}" enctype="multipart/form-data">
+    <h3><a href="{{ url_overview }}">Simply pass in a group of nodes from the Overview page &raquo;</a></h3>
+    <form method="post" action="{{ url_deploy_upload }}" enctype="multipart/form-data">
         <input type="text" name="checked_amount" value="1" hidden />
         <div class="multiselect">
             <div class="selectBox" onclick="showCheckboxes()">
@@ -83,9 +84,11 @@
                 <div class="overSelect"></div>
             </div>
             <div id="checkboxes">
+                <label for="checkcurrent">
+                    <input type="checkbox" id="checkcurrent" />Check current node only
+                </label>
                 <label for="checkall">
-                    <input type="checkbox" id="checkall" />
-                    CheckAll / UncheckAll
+                    <input type="checkbox" id="checkall" />CheckAll / UncheckAll
                 </label>
                 <div id="nodes_checkboxes">
                 {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
@@ -108,7 +111,7 @@
     </form>
 </div>
 {% else %}
-<form method="post" action="{{ url_for('deploy.upload', node=node) }}" enctype="multipart/form-data">
+<form method="post" action="{{ url_deploy_upload }}" enctype="multipart/form-data">
 </form>
 {% endif %}
 
@@ -123,12 +126,12 @@
             <div class="upload">
                 <div>
                     {% if SCRAPY_PROJECTS_DIR == "" %}
-                    <h3>Set up item 'SCRAPY_PROJECTS_DIR' for locating projects before starting up ScrapydWeb</h3>
+                    <h3>Set up the 'SCRAPY_PROJECTS_DIR' item for locating projects before starting up ScrapydWeb</h3>
                     {% else %}
                     <h3>{{ projects|length|string + " projects found in '" + SCRAPY_PROJECTS_DIR + "' of the host where ScrapydWeb runs" }}</h3>
                     {% endif %}
 
-                    <select id='project_selected' name='project'
+                    <select id="project_selected" name="project"
                     style="height: 30px; width: 440px; font-size: 18px;"
                     onchange="console.log(my$('#project_selected').value);">
                     {% for project in projects %}
@@ -149,11 +152,11 @@
             <h3>Check out the INFO section above to get help</h3>
             <div class="upload">
                 <label class="upload-button">
-                    <!-- macOS cant select .tar.gz if set .tar.gz in accept -->
-                    <input id='file' type="file" name="file" accept=".egg, .zip, .tar, .gz" />
+                    <!-- macOS cannot select '.tar.gz' file if '.tar.gz' is added in accept -->
+                    <input id="file" type="file" name="file" accept=".egg, .zip, .gz" />
                     Select
                 </label>
-                <span class="filename">an egg/zip/tar/tar.gz file containing the project's code</span>
+                <span class="filename">an egg/zip/tar.gz file containing the project's code</span>
 
                 <div class="table vertical-table">
                     <table>
@@ -185,7 +188,7 @@ var modification_times = {{ modification_times|safe }};
 function eggify(){
     {% if projects|length == 0 %}
         {% if SCRAPY_PROJECTS_DIR == "" %}
-            alert("Set up the item 'SCRAPY_PROJECTS_DIR' to locate your projects and eggify them automatically");
+            alert("Set up the 'SCRAPY_PROJECTS_DIR' item to locate your projects and eggify them automatically");
             return;
         {% else %}
             alert("NO projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the host where ScrapydWeb runs");
@@ -226,53 +229,62 @@ function eggify(){
 
 
 <script>
+// Put off
 {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-    // Put off
-    window.onload = function() {
+window.onload = function() {
     {% if selected_nodes == [] %}
-        <!-- if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) { -->
-            <!-- var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]"); -->
-            <!-- var nodesSelected_new = []; -->
-            <!-- for (idx in nodesSelected) { -->
-                <!-- try { -->
-                    <!-- var node = nodesSelected[idx]; -->
-                    <!-- my$('#checkbox_'+node).checked = true; -->
-                    <!-- nodesSelected_new.push(node); -->
-                <!-- } catch {} -->
-            <!-- } -->
-            <!-- localStorage.setItem('nodesSelected', JSON.stringify(nodesSelected_new)); -->
-            <!-- console.log(localStorage.nodesSelected); -->
-        <!-- } else { -->
-            my$('#checkbox_'+{{ node }}).checked = true;
-        <!-- } -->
+    if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) {
+        var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+        var nodesSelected_new = [];
+        for (idx in nodesSelected) {
+            try {
+                var n = nodesSelected[idx];
+                my$('#checkbox_'+n).checked = true;
+                nodesSelected_new.push(n);
+            } catch(err) {console.log(err);}
+        }
+    } else {
+        my$('#checkbox_'+{{ node }}).checked = true;
+    }
     {% endif %}
 
-        $('#checkall').click(function () {
-            $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
-        });
+    $('#checkall').click(function () {
+        $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
+        my$('#checkcurrent').checked = false;
+    });
 
-        $('#checkboxes input[type=checkbox]').change(function() {
-            checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
-        });
+    $('#checkcurrent').click(function () {
+        $('#checkboxes input:checkbox').not(this).prop('checked', false);
+        my$('#checkcurrent').checked = true;
+        my$('#checkbox_'+{{ node }}).checked = true;
+    });
 
-        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
-    }
+    $('#checkboxes input[type=checkbox]').change(function() {
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+    });
+
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
+}
 {% endif %}
 
 my$("#file").onchange = function() {
-    my$('.filename').innerText = "an egg/zip/tar/tar.gz file containing the project's code";
+    my$('.filename').innerText = "an egg/zip/tar.gz file containing the project's code";
 
     var eggfile = my$('#file').files[0];
     if(eggfile === undefined) {
-        my$('form').reset();
+        //my$('form').reset();
+        my$('#project').value = '';
+        my$('#version').value = '';
         return;
     }
 
     var parts = eggfile.name.split('.');
     var filetype = parts[parts.length - 1];
-    if(['egg', 'zip', 'tar'].indexOf(filetype) == -1 && eggfile.name.indexOf('.tar.gz') == -1) {
-        my$('form').reset();
-        alert("Select an egg/zip/tar/tar.gz file containing the project's code");
+    if(['egg', 'zip'].indexOf(filetype) == -1 && eggfile.name.indexOf('.tar.gz') == -1) {
+        //my$('form').reset();
+        my$('#project').value = '';
+        my$('#version').value = '';
+        alert("Select an egg/zip/tar.gz file containing the project's code");
         return;
     }
 
@@ -291,7 +303,7 @@ function uploadEggfile() {
     var version = my$('#version').value;
 
     if(my$('#file').files[0] === undefined) {
-        alert("Select an egg/zip/tar/tar.gz file containing the project's code");
+        alert("Select an egg/zip/tar.gz file containing the project's code");
         return;
     } else if(project == '') {
         alert("the project name is required");
@@ -334,15 +346,15 @@ function uploadEggfile() {
 <script>
 // handle collapse components
 (function () {
-    var collapse = my$('.collapse')
-    var titles = my$$('.collapse .title')
-    var lis = my$$('.collapse li')
+    var collapse = my$('.collapse');
+    var titles = my$$('.collapse .title');
+    var lis = my$$('.collapse li');
     titles.forEach(function(title) {
         title.addEventListener('click', function(e){
-            var index = [].indexOf.call(titles, this)
-            lis[index].classList.toggle('active')
-        })
-    })
+            var index = [].indexOf.call(titles, this);
+            lis[index].classList.toggle('active');
+        });
+    });
 })();
 </script>
 
@@ -359,13 +371,13 @@ function uploadEggfile() {
         index = Array.prototype.indexOf.call(tabHeaders, target);
         tabHeaders.forEach(function(el) {
             el.classList.remove('active');
-        })
+        });
         target.classList.add('active');
         tabContents.forEach(function(el) {
             el.classList.remove('active');
-        })
+        });
         tabContents[index].classList.add('active');
-    })
+    });
 })();
 </script>
 {% endblock %}

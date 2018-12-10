@@ -53,7 +53,7 @@ class SettingsView(MyView):
         self.kwargs['scrapydweb_server'] = self.json_dumps(dict(
             SCRAPYDWEB_BIND=self.SCRAPYDWEB_BIND,
             SCRAPYDWEB_PORT=self.SCRAPYDWEB_PORT,
-            DISABLE_AUTH=self.DISABLE_AUTH,
+            ENABLE_AUTH=self.ENABLE_AUTH,
             USERNAME=self.protect(self.USERNAME),
             PASSWORD=self.protect(self.PASSWORD)
         ))
@@ -80,7 +80,7 @@ class SettingsView(MyView):
         ))
 
         # HTML Caching
-        self.kwargs['DISABLE_CACHE'] = self.DISABLE_CACHE
+        self.kwargs['ENABLE_CACHE'] = self.ENABLE_CACHE
         self.kwargs['html_caching_details'] = self.json_dumps(dict(
             CACHE_ROUND_INTERVAL=self.CACHE_ROUND_INTERVAL,
             CACHE_REQUEST_INTERVAL=self.CACHE_REQUEST_INTERVAL,
@@ -88,7 +88,7 @@ class SettingsView(MyView):
         ))
 
         # Email Notice
-        self.kwargs['DISABLE_EMAIL'] = self.DISABLE_EMAIL
+        self.kwargs['ENABLE_EMAIL'] = self.ENABLE_EMAIL
         self.kwargs['smtp_settings'] = self.json_dumps(dict(
             SMTP_SERVER=self.SMTP_SERVER,
             SMTP_PORT=self.SMTP_PORT,

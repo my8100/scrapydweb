@@ -1,4 +1,5 @@
 # coding: utf8
+import re
 import time
 
 from .myview import MyView
@@ -44,6 +45,7 @@ class ApiView(MyView):
         self.data = dict(project=self.project)
         if self.opt == 'start':
             self.data['spider'] = self.version_spider_job
+            self.data['jobid'] = self.get_now_string()
         elif self.opt in ['stop', 'forcestop']:
             self.data['job'] = self.version_spider_job
         elif self.opt == 'delversion':
@@ -56,7 +58,7 @@ class ApiView(MyView):
     def generate_response(self):
         timeout = 5 if self.opt == 'daemonstatus' else 60
         times = 2 if self.opt == 'forcestop' else 1
-
+        js = {}
         for __ in range(times):
             status_code, js = self.make_request(self.url, self.data, timeout=timeout, auth=self.AUTH)
             if times != 1:
@@ -70,7 +72,7 @@ class ApiView(MyView):
                     "you can check out the INFO section in the Deploy page, "
                     "and solve the problem in the Manage page."
                 )
-            elif self.opt == 'listspiders':
+            elif self.opt == 'listspiders' or re.search('no active project', js.get('message', '')):
                 js['info'] = "Maybe the project has been deleted, check out the Manage page"
 
         return self.json_dumps(js)

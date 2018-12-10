@@ -119,10 +119,10 @@
             <ul class="collapse">
                 <li>
                     <div class="title">
-                        <h4>DISABLE_CACHE = {{ DISABLE_CACHE }}</h4>
+                        <h4>ENABLE_CACHE = {{ ENABLE_CACHE }}</h4>
                     </div>
                 </li>
-            {% if not DISABLE_CACHE %}
+            {% if ENABLE_CACHE %}
                 <li>
                     <div class="title">
                         <h4>details</h4>
@@ -140,10 +140,10 @@
             <ul class="collapse">
                 <li>
                     <div class="title">
-                        <h4>DISABLE_EMAIL = {{ DISABLE_EMAIL }}</h4>
+                        <h4>ENABLE_EMAIL = {{ ENABLE_EMAIL }}</h4>
                     </div>
                 </li>
-            {% if not DISABLE_EMAIL %}
+            {% if ENABLE_EMAIL %}
                 <li>
                     <div class="title">
                         <h4>smtp settings</h4>
@@ -198,15 +198,15 @@
 <script>
 // handle collapse components
 (function () {
-    var collapse = my$('.collapse')
-    var titles = my$$('.collapse .title')
-    var lis = my$$('.collapse li')
+    var collapse = my$('.collapse');
+    var titles = my$$('.collapse .title');
+    var lis = my$$('.collapse li');
     titles.forEach(function(title) {
         title.addEventListener('click', function(e){
-            var index = [].indexOf.call(titles, this)
-            lis[index].classList.toggle('active')
-        })
-    })
+            var index = [].indexOf.call(titles, this);
+            lis[index].classList.toggle('active');
+        });
+    });
 })();
 </script>
 {% endblock %}

@@ -8,6 +8,12 @@ from flask import Flask
 from flask_compress import Compress
 
 
+title_error_500 = """
+<h1>Internal Server Error</h1>
+<p>The server encountered an internal error and was unable to complete your request.
+Either the server is overloaded or there is an error in the application.</p>
+"""
+
 # http://flask.pocoo.org/docs/1.0/logging/#basic-configuration
 dictConfig({
     'version': 1,
@@ -45,9 +51,13 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
+    # @app.errorhandler(404)
+    # def handle_error(error):
+        # return ('Nothing Found', 404)
+
     @app.errorhandler(500)
     def handle_error(error):
-        return '<h2>{}</h2><pre>{}<pre>'.format(error, traceback.format_exc())
+        return '{}<h2>error: {}</h2><pre>{}<pre>'.format(title_error_500, error, traceback.format_exc()), 500
 
     handle_route(app)
 
@@ -97,6 +107,7 @@ def handle_route(app):
         ('overview/<opt>/<project>/<version_job>/<spider>', None),
         ('overview/<opt>/<project>/<version_job>', dict(spider=None)),
         ('overview/<opt>/<project>', dict(version_job=None, spider=None)),
+        ('overview/<opt>', dict(project=None, version_job=None, spider=None)),
         ('overview', dict(opt=None, project=None, version_job=None, spider=None))
     ])
 
@@ -133,29 +144,29 @@ def handle_route(app):
         ('manage', dict(opt='listprojects', project=None, version_spider_job=None))
     ])
 
-    # directory
-    from .directory.log import LogView
+    # files
+    from .files.log import LogView
     register_view(LogView, 'log', [('log/<opt>/<project>/<spider>/<job>', None)])
 
-    from .directory.logs import LogsView
+    from .files.logs import LogsView
     register_view(LogsView, 'logs', [
         ('logs/<project>/<spider>', None),
         ('logs/<project>', dict(spider=None)),
         ('logs', dict(project=None, spider=None))
     ])
 
-    from .directory.items import ItemsView
+    from .files.items import ItemsView
     register_view(ItemsView, 'items', [
         ('items/<project>/<spider>', None),
         ('items/<project>', dict(spider=None)),
         ('items', dict(project=None, spider=None))
     ])
 
-    from .directory.parse import UploadLogView, UploadedLogView
+    from .files.parse import UploadLogView, UploadedLogView
     register_view(UploadLogView, 'parse.upload', [('parse/upload', None)])
     register_view(UploadedLogView, 'parse.uploaded', [('parse/uploaded/<filename>', None)])
 
-    from .directory.parse import bp as bp_parse_source
+    from .files.parse import bp as bp_parse_source
     app.register_blueprint(bp_parse_source)
 
     # system

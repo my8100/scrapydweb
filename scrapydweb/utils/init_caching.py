@@ -48,7 +48,7 @@ def on_parent_exit(signame):
 
 
 def init_caching(config, main_pid):
-    if not config.get('DISABLE_CACHE', False):
+    if config.get('ENABLE_CACHE', True):
         caching_subprocess = start_caching(config, main_pid)
         caching_pid = caching_subprocess.pid
         printf("Caching HTML for Log and Stats page in the background with pid: %s" % caching_pid)
@@ -69,8 +69,8 @@ def start_caching(config, main_pid):
         str(main_pid),
         _bind,
         str(config.get('SCRAPYDWEB_PORT', 5000)),
-        config.get('USERNAME', '') if not config.get('DISABLE_AUTH', True) else '',
-        config.get('PASSWORD', '') if not config.get('DISABLE_AUTH', True) else '',
+        config.get('USERNAME', '') if config.get('ENABLE_AUTH', False) else '',
+        config.get('PASSWORD', '') if config.get('ENABLE_AUTH', False) else '',
         json_dumps(config.get('SCRAPYD_SERVERS', ['127.0.0.1'])),
         json_dumps(config.get('SCRAPYD_SERVERS_AUTHS', [None])),
         str(config.get('CACHE_ROUND_INTERVAL', 300)),

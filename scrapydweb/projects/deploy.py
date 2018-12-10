@@ -9,14 +9,14 @@ import re
 import tempfile
 import zipfile
 import tarfile
-from shutil import copyfile, rmtree
+from shutil import copyfile, rmtree, copyfileobj
 
 from .scrapyd_deploy import _build_egg
 from flask import render_template, request, url_for, redirect
 from werkzeug.utils import secure_filename
 
 from ..myview import MyView
-from .utils import slot
+from .utils import slot, mkdir_p
 from ..vars import DEPLOY_PATH
 
 
@@ -42,7 +42,9 @@ class DeployView(MyView):
             selected_nodes=self.get_selected_nodes(),
             projects=[os.path.basename(i) for i in projects_list],
             modification_times=[self.get_modification_time(i) for i in projects_list],
-            SCRAPY_PROJECTS_DIR=self.SCRAPY_PROJECTS_DIR
+            SCRAPY_PROJECTS_DIR=self.SCRAPY_PROJECTS_DIR,
+            url_overview=url_for('overview', node=self.node, opt='deploy'),
+            url_deploy_upload=url_for('deploy.upload', node=self.node)
         )
         return render_template(self.template, **kwargs)
 
@@ -72,12 +74,11 @@ class UploadView(MyView):
 
         self.url = ''
         self.template = 'scrapydweb/deploy_results.html'
-        self.template_result = 'scrapydweb/result.html'
 
         self.project_original = ''
         self.project = ''
         self.version = ''
-        self.selected_nodes_amount = int(request.form.get('checked_amount', 0))
+        self.selected_nodes_amount = 0
         self.selected_nodes = []
         self.first_selected_node = 0
 
@@ -99,7 +100,7 @@ class UploadView(MyView):
                 alert = "Multinode deployment terminated: %s" % text
             else:
                 alert = "Fail to deploy project: %s" % text
-            return render_template('scrapydweb/result.html', node=self.node,
+            return render_template(self.template_fail, node=self.node,
                                    alert=alert, text=text,
                                    message=self.json_dumps(self.scrapy_cfg_searched_paths))
         else:
@@ -117,7 +118,7 @@ class UploadView(MyView):
             if message:
                 js.update({'message': 'See details below'})
 
-            return render_template(self.template_result, node=self.node,
+            return render_template(self.template_fail, node=self.node,
                                    alert=alert, text=self.json_dumps(js), message=message)
         else:
             if self.selected_nodes_amount == 0:
@@ -129,9 +130,16 @@ class UploadView(MyView):
                     selected_nodes=self.selected_nodes,
                     first_selected_node=self.first_selected_node,
                     js=js,
-                    eggname=self.eggname,
                     project=self.project,
-                    version=self.version
+                    version=self.version,
+                    url_manage_first_selected_node=url_for('manage', node=self.first_selected_node),
+                    url_manage_list=[url_for('manage', node=n) for n in range(1, len(self.SCRAPYD_SERVERS)+1)],
+                    url_xhr=url_for('deploy.deploy_xhr', node=self.node, eggname=self.eggname,
+                                    project=self.project, version=self.version),
+                    url_schedule=url_for('schedule.schedule', node=self.node, project=self.project,
+                                         version=self.version),
+                    url_overview=url_for('overview', node=self.node, opt='schedule', project=self.project,
+                                         version_job=self.version)
                 )
                 return render_template(self.template, **kwargs)
 
@@ -143,12 +151,15 @@ class UploadView(MyView):
         # 'version': '2018-09-05T03_13_50'}
 
         # With multinodes, would try to deploy to the first selected node first
+        self.selected_nodes_amount = int(request.form.get('checked_amount', 0))
         if self.selected_nodes_amount:
             self.selected_nodes = self.get_selected_nodes()
             self.first_selected_node = self.selected_nodes[0]
             self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVERS[self.first_selected_node - 1], 'addversion')
+            # Note that self.first_selected_node != self.node
+            self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.first_selected_node - 1]
         else:
-            self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVERS[self.node - 1], 'addversion')
+            self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
 
         self.project_original = request.form.get('project', '')  # Used with SCRAPY_PROJECTS_DIR to get project_path
         self.project = re.sub(r'[^0-9A-Za-z_-]', '', self.project_original) or self.get_now_string()
@@ -177,9 +188,10 @@ class UploadView(MyView):
         # <class 'werkzeug.datastructures.FileStorage'>
         file = request.files['file']
 
-        # Non-ASCII would be omitted and may set the eggname as to 'egg'
+        # Non-ASCII would be omitted and resulting the filename as to 'egg' or 'tar.gz'
         filename = secure_filename(file.filename)
-        if filename in ['egg', 'zip', 'tar', 'tar.gz']:
+        # tar.xz only works on Linux and macOS
+        if filename in ['egg', 'zip', 'tar.gz']:
             filename = '%s_%s.%s' % (self.project, self.version, filename)
         else:
             filename = '%s_%s_from_file_%s' % (self.project, self.version, filename)
@@ -200,35 +212,41 @@ class UploadView(MyView):
                 self.scrapy_cfg_not_found = True
                 return
 
-            self.eggname = re.sub(r'(\.zip|\.tar|\.tar\.gz)$', '.egg', filename)
+            self.eggname = re.sub(r'(\.zip|\.tar\.gz)$', '.egg', filename)
             self.eggpath = os.path.join(DEPLOY_PATH, self.eggname)
             self.build_egg()
 
+    # https://gangmax.me/blog/2011/09/17/12-14-52-publish-532/
+    # https://stackoverflow.com/a/49649784
+    # When ScrapydWeb runs in Linux/macOS and tries to uncompress zip file from Windows_CN_cp936
+    # UnicodeEncodeError: 'ascii' codec can't encode characters in position 7-8: ordinal not in range(128)
+    # macOS + PY2 would raise OSError: Illegal byte sequence
+    # Ubuntu + PY2 would raise UnicodeDecodeError in search_scrapy_cfg_path() though f.extractall(tmpdir) works well
     def uncompress_to_tmpdir(self, filepath):
         self.logger.debug("Uncompress %s" % filepath)
         tmpdir = tempfile.mkdtemp(prefix="scrapydweb-uncompress-")
-        tmpdir_ = tempfile.mkdtemp(prefix="scrapydweb-uncompress-")
         if zipfile.is_zipfile(filepath):
             with zipfile.ZipFile(filepath, 'r') as f:
                 if PY2:
+                    tmpdir = tempfile.mkdtemp(prefix="scrapydweb-uncompress-")
                     for filename in f.namelist():
-                        f.extract(filename, tmpdir_)
-                        # https://gangmax.me/blog/2011/09/17/12-14-52-publish-532/
-                        # When ScrapydWeb runs in Linux and tries to uncompress zip file that compressed in Windows
                         try:
                             filename_utf8 = filename.decode('gbk').encode('utf8')
-                        except UnicodeDecodeError:
+                        except (UnicodeDecodeError, UnicodeEncodeError):
                             filename_utf8 = filename
-                        filepath_ = os.path.join(tmpdir_, filename)
                         filepath_utf8 = os.path.join(tmpdir, filename_utf8)
-                        if os.path.isdir(filepath_):
-                            os.mkdir(filepath_utf8)
-                        else:
-                            copyfile(filepath_, filepath_utf8)
+
+                        try:
+                            with io.open(filepath_utf8, 'wb') as f_utf8:
+                                copyfileobj(f.open(filename), f_utf8)
+                        except IOError:
+                            # os.mkdir(filepath_utf8)
+                            # zipfile from Windows "send to zipped" would meet the inner folder first:
+                            # temp\\scrapydweb-uncompress-qrcyc0\\demo7/demo/'
+                            mkdir_p(filepath_utf8)
                 else:
                     f.extractall(tmpdir)
-                    f.close()
-        else:  # 'tar' 'tar.gz'
+        else:  # tar.gz
             with tarfile.open(filepath, 'r') as f:  # Open for reading with transparent compression (recommended).
                 f.extractall(tmpdir)
                 f.close()
@@ -287,6 +305,7 @@ class DeployXhrView(MyView):
 
     def dispatch_request(self, **kwargs):
         content = self.slot.egg.get(self.eggname)
+        # content = None  # For test only
         if not content:
             eggpath = os.path.join(DEPLOY_PATH, self.eggname)
             with io.open(eggpath, 'rb') as f:

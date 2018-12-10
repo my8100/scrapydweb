@@ -48,8 +48,8 @@ def check_app_config(config):
     except (ValueError, AssertionError):
         sys.exit("SCRAPYDWEB_PORT should be a positive integer. Current value: %s" % SCRAPYDWEB_PORT)
 
-    check_assert('DISABLE_AUTH', True, bool)
-    if not config.get('DISABLE_AUTH', True):
+    check_assert('ENABLE_AUTH', False, bool)
+    if config.get('ENABLE_AUTH', False):
         # May be 0 from config file
         check_assert('USERNAME', '', str, non_empty=True)
         check_assert('PASSWORD', '', str, non_empty=True)
@@ -88,8 +88,8 @@ def check_app_config(config):
     check_assert('DAEMONSTATUS_REFRESH_INTERVAL', 10, int)
 
     # HTML Caching
-    check_assert('DISABLE_CACHE', False, bool)
-    if not config.get('DISABLE_CACHE', False):
+    check_assert('ENABLE_CACHE', True, bool)
+    if config.get('ENABLE_CACHE', True):
         check_assert('CACHE_ROUND_INTERVAL', 300, int, allow_zero=False)
         check_assert('CACHE_REQUEST_INTERVAL', 10, int, allow_zero=False)
 
@@ -102,8 +102,8 @@ def check_app_config(config):
             printf("Cache dir NOT found: %s" % CACHE_PATH, warn=True)
 
     # Email Notice
-    check_assert('DISABLE_EMAIL', True, bool)
-    if not config.get('DISABLE_EMAIL', True):
+    check_assert('ENABLE_EMAIL', False, bool)
+    if config.get('ENABLE_EMAIL', False):
         check_assert('SMTP_SERVER', '', str, non_empty=True)
         check_assert('SMTP_PORT', 0, int, allow_zero=False)
         check_assert('SMTP_OVER_SSL', False, bool)
@@ -151,14 +151,14 @@ def check_app_config(config):
     # System
     check_assert('DEBUG', False, bool)
     if config.get('DEBUG', False):
-        printf("It's not recommended to run in debug mode, set 'DEBUG = False' instead", warn=True)
+        printf("It's not recommended to run ScrapydWeb in debug mode, set 'DEBUG = False' instead", warn=True)
     check_assert('VERBOSE', False, bool)
 
 
 def check_email(config):
-    assert not config.get('DISABLE_CACHE', False), \
+    assert config.get('ENABLE_CACHE', True), \
         ("In order to enable 'Email Notice', you have to enable 'HTML Caching' by setting "
-         "'DISABLE_CACHE = False' first,\nalso, don't pass in the argument '--disable_cache'")
+         "'ENABLE_CACHE = True' first,\nalso, don't pass in the argument '--disable_cache'")
 
     kwargs = dict(
         smtp_server=config['SMTP_SERVER'],
@@ -170,8 +170,8 @@ def check_email(config):
         to_addrs=config['TO_ADDRS']
     )
     kwargs['to_retry'] = True
-    kwargs['subject'] = 'ScrapydWeb sender %s' % config['FROM_ADDR']
-    kwargs['content'] = 'ScrapydWeb recipients %s' % config['TO_ADDRS']
+    kwargs['subject'] = 'Email notice enabled #scrapydweb'
+    kwargs['content'] = json_dumps(dict(FROM_ADDR=config['FROM_ADDR'], TO_ADDRS=config['TO_ADDRS']))
 
     printf("Trying to send email (smtp_connection_timeout=%s)..." % config.get('SMTP_CONNECTION_TIMEOUT', 10))
     result = send_email(**kwargs)

@@ -33,12 +33,13 @@ class MultinodeView(MyView):
 
         kwargs = dict(
             node=self.node,
+            title=title,
             opt=self.opt,
             project=self.project,
             version_job=self.version_job,
             selected_nodes=selected_nodes,
             url_xhr=url_xhr,
-            title=title,
-            url_overview=url_overview
+            url_overview=url_overview,
+            url_manage_list=[url_for('manage', node=n) for n in range(1, len(self.SCRAPYD_SERVERS)+1)]
         )
         return render_template(self.template, **kwargs)

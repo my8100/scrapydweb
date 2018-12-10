@@ -10,7 +10,13 @@ class IndexView(MyView):
         super(self.__class__, self).__init__()
 
     def dispatch_request(self, **kwargs):
-        if self.IS_SIMPLEUI or len(self.SCRAPYD_SERVERS) == 1:
-            return redirect(url_for('dashboard', node=self.node, ui=self.UI))
+        if len(self.SCRAPYD_SERVERS) == 1:
+            if self.IS_MOBILE and not self.IS_IPAD:
+                return redirect(url_for('dashboard', node=self.node, ui='mobile'))
+            else:
+                return redirect(url_for('dashboard', node=self.node, ui=self.UI))
         else:
-            return redirect(url_for('overview', node=self.node))
+            if self.IS_MOBILEUI or (self.IS_MOBILE and not self.IS_IPAD):
+                return redirect(url_for('dashboard', node=self.node, ui='mobile'))
+            else:
+                return redirect(url_for('overview', node=self.node, ui=self.UI))

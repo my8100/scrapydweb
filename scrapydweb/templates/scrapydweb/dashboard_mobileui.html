@@ -1,0 +1,169 @@
+{% extends 'base_mobileui.html' %}
+
+{% block title %}dashboard{% endblock %}
+
+{% block head %}
+    <style>
+    table {
+        background: #fff;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    table#jobs {
+        margin-left: 10px;
+        margin-right: 10px;
+    }
+    td {word-break: keep-all;}
+    td a {word-break: keep-all;}
+    th {background-color: #faf8e9;} /* #ddd */
+    th.st-head-row:not(.st-head-row-main) {padding: 8px 10px;}
+    th.st-head-row-main {display: none;}
+    th.st-head-row, td.st-val {word-break: break-all;}
+    .st-val {
+        padding-top: 3px;
+        padding-bottom: 3px;
+    }
+    .pending_rows {color: red;}
+    /* th.st-head-row {text-align: left;} */
+    th.category-head {
+        padding-left: 10px;
+        text-align: left;
+    }
+    </style>
+    <link rel="stylesheet" type="text/css" href="{{ static_css_stacktable }}">
+    <script type="text/javascript" src="{{ static_js_stacktable }}"></script>
+{% endblock %}
+
+
+{% block neck %}
+<a id="switch_table_style" class="button normal" href="javascript:;">Restyle table</a>
+<a class="button warning" target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">Scrapyd server</a>
+{% endblock %}
+
+
+{% block body %}
+<table id="jobs", border="1">
+    <tr>
+        <th>Project</th>
+        <th>Spider</th>
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <th>Job</th>
+        {% endif %}
+
+        <th>PID</th>
+        <th>Start</th>
+        <th>Runtime</th>
+        <th>Finish</th>
+
+        <th>Log</th>
+        <th>Stats</th>
+        {% if SHOW_SCRAPYD_ITEMS and ((running_rows and running_rows[0]['url_items']) or (finished_rows and finished_rows[0]['url_items'])) %}
+        <th>Items</th>
+        {% endif %}
+        <th>Action</th>
+        <th>FORCESTOP</th>
+    </tr>
+
+
+    <tr>
+        <th colspan="{{ colspan }}" class="category-head">Pending ({{ pending_rows|length }})</th>
+    </tr>
+{% for row in pending_rows %}
+    <tr class="pending_rows">
+        <td>{{ row['project'] }}</td>
+        <td>{{ row['spider'] }}</td>
+         {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <td>{{ row['job'] }}</td>
+        {% endif %}
+    </tr>
+{% endfor %}
+
+
+    <tr>
+        <th colspan="{{ colspan }}" class="category-head">Running ({{ running_rows|length }})</th>
+    </tr>
+{% for row in running_rows %}
+    <tr>
+        <td>{{ row['project'] }}</td>
+        <td>{{ row['spider'] }}</td>
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <td>{{ row['job'] }}</td>
+        {% endif %}
+
+        <td>{{ row['pid'] }}</td>
+        <td>{{ row['start'] }}</td>
+        <td>{{ row['runtime'] }}</td>
+        <td>{{ row['finish'] }}</td>
+        <td><a class="state normal" href="javascript:;" onclick="forceLoader('{{ row['url_utf8'] }}');">Log</a></td>
+        <td><a class="state normal" href="javascript:;" onclick="forceLoader('{{ row['url_stats'] }}');">Stats</a></td>
+
+        {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
+        <td><a class="state normal" target="_blank" href="{{ row['url_items'] }}">Items</a></td>
+        {% endif %}
+
+        <td><a class="state warning" href="javascript:;" onclick="dashboardXHR('{{ row['url_stop'] }}', forcestop=false);">STOP</a></td>
+        <td><a class="state danger" href="javascript:;" onclick="dashboardXHR('{{ row['url_forcestop'] }}', forcestop=true);">FORCESTOP</a></td>
+    </tr>
+{% endfor %}
+
+
+    <tr>
+        <th colspan="{{ colspan }}" class="category-head">
+        Finished ({{ finished_rows|length }})<strong style="color: red;"> in the descending order</strong>
+        </th>
+    </tr>
+{% for row in finished_rows[::-1] %}
+    <tr>
+        <td>{{ row['project'] }}</td>
+        <td>{{ row['spider'] }}</td>
+        {% if SHOW_DASHBOARD_JOB_COLUMN %}
+        <td>{{ row['job'] }}</td>
+        {% endif %}
+
+        <td>{{ row['pid'] }}</td>
+        <td>{{ row['start'] }}</td>
+        <td>{{ row['runtime'] }}</td>
+        <td>{{ row['finish'] }}</td>
+        <td><a class="state normal" href="javascript:;" onclick="forceLoader('{{ row['url_utf8'] }}');">Log</a></td>
+        <td><a class="state normal" href="javascript:;" onclick="forceLoader('{{ row['url_stats'] }}');">Stats</a></td>
+
+        {% if SHOW_SCRAPYD_ITEMS and row['url_items'] %}
+        <td><a class="state normal" target="_blank" href="{{ row['url_items'] }}">Items</a></td>
+        {% endif %}
+
+        <td><a class="state safe" href="javascript:;" onclick="dashboardXHR('{{ row['url_start'] }}', forcestop=false);">START</a></td>
+    </tr>
+{% endfor %}
+</table>
+
+
+<script>
+// http://www.webcarpenter.com/blog/99-8-Responsive-Data-Tables-that-Look-Great-on-Mobile-Devices
+// http://johnpolacek.github.io/stacktable.js/#
+$('#jobs').stacktable();
+//$('#jobs').stacktable({myClass:'left'});
+//my$('.stacktable.large-only').style.width = 'auto';
+//my$('.stacktable.small-only').style.width = 'auto';
+
+//if(window.innerHeight > window.innerWidth) {
+//    my$('.stacktable.large-only').style.display = 'none';
+//    my$('.stacktable.small-only').style.display = 'table';
+//}
+
+$(document).on('click', '#switch_table_style', function(e) {
+    var r = confirm("Simply rotate your screen to get the table restyled. Force restyle anyway?");
+    if(r == false) {
+        return;
+    }
+    e.preventDefault();
+    if(my$('.stacktable.large-only').clientHeight != 0) {
+        my$('.stacktable.large-only').style.display = 'none';
+        my$('.stacktable.small-only').style.display = 'table';
+    } else {
+        my$('.stacktable.large-only').style.display = 'table';
+        my$('.stacktable.small-only').style.display = 'none';
+    }
+});
+</script>
+{% endblock %}
