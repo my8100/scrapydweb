@@ -42,7 +42,7 @@ my$('#file').onchange = function () {
     my$('.filename').innerText = "a log or txt file";
 
     var logfile = my$('#file').files[0];
-    if(logfile === undefined) {
+    if (logfile === undefined) {
         return;
     } else {
         my$('.filename').innerText = logfile.name;

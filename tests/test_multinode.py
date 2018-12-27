@@ -1,19 +1,13 @@
 # coding: utf8
-from flask import url_for
 
 from tests.utils import PROJECT, VERSION, JOBID
-from tests.utils import get_text
+from tests.utils import req
 
 
 def multinode_command(app, client, opt, title, project, version_job=None):
-    with app.test_request_context():
-        url = url_for('multinode', node=1, opt=opt, project=project, version_job=version_job)
-        data = {'1': 'on', '2': 'on'}
-        response = client.post(url, content_type='multipart/form-data', data=data)
-        text = get_text(response)
-        assert (title in text
-                and 'id="checkbox_1"' in text
-                and 'id="checkbox_2"' in text)
+    data = {'1': 'on', '2': 'on'}
+    req(app, client, view='multinode', kws=dict(node=1, opt=opt, project=project, version_job=version_job),
+        data=data, ins=[title, 'id="checkbox_1"', 'id="checkbox_2"'])
 
 
 def test_multinode_stop(app, client):

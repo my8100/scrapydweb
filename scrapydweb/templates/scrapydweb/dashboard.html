@@ -14,9 +14,9 @@
         table>tbody td a {word-break: keep-all;}
     </style>
 
-    {% if SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0 or page_view % 10 == 0) %}
-    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ flag }}&pv={{ page_view }}"></script>
-    <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 3000);</script>
+    {% if SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0) %}
+    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ page_view }}"></script>
+    <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 1000);</script>
     {% else %}
     <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
     {% endif %}
@@ -24,7 +24,7 @@
 
 
 {% block body %}
-{% if (SCRAPYD_SERVERS_AMOUNT == 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0)) or IS_IE_EDGE %}
+{% if (SCRAPYD_SERVERS_AMOUNT == 1 and page_view == 1) or IS_IE_EDGE %}
 <script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
 {% endif %}
 

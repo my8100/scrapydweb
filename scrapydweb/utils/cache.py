@@ -122,7 +122,7 @@ class RefreshCache(object):
 
     def fetch_stats(self, job_tuple):
         (project, spider, job) = job_tuple
-        job_finished = True if job_tuple in self.finished_jobs else ''
+        job_finished = 'True' if job_tuple in self.finished_jobs else ''
         kwargs = dict(
             scrapydweb_bind=self.scrapydweb_bind,
             scrapydweb_port=self.scrapydweb_port,

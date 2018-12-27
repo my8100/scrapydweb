@@ -75,8 +75,8 @@ class UploadedLogView(MyView):
                 self.text = f.read()
         except Exception as err:
             return render_template(self.template_fail, node=self.node,
-                                   message='%s\n%s' % (err.__class__.__name__, err),
-                                   text="An error occurred when reading the uploaded log file")
+                                   alert="An error occurred when reading the uploaded log file",
+                                   text='%s\n%s' % (err.__class__.__name__, err))
 
         self.get_job_info()
 

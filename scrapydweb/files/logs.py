@@ -29,7 +29,8 @@ class LogsView(MyView):
                 node=self.node,
                 url=self.url,
                 status_code=status_code,
-                text=self.text
+                text=self.text,
+                tip='Click the above link to make sure your Scrapyd server is accessable.'
             )
             return render_template(self.template_fail, **kwargs)
 

@@ -59,20 +59,16 @@ def check_app_config(config):
     check_assert('SCRAPY_PROJECTS_DIR', '', str)
     SCRAPY_PROJECTS_DIR = config.get('SCRAPY_PROJECTS_DIR', '')
     if SCRAPY_PROJECTS_DIR:
-        if not os.path.isdir(SCRAPY_PROJECTS_DIR):
-            sys.exit("!!! SCRAPY_PROJECTS_DIR NOT found: %s" % SCRAPY_PROJECTS_DIR)
-        else:
-            printf("Using SCRAPY_PROJECTS_DIR: %s" % SCRAPY_PROJECTS_DIR)
+        assert os.path.isdir(SCRAPY_PROJECTS_DIR), "!!! SCRAPY_PROJECTS_DIR NOT found: %s" % SCRAPY_PROJECTS_DIR
+        printf("Using SCRAPY_PROJECTS_DIR: %s" % SCRAPY_PROJECTS_DIR)
 
     # Scrapyd
-    # print(config.get('SCRAPYD_SERVERS'))  # Checked in the preceding update_app_config()
+    # print(config.get('SCRAPYD_SERVERS'))  # Checked in the preceding run.py/update_app_config()
     check_assert('SCRAPYD_LOGS_DIR', '', str)
     SCRAPYD_LOGS_DIR = config.get('SCRAPYD_LOGS_DIR', '')
     if SCRAPYD_LOGS_DIR:
-        if not os.path.isdir(SCRAPYD_LOGS_DIR):
-            sys.exit("!!! SCRAPYD_LOGS_DIR NOT found: %s" % SCRAPYD_LOGS_DIR)
-        else:
-            printf("Using SCRAPYD_LOGS_DIR: %s" % SCRAPYD_LOGS_DIR)
+        assert os.path.isdir(SCRAPYD_LOGS_DIR), "!!! SCRAPYD_LOGS_DIR NOT found: %s" % SCRAPYD_LOGS_DIR
+        printf("Using SCRAPYD_LOGS_DIR: %s" % SCRAPYD_LOGS_DIR)
 
     check_assert('SCRAPYD_LOG_EXTENSIONS', ALLOWED_SCRAPYD_LOG_EXTENSIONS, list, non_empty=True, containing_type=str)
     SCRAPYD_LOG_EXTENSIONS = config.get('SCRAPYD_LOG_EXTENSIONS', ALLOWED_SCRAPYD_LOG_EXTENSIONS)
@@ -151,14 +147,14 @@ def check_app_config(config):
     # System
     check_assert('DEBUG', False, bool)
     if config.get('DEBUG', False):
-        printf("It's not recommended to run ScrapydWeb in debug mode, set 'DEBUG = False' instead", warn=True)
+        printf("It's not recommended to run ScrapydWeb in debug mode, set 'DEBUG = False' instead.", warn=True)
     check_assert('VERBOSE', False, bool)
 
 
 def check_email(config):
     assert config.get('ENABLE_CACHE', True), \
         ("In order to enable 'Email Notice', you have to enable 'HTML Caching' by setting "
-         "'ENABLE_CACHE = True' first,\nalso, don't pass in the argument '--disable_cache'")
+         "'ENABLE_CACHE = True' first,\nalso, don't pass in the argument '--disable_cache'.")
 
     kwargs = dict(
         smtp_server=config['SMTP_SERVER'],

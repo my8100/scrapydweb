@@ -1,5 +1,4 @@
 # coding: utf8
-import sys
 import time
 import re
 import json
@@ -12,8 +11,7 @@ from flask import request, url_for, g
 from flask import current_app as app
 from flask.views import View
 
-from .__version__ import __version__, __url__
-from .vars import DEMO_PROJECTS_PATH, ALLOWED_SCRAPYD_LOG_EXTENSIONS, EMAIL_TRIGGER_KEYS, DEFAULT_LATEST_VERSION
+from .vars import ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, EMAIL_TRIGGER_KEYS
 from .utils.utils import json_dumps
 
 
@@ -37,8 +35,12 @@ class MyView(View):
         logging.getLogger("requests").setLevel(_level)
         logging.getLogger("urllib3").setLevel(_level)
 
+        if request.args:
+            self.logger.debug('request.args\n%s' % self.json_dumps(request.args))
         if request.form:
-            self.logger.debug(self.json_dumps(request.form))
+            self.logger.debug('request.form\n%s' % self.json_dumps(request.form))
+        if request.files:
+            self.logger.debug('request.files\n\n    %s\n' % request.files)
 
         # ScrapydWeb
         self.SCRAPYDWEB_BIND = app.config.get('SCRAPYDWEB_BIND', '0.0.0.0')
@@ -53,6 +55,7 @@ class MyView(View):
 
         # Scrapyd
         self.SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
+        self.SCRAPYD_SERVERS_AMOUNT = len(self.SCRAPYD_SERVERS)
         self.SCRAPYD_SERVERS_GROUPS = app.config.get('SCRAPYD_SERVERS_GROUPS', []) or ['']
         self.SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None]
 
@@ -108,6 +111,8 @@ class MyView(View):
         # Other attributes NOT from config
         self.view_args = request.view_args
         self.node = self.view_args['node']
+        assert 0 < self.node <= self.SCRAPYD_SERVERS_AMOUNT, \
+            'node index error: %s, which should be between 1 and %s' % (self.node, self.SCRAPYD_SERVERS_AMOUNT)
         self.SCRAPYD_SERVER = self.SCRAPYD_SERVERS[self.node - 1]
         self.GROUP = self.SCRAPYD_SERVERS_GROUPS[self.node - 1]
         self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.node - 1]
@@ -130,16 +135,23 @@ class MyView(View):
         self.GET = True if request.method == 'GET' else False
         self.POST = True if request.method == 'POST' else False
 
+        self.FEATURES = ''
+        self.FEATURES += 'A' if self.ENABLE_AUTH else '-'
+        self.FEATURES += 'C' if self.ENABLE_CACHE else '-'
+        self.FEATURES += 'D' if self.SCRAPY_PROJECTS_DIR != DEMO_PROJECTS_PATH else '-'
+        self.FEATURES += 'E' if self.ENABLE_EMAIL else '-'
+        self.FEATURES += 'M' if self.IS_MOBILEUI else '-'
+        self.FEATURES += 'P' if self.IS_MOBILE else '-'
+
         # In log.py: pass self.IS_MOBILE to render_template() to override g.IS_MOBILE
         g.IS_MOBILE = self.IS_MOBILE  # lifetime: every single request
+        self.update_g()
 
         self.template_fail = 'scrapydweb/fail_mobileui.html' if self.IS_MOBILEUI else 'scrapydweb/fail.html'
 
-        self.update_g()
-        self.inject_variable(version='v100rc2')
-
     def update_g(self):
         # For base.html and base_mobileui.html
+        # url_menu_XXX might be update by caching subprocess, use update_g() instead of inject_variable()
         g.url_menu_overview = url_for('overview', node=self.node)
         g.url_menu_dashboard = url_for('dashboard', node=self.node)
         g.url_menu_deploy = url_for('deploy.deploy', node=self.node)
@@ -152,68 +164,15 @@ class MyView(View):
         g.url_menu_mobileui = url_for('index', node=self.node, ui='mobile')
 
         g.url_daemonstatus = url_for('api', node=self.node, opt='daemonstatus')
-
-    def inject_variable(self, version):
-        @app.context_processor
-        def inject_variable():
-            return dict(
-                SCRAPYD_SERVERS=self.SCRAPYD_SERVERS,
-                SCRAPYD_SERVERS_AMOUNT=len(self.SCRAPYD_SERVERS),
-                SCRAPYD_SERVERS_GROUPS=self.SCRAPYD_SERVERS_GROUPS,
-                SCRAPYD_SERVERS_AUTHS=self.SCRAPYD_SERVERS_AUTHS,
-                PYTHON_VERSION='.'.join([str(n) for n in sys.version_info[:3]]),
-                SCRAPYDWEB_VERSION=__version__,
-                # CHECK_LATEST_VERSION_FREQ=100,  #Would override inject_variable() in test_page.py
-                GITHUB_URL=__url__,
-                DEFAULT_LATEST_VERSION=DEFAULT_LATEST_VERSION,
-                SHOW_SCRAPYD_ITEMS=self.SHOW_SCRAPYD_ITEMS,
-                DAEMONSTATUS_REFRESH_INTERVAL=self.DAEMONSTATUS_REFRESH_INTERVAL,
-                REQUIRE_LOGIN=True if app.config.get('ENABLE_AUTH', False) else False,
-
-                static_css_common=url_for('static', filename='%s/css/common.css' % version),
-                static_css_dropdown=url_for('static', filename='%s/css/dropdown.css' % version),
-                static_css_dropdown_mobileui=url_for('static', filename='%s/css/dropdown_mobileui.css' % version),
-                static_css_icon_upload_icon_right=url_for('static',
-                                                          filename='%s/css/icon_upload_icon_right.css' % version),
-                static_css_multinode=url_for('static', filename='%s/css/multinode.css' % version),
-                static_css_stacktable=url_for('static', filename='%s/css/stacktable.css' % version),
-                static_css_stats=url_for('static', filename='%s/css/stats.css' % version),
-                static_css_style=url_for('static', filename='%s/css/style.css' % version),
-                static_css_style_mobileui=url_for('static', filename='%s/css/style_mobileui.css' % version),
-                static_css_utf8=url_for('static', filename='%s/css/utf8.css' % version),
-                static_css_utf8_mobileui=url_for('static', filename='%s/css/utf8_mobileui.css' % version),
-
-                static_css_element_ui_index=url_for('static',
-                                                    filename='%s/element-ui@2.4.6/lib/theme-chalk/index.css' % version),
-                static_js_element_ui_index=url_for('static', filename='%s/element-ui@2.4.6/lib/index.js' % version),
-
-                static_js_common=url_for('static', filename='%s/js/common.js' % version),
-                static_js_echarts_min=url_for('static', filename='%s/js/echarts.min.js' % version),
-                static_js_icons_menu=url_for('static', filename='%s/js/icons_menu.js' % version),
-                # static_js_github_buttons_html=url_for('static', filename='%s/js/github_buttons.html' % version),
-                static_js_github_buttons=url_for('static', filename='%s/js/github_buttons.js' % version),
-                static_js_jquery_min=url_for('static', filename='%s/js/jquery.min.js' % version),
-                static_js_multinode=url_for('static', filename='%s/js/multinode.js' % version),
-                static_js_stacktable=url_for('static', filename='%s/js/stacktable.js' % version),
-                static_js_stats=url_for('static', filename='%s/js/stats.js' % version),
-                static_js_vue_min=url_for('static', filename='%s/js/vue.min.js' % version),
-
-                static_icon=url_for('static', filename='%s/icon/fav.ico' % version),
-                static_icon_shortcut=url_for('static', filename='%s/icon/fav.ico' % version),
-                static_icon_apple_touch=url_for('static', filename='%s/icon/spiderman.png' % version),
-
-                # For base.html and base_mobileui.html
-                # url_menu_XXX might be update by caching subprocess, use update_g() instead
-                # url_menu_overview=url_for('overview', node=self.node),
-                url_dashboard_list=[url_for('dashboard', node=n, ui=self.UI)
-                                    for n in range(1, len(self.SCRAPYD_SERVERS)+1)],
-            )
+        # In log.py: pass url_dashboard_list to render_template() to override g.url_dashboard_list
+        g.url_dashboard_list = [url_for('dashboard', node=n, ui=self.UI)
+                                for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)]
 
     def get_selected_nodes(self):
         selected_nodes = []
-        for i in range(1, len(self.SCRAPYD_SERVERS) + 1):
-            if request.form.get(str(i)) == 'on':
-                selected_nodes.append(i)
+        for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1):
+            if request.form.get(str(n)) == 'on':
+                selected_nodes.append(n)
         return selected_nodes
 
     def get_response_from_view(self, url):
@@ -275,8 +234,13 @@ class MyView(View):
                 except json.JSONDecodeError:  # listprojects would get 502 html when Scrapyd server reboots
                     r_json = {'status': 'error', 'message': r.text}
                 finally:
+                    # Scrapyd in PY2: Traceback (most recent call last):\\n
+                    # Scrapyd in PY3: Traceback (most recent call last):\r\n
+                    message = r_json.get('message', '')
+                    if message:
+                        r_json['message'] = re.sub(r'\\n', '\n', message)
                     r_json.update(dict(url=url, auth=auth, status_code=r.status_code, when=time.ctime()))
-                    if r.status_code != 200 or r_json.get('status') != 'ok':
+                    if r.status_code != 200 or r_json.get('status', '') != 'ok':
                         self.logger.error('!!!!! %s %s' % (r.status_code, url))
                         self.logger.error(json_dumps(r_json))
                     elif not url.endswith('daemonstatus.json'):

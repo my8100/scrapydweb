@@ -1,117 +1,79 @@
 # coding: utf8
 from flask import url_for
 
-from tests.utils import VIEW_TITLE_MAP, HEADERS_DICT, get_text, is_mobileui, set_single_scrapyd
+from tests.utils import VIEW_TITLE_MAP, HEADERS_DICT, req_single_scrapyd
 
 
 # Location: http://127.0.0.1:5000/1/dashboard/?ui=mobile
 def test_index(app, client):
-    set_single_scrapyd(app)
+    with app.test_request_context():
+        for __, headers in HEADERS_DICT.items():
+            req_single_scrapyd(app, client, view='index', kws=dict(ui='mobile'), headers=headers,
+                               location=url_for('dashboard', node=1, ui='mobile'))
 
-    url = '/'
-    url_mobileui = '/?ui=mobile'
+        for key in ['Chrome', 'iPad']:
+            req_single_scrapyd(app, client, view='index', kws={}, headers=HEADERS_DICT[key],
+                               location=url_for('dashboard', node=1))  # NOT overview
 
-    for __, headers in HEADERS_DICT.items():
-        response = client.get(url_mobileui, headers=headers)
-        assert response.headers['Location'].endswith('/1/dashboard/?ui=mobile')
-
-    for key in ['Chrome', 'iPad']:
-        response = client.get(url, headers=HEADERS_DICT[key])
-        assert response.headers['Location'].endswith('/1/dashboard/')
-    for key in ['iPhone', 'Android']:
-        response = client.get(url, headers=HEADERS_DICT[key])
-        assert response.headers['Location'].endswith('/1/dashboard/?ui=mobile')
+        for key in ['iPhone', 'Android']:
+            req_single_scrapyd(app, client, view='index', kws={}, headers=HEADERS_DICT[key],
+                               location=url_for('dashboard', node=1, ui='mobile'))
 
 
 def test_check_browser(app, client):
-    set_single_scrapyd(app)
-
-    with app.test_request_context():
-        url = url_for('dashboard', node=1)
-        response = client.get(url, headers=HEADERS_DICT['IE'])
-        assert 'checkBrowser()' in get_text(response)
-
-        response = client.get(url, headers=HEADERS_DICT['EDGE'])
-        assert 'checkBrowser()' in get_text(response)
+    ins = 'checkBrowser();'
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['IE'], ins=ins)
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['EDGE'], ins=ins)
 
 
 def test_dropdown_for_mobile_device(app, client):
-    set_single_scrapyd(app)
-
-    with app.test_request_context():
-        url = url_for('dashboard', node=1)
-        response = client.get(url, headers=HEADERS_DICT['Chrome'])
-        text = get_text(response)
-        assert 'dropdown_mobileui.css' not in text and 'handleDropdown()' not in text
-
-        response = client.get(url, headers=HEADERS_DICT['iPhone'])
-        text = get_text(response)
-        assert 'dropdown_mobileui.css' in text and 'handleDropdown()' in text
-
-        response = client.get(url, headers=HEADERS_DICT['iPad'])
-        text = get_text(response)
-        assert 'dropdown_mobileui.css' in text and 'handleDropdown()' in text
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['Chrome'],
+                       ins='dropdown.css', nos=['dropdown_mobileui.css', 'handleDropdown();'])
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['iPhone'],
+                       nos='dropdown.css', ins=['dropdown_mobileui.css', 'handleDropdown();'])
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['iPad'],
+                       nos='dropdown.css', ins=['dropdown_mobileui.css', 'handleDropdown();'])
 
 
 def test_check_update(app, client):
-    set_single_scrapyd(app)
+    @app.context_processor
+    def inject_variable():
+        return dict(CHECK_LATEST_VERSION_FREQ=1)
 
-    with app.test_request_context():
-        @app.context_processor
-        def inject_variable():
-            return dict(CHECK_LATEST_VERSION_FREQ=1)
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1),
+                       ins='<script>setTimeout("checkLatestVersion(',
+                       nos='<!-- <script>setTimeout("checkLatestVersion(')
 
-        url = url_for('dashboard', node=1)
-        response = client.get(url)
-        text = get_text(response)
-        assert ('<script>setTimeout("checkLatestVersion(' in text
-                and '<!-- <script>setTimeout("checkLatestVersion(' not in text)
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1, ui='mobile'), mobileui=True,
+                       ins='<script>setTimeout("checkLatestVersion(',
+                       nos='<!-- <script>setTimeout("checkLatestVersion(')
 
-        @app.context_processor
-        def inject_variable():
-            return dict(CHECK_LATEST_VERSION_FREQ=100)
-        response = client.get(url)
-        text = get_text(response)
-        assert '<script>setTimeout("checkLatestVersion(' not in text
+    @app.context_processor
+    def inject_variable():
+        return dict(CHECK_LATEST_VERSION_FREQ=100)
+
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), nos='<script>setTimeout("checkLatestVersion(')
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1, ui='mobile'), mobileui=True,
+                       nos='<script>setTimeout("checkLatestVersion(')
 
 
 def test_page(app, client):
-    set_single_scrapyd(app)
-
-    with app.test_request_context():
-        for view, title in VIEW_TITLE_MAP.items():
-            url = url_for(view, node=1)
-            response = client.get(url)
-            assert title in get_text(response) and not is_mobileui(response)
+    for view, title in VIEW_TITLE_MAP.items():
+        req_single_scrapyd(app, client, view=view, kws=dict(node=1), ins=title)
 
 
 def test_select_multinode_checkbox(app, client):
-    set_single_scrapyd(app)
-
-    with app.test_request_context():
-        keyword = 'CheckAll / UncheckAll'
-        for view in ['deploy.deploy', 'schedule.schedule']:
-            url = url_for(view, node=1)
-            response = client.get(url)
-            assert keyword not in get_text(response)
+    for view in ['deploy.deploy', 'schedule.schedule']:
+        req_single_scrapyd(app, client, view=view, kws=dict(node=1), nos='CheckAll / UncheckAll')
 
 
 def test_items(app, client):
-    set_single_scrapyd(app)
-
-    title = 'Directory listing for /items/'
-    with app.test_request_context():
-        url = url_for('items', node=1)
-        response = client.get(url)
-        assert ((title in get_text(response) or 'No Such Resource' in get_text(response))
-                and not is_mobileui(response))
+    try:
+        req_single_scrapyd(app, client, view='items', kws=dict(node=1), ins='Directory listing for /items/')
+    except AssertionError:
+        req_single_scrapyd(app, client, view='items', kws=dict(node=1), ins='No Such Resource')
 
 
 def test_switch_node_skip(app, client):
-    set_single_scrapyd(app)
-
-    with app.test_request_context():
-        url = url_for('dashboard', node=1)
-        response = client.get(url)
-        assert ('onclick="switchNode' not in get_text(response)
-                and 'id="skip_nodes_checkbox"' not in get_text(response))
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1),
+                       nos=['onclick="switchNode', 'id="skip_nodes_checkbox"'])

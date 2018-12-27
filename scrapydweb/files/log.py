@@ -99,8 +99,13 @@ class LogView(MyView):
         if not self.text:
             self.request_scrapy_log()
             if self.status_code != 200:
-                return render_template(self.template_fail, node=self.node,
-                                       url=self.url, status_code=self.status_code, text=self.text)
+                kwargs = dict(
+                    node=self.node,
+                    url=self.url,
+                    status_code=self.status_code,
+                    text=self.text
+                )
+                return render_template(self.template_fail, **kwargs)
 
         self.render_stats_html()
         self.render_utf8_html()
@@ -186,6 +191,8 @@ class LogView(MyView):
         self.stats_html = render_template(self.template_stats, node=self.node, **self.stats_kwargs)
 
         self.stats_kwargs['IS_MOBILE'] = True
+        self.stats_kwargs['url_dashboard_list'] = [url_for('dashboard', node=n, ui='mobile')
+                                                   for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)]
         self.stats_mobileui_html = render_template(self.template_stats_mobileui, node=self.node, **self.stats_kwargs)
 
     def render_utf8_html(self):
@@ -209,6 +216,8 @@ class LogView(MyView):
         self.utf8_html = render_template(self.template_utf8, **utf8_kwargs)
 
         utf8_kwargs['IS_MOBILE'] = True
+        utf8_kwargs['url_dashboard_list'] = [url_for('dashboard', node=n, ui='mobile')
+                                             for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)]
         self.utf8_mobileui_html = render_template(self.template_utf8_mobileui, **utf8_kwargs)
 
     def save_html(self):
@@ -230,7 +239,7 @@ class LogView(MyView):
         job_data_default = ([0] * 8, [False] * 6, False, time.time())
         job_data = self.job_data_dict.setdefault(self.job_key, job_data_default)
         (self.job_stats_previous, self.triggered_list, self.has_been_stopped, self.last_send_timestamp) = job_data
-        # print(self.job_data_dict)
+        self.logger.info(self.job_data_dict)
         self.job_stats = [self.stats_kwargs['re_matches'][i]['count'] for i in range(6)]
         self.job_stats.extend([self.stats_kwargs['crawled_pages'], self.stats_kwargs['scraped_items']])
         self.job_stats_diff = [j - i for i, j in zip(self.job_stats_previous, self.job_stats)]
@@ -312,7 +321,8 @@ class LogView(MyView):
     def handle_email_flag(self):
         if self.flag:
             # Send email
-            now_day = date.isoweekday(datetime.now())
+            # now_day = date.isoweekday(datetime.now())
+            now_day = date.isoweekday(date.today())
             now_hour = datetime.now().hour
             if now_day in self.EMAIL_WORKING_DAYS and now_hour in self.EMAIL_WORKING_HOURS:
                 self.EMAIL_KWARGS['subject'] = '%s %s #scrapydweb' % (self.flag, self.job_key)
@@ -327,12 +337,13 @@ class LogView(MyView):
                 Popen(args)
 
             # Update self.job_data_dict (last_send_timestamp would be updated only when flag is non-empty)
-            self.logger.debug(self.job_data_dict[self.job_key])
+            self.logger.info("Previous job_data['%s'] %s" % (self.job_key, self.job_data_dict[self.job_key]))
             self.job_data_dict[self.job_key] = (self.job_stats, self.triggered_list, self.has_been_stopped, time.time())
-            self.logger.debug(self.job_data_dict[self.job_key])
+            self.logger.info("Updated  job_data['%s'] %s" % (self.job_key, self.job_data_dict[self.job_key]))
 
         if self.job_finished:
             self.job_data_dict.pop(self.job_key)
             if len(self.job_finished_set) > 1000:
                 self.job_finished_set.clear()
             self.job_finished_set.add(self.job_key)
+            self.logger.info('job_finished: %s' % self.job_key)

@@ -11,7 +11,7 @@
             font-size: x-large;
             word-break: break-all;
         }
-        .action {margin: 16px 0;}
+        .action {margin: 24px 0;}
     </style>
 {% endblock %}
 
@@ -70,10 +70,10 @@
 {% if project and spider and rows %}
     <div class="action">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="button safe" href="{{ rows[0]['url_multinode_start'] }}" onclick="showLoader();">multinode</a>
+        <a class="button safe big" href="{{ rows[0]['url_multinode_start'] }}" onclick="showLoader();">multinode</a>
         {% endif %}
 
-        <a class="button safe" href="{{ rows[0]['url_start'] }}" onclick="showLoader();">Run Spider ({{ spider }})</a>
+        <a class="button safe big" href="{{ rows[0]['url_start'] }}" onclick="showLoader();">Run Spider ({{ spider }})</a>
     </div>
 {% endif %}
 </div>

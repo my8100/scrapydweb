@@ -40,7 +40,7 @@
         {% endif %}
             <span>{{ SCRAPYD_SERVERS[node-1] }}</span>
             <svg class="icon anchor" aria-hidden="true">
-                <use xlink:href="#icon-right"></use>
+                <use xlink:href="#icon-down"></use>
             </svg>
         </a>
 
@@ -52,7 +52,7 @@
                 {% endif %}
 
                 <a {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}
-                href="javascript:;" onclick="forceLoader('{{ url_dashboard_list[loop.index-1] }}');">
+                href="javascript:;" onclick="forceLoader('{{ url_dashboard_list[loop.index-1] if url_dashboard_list else g.url_dashboard_list[loop.index-1] }}');">
                 {{ SCRAPYD_SERVER }}
                 </a>
             {% endfor %}
@@ -91,10 +91,10 @@ var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
 
 function switchNode(change) {
     var target = node + change;
-    if(target < 1) {
+    if (target < 1) {
         alert("Reaching the first node");
         return;
-    } else if(target > node_total) {
+    } else if (target > node_total) {
         alert("Reaching the final node");
         return;
     }

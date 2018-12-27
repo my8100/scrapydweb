@@ -63,22 +63,19 @@ Using cached version, click to refresh
 $(function() {
     //$(window).scroll(function() {
     $(document).ready(function() {
-        {% if refresh_url %}
-        history.pushState(null, '', window.location.pathname + location.search.replace('refresh_cache=True', 'refresh_cache='));
-        {% endif %}
-
+        {% if refresh_url %}updateURL();{% endif %}
         hideLoader();
+
         $('div.go-top').show();
         $('div.go-bottom').show();
-        $('#content').animate({scrollTop: $('#log').height()}, 300);
+        goLogBottom();
     });
 
     $('div.go-top').click(function() {
-        $('#content').animate({scrollTop: 0}, 300);
+        goContentTop();
     });
     $('div.go-bottom').click(function() {
-        //$('#content').animate({scrollTop: $(document).height()}, 300);
-        $('#content').animate({scrollTop: $('#log').height()}, 300);
+        goLogBottom();
     });
 });
 </script>
@@ -92,8 +89,8 @@ const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
     var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Cached " + seconds + " seconds ago, click to refresh";
-    if(seconds > LAST_LOG_ALERT_SECONDS) {
+    my$('#refresh_button').innerHTML = "Cached <span style='color: black;'>" + seconds + "</span> seconds ago, reload this page to request the latest cached version OR click to request a real-time version (which may be slow).";
+    if (seconds > LAST_LOG_ALERT_SECONDS) {
         my$('#refresh_button').className = "button danger";
     } else {
         my$('#refresh_button').className = "button safe";

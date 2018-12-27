@@ -7,19 +7,6 @@ from flask import render_template, request, url_for
 from ..myview import MyView
 
 
-template_listversions_error = """
-<a class="request" target="_blank" href="{url}">REQUEST</a>
-<em class="fail"> got status: {status}</em>
-<pre>{text}</pre>
-You can <a class="button safe" href="{url_deploy}">Deploy Project</a>
-with a new project name or
-<a class="button danger" href="javascript:;"
-onclick="execXHR('{url_delproject}', 'versions_of_{project}', 'Delete project \\'{project}\\'?');">
-Delete Project
-</a>
-"""
-
-
 class ManageView(MyView):
 
     def __init__(self):
@@ -56,34 +43,32 @@ class ManageView(MyView):
                 url_deploy=url_for('deploy.deploy', node=self.node),
                 url_delproject=url_for('manage', node=self.node, opt='delproject', project=self.project),
                 project=self.project,
-                text=self.text
+                text=self.text,
+                tip=self.js.get('tip', '')
             )
-            return template_listversions_error.format(**kwargs)
+            return render_template('scrapydweb/listversions_error.html', **kwargs)
         else:
             if self.POST:
                 # Pass request.url instead of js['url'], for GET method
                 return ('<a class="request" target="_blank" href="%s">REQUEST</a>'
                         '<em class="fail"> got status: %s</em>') % (request.url, self.js['status'])
             else:
+                alert = 'REQUEST got status: %s' % self.js['status']
                 message = self.js.get('message', '')
                 if message:
-                    self.js.update({'message': 'See details below'})
+                    self.js['message'] = 'See details below'
                 return render_template(self.template_fail, node=self.node,
-                                       text=self.json_dumps(self.js), message=message)
+                                       alert=alert, text=self.json_dumps(self.js), message=message)
 
     def listprojects(self):
         results = []
         for project in self.js['projects']:
             url_listversions = url_for('manage', node=self.node, opt='listversions', project=project)
             results.append((project, url_listversions))
-        if self.POST:
-            url = self.js['url']
-        else:
-            url = self.js['url'].replace('http://', 'http://%s:%s@' % self.AUTH) if self.AUTH else self.js['url']
 
         kwargs = dict(
             node=self.node,
-            url=url,
+            url=self.js['url'],
             node_name=self.js['node_name'],
             results=results,
             url_deploy=url_for('deploy.deploy', node=self.node)
@@ -129,8 +114,8 @@ class ManageView(MyView):
 
     @staticmethod
     def delversion():
-        return '<em class="pass">deleted</em>'
+        return '<em class="pass">version deleted</em>'
 
     @staticmethod
     def delproject():
-        return '<em class="pass">deleted</em>'
+        return '<em class="pass">project deleted</em>'

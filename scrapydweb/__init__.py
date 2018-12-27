@@ -1,18 +1,17 @@
 # coding: utf8
 import re
 import traceback
+import platform
 import logging
 from logging.config import dictConfig
 
-from flask import Flask
+from flask import Flask, render_template
+from flask import current_app, url_for
 from flask_compress import Compress
 
+from .__version__ import __version__, __url__
+from .vars import PYTHON_VERSION, DEFAULT_LATEST_VERSION
 
-title_error_500 = """
-<h1>Internal Server Error</h1>
-<p>The server encountered an internal error and was unable to complete your request.
-Either the server is overloaded or there is an error in the application.</p>
-"""
 
 # http://flask.pocoo.org/docs/1.0/logging/#basic-configuration
 dictConfig({
@@ -30,6 +29,20 @@ dictConfig({
         'handlers': ['wsgi']
     }
 })
+
+
+def internal_server_error(error):
+    kwargs = dict(
+        error=error,
+        traceback=traceback.format_exc(),
+        url_issues=__url__ + '/issues',
+        os=platform.platform(),
+        python_version=PYTHON_VERSION,
+        scrapydweb_version=__version__,
+        scrapyd_servers_amount=len(current_app.config.get('SCRAPYD_SERVERS', []))
+    )
+
+    return render_template('500.html', **kwargs), 500
 
 
 def create_app(test_config=None):
@@ -50,22 +63,15 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
+    handle_route(app)
+
+    handle_template_context(app)
 
     # @app.errorhandler(404)
     # def handle_error(error):
         # return ('Nothing Found', 404)
-
-    @app.errorhandler(500)
-    def handle_error(error):
-        return '{}<h2>error: {}</h2><pre>{}<pre>'.format(title_error_500, error, traceback.format_exc()), 500
-
-    handle_route(app)
-
-    compress = Compress()
-    compress.init_app(app)
-
-    app.jinja_env.variable_start_string = '{{ '
-    app.jinja_env.variable_end_string = ' }}'
+    # http://flask.pocoo.org/docs/1.0/patterns/errorpages/
+    app.register_error_handler(500, internal_server_error)
 
     # https://ansible-docs.readthedocs.io/zh/stable-2.0/rst/playbooks_filters.html#other-useful-filters
     # https://stackoverflow.com/questions/12791216/how-do-i-use-regular-expressions-in-jinja2
@@ -74,6 +80,11 @@ def create_app(test_config=None):
     @app.template_filter()
     def regex_replace(s, find, replace):
         return re.sub(find, replace, s)
+    app.jinja_env.variable_start_string = '{{ '
+    app.jinja_env.variable_end_string = ' }}'
+
+    compress = Compress()
+    compress.init_app(app)
 
     app.logger.setLevel(logging.DEBUG)
 
@@ -172,3 +183,52 @@ def handle_route(app):
     # system
     from .system.settings import SettingsView
     register_view(SettingsView, 'settings', [('settings', None)])
+
+
+def handle_template_context(app):
+    STATIC = 'static'
+    VERSION = 'v' + __version__.replace('.', '')
+    # MUST be commented out for released version
+    # VERSION = 'v100'
+
+    @app.context_processor
+    def inject_variable():
+        return dict(
+            CHECK_LATEST_VERSION_FREQ=100,
+            DEFAULT_LATEST_VERSION=DEFAULT_LATEST_VERSION,
+            GITHUB_URL=__url__,
+            PYTHON_VERSION=PYTHON_VERSION,
+            SCRAPYDWEB_VERSION=__version__,
+
+            # static_css_common=url_for(STATIC, filename='%s/css/common.css' % VERSION),
+            static_css_dropdown=url_for(STATIC, filename='%s/css/dropdown.css' % VERSION),
+            static_css_dropdown_mobileui=url_for(STATIC, filename='%s/css/dropdown_mobileui.css' % VERSION),
+            static_css_icon_upload_icon_right=url_for(STATIC,
+                                                      filename='%s/css/icon_upload_icon_right.css' % VERSION),
+            static_css_multinode=url_for(STATIC, filename='%s/css/multinode.css' % VERSION),
+            static_css_stacktable=url_for(STATIC, filename='%s/css/stacktable.css' % VERSION),
+            static_css_stats=url_for(STATIC, filename='%s/css/stats.css' % VERSION),
+            static_css_style=url_for(STATIC, filename='%s/css/style.css' % VERSION),
+            static_css_style_mobileui=url_for(STATIC, filename='%s/css/style_mobileui.css' % VERSION),
+            static_css_utf8=url_for(STATIC, filename='%s/css/utf8.css' % VERSION),
+            static_css_utf8_mobileui=url_for(STATIC, filename='%s/css/utf8_mobileui.css' % VERSION),
+
+            static_css_element_ui_index=url_for(STATIC,
+                                                filename='%s/element-ui@2.4.6/lib/theme-chalk/index.css' % VERSION),
+            static_js_element_ui_index=url_for(STATIC, filename='%s/element-ui@2.4.6/lib/index.js' % VERSION),
+
+            static_js_common=url_for(STATIC, filename='%s/js/common.js' % VERSION),
+            static_js_echarts_min=url_for(STATIC, filename='%s/js/echarts.min.js' % VERSION),
+            static_js_icons_menu=url_for(STATIC, filename='%s/js/icons_menu.js' % VERSION),
+            # static_js_github_buttons_html=url_for(STATIC, filename='%s/js/github_buttons.html' % VERSION),
+            static_js_github_buttons=url_for(STATIC, filename='%s/js/github_buttons.js' % VERSION),
+            static_js_jquery_min=url_for(STATIC, filename='%s/js/jquery.min.js' % VERSION),
+            static_js_multinode=url_for(STATIC, filename='%s/js/multinode.js' % VERSION),
+            static_js_stacktable=url_for(STATIC, filename='%s/js/stacktable.js' % VERSION),
+            static_js_stats=url_for(STATIC, filename='%s/js/stats.js' % VERSION),
+            static_js_vue_min=url_for(STATIC, filename='%s/js/vue.min.js' % VERSION),
+
+            static_icon=url_for(STATIC, filename='%s/icon/fav.ico' % VERSION),
+            static_icon_shortcut=url_for(STATIC, filename='%s/icon/fav.ico' % VERSION),
+            static_icon_apple_touch=url_for(STATIC, filename='%s/icon/spiderman.png' % VERSION),
+        )

@@ -1,60 +1,66 @@
 # coding: utf8
 """
 How ScrapydWeb works:
-BROWSER_HOST <<<>>> SCRAPYDWEB_BIND:SCRAPYDWEB_PORT <<<>>> SCRAPYD_SERVERS
+BROWSER_HOST <<<>>> SCRAPYDWEB_BIND:SCRAPYDWEB_PORT <<<>>> your SCRAPYD_SERVERS
+
+GitHub: https://github.com/my8100/scrapydweb
 """
 
-########################################################################
-########################################################################
+
+###############################################################################
+###############################################################################
 ## QUICK SETUP: Simply search and update the SCRAPYD_SERVERS item, leave the rest as default.
 ## Recommended Reading: [How to efficiently manage your distributed web scraping projects]
 ## (https://medium.com/@my8100)
-########################################################################
+## ------------------------------ Chinese -------------------------------------
 ## 快速设置：搜索并更新 SCRAPYD_SERVERS 配置项即可，其余配置项保留默认值。
 ## 推荐阅读：[如何简单高效地部署和监控分布式爬虫项目]
 ## (https://juejin.im/post/5bebc5fd6fb9a04a053f3a0e)
-########################################################################
-########################################################################
+###############################################################################
+###############################################################################
 
 
-############################## ScrapydWeb ##############################
-# Set to '0.0.0.0' or IP-OF-CURRENT-HOST makes ScrapydWeb server visible externally,
-# otherwise, set SCRAPYDWEB_BIND to '127.0.0.1'
+############################## ScrapydWeb #####################################
+# Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-CURRENT-HOST would make
+# ScrapydWeb server visible externally, otherwise, set it to '127.0.0.1'.
+# The default is '0.0.0.0'.
 SCRAPYDWEB_BIND = '0.0.0.0'
+# Accept connections on the specified port, the default is 5000.
 SCRAPYDWEB_PORT = 5000
 
-# Set True to enable basic auth for web UI
+# The default is False, set it to True to enable basic auth for web UI.
 ENABLE_AUTH = False
-# In order to enable basic auth, both USERNAME and PASSWORD should be non-empty strings
+# In order to enable basic auth, both USERNAME and PASSWORD should be non-empty strings.
 USERNAME = ''
 PASSWORD = ''
 
 
-############################## Scrapy ##################################
-# Set to enable auto eggifying in Deploy page,
+############################## Scrapy #########################################
+# ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
+# so that you can simply select a project to deploy, instead of eggifying it in advance.
 # e.g., 'C:/Users/username/myprojects/' or '/home/username/myprojects/'
 SCRAPY_PROJECTS_DIR = ''
 
 
-############################## Scrapyd #################################
-# Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed and started on all of your hosts.
-# Note that if you want to visit Scrapyd remotely,
-# you have to manually set the [bind_address](https://scrapyd.readthedocs.io/en/latest/config.html#bind-address)
-# to 'bind_address = 0.0.0.0' and restart Scrapyd to make it visible externally.
-# ------------------------------------------------------------------------------------------------------------------
-# 请先确保所有主机都已经安装和启动 [Scrapyd](https://github.com/scrapy/scrapyd) ，
-# 如需远程访问 Scrapyd，则需将 Scrapyd 配置文件中的 [bind_address](https://scrapyd.readthedocs.io/en/latest/config.html#bind-address)
-# 修改为 'bind_address = 0.0.0.0'，然后重启 Scrapyd。
+############################## Scrapyd ########################################
+# Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed
+# and started on all of your hosts.
+# Note that for remote access, you have to manually set 'bind_address = 0.0.0.0'
+# in the configuration file of Scrapyd and restart Scrapyd to make it visible externally.
+# Check out 'https://scrapyd.readthedocs.io/en/latest/config.html#example-configuration-file' for more info.
+# ------------------------------ Chinese --------------------------------------
+# 请先确保所有主机都已经安装和启动 [Scrapyd](https://github.com/scrapy/scrapyd)。
+# 如需远程访问 Scrapyd，则需在 Scrapyd 配置文件中设置 'bind_address = 0.0.0.0'，然后重启 Scrapyd。
+# 详见 https://scrapyd.readthedocs.io/en/latest/config.html#example-configuration-file
 
-# Support multiple Scrapyd servers:
-# - string format: username:password@ip:port#group
-#   - default port would be 6800 if not provided,
-#   - basic auth and group info are both optional.
+# - the string format: username:password@ip:port#group
+#   - The default port would be 6800 if not provided,
+#   - Both basic auth and group are optional.
 #   - e.g., '127.0.0.1' or 'username:password@192.168.123.123:6801#group'
-# - tuple format: (username, password, ip, port, group)
-#   - When username or password or group info is too complicated (e.g., contains ':@#'),
+# - the tuple format: (username, password, ip, port, group)
+#   - When the username, password, or group is too complicated (e.g., contains ':@#'),
 #   - or if ScrapydWeb fails to parse the string format passed in,
-#   - it's recommended to pass in a tuple with 5 elements
+#   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g., ('', '', '127.0.0.1', '', '') or ('username', 'password', '192.168.123.123', '6801', 'group')
 SCRAPYD_SERVERS = [
     '127.0.0.1:6800',
@@ -62,68 +68,71 @@ SCRAPYD_SERVERS = [
     ('username', 'password', 'localhost', '6801', 'group'),
 ]
 
-# Set to speed up loading scrapy logs.
-# e.g., 'C:/Users/username/logs/' or '/home/username/logs/'
-# The setting takes effect only when both ScrapydWeb and Scrapyd run on the same host,
-# and the Scrapyd server ip is added as '127.0.0.1'.
-# Check out below link to find out where the Scrapy logs are stored:
+# If the IP part of a Scrapyd server is added as '127.0.0.1' in the SCRAPYD_SERVERS above,
+# ScrapydWeb would try to read Scrapy logs directly from disk, instead of making a request
+# to the Scrapyd server.
+# Check out this link to find out where the Scrapy logs are stored:
 # https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir
+# e.g., 'C:/Users/username/logs/' or '/home/username/logs/'
 SCRAPYD_LOGS_DIR = ''
 
-# The extension used to locate scrapy log in dashboard, and the order matters.
+# ScrapydWeb would try every extension in sequence to locate the Scrapy log.
+# The default is ['.log', '.log.gz', '.txt'].
 SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt']
 
 
-############################## Page Display ############################
-# Set True to show Items page and Items column in Dashboard page
+############################## Page Display ###################################
+# The default is True, set it to False to hide the Items page, as well as
+# the Items column in the Dashboard page.
 SHOW_SCRAPYD_ITEMS = True
 
-# Set True to show jobid in Dashboard page
+# The default is False, set it to True to show the Job column in the Dashboard page.
 SHOW_DASHBOARD_JOB_COLUMN = False
 
-# Dashboard page would auto reload every N seconds.
-# Set 0 to disable auto reloading.
+# If you stay on the Dashboard page, it would be reloaded automatically every N seconds.
+# The default is 300, set it to 0 to disable auto-reloading.
 DASHBOARD_RELOAD_INTERVAL = 300
 
-# Refresh daemonstatus of the current Scrapyd server every N seconds,
-# which is displayed in the top right corner.
-# Set 0 to disable auto refreshing.
+# The load status of the current Scrapyd server is checked every N seconds,
+# which is displayed in the top right corner of the page.
+# The default is 10, set it to 0 to disable auto-refreshing.
 DAEMONSTATUS_REFRESH_INTERVAL = 10
 
 
-############################## HTML Caching ############################
-# Set False to disable caching HTML for Log and Stats page in the background periodically
+############################## HTML Caching ###################################
+# By default ScrapydWeb would periodically cache HTML for the Log and Stats page in the background.
+# The default is True, set it to False to disable auto-caching.
 ENABLE_CACHE = True
 
-# Sleep seconds between the end of last round of caching and the start of next round
+# Sleep N seconds before starting next round of HTML caching, the default is 300.
 CACHE_ROUND_INTERVAL = 300
 
-# Sleep seconds between every request while caching
+# Sleep N seconds between each request to the Scrapyd server while caching HTML, the default is 10.
 CACHE_REQUEST_INTERVAL = 10
 
-# Set True to delete cached HTML files of Log and Stats page at startup
+# The default is False, set it to True to delete all the cached HTML files on startup.
 DELETE_CACHE = False
 
 
-############################## Email Notice ############################
+############################## Email Notice ###################################
 # Keep in mind that "Email Notice" depends on "HTML Caching" to collect statistics,
-# so you have to enable "HTML Caching" by setting "ENABLE_CACHE = True"
-# before setting "ENABLE_EMAIL = True" (check out the "HTML Caching" section above).
+# so you have to enable "HTML Caching" by setting "ENABLE_CACHE = True" (check out the
+# "HTML Caching" section above) before setting "ENABLE_EMAIL = True".
 
-# In order to be notified (and stop/forcestop a job when triggered) in time,
-# you can reduce the value of CACHE_ROUND_INTERVAL (and CACHE_REQUEST_INTERVAL),
+# In order to be notified (and stop or forcestop a job when triggered) in time,
+# you can reduce the value of CACHE_ROUND_INTERVAL and CACHE_REQUEST_INTERVAL,
 # at the cost of burdening both CPU and bandwidth of your servers.
 
-# Tip: set SCRAPYDWEB_BIND to the actual IP of  your server, then you can visit ScrapydWeb via the links in the email.
-# (check out the "ScrapydWeb" section above)
+# Tip: set SCRAPYDWEB_BIND to the actual IP of your host, then you can visit ScrapydWeb
+# via the links attached in the email. (check out the "ScrapydWeb" section above)
 
-# Check out below link if you are using ECS of Alibaba Cloud and your SMTP server provides TCP port 25 only:
+# Check out this link if you are using ECS of Alibaba Cloud and your SMTP server provides TCP port 25 only:
 # https://www.alibabacloud.com/help/doc-detail/56130.htm
-########################################################################
-# Set True to enable email notice
+
+# The default is False, set it to True to enable email notification.
 ENABLE_EMAIL = False
 
-############### smtp settings ###############
+########## smtp settings ##########
 SMTP_SERVER = ''
 SMTP_PORT = 0
 SMTP_OVER_SSL = False
@@ -148,57 +157,59 @@ SMTP_OVER_SSL = False
 # SMTP_PORT = 25
 # SMTP_OVER_SSL = False
 
-# A timeout in seconds for the connection attempt
+# The timeout in seconds for the connection attempt, the default is 10.
 SMTP_CONNECTION_TIMEOUT = 10
 
-############### sender & recipients ##########
+########## sender & recipients ##########
 # e.g., 'username@gmail.com'
 FROM_ADDR = ''
 
-# e.g., 'password4gmail'
 # As for different email service provider, you might have to get an APP password (like Gmail)
-# or an authorization code (like QQ mail) and set it as EMAIL_PASSWORD.
+# or an authorization code (like QQ mail) and set it as the EMAIL_PASSWORD.
 # Check out below links to get more help:
-# https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as provider using Python?
+# https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as the provider using Python?
 # https://stackoverflow.com/a/26053352/10517783 Python smtplib proxy support
+# e.g., 'password4gmail'
 EMAIL_PASSWORD = ''
 
 # e.g., ['username@gmail.com', ]
 TO_ADDRS = []
 
-############### email working time ##########
-# Monday is 1 and Sunday is 7
+########## email working time ##########
+# Monday is 1 and Sunday is 7.
 # e.g, [1, 2, 3, 4, 5, 6, 7]
 EMAIL_WORKING_DAYS = []
 
-# From 0 to 23
+# From 0 to 23.
 # e.g., [9] + list(range(15, 18)) >>> [9, 15, 16, 17], or range(24) for 24 hours
 EMAIL_WORKING_HOURS = []
 
-############### email triggers ##############
-# Set 0 to disable trigger, otherwise, set a positive integer to trigger email notice every N seconds
+########## basic triggers ##########
+# Trigger email notice every N seconds for each running job.
+# The default is 0, set it to a positive integer to enable this trigger.
 ON_JOB_RUNNING_INTERVAL = 0
 
-# Set True to enable trigger when job is finished
+# Trigger email notice when a job is finished.
+# The default is False, set it to True to enable this trigger.
 ON_JOB_FINISHED = False
 
-# - LOG_XXX_THRESHOLD: Set 0 to disable trigger, otherwise, set a positive integer as the threshold
-# for a specific kind of log. Then a corresponding email would be sent the first time reaching the threshold.
-# - LOG_XXX_TRIGGER_STOP: Set True to stop current job automatically when reaching LOG_XXX_THRESHOLD.
-# - LOG_XXX_TRIGGER_FORCESTOP: Set True to forcestop current job automatically when reaching LOG_XXX_THRESHOLD.
+########## advanced triggers ##########
+# - LOG_XXX_THRESHOLD:
+#   - Trigger email notice the first time reaching the threshold for a specific kind of log.
+#   - The default is 0, set it to a positive integer to enable this trigger.
+# - LOG_XXX_TRIGGER_STOP (optional):
+#   - The default is False, set it to True to stop current job automatically when reaching the LOG_XXX_THRESHOLD.
+#   - The SIGTERM signal would be sent only one time to shut down the crawler gracefully.
+#   - In order to avoid an UNCLEAN shutdown, the 'STOP' action would be executed one time at most
+#   - if none of the 'FORCESTOP' triggers is enabled, no matter how many 'STOP' triggers are enabled.
+# - LOG_XXX_TRIGGER_FORCESTOP (optional):
+#   - The default is False, set it to True to FORCESTOP current job automatically when reaching the LOG_XXX_THRESHOLD.
+#   - The SIGTERM signal would be sent twice resulting in an UNCLEAN shutdown, without the Scrapy stats dumped!
+#   - The 'FORCESTOP' action would be executed if both of the 'STOP' and 'FORCESTOP' triggers are enabled.
 
-# Note that LOG_XXX_TRIGGER_STOP would send SIGTERM only one time and try to shut down the crawler gracefully.
-# Whereas LOG_XXX_TRIGGER_FORCESTOP would force UNCLEAN shutdown, without Scrapy stats dumped!
+# Note that the 'STOP' action and the 'FORCESTOP' action would STILL be executed even when the current time
+# is NOT within the EMAIL_WORKING_DAYS and the EMAIL_WORKING_HOURS, though NO email would be sent.
 
-# When LOG_XXX_THRESHOLD is set non-zero and both LOG_XXX_TRIGGER_STOP and LOG_XXX_TRIGGER_FORCESTOP are set False,
-# a trigger email would be sent without executing 'STOP' or 'FORCESTOP'.
-# When no LOG_XXX_TRIGGER_FORCESTOP is triggered, 'STOP' would be executed one time at most to avoid unclean shutdown,
-# no matter how many LOG_XXX_TRIGGER_STOP are triggered.
-# When any LOG_XXX_TRIGGER_STOP and any LOG_XXX_TRIGGER_FORCESTOP are triggered at the same time, 'FORCESTOP' would
-# be executed.
-
-# Note that LOG_XXX_TRIGGER_STOP and LOG_XXX_TRIGGER_FORCESTOP still would be executed even when current time
-# is not within EMAIL_WORKING_DAYS and EMAIL_WORKING_HOURS, though NO email would be sent.
 LOG_CRITICAL_THRESHOLD = 0
 LOG_CRITICAL_TRIGGER_STOP = False
 LOG_CRITICAL_TRIGGER_FORCESTOP = False
@@ -224,11 +235,13 @@ LOG_IGNORE_TRIGGER_STOP = False
 LOG_IGNORE_TRIGGER_FORCESTOP = False
 
 
-############################## System ##################################
-# Set True to enable debug mode and debugger would be available in the browser.
+############################## System #########################################
+# The default is False, set it to True to enable debug mode and the interactive debugger
+# would be shown in the browser instead of the "500 Internal Server Error" page.
 # Actually, it's not recommended to turn on debug mode, also no need,
 # since its side effects includes creating two caching subprocess in the background.
 DEBUG = False
 
-# Set True to set logging level to DEBUG for getting more information about how ScrapydWeb works
+# The default is False, set it to True to set the logging level to DEBUG for getting more
+# information about how ScrapydWeb works, especially while debugging.
 VERBOSE = False

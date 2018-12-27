@@ -10,13 +10,7 @@ from flask import Blueprint, render_template, request, url_for, send_from_direct
 
 from ..myview import MyView
 from .utils import slot
-from ..vars import SCHEDULE_PATH, DEFAULT_LATEST_VERSION, UA_DICT
-
-
-HISTORY_LOG = os.path.join(SCHEDULE_PATH, 'history.log')
-if not os.path.exists(HISTORY_LOG):
-    with io.open(HISTORY_LOG, 'w') as f:
-        f.write(u'history.log')
+from ..vars import SCHEDULE_PATH, HISTORY_LOG, DEFAULT_LATEST_VERSION, UA_DICT
 
 
 def generate_cmd(auth, url, data):
@@ -38,11 +32,20 @@ def generate_cmd(auth, url, data):
     return cmd
 
 
+def new_history_log():
+    if not os.path.exists(HISTORY_LOG):
+        with io.open(HISTORY_LOG, 'w', encoding='utf8') as f:
+            f.write('#' * 50 + u'\nhistory.log')
+
+
+new_history_log()
+
 bp = Blueprint('schedule', __name__, url_prefix='/')
 
 
 @bp.route('/schedule/<filename>')
 def history(filename):
+    new_history_log()
     return send_from_directory(SCHEDULE_PATH, filename, mimetype='text/plain')
 
 
@@ -110,6 +113,7 @@ class CheckView(MyView):
 
         cmd = generate_cmd(self.AUTH, self.url, self.data)
         # '-d' may be in project name, like 'ScrapydWeb-demo'
+        cmd = re.sub(r'(curl -u\s+.*?:.*?)\s+(http://)', r'\1 \\\r\n\2', cmd)
         cmd = re.sub(r'\s+-d\s+', ' \\\r\n-d ', cmd)
         cmd = re.sub(r'\s+--data-urlencode\s+', ' \\\r\n--data-urlencode ', cmd)
         return self.json_dumps({'filename': self.filename, 'cmd': cmd})
@@ -204,8 +208,9 @@ class RunView(MyView):
                 self.data = pickle.loads(f.read())
 
     def update_history(self):
+        new_history_log()
         with io.open(HISTORY_LOG, 'r+', encoding='utf8') as f:
-            content_old = f.read()
+            content_backup = f.read()
             f.seek(0)
             content = os.linesep.join([
                 '#' * 50,
@@ -216,7 +221,7 @@ class RunView(MyView):
                 ''
             ])
             f.write(content)
-            f.write(content_old)
+            f.write(content_backup)
 
     def generate_response(self):
         if self.js['status'] == 'ok':
@@ -238,16 +243,15 @@ class RunView(MyView):
             )
             return render_template(self.template, **kwargs)
         else:
-            message = self.js.get('message', '')
-            if message:
-                self.js.update({'message': 'See details below'})
-            self.js['info'] = "Maybe the project egg file had been deleted, check out the Manage page."
-
             if self.selected_nodes_amount > 1:
                 alert = ("Multinode schedule terminated, "
                          "since the first selected node returned status: " + self.js['status'])
             else:
                 alert = "Fail to schedule, got status: " + self.js['status']
+
+            message = self.js.get('message', '')
+            if message:
+                self.js['message'] = 'See details below'
 
             return render_template(self.template_fail, node=self.node,
                                    alert=alert, text=self.json_dumps(self.js), message=message)

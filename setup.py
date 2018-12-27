@@ -1,6 +1,7 @@
 # coding: utf8
 import os
 import io
+import re
 
 from setuptools import find_packages, setup
 
@@ -12,7 +13,7 @@ with open(os.path.join(CWD, 'scrapydweb', '__version__.py')) as f:
     exec(f.read(), about)
 
 with io.open("README.md", 'r', encoding='utf8') as f:
-    long_description = f.read()
+    long_description = re.sub(r':\w+:\s', '', f.read())  # Remove emojis
 
 
 setup(

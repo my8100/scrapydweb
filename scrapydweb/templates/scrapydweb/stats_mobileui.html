@@ -43,11 +43,7 @@
 
 <script>
 window.onload = function(){
-    // Clear refresh_cache=True in href after clicking refresh cache button
-    {% if refresh_url_mobileui %}
-    history.pushState(null, '', window.location.pathname + location.search.replace('refresh_cache=True', 'refresh_cache='));
-    {% endif %}
-
+    {% if refresh_url_mobileui %}updateURL();{% endif %}
     hideLoader();
 };
 </script>
@@ -235,8 +231,8 @@ setColor(20);
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
     var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
-    my$('#refresh_button').innerHTML = seconds + "s ago";
-    if(seconds > LAST_LOG_ALERT_SECONDS) {
+    my$('#refresh_button').innerHTML = "<span style='color: black;'>" + seconds + "</span>s ago";
+    if (seconds > LAST_LOG_ALERT_SECONDS) {
         my$('#refresh_button').className = "button danger";
     } else {
         my$('#refresh_button').className = "button safe";
@@ -292,8 +288,12 @@ window.addEventListener('optimizedResize', function() {
 <script>
 // tab switcher
 (function() {
-    var kwargs = parseQueryString(location.search);
-    var active_tab = kwargs.active_tab || 'stats';
+    if (window.localStorage && document.referrer.search(/\/\d+\/log\/stats\//) != -1) {
+        var active_tab = localStorage.getItem('active_tab') || 'stats';
+    } else {
+        var active_tab = 'stats';
+    }
+
     if (my$('#header_'+active_tab)) {
         my$('#header_'+active_tab).classList.add('active');
         my$('#content_'+active_tab).classList.add('active');
@@ -315,11 +315,11 @@ window.addEventListener('optimizedResize', function() {
         //console.log(target.id);
         if (target.tagName.toLowerCase() !== 'li') return;
         index = Array.prototype.indexOf.call(tabHeaders, target);
-        for(var i = 0 ; i < tabHeaders.length; i++) {
+        for (var i = 0 ; i < tabHeaders.length; i++) {
             tabHeaders[i].classList.remove('active');
         }
         target.classList.add('active');
-        for(var i = 0 ; i < tabContents.length; i++) {
+        for (var i = 0 ; i < tabContents.length; i++) {
             tabContents[i].classList.remove('active');
         }
         tabContents[index].classList.add('active');
@@ -330,7 +330,9 @@ window.addEventListener('optimizedResize', function() {
             my$('#chart_minute').dispatchEvent(new Event('resize'));
         }
 
-        history.pushState(null, '', location.pathname + "?ui=mobile&active_tab=" + target.id.split('_')[1]);
+        if (window.localStorage) {
+            localStorage.setItem('active_tab', target.id.split('_')[1]);
+        }
     });
 })();
 </script>
@@ -348,7 +350,7 @@ window.addEventListener('optimizedResize', function() {
     //https://stackoverflow.com/questions/32027935/addeventlistener-is-not-a-function-why-does-this-error-occur
     //for(idx in titles){
         //title = titles[idx];
-    for(var i = 0 ; i < titles.length; i++) {
+    for (var i = 0 ; i < titles.length; i++) {
         titles[i].addEventListener('click', function(e){
             var index = [].indexOf.call(titles, this);
             lis[index].classList.toggle('active');

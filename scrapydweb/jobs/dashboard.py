@@ -24,12 +24,6 @@ class DashboardView(MyView):
         self.template = 'scrapydweb/dashboard_mobileui.html' if self.IS_MOBILEUI else 'scrapydweb/dashboard.html'
         self.text = ''
 
-        self.flag = ''
-        if not self.IS_MOBILEUI and len(self.SCRAPYD_SERVERS) == 1:
-            self.flag += 'A' if self.ENABLE_AUTH else '-'
-            self.flag += 'C' if self.ENABLE_CACHE else '-'
-            self.flag += 'E' if self.ENABLE_EMAIL else '-'
-
     def dispatch_request(self, **kwargs):
         global page_view
         page_view += 1
@@ -37,28 +31,28 @@ class DashboardView(MyView):
         status_code, self.text = self.make_request(self.url, api=False, auth=self.AUTH)
 
         if status_code != 200 or not re.search(r'Jobs', self.text):
-            message = 'Click the above link to make sure your Scrapyd server is accessable'
-            return render_template(self.template_fail, node=self.node,
-                                   url=self.url, status_code=status_code,
-                                   text=self.text, message=message)
+            kwargs = dict(
+                node=self.node,
+                url=self.url,
+                status_code=status_code,
+                text=self.text,
+                tip='Click the above link to make sure your Scrapyd server is accessable.'
+            )
+            return render_template(self.template_fail, **kwargs)
 
         return self.generate_response()
 
     def generate_response(self):
-        if self.IS_MOBILEUI:
-            # flash("<a href='/'>Visit desktop version</a> to experience full features.", INFO)
-            pass
-        else:
-            if len(self.SCRAPYD_SERVERS) > 1 and page_view == 1:
-                flash("Use the navigation buttons above to quick scan the same page of neighbouring node", INFO)
-            if not self.ENABLE_AUTH and len(self.SCRAPYD_SERVERS) == 1:
-                flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", INFO)
-            if not self.SCRAPYD_LOGS_DIR and self.SCRAPYD_SERVER.split(':')[0] == '127.0.0.1':
-                flash("Set up the 'SCRAPYD_LOGS_DIR' item to speed up loading scrapy logs.", INFO)
-            if not self.ENABLE_CACHE:
-                flash("Set 'ENABLE_CACHE = True' to enable caching HTML for Log and Stats page", WARN)
-            if not self.ENABLE_EMAIL and len(self.SCRAPYD_SERVERS) == 1:
-                flash("Set 'ENABLE_EMAIL = True' to enable email notice", WARN)
+        if self.SCRAPYD_SERVERS_AMOUNT > 1 and page_view == 1:
+            flash("Use the navigation buttons above to quick scan the same page of neighbouring node", INFO)
+        if not self.ENABLE_AUTH and self.SCRAPYD_SERVERS_AMOUNT == 1:
+            flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", INFO)
+        if not self.SCRAPYD_LOGS_DIR and self.SCRAPYD_SERVER.split(':')[0] == '127.0.0.1':
+            flash("Set up the 'SCRAPYD_LOGS_DIR' item to speed up loading scrapy logs.", INFO)
+        if not self.ENABLE_CACHE:
+            flash("Set 'ENABLE_CACHE = True' to enable caching HTML for Log and Stats page", WARN)
+        if not self.ENABLE_EMAIL and self.SCRAPYD_SERVERS_AMOUNT == 1:
+            flash("Set 'ENABLE_EMAIL = True' to enable email notice", INFO)
 
         rows = [dict(zip(keys_jobs, row)) for row in pattern_jobs.findall(self.text)]
         pending_rows = []
@@ -100,14 +94,13 @@ class DashboardView(MyView):
             node=self.node,
             colspan=12,
             url=self.url,
-            scrapydweb_url='http://%s:%s' % (self.SCRAPYDWEB_BIND, self.SCRAPYDWEB_PORT),
             pending_rows=pending_rows,
             running_rows=running_rows,
             finished_rows=finished_rows,
             SHOW_DASHBOARD_JOB_COLUMN=self.SHOW_DASHBOARD_JOB_COLUMN,
             DASHBOARD_RELOAD_INTERVAL=self.DASHBOARD_RELOAD_INTERVAL,
             IS_IE_EDGE=self.IS_IE_EDGE,
-            flag=self.flag,
-            page_view=page_view
+            page_view=page_view,
+            FEATURES=self.FEATURES
         )
         return render_template(self.template, **kwargs)

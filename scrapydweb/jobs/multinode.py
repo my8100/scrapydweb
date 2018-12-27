@@ -40,6 +40,6 @@ class MultinodeView(MyView):
             selected_nodes=selected_nodes,
             url_xhr=url_xhr,
             url_overview=url_overview,
-            url_manage_list=[url_for('manage', node=n) for n in range(1, len(self.SCRAPYD_SERVERS)+1)]
+            url_manage_list=[url_for('manage', node=n) for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)]
         )
         return render_template(self.template, **kwargs)

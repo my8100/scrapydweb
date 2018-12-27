@@ -18,7 +18,7 @@ from scrapydweb.utils.init_caching import init_caching
 
 
 CWD = os.path.dirname(os.path.abspath(__file__))
-SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v5.py'
+SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v6.py'
 scrapydweb_settings_py_path = os.path.join(os.getcwd(), SCRAPYDWEB_SETTINGS_PY)
 
 
@@ -30,7 +30,7 @@ def main():
     printf("Loading default settings from %s" % os.path.join(CWD, 'default_settings.py'))
 
     app = create_app()
-    load_custom_config(app.config)
+    load_custom_settings(app.config)
 
     args = parse_args(app.config)
     # "scrapydweb -h" ends up here
@@ -57,7 +57,7 @@ def main():
             if not auth or not (auth.username == USERNAME and auth.password == PASSWORD):
                 return authenticate()
 
-    # Should be commented out for released version
+    # MUST be commented out for released version
     # https://stackoverflow.com/questions/34066804/disabling-caching-in-flask
     # @app.after_request
     # def add_header(r):
@@ -69,9 +69,17 @@ def main():
     @app.context_processor
     def inject_variable():
         return dict(
+            SCRAPYD_SERVERS=app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800'],
+            SCRAPYD_SERVERS_AMOUNT=len(app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']),
+            SCRAPYD_SERVERS_GROUPS=app.config.get('SCRAPYD_SERVERS_GROUPS', []) or [''],
+            SCRAPYD_SERVERS_AUTHS=app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None],
+
+            DAEMONSTATUS_REFRESH_INTERVAL=app.config.get('DAEMONSTATUS_REFRESH_INTERVAL', 10),
+            ENABLE_AUTH=app.config.get('ENABLE_AUTH', False),
+            SHOW_SCRAPYD_ITEMS=app.config.get('SHOW_SCRAPYD_ITEMS', True),
+
             main_pid=main_pid,
             caching_pid=caching_pid,
-            CHECK_LATEST_VERSION_FREQ=100,
             scrapydweb_settings_py_path=scrapydweb_settings_py_path,
         )
 
@@ -84,7 +92,7 @@ def main():
     app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'])  # , debug=True)
 
 
-def load_custom_config(config):
+def load_custom_settings(config):
     global scrapydweb_settings_py_path
 
     path = find_scrapydweb_settings_py(SCRAPYDWEB_SETTINGS_PY, os.getcwd())
@@ -118,7 +126,7 @@ def parse_args(config):
     parser.add_argument(
         '-b', '--bind',
         default=SCRAPYDWEB_BIND,
-        help=("current: %s, note that setting 0.0.0.0 or IP-OF-CURRENT-HOST makes ScrapydWeb server "
+        help=("current: %s, note that setting to 0.0.0.0 or IP-OF-CURRENT-HOST would make ScrapydWeb server "
               "visible externally, otherwise, type '-b 127.0.0.1'") % SCRAPYDWEB_BIND
     )
 
@@ -126,7 +134,7 @@ def parse_args(config):
     parser.add_argument(
         '-p', '--port',
         default=SCRAPYDWEB_PORT,
-        help="current: %s, the port which ScrapydWeb would run on" % SCRAPYDWEB_PORT
+        help="current: %s, accept connections on the specified port" % SCRAPYDWEB_PORT
     )
 
     SCRAPYD_SERVERS = config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
@@ -134,7 +142,7 @@ def parse_args(config):
         '-ss', '--scrapyd_server',
         action='append',
         help=("current: %s, type '-ss 127.0.0.1 -ss username:password@192.168.123.123:6801#group' "
-              "to set up more than one Scrapyd server to control. ") % SCRAPYD_SERVERS
+              "to set up more than one Scrapyd server to manage. ") % SCRAPYD_SERVERS
     )
 
     ENABLE_AUTH = config.get('ENABLE_AUTH', False)
@@ -179,7 +187,7 @@ def parse_args(config):
     parser.add_argument(
         '-v', '--verbose',
         action='store_true',
-        help=("current: VERBOSE = %s, append '--verbose' to set logging level to DEBUG "
+        help=("current: VERBOSE = %s, append '--verbose' to set the logging level to DEBUG "
               "for getting more information about how ScrapydWeb works") % VERBOSE
     )
 
@@ -194,12 +202,12 @@ def update_app_config(config, args):
         SCRAPYDWEB_PORT=args.port,
     ))
 
-    # scrapyd_server would be None if -ss not passed in
+    # scrapyd_server would be None if the -ss argument is not passed in
     SCRAPYD_SERVERS = args.scrapyd_server or config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
     servers = []
     for idx, server in enumerate(SCRAPYD_SERVERS):
         if isinstance(server, tuple):
-            assert len(server) == 5, ("Scrapyd server should be a tuple with 5 elements, "
+            assert len(server) == 5, ("Scrapyd server should be a tuple of 5 elements, "
                                       "current value: %s" % str(server))
             usr, psw, ip, port, group = server
         else:
@@ -251,9 +259,9 @@ def check_scrapyd_connectivity(servers):
         else:
             return True
 
-    # with ThreadPool(min(len(servers), 10)) as pool:  # Works in python 3.3 and up
+    # with ThreadPool(min(len(servers), 100)) as pool:  # Works in python 3.3 and up
         # results = pool.map(check_connectivity, servers)
-    pool = ThreadPool(min(len(servers), 10))
+    pool = ThreadPool(min(len(servers), 100))
     results = pool.map(check_connectivity, servers)
     pool.close()
     pool.join()

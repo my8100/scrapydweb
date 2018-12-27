@@ -10,8 +10,13 @@ import tempfile
 import zipfile
 import tarfile
 from shutil import copyfile, rmtree, copyfileobj
+from subprocess import CalledProcessError
+try:
+    from ConfigParser import Error as ScrapyCfgParseError  # PY2
+except ImportError:
+    from configparser import Error as ScrapyCfgParseError  # PY3
 
-from .scrapyd_deploy import _build_egg
+from .scrapyd_deploy import _build_egg, get_config
 from flask import render_template, request, url_for, redirect
 from werkzeug.utils import secure_filename
 
@@ -20,7 +25,17 @@ from .utils import slot, mkdir_p
 from ..vars import DEPLOY_PATH
 
 
+SCRAPY_CFG = """
+[settings]
+default = projectname.settings
+
+[deploy]
+url = http://localhost:6800/
+project = projectname
+
+"""
 PY2 = True if sys.version_info[0] < 3 else False
+folder_project_dict = {}
 
 
 class DeployView(MyView):
@@ -31,22 +46,43 @@ class DeployView(MyView):
         self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
         self.template = 'scrapydweb/deploy.html'
 
+        self.scrapy_cfg_list = []
+        self.project_paths = []
+        self.folders = []
+        self.projects = []
+        self.modification_times = []
+        self.latest_folder = ''
+
     def dispatch_request(self, **kwargs):
-        # python2 'ascii' codec can't decode byte
-        scrapy_cfg_list = glob.glob(os.path.join(self.SCRAPY_PROJECTS_DIR, '*', u'scrapy.cfg'))
-        projects_list = [os.path.dirname(i) for i in scrapy_cfg_list]
+        # Python 'ascii' codec can't decode byte
+        self.scrapy_cfg_list = sorted(glob.glob(os.path.join(self.SCRAPY_PROJECTS_DIR, '*', u'scrapy.cfg')))
+        self.project_paths = [os.path.dirname(i) for i in self.scrapy_cfg_list]
+        self.folders = [os.path.basename(i) for i in self.project_paths]
+        self.get_modification_times()
+        self.parse_scrapy_cfg()
 
         kwargs = dict(
             node=self.node,
             url=self.url,
             selected_nodes=self.get_selected_nodes(),
-            projects=[os.path.basename(i) for i in projects_list],
-            modification_times=[self.get_modification_time(i) for i in projects_list],
+            folders=self.folders,
+            projects=self.projects,
+            modification_times=self.modification_times,
+            latest_folder=self.latest_folder,
             SCRAPY_PROJECTS_DIR=self.SCRAPY_PROJECTS_DIR,
             url_overview=url_for('overview', node=self.node, opt='deploy'),
             url_deploy_upload=url_for('deploy.upload', node=self.node)
         )
         return render_template(self.template, **kwargs)
+
+    def get_modification_times(self):
+        timestamps = [self.get_modification_time(i) for i in self.project_paths]
+        self.modification_times = [datetime.fromtimestamp(i).strftime('%Y-%m-%dT%H_%M_%S') for i in timestamps]
+
+        if timestamps:
+            max_timestamp_index = timestamps.index(max(timestamps))
+            self.latest_folder = self.folders[max_timestamp_index]
+            self.logger.info('latest_folder: %s' % self.latest_folder)
 
     @staticmethod
     def get_modification_time(path):
@@ -59,11 +95,46 @@ class DeployView(MyView):
             if in_top_dir:
                 in_top_dir = False
                 dirnames[:] = [d for d in dirnames if d not in ['build', 'project.egg-info']]
-                filenames = [f for f in filenames if not f.endswith('.egg')]
+                filenames = [f for f in filenames if not (f.endswith('.egg') or f in ['setup.py', 'setup_backup.py'])]
             for filename in filenames:
                 filepath_list.append(os.path.join(dirpath, filename))
-        max_timestamp = max([os.path.getmtime(f) for f in filepath_list] or [time.time()])
-        return datetime.fromtimestamp(max_timestamp).strftime('%Y-%m-%dT%H_%M_%S')
+
+        return max([os.path.getmtime(f) for f in filepath_list] or [time.time()])
+
+    def parse_scrapy_cfg(self):
+        for (idx, scrapy_cfg) in enumerate(self.scrapy_cfg_list):
+            folder = self.folders[idx]
+            key = '%s__%s' % (folder, self.modification_times[idx])
+
+            project = folder_project_dict.get(key, '')
+            if project:
+                self.projects.append(project)
+                self.logger.debug('hit %s %s' % (key, project))
+                continue
+            else:
+                project = folder
+                try:
+                    # lib/configparser.py: def get(self, section, option, *, raw=False, vars=None, fallback=_UNSET):
+                    # projectname/scrapy.cfg: [deploy] project = demo
+                    # PY2: get() got an unexpected keyword argument 'fallback'
+                    # project = get_config(scrapy_cfg).get('deploy', 'project', fallback=folder) or folder
+                    project = get_config(scrapy_cfg).get('deploy', 'project')
+                except ScrapyCfgParseError as err:
+                    self.logger.error("%s parse error: %s" % (scrapy_cfg, err))
+                finally:
+                    project = project or folder
+                    self.projects.append(project)
+                    folder_project_dict[key] = project
+                    self.logger.debug('add %s %s' % (key, project))
+
+        keys_all = list(folder_project_dict.keys())
+        keys_exist = ['%s__%s' % (_folder, _modification_time)
+                      for (_folder, _modification_time) in zip(self.folders, self.modification_times)]
+        diff = set(keys_all).difference(set(keys_exist))
+        for key in diff:
+            self.logger.debug('pop %s %s' % (key, folder_project_dict.pop(key)))
+        self.logger.info(self.json_dumps(folder_project_dict))
+        self.logger.info('folder_project_dict length: %s' % len(folder_project_dict))
 
 
 class UploadView(MyView):
@@ -75,7 +146,7 @@ class UploadView(MyView):
         self.url = ''
         self.template = 'scrapydweb/deploy_results.html'
 
-        self.project_original = ''
+        self.folder = ''
         self.project = ''
         self.version = ''
         self.selected_nodes_amount = 0
@@ -87,39 +158,57 @@ class UploadView(MyView):
         self.scrapy_cfg_path = ''
         self.scrapy_cfg_searched_paths = []
         self.scrapy_cfg_not_found = False
+        self.scrapy_cfg_parse_error = ''
+        self.build_egg_subprocess_error = ''
         self.data = None
+        self.js = {}
 
         self.slot = slot
 
     def dispatch_request(self, **kwargs):
         self.handle_form()
 
-        if self.scrapy_cfg_not_found:
-            text = "scrapy.cfg NOT found"
+        if self.scrapy_cfg_not_found or self.scrapy_cfg_parse_error or self.build_egg_subprocess_error:
             if self.selected_nodes_amount > 1:
-                alert = "Multinode deployment terminated: %s" % text
+                alert = "Multinode deployment terminated:"
             else:
-                alert = "Fail to deploy project: %s" % text
+                alert = "Fail to deploy project:"
+
+            if self.scrapy_cfg_not_found:
+                text = "scrapy.cfg NOT found"
+                tip = "Make sure that the 'scrapy.cfg' file resides in your project directory."
+            elif self.scrapy_cfg_parse_error:
+                text = self.scrapy_cfg_parse_error
+                tip = "Check the content of the 'scrapy.cfg' file in your project directory."
+            else:
+                text = self.build_egg_subprocess_error
+                tip = ("Check the content of the 'scrapy.cfg' file in your project directory. "
+                       "Or build the egg file by yourself instead.")
+
+            if self.scrapy_cfg_not_found:
+                message = "scrapy_cfg_searched_paths:\n%s" % self.json_dumps(self.scrapy_cfg_searched_paths)
+            else:
+                message = "# The 'scrapy.cfg' file in your project directory should be like:\n%s" % SCRAPY_CFG
+
             return render_template(self.template_fail, node=self.node,
-                                   alert=alert, text=text,
-                                   message=self.json_dumps(self.scrapy_cfg_searched_paths))
+                                   alert=alert, text=text, tip=tip, message=message)
         else:
             self.prepare_data()
-            status_code, js = self.make_request(self.url, self.data, auth=self.AUTH)
+            status_code, self.js = self.make_request(self.url, self.data, auth=self.AUTH)
 
-        if js['status'] != 'ok':
+        if self.js['status'] != 'ok':
             # With multinodes, would try to deploy to the first selected node first
             if self.selected_nodes_amount > 1:
                 alert = ("Multinode deployment terminated, "
-                         "since the first selected node returned status: " + js['status'])
+                         "since the first selected node returned status: " + self.js['status'])
             else:
-                alert = "Fail to deploy project, got status: " + js['status']
-            message = js.get('message', '')
+                alert = "Fail to deploy project, got status: " + self.js['status']
+            message = self.js.get('message', '')
             if message:
-                js.update({'message': 'See details below'})
+                self.js['message'] = 'See details below'
 
             return render_template(self.template_fail, node=self.node,
-                                   alert=alert, text=self.json_dumps(js), message=message)
+                                   alert=alert, text=self.json_dumps(self.js), message=message)
         else:
             if self.selected_nodes_amount == 0:
                 return redirect(url_for('schedule.schedule', node=self.node,
@@ -129,11 +218,11 @@ class UploadView(MyView):
                     node=self.node,
                     selected_nodes=self.selected_nodes,
                     first_selected_node=self.first_selected_node,
-                    js=js,
+                    js=self.js,
                     project=self.project,
                     version=self.version,
                     url_manage_first_selected_node=url_for('manage', node=self.first_selected_node),
-                    url_manage_list=[url_for('manage', node=n) for n in range(1, len(self.SCRAPYD_SERVERS)+1)],
+                    url_manage_list=[url_for('manage', node=n) for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)],
                     url_xhr=url_for('deploy.deploy_xhr', node=self.node, eggname=self.eggname,
                                     project=self.project, version=self.version),
                     url_schedule=url_for('schedule.schedule', node=self.node, project=self.project,
@@ -147,6 +236,7 @@ class UploadView(MyView):
         # {'1': 'on',
         # '2': 'on',
         # 'checked_amount': '2',
+        # 'folder': 'ScrapydWeb-demo',
         # 'project': 'demo',
         # 'version': '2018-09-05T03_13_50'}
 
@@ -161,18 +251,18 @@ class UploadView(MyView):
         else:
             self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
 
-        self.project_original = request.form.get('project', '')  # Used with SCRAPY_PROJECTS_DIR to get project_path
-        self.project = re.sub(r'[^0-9A-Za-z_-]', '', self.project_original) or self.get_now_string()
+        self.project = re.sub(r'[^0-9A-Za-z_-]', '', request.form.get('project', '')) or self.get_now_string()
         self.version = re.sub(r'[^0-9A-Za-z_-]', '', request.form.get('version', '')) or self.get_now_string()
 
         if request.files.get('file'):
             self.handle_uploaded_file()
         else:
+            self.folder = request.form['folder']  # Used with SCRAPY_PROJECTS_DIR to get project_path
             self.handle_local_project()
 
     def handle_local_project(self):
-        # Use project_original instead of project
-        project_path = os.path.join(self.SCRAPY_PROJECTS_DIR, self.project_original)
+        # Use folder instead of project
+        project_path = os.path.join(self.SCRAPY_PROJECTS_DIR, self.folder)
 
         self.search_scrapy_cfg_path(project_path)
         if not self.scrapy_cfg_path:
@@ -270,7 +360,16 @@ class UploadView(MyView):
         self.scrapy_cfg_path = ''
 
     def build_egg(self):
-        egg, tmpdir = _build_egg(self.scrapy_cfg_path)
+        try:
+            egg, tmpdir = _build_egg(self.scrapy_cfg_path)
+        except ScrapyCfgParseError as err:
+            self.logger.error(err)
+            self.scrapy_cfg_parse_error = err
+            return
+        except CalledProcessError as err:
+            self.logger.error(err)
+            self.build_egg_subprocess_error = err
+            return
 
         scrapy_cfg_dir = os.path.dirname(self.scrapy_cfg_path)
         copyfile(egg, os.path.join(scrapy_cfg_dir, self.eggname))

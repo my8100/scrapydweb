@@ -1,7 +1,6 @@
 # coding: utf8
 import os
 
-from flask import url_for
 
 from scrapydweb import create_app
 from scrapydweb.run import SCRAPYDWEB_SETTINGS_PY, check_scrapyd_connectivity
@@ -9,7 +8,7 @@ from scrapydweb.utils.utils import find_scrapydweb_settings_py
 from scrapydweb.utils.check_app_config import check_app_config, check_email
 from scrapydweb.utils.cache import printf  # Test the import action only
 from scrapydweb.utils.init_caching import init_caching
-from tests.utils import get_text
+from tests.utils import req, get_text
 
 """
 with open('response.html', 'wb') as f:
@@ -39,10 +38,15 @@ def test_check_scrapyd_connectivity(app):
     check_scrapyd_connectivity(servers)
 
 
-# How to test 500?
 # def test_code_404(client):
     # response = client.get('/1/not-exist/')
     # assert response.status_code == 404 and 'Nothing Found' in get_text(response)
+
+
+# How to test 500?
+# def test_code_500(client):
+    # response = client.get('/3/')
+    # assert response.status_code == 500
 
 
 def test_find_scrapydweb_settings_py():
@@ -92,14 +96,8 @@ def test_init_caching(app):
 
 
 def test_scrapyd_group(app, client):
-    with app.test_request_context():
-        url = url_for('overview', node=1)
-        response = client.get(url)
-        assert 'Scrapyd-group' in get_text(response)
+    req(app, client, view='overview', kws=dict(node=1), ins='Scrapyd-group')
 
 
 def test_scrapyd_auth(app, client):
-    with app.test_request_context():
-        url = url_for('settings', node=1)
-        response = client.get(url)
-        assert '**erna**:**sswo**' in get_text(response)  # ('username', 'password')
+    req(app, client, view='settings', kws=dict(node=1), ins='**erna**:**sswo**')  # ('username', 'password')

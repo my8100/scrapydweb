@@ -1,4 +1,4 @@
-English | [简体中文](https://github.com/my8100/scrapydweb/blob/master/README_CN.md)
+:abc: English | [:mahjong: 简体中文](https://github.com/my8100/scrapydweb/blob/master/README_CN.md)
 
 # ScrapydWeb: A full-featured web UI for Scrapyd cluster management, with Scrapy log analysis & visualization supported.
 
@@ -7,76 +7,86 @@ English | [简体中文](https://github.com/my8100/scrapydweb/blob/master/README
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![Coverage Status](https://coveralls.io/repos/github/my8100/scrapydweb/badge.svg?branch=master)](https://coveralls.io/github/my8100/scrapydweb?branch=master)
 [![GitHub license](https://img.shields.io/github/license/my8100/scrapydweb.svg)](https://github.com/my8100/scrapydweb/blob/master/LICENSE)
-[![Twitter](https://img.shields.io/twitter/url/https/github.com/my8100/scrapydweb.svg?style=social)](https://twitter.com/intent/tweet?text=@my8100_%20ScrapydWeb:%20Full-featured%20web%20UI%20for%20Scrapyd%20cluster%20management,%20Scrapy%20log%20analysis%20%26%20visualization%20%23python%20%23scrapy%20%23scrapyd%20%23webscraping%20%23scrapydweb%20&url=https%3A%2F%2Fgithub.com%2Fmy8100%2Fscrapydweb)
+[![Twitter](https://img.shields.io/twitter/url/https/github.com/my8100/scrapydweb.svg?style=social)](https://twitter.com/intent/tweet?text=@my8100_%20ScrapydWeb:%20A%20full-featured%20web%20UI%20for%20Scrapyd%20cluster%20management,%20with%20Scrapy%20log%20analysis%20%26%20visualization%20supported.%20%23python%20%23scrapy%20%23scrapyd%20%23webscraping%20%23scrapydweb%20&url=https%3A%2F%2Fgithub.com%2Fmy8100%2Fscrapydweb)
 
 
-## Scrapyd x ScrapydWeb
-### Recommended Reading
-[How to efficiently manage your distributed web scraping projects](https://medium.com/@my8100/https-medium-com-my8100-how-to-efficiently-manage-your-distributed-web-scraping-projects-55ab13309820)
-
+##
 ![overview](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/overview.png)
 
+## Scrapyd :x: ScrapydWeb
+### :book: Recommended Reading
+[:link: How to efficiently manage your distributed web scraping projects](https://medium.com/@my8100/https-medium-com-my8100-how-to-efficiently-manage-your-distributed-web-scraping-projects-55ab13309820)
 
-## Features
-- Scrapyd Cluster Management
-  - Group, filter and select any number of nodes
-  - **Execute command on multinodes with just a few clicks**
 
-- Scrapy Log Analysis
-  - Stats collection
-  - **Progress visualization**
-  - Logs categorization
+## :star: Features
+<details>
+<summary>View contents</summary>
 
-- All Scrapyd JSON API Supported
-  - Deploy project, Run Spider, Stop job
-  - List projects/versions/spiders/running_jobs
-  - Delete version/project
+- :diamond_shape_with_a_dot_inside: Scrapyd Cluster Management
+  - :100: All Scrapyd JSON API Supported
+  - :ballot_box_with_check: Group, filter and select any number of nodes
+  - :computer_mouse: **Execute command on multinodes with just a few clicks**
 
-- Enhancements
-  - Basic auth for web UI
-  - HTML caching for the Log and Stats page
-  - **Auto eggify your projects**
-  - **Email notice**
-  - Mobile UI
+- :mag: Scrapy Log Analysis
+  - :1234: Stats collection
+  - :chart_with_upwards_trend: **Progress visualization**
+  - :bookmark_tabs: Logs categorization
 
-## Getting Started
-### Prerequisites
-**Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed and started on all of your hosts.**
+- :battery: Enhancements
+  - :card_index_dividers: HTML caching for the Log and Stats page
+  - :closed_lock_with_key: Basic auth for web UI
+  - :package: **Auto eggify your projects**
+  - :e-mail: **Email notice**
+  - :iphone: Mobile UI
 
-Note that if you want to visit your Scrapyd server remotely,
-you have to manually set the [bind_address](https://scrapyd.readthedocs.io/en/latest/config.html#bind-address)
- to `bind_address = 0.0.0.0` and restart Scrapyd to make it visible externally.
+</details>
 
-### Installing ScrapydWeb
--  use pip:
+
+## :eyes: Preview
+- [:framed_picture: Screenshots](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
+
+- [:film_strip: Gif Demo](https://github.com/my8100/files/tree/master/scrapydweb/README_GIF.md)
+
+
+## :computer: Getting Started
+<details>
+<summary>View contents</summary>
+
+### :warning: Prerequisites
+:heavy_exclamation_mark: **Make sure that [:link: Scrapyd](https://github.com/scrapy/scrapyd) has been installed and started on all of your hosts.**
+
+:bangbang: Note that for remote access, you have to manually set 'bind_address = 0.0.0.0' in [:link: the configuration file of Scrapyd](https://scrapyd.readthedocs.io/en/latest/config.html#example-configuration-file)
+and restart Scrapyd to make it visible externally.
+
+### :arrow_down: Install
+- Use pip:
 ```bash
 pip install scrapydweb
 ```
 
--  use git:
+- Use git:
 ```bash
 git clone https://github.com/my8100/scrapydweb.git
 cd scrapydweb
 python setup.py install
 ```
 
-### Starting ScrapydWeb
-1. Start ScrapydWeb via the `scrapydweb` command.
-(Your would be asked to add your SCRAPYD_SERVERS in the generated config file on first startup.)
-2. Visit [http://127.0.0.1:5000](http://127.0.0.1:5000).
-**(It's recommended to use Google Chrome to get the best experience.)**
+### :arrow_forward: Start
+1. Start ScrapydWeb via the `scrapydweb` command. (a config file would be generated for customizing settings on the first startup.)
+2. Visit http://127.0.0.1:5000 **(It's recommended to use Google Chrome for a better experience.)**
 
-### Browser Support
-The latest version of Google Chrome, Firefox and Safari.
+### :globe_with_meridians: Browser Support
+The latest version of Google Chrome, Firefox, and Safari.
 
-
-## Preview
-- [Screenshots](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
-
-- [Gif Demo](https://github.com/my8100/files/tree/master/scrapydweb/README_GIF.md)
+</details>
 
 
-## Running the tests
+## :heavy_check_mark: Running the tests
+<details>
+<summary>View contents</summary>
+
+<br>
+
 ```bash
 $ git clone https://github.com/my8100/scrapydweb.git
 $ cd scrapydweb
@@ -103,30 +113,41 @@ $ source venv/scrapydweb/bin/activate
 (scrapydweb) $ coverage html
 ```
 
+</details>
 
-## Built With
-- Back End
-  - [Flask](https://github.com/pallets/flask)
-  - [Flask-Compress](https://pypi.org/project/Flask-Compress/)
-  - [Requests](https://github.com/requests/requests)
+
+## :building_construction: Built With
+<details>
+<summary>View contents</summary>
+
+<br>
+
 - Front End
-  - [jQuery](https://github.com/jquery/jquery)
-  - [Vue.js](https://github.com/vuejs/vue)
-  - [Element](https://github.com/ElemeFE/element)
-  - [ECharts](https://github.com/apache/incubator-echarts)
+  - [:link: jQuery](https://github.com/jquery/jquery)
+  - [:link: Vue.js](https://github.com/vuejs/vue)
+  - [:link: Element](https://github.com/ElemeFE/element)
+  - [:link: ECharts](https://github.com/apache/incubator-echarts)
+- Back End
+  - [:link: Flask](https://github.com/pallets/flask)
+  - [:link: Flask-Compress](https://pypi.org/project/Flask-Compress/)
+  - [:link: Requests](https://github.com/requests/requests)
+
+</details>
 
 
-## Changelog
-Detailed changes for each release are documented in the [HISTORY.md](./HISTORY.md).
+## :clipboard: Changelog
+Detailed changes for each release are documented in the [:link: HISTORY.md](./HISTORY.md).
 
 
-## Author
-- [my8100](https://github.com/my8100)
+## :man_technologist: Author
+| [<img src="https://github.com/my8100.png" width="100px;"/>](https://github.com/my8100)<br/> [<sub>my8100</sub>](https://github.com/my8100) |
+| --- |
 
 
-## Contributors
-- [simplety](https://github.com/simplety)
+## :busts_in_silhouette: Contributors
+| [<img src="https://github.com/simplety.png" width="100px;"/>](https://github.com/simplety)<br/> [<sub>Kaisla</sub>](https://github.com/simplety) |
+| --- |
 
 
-## License
-This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](./LICENSE) file for details.
+## :copyright: License
+This project is licensed under the GNU General Public License v3.0 - see the [:link: LICENSE](./LICENSE) file for details.

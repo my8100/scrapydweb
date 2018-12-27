@@ -1,60 +1,9 @@
 scrapydweb_settings.py
 scrapydweb_settings_v*.py
 
+
 tests/*.html
-
-tests/data/*
-!tests/data/demo/
-!tests/data/demo - 副本/
-!tests/data/ScrapydWeb-demo/
-!tests/data/demo_only_scrapy_cfg/
-!tests/data/demo_without_scrapy_cfg/
-
-!tests/data/demo.egg
-!tests/data/ScrapydWeb-demo.egg
-!tests/data/副本.egg
-
-!tests/data/demo - macOS.tar.gz
-!tests/data/demo - Ubuntu.tar.gz
-!tests/data/demo - 副本 - macOS.tar.gz
-!tests/data/demo - 副本 - Ubuntu.tar.gz
-!tests/data/副本.tar.gz
-
-!tests/data/demo - Win10cp1252.zip
-!tests/data/demo - Win7CNsendzipped.zip
-!tests/data/demo - macOS.zip
-!tests/data/demo - Ubuntu.zip
-!tests/data/demo - 副本 - macOS.zip
-!tests/data/demo - 副本 - Ubuntu.zip
-!tests/data/demo - 副本 - Win7CN.zip
-!tests/data/demo - 副本 - Win7CNsendzipped.zip
-!tests/data/demo - 副本 - Win10cp936.zip
-!tests/data/demo.zip
-!tests/data/demo_inner.zip
-!tests/data/demo_only_scrapy_cfg.zip
-!tests/data/demo_outer.zip
-!tests/data/demo_without_scrapy_cfg.zip
-!tests/data/副本.zip
-
-
-tests/data/demo/*
-!tests/data/demo/demo/
-!tests/data/demo/scrapy.cfg
-
-tests/data/demo - 副本/*
-!tests/data/demo - 副本/demo/
-!tests/data/demo - 副本/scrapy.cfg
-
-tests/data/ScrapydWeb-demo/*
-!tests/data/ScrapydWeb-demo/demo/
-!tests/data/ScrapydWeb-demo/scrapy.cfg
-
-tests/data/demo_only_scrapy_cfg/*
-!tests/data/demo_only_scrapy_cfg/scrapy.cfg
-
-tests/data/demo_without_scrapy_cfg/*
-!tests/data/demo_without_scrapy_cfg/demo/
-
+tests/data/
 
 
 scrapydweb/data/*

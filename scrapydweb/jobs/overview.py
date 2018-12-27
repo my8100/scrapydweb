@@ -22,32 +22,22 @@ class OverviewView(MyView):
         self.template = 'scrapydweb/overview.html'
         self.selected_nodes = []
 
-        self.flag = ''
-        if len(self.SCRAPYD_SERVERS) > 1:
-            self.flag += 'A' if self.ENABLE_AUTH else '-'
-            self.flag += 'C' if self.ENABLE_CACHE else '-'
-            self.flag += 'E' if self.ENABLE_EMAIL else '-'
-
     def dispatch_request(self, **kwargs):
         global page_view
         page_view += 1
 
-        if len(self.SCRAPYD_SERVERS) == 1:
-            # flash("Run ScrapydWeb with argument '-ss 127.0.0.1 -ss username:password@192.168.123.123:6801#group' "
-                  # "to set up more than one Scrapyd server to control.", INFO)
-            pass
-        else:
+        if self.SCRAPYD_SERVERS_AMOUNT > 1:
             if not self.ENABLE_AUTH:
                 flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", INFO)
             if not self.ENABLE_CACHE:
                 flash("Set 'ENABLE_CACHE = True' to enable caching HTML for Log and Stats page", WARN)
             if not self.ENABLE_EMAIL:
-                flash("Set 'ENABLE_EMAIL = True' to enable email notice", WARN)
+                flash("Set 'ENABLE_EMAIL = True' to enable email notice", INFO)
 
         if self.POST:
             self.selected_nodes = self.get_selected_nodes()
         else:
-            if len(self.SCRAPYD_SERVERS) == 1:
+            if self.SCRAPYD_SERVERS_AMOUNT == 1:
                 self.selected_nodes = [1]
             else:
                 self.selected_nodes = []
@@ -61,8 +51,8 @@ class OverviewView(MyView):
             url=self.url,
             selected_nodes=self.selected_nodes,
             IS_IE_EDGE=self.IS_IE_EDGE,
-            flag=self.flag,
             page_view=page_view,
+            FEATURES=self.FEATURES,
             url_daemonstatus=url_for('api', node=self.node, opt='daemonstatus'),
             url_listprojects=url_for('api', node=self.node, opt='listprojects'),
             url_listversions=url_for('api', node=self.node, opt='listversions', project='PROJECT_PLACEHOLDER'),

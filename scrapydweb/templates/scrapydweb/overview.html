@@ -14,22 +14,26 @@
             margin-top: 1px;
         }
         #invert_selection {margin-top: 7px;}
-        #total .el-badge__content {background-color: #67c23a}
-        #displayed .el-badge__content {background-color: #67c23a}
-        #selected .el-badge__content {background-color: #fd6b6e} /* red */
+        #total .el-badge__content {background-color: #67c23a;}
+        #displayed .el-badge__content {background-color: #67c23a;}
+        #selected .el-badge__content {background-color: #fd6b6e;} /* red */
         .el-button.is-disabled {cursor: default;}
         .el-button.is-disabled:hover {cursor: default;}
-        .el-button--danger {background-color: #fd6b6e}
-        .el-button--warning {background-color: #feb324} /* orange */
+        .el-button--danger {background-color: #fd6b6e;}
+        .el-button--warning {background-color: #feb324;} /* orange */
         .el-button {
             border: 0;
             font-size: 18px;
         }
+        .el-switch__core {
+            background: #e3e3e3;
+            border: 1px solid #e3e3e3;
+        }
     </style>
 
-    {% if SCRAPYD_SERVERS_AMOUNT > 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0 or page_view % 10 == 0) %}
-    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ flag }}&pv={{ page_view }}"></script>
-    <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 3000);</script>
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0) %}
+    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ page_view }}"></script>
+    <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 2000);</script>
     {% else %}
     <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
     {% endif %}
@@ -40,7 +44,7 @@
 
 
 {% block body %}
-{% if (SCRAPYD_SERVERS_AMOUNT > 1 and (page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0)) or IS_IE_EDGE %}
+{% if (SCRAPYD_SERVERS_AMOUNT > 1 and page_view == 1) or IS_IE_EDGE %}
 <script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
 {% endif %}
 
@@ -60,13 +64,13 @@
 
         <el-tab-pane label="Run Spider" name="schedule">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name(optional)" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name (optional)" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-input v-model="input.version_schedule" placeholder="version({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
+                <el-input v-model="input.version" placeholder="version ({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-input v-model="input.spider" placeholder="spider name(optional)" clearable></el-input>
+                <el-input v-model="input.spider" placeholder="the spider name (optional)" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="success" @click="runSpider">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Run Spider</el-button>
@@ -75,10 +79,10 @@
 
         <el-tab-pane label="Stop Job" name="stop">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-input v-model="input.jobid" placeholder="jobid" clearable></el-input>
+                <el-input v-model="input.jobid" placeholder="the job id" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="danger" @click="stopJob">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Stop Job</el-button>
@@ -92,7 +96,7 @@
 
         <el-tab-pane label="List Versions" name="listversions">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="primary" @click="listVersions" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Versions</el-button>
@@ -101,10 +105,10 @@
 
         <el-tab-pane label="List Spiders" name="listspiders">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-input v-model="input.version_schedule" placeholder="version({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
+                <el-input v-model="input.version" placeholder="version ({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="primary" @click="listSpiders" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Spiders</el-button>
@@ -113,7 +117,7 @@
 
         <el-tab-pane label="List Running Jobs" name="listjobs">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="primary" @click="listJobs" round>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Running Jobs</el-button>
@@ -123,10 +127,10 @@
 
         <el-tab-pane label="Delete Version" name="delversion">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
-                <el-input v-model="input.version_delversion" placeholder="version" clearable></el-input>
+                <el-input v-model="input.version_delversion" placeholder="the project version" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="warning" @click="deleteVersion">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Version</el-button>
@@ -135,7 +139,7 @@
 
         <el-tab-pane label="Delete Project" name="delproject">
             <el-col :span="5">
-                <el-input v-model="input.project" placeholder="project name" clearable></el-input>
+                <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
             </el-col>
             <el-col :span="5">
                 <el-button type="danger" @click="deleteProject">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Project</el-button>
@@ -194,10 +198,10 @@
     >
 
         <el-table-column type="selection" align="center" :reserve-selection="true" fixed></el-table-column>
-        <el-table-column prop="index" label="Index" sortable align="center"></el-table-column>
-        <el-table-column prop="selected" label="Selected" sortable align="center"></el-table-column>
+        <el-table-column prop="index" label="Index" sortable align="center" width="80"></el-table-column>
+        <el-table-column prop="selected" label="Selected" sortable align="center" width="100"></el-table-column>
         <el-table-column prop="group" label="Group" sortable align="center"></el-table-column>
-        <el-table-column prop="dashboard" label="Scrapyd server" sortable min-width="190"
+        <el-table-column prop="dashboard" label="Scrapyd server" sortable width="200"
             align="left" header-align="center" :sort-method="sortScrapydServer">
             <template slot-scope="scope">
                 <a :class="scope.row.cls"
@@ -211,7 +215,7 @@
                 </a>
             </template>
         </el-table-column>
-        <el-table-column prop="node_name" label="Hostname" sortable :formatter="formatter" align="center"></el-table-column>
+        <el-table-column prop="node_name" label="Hostname" sortable :formatter="formatter" align="center" min-width="100"></el-table-column>
 
         <el-table-column prop="listinfo" label="Status / List INFO" sortable min-width="190" align="center" :sort-method="sortListinfo" show-overflow-tooltip>
             <template slot-scope="scope">
@@ -220,18 +224,20 @@
             </template>
         </el-table-column>
 
-        <el-table-column prop="pending" label="Pending" sortable align="center" :sort-method="sortPending">
+
+        <el-table-column prop="pending" label="Pending" sortable align="center" :sort-method="sortPending" width="100" v-if="showDaemonStatus">
                 <template slot-scope="scope">
-                        <div v-bind:style="scope.row.pendingStyleObject">{{scope.row.pending}}</div>
+                    <div v-bind:style="scope.row.pendingStyleObject">{{scope.row.pending}}</div>
                 </template>
         </el-table-column>
-        <el-table-column prop="running" label="Running" sortable align="center" :sort-method="sortRunning">
+        <el-table-column prop="running" label="Running" sortable align="center" :sort-method="sortRunning" width="100" v-if="showDaemonStatus">
                 <template slot-scope="scope">
-                        <div v-bind:style="scope.row.runningStyleObject">{{scope.row.running}}</div>
+                    <div v-bind:style="scope.row.runningStyleObject">{{scope.row.running}}</div>
                 </template>
         </el-table-column>
 
-        <el-table-column prop="finished" label="Finished" sortable align="center" :sort-method="sortFinished"></el-table-column>
+        <el-table-column prop="finished" label="Finished" sortable align="center" :sort-method="sortFinished" width="100" v-if="showDaemonStatus">
+        </el-table-column>
 
     </el-table>
 </template>
@@ -243,113 +249,116 @@
 <script>
 var Main = {
     data() {
-      return {
-        flag_listinfo: "status",
-        maxHeight: window.innerHeight-270,
-        options: [{
-          value: '',
-          label: 'All Columns'
-        }, {
-          value: 'index',
-          label: 'Index'
-        }, {
-          value: 'selected',
-          label: 'Selected'
-        }, {
-          value: 'group',
-          label: 'Group'
-        }, {
-          value: 'SCRAPYD_SERVER', // dashboard
-          label: 'Scrapyd server'
-        }, {
-          value: 'node_name',
-          label: 'Hostname'
-        }, {
-          value: 'return_listinfo', // status
-          label: 'Status / List INFO'
-        }, {
-          value: 'pending',
-          label: 'Pending'
-        }, {
-          value: 'running',
-          label: 'Running'
-        }, {
-          value: 'finished',
-          label: 'Finished'
-        }],
-        selected_column: '',
+        return {
+            showDaemonStatus: true,
+            flag_listinfo: "status",
+            maxHeight: window.innerHeight-270,
+            options: [{
+              value: '',
+              label: 'All Columns'
+            }, {
+              value: 'index',
+              label: 'Index'
+            }, {
+              value: 'selected',
+              label: 'Selected'
+            }, {
+              value: 'group',
+              label: 'Group'
+            }, {
+              value: 'SCRAPYD_SERVER', // dashboard
+              label: 'Scrapyd server'
+            }, {
+              value: 'node_name',
+              label: 'Hostname'
+            }, {
+              value: 'return_listinfo', // status
+              label: 'Status / List INFO'
+            }, {
+              value: 'pending',
+              label: 'Pending'
+            }, {
+              value: 'running',
+              label: 'Running'
+            }, {
+              value: 'finished',
+              label: 'Finished'
+            }],
+            selected_column: '',
 
-        nodesSelected: [],
-        filter: "",
-        invert_filter: false,
+            nodesSelected: [],
+            filter: "",
+            invert_filter: false,
 
-        activeTab: "{{ opt or 'deploy' }}",
+            activeTab: "{{ opt or 'deploy' }}",
 
-        input: {
-            project: "{{ project or '' }}",
+            input: {
+                project: "{{ project or '' }}",
 
-            {% if opt != 'stop' %}
-            version_schedule: "{{ version_job or DEFAULT_LATEST_VERSION }}",
-            {% else %}
-            version_schedule: "{{ DEFAULT_LATEST_VERSION }}",
-            {% endif %}
+                {% if opt != 'stop' %}
+                version: "{{ version_job or DEFAULT_LATEST_VERSION }}",
+                {% else %}
+                version: "{{ DEFAULT_LATEST_VERSION }}",
+                {% endif %}
 
-            {% if opt != 'stop' and version_job != DEFAULT_LATEST_VERSION %}
-            version_delversion: "{{ version_job or '' }}",
-            {% else %}
-            version_delversion: "",
-            {% endif %}
+                {% if opt != 'stop' and version_job != DEFAULT_LATEST_VERSION %}
+                version_delversion: "{{ version_job or '' }}",
+                {% else %}
+                version_delversion: "",
+                {% endif %}
 
-            {% if opt == 'schedule' %}
-            spider: "{{ spider or '' }}",
-            {% else %}
-            spider: "",
-            {% endif %}
+                {% if opt == 'schedule' %}
+                spider: "{{ spider or '' }}",
+                {% else %}
+                spider: "",
+                {% endif %}
 
-            {% if opt == 'stop' %}
-            jobid: "{{ version_job }}",
-            {% else %}
-            jobid: "",
-            {% endif %}
-        },
+                {% if opt == 'stop' %}
+                jobid: "{{ version_job }}",
+                {% else %}
+                jobid: "",
+                {% endif %}
+            },
 
-        tableData: [
-    {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-        {
-            selected: "no",
-            index: {{ loop.index }},
-            group: "{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}",
-            SCRAPYD_SERVER: "{{ SCRAPYD_SERVER }}",
+            tableData: [
+        {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+            {
+                selected: "no",
+                index: {{ loop.index }},
+                group: "{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}",
+                SCRAPYD_SERVER: "{{ SCRAPYD_SERVER }}",
 
-            {% if loop.index == node %}
-            cls:"state safe",
-            {% else %}
-            cls:"state normal",
-            {% endif %}
+                {% if loop.index == node %}
+                cls:"state safe",
+                {% else %}
+                cls:"state normal",
+                {% endif %}
 
-            dashboard: "{{ url_dashboard_list[loop.index-1] }}",
-            node_name: "",
+                dashboard: "{{ g.url_dashboard_list[loop.index-1] }}",
+                node_name: "",
 
-            display_listinfo: "none",
-            url_listinfo: "",
-            return_listinfo: "loading...",
-            emClass: "normal",
+                display_listinfo: "none",
+                url_listinfo: "",
+                return_listinfo: "loading...",
+                emClass: "normal",
 
-            pending: "",
-            pendingStyleObject: {},
-            running: "",
-            runningStyleObject: {},
-            finished: "",
+                pending: "",
+                pendingStyleObject: {},
+                running: "",
+                runningStyleObject: {},
+                finished: "",
 
-            //node_name: undefined,  // would trigger updating view?!
-        },
-    {% endfor %}
-        ]
-      }
+                //node_name: undefined,  // would trigger updating view?!
+            },
+        {% endfor %}
+            ]
+        }
     },
 
     created() {
-        for(idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]){
+        this.fillInputs();
+
+        for (var idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]) {
             var url_daemonstatus = "{{ url_daemonstatus }}".replace(/\/\d+/, '/'+(parseInt(idx)+1));
             this.updateOverview(idx, url_daemonstatus);
         }
@@ -368,7 +377,7 @@ var Main = {
         if (window.localStorage) {
             var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
             var nodesSelected_new = [];
-            for (idx in nodesSelected) {
+            for (var idx in nodesSelected) {
                 try {
                     var node = nodesSelected[idx];
                     this.toggleSelection([this.tableData[node-1]]);
@@ -390,21 +399,21 @@ var Main = {
             var filter = this.filter.toLowerCase();
             var selected_column = this.selected_column;
             var invert_filter = this.invert_filter;
-            if(filter){
+            if (filter) {
                 rst = this.tableData.filter(function(dataNews){
                     //console.log(Object.keys(dataNews))
                     //return Object.keys(dataNews).some(function(key){
                     //return ['index', 'dashboard', 'node_name', 'status', 'pending', 'running', 'finished', 'projects'].some(function(key){
                     return ['index', 'selected', 'group', 'SCRAPYD_SERVER', 'node_name', 'return_listinfo', 'pending', 'running', 'finished'].some(function(key){
-                        if(selected_column){
-                            if(invert_filter){
+                        if (selected_column) {
+                            if (invert_filter) {
                                 return key == selected_column && String(dataNews[key]).toLowerCase().indexOf(filter) == -1
-                            }else{
+                            } else {
                                 //console.log(String(dataNews[key])+'#####'+key);
                                 return key == selected_column && String(dataNews[key]).toLowerCase().indexOf(filter) > -1
                             }
-                        }else{
-                            if(invert_filter){
+                        } else {
+                            if (invert_filter) {
                                 //return String(dataNews[key]).toLowerCase().indexOf(filter) == -1
                                 return (String(dataNews['index']).toLowerCase().indexOf(filter) == -1
                                     && String(dataNews['selected']).toLowerCase().indexOf(filter) == -1
@@ -416,7 +425,7 @@ var Main = {
                                     && String(dataNews['running']).toLowerCase().indexOf(filter) == -1
                                     && String(dataNews['finished']).toLowerCase().indexOf(filter) == -1
                                     )
-                            }else{
+                            } else {
                                 return String(dataNews[key]).toLowerCase().indexOf(filter) > -1
                             }
                         }
@@ -437,11 +446,38 @@ var Main = {
     },
 
     methods: {
+        storeInput(key) {
+            if (window.localStorage && this.input[key]) {
+                localStorage.setItem(key, this.input[key]);
+            }
+        },
+
+        fillInputs() {
+            if (window.localStorage) {
+                var inputs = ['project', 'version', 'version_delversion', 'spider', 'jobid'];
+                for (var idx in inputs) {
+                    var key = inputs[idx];
+                    if (this.input[key]) {
+                        this.storeInput(key);
+                    } else {
+                        this.input[key] = localStorage.getItem(key) || '';
+                    }
+                }
+
+                {% if opt %}
+                localStorage.setItem('overview_tab', '{{ opt }}');
+                {% else %}
+                this.activeTab = localStorage.getItem('overview_tab') || 'deploy';
+                {% endif %}
+            }
+            this.input.version = this.input.version || "{{ DEFAULT_LATEST_VERSION }}";
+        },
+
         invertSelection() {
             //console.log(this.nodesSelected);
             //console.log(this.tableData);
             //console.log(this.tableDataComputed);
-            for (idx in this.tableDataComputed) {
+            for (var idx in this.tableDataComputed) {
                 var row = this.tableDataComputed[idx];
                 //console.log(row);
                 if (this.nodesSelected.indexOf(row.index) > -1) {
@@ -546,7 +582,7 @@ var Main = {
                 my$('#selected .el-badge__content').style.backgroundColor = '#fd6b6e';
             }
 
-            for (idx in this.tableData) {
+            for (var idx in this.tableData) {
                 //console.log(this.tableData[idx].index);
                 if (this.nodesSelected.indexOf(this.tableData[idx].index) > -1) {
                     this.tableData[idx].selected = "YES";
@@ -562,6 +598,9 @@ var Main = {
 
         handleTabClick(tab, event) {
             //console.log(tab, event);
+            if (window.localStorage) {
+                localStorage.setItem('overview_tab', tab.name);
+            }
         },
 
         updateOverview:function(idx, url) {
@@ -570,7 +609,7 @@ var Main = {
                 if (this.readyState == 4) {
                     if (this.status == 200) {
                         var obj = JSON.parse(this.responseText);
-                        if(obj.status == 'ok') {
+                        if (obj.status == 'ok') {
                             //console.log(idx, obj.node_name);
                             vm.tableData[idx]['node_name'] = obj.node_name;
                             //console.log(vm.flag_listinfo);
@@ -582,11 +621,11 @@ var Main = {
 
                             vm.tableData[idx]['pending'] = obj.pending;
                             if (obj.pending !== 0) {
-                                vm.tableData[idx]['pendingStyleObject'] = {color: 'orange', fontSize: '30px', fontWeight: 'bold'};
+                                vm.tableData[idx]['pendingStyleObject'] = {color: 'red', fontSize: '30px', fontWeight: 'bold'};
                             }
                             vm.tableData[idx]['running'] = obj.running;
                             if (obj.running == 0) {
-                                vm.tableData[idx]['runningStyleObject'] = {color: 'red', fontSize: '30px', fontWeight: 'bold'};
+                                vm.tableData[idx]['runningStyleObject'] = {color: '#67c23a', fontSize: '30px', fontWeight: 'bold'};
                             }
                             vm.tableData[idx]['finished'] = obj.finished;
 
@@ -624,7 +663,8 @@ var Main = {
                 if (this.readyState == 4 && vm.flag_listinfo == flag) {
                     if (this.status == 200) {
                         var obj = JSON.parse(this.responseText);
-                        if(obj.status == 'ok') {
+                        if (obj.status == 'ok') {
+                            vm.tableData[idx]['emClass'] = "";
                             if (flag == 'listprojects') {
                                 vm.tableData[idx]['return_listinfo'] = JSON.stringify({'projects': obj.projects}, null, 4);
                             } else if (flag == 'listversions') {
@@ -658,10 +698,12 @@ var Main = {
             req.send();
         },
 
-        checkInput(val, msg) {
-            if (!val) {
-                alert(msg+" is required")
+        checkInput(key, msg) {
+            if (!this.input[key]) {
+                alert(msg+" is required");
                 return true;
+            } else {
+                this.storeInput(key);
             }
         },
 
@@ -675,9 +717,10 @@ var Main = {
         execUpdateListinfo(url, flag) {
             //var spans = my$$('.listinfo');
             //console.log(this.flag_listinfo, flag);
-            for (idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]) {
+            for (var idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]) {
                 var node = parseInt(idx) + 1;
                 //console.log(node, this.nodesSelected);
+                vm.showDaemonStatus = false;
                 vm.tableData[idx]['pending'] = "";
                 vm.tableData[idx]['running'] = "";
                 vm.tableData[idx]['finished'] = "";
@@ -703,7 +746,7 @@ var Main = {
         },
 
         listVersions() {
-            if (this.checkInput(this.input.project, "project name")) {
+            if (this.checkInput('project', "the project name")) {
                 return;
             }
             if (this.checkNodesSelected()) {
@@ -715,7 +758,7 @@ var Main = {
         },
 
         listSpiders() {
-            if (this.checkInput(this.input.project, "project name")) {
+            if (this.checkInput('project', "the project name")) {
                 return;
             }
             if (this.checkNodesSelected()) {
@@ -724,15 +767,15 @@ var Main = {
             var url_listspiders = "{{ url_listspiders }}";
             var DEFAULT_LATEST_VERSION = "{{ DEFAULT_LATEST_VERSION }}";
             this.flag_listinfo = "listspiders";
-            if (this.input.version_schedule == DEFAULT_LATEST_VERSION || this.input.version_schedule == "") {
+            if (this.input.version == DEFAULT_LATEST_VERSION || this.input.version == "") {
                 this.execUpdateListinfo(url_listspiders.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, DEFAULT_LATEST_VERSION), "listspiders");
             } else {
-                this.execUpdateListinfo(url_listspiders.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_schedule), "listspiders");
+                this.execUpdateListinfo(url_listspiders.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version), "listspiders");
             }
         },
 
         listJobs() {
-            if (this.checkInput(this.input.project, "project name")) {
+            if (this.checkInput('project', "the project name")) {
                 return;
             }
             if (this.checkNodesSelected()) {
@@ -745,7 +788,7 @@ var Main = {
 
         updateSubmitForm(action) {
             var form = my$('form');
-            for (idx in this.nodesSelected) {
+            for (var idx in this.nodesSelected) {
                 //var name = this.nodesSelected[idx];
                 //my$("form input[name='"+name+"']").value = 'on';
                 var input = document.createElement('input');
@@ -770,12 +813,17 @@ var Main = {
         runSpider() {
             if (this.checkNodesSelected()) {
                 return;
+            } else {
+                this.storeInput('project');
+                this.storeInput('version');
+                this.storeInput('spider');
             }
+
             var url_schedule = "{{ url_schedule }}";
-            if (this.input.project && this.input.version_schedule && this.input.spider) {
-                this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_schedule).replace(/SPIDER_PLACEHOLDER/, this.input.spider));
-            } else if (this.input.project && this.input.version_schedule) {
-                this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_schedule).replace(/SPIDER_PLACEHOLDER\//, ""));
+            if (this.input.project && this.input.version && this.input.spider) {
+                this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version).replace(/SPIDER_PLACEHOLDER/, this.input.spider));
+            } else if (this.input.project && this.input.version) {
+                this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version).replace(/SPIDER_PLACEHOLDER\//, ""));
             } else if (this.input.project ) {
                 this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER\//, "").replace(/SPIDER_PLACEHOLDER\//, ""));
             } else {
@@ -784,10 +832,10 @@ var Main = {
         },
 
         stopJob() {
-            if (this.checkInput(this.input.project, "project name")) {
+            if (this.checkInput('project', "the project name")) {
                 return;
             }
-            if (this.checkInput(this.input.jobid, "jobid")) {
+            if (this.checkInput('jobid', "the job id")) {
                 return;
             }
             if (this.checkNodesSelected()) {
@@ -799,10 +847,10 @@ var Main = {
         },
 
         deleteVersion() {
-            if (this.checkInput(this.input.project, "project name")) {
+            if (this.checkInput('project', "the project name")) {
                 return;
             }
-            if (this.checkInput(this.input.version_delversion, "version")) {
+            if (this.checkInput('version_delversion', "the project version")) {
                 return;
             }
             if (this.checkNodesSelected()) {
@@ -814,7 +862,7 @@ var Main = {
         },
 
         deleteProject() {
-            if (this.checkInput(this.input.project, "project name")) {
+            if (this.checkInput('project', "the project name")) {
                 return;
             }
             if (this.checkNodesSelected()) {

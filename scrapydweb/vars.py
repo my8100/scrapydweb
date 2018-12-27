@@ -1,10 +1,12 @@
 # coding: utf8
 import os
+import sys
 import io
 import time
 import glob
 import re
 
+PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(CWD, 'data')
@@ -22,7 +24,7 @@ for p in [DATA_PATH, PARSE_PATH, CACHE_PATH, DEPLOY_PATH, SCHEDULE_PATH, DEMO_PR
             if not os.path.split(file)[-1] in ['demo.txt', 'history.log']:
                 os.remove(file)
 
-
+HISTORY_LOG = os.path.join(SCHEDULE_PATH, 'history.log')
 LAST_CHECK_UPDATE = os.path.join(DATA_PATH, 'last_check_update')
 
 try:

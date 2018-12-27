@@ -9,17 +9,22 @@
 
     <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
     <style>
-        #parameters {margin-top: 8px;}
-        #parameters li {margin-bottom: 8px;}
-        #message {padding-top: 16px;}
-        em {color: red;}
-        #CMD {
-            background-color: #eee;
+        #help {margin-top: 8px;}
+        #help li {margin-bottom: 8px;}
+        #message {
+            display: none;
+            margin-left: 10px;
+            margin-top: 8px;
+            padding-top: 8px;
+            width: 700px;
+        }
+        #app {padding-top: 16px;}
+        #cmd {
+            background-color: #e3e3e3;
             cursor: not-allowed;
             opacity: 1;
-            width: 785px;
         }
-        .parameter{
+        #help li span{
             background: #fff;
             border: solid 1px #e1e4e5;
             color: #E74C3C;
@@ -29,17 +34,14 @@
             white-space: nowrap;
         }
         .el-select {width: 300px}
-        .action {
-            margin-bottom: 20px;
-            margin-top: 32px;
+        .el-switch__core {
+            background: #e3e3e3;
+            border: 1px solid #e3e3e3;
         }
-        #run_spider {
-            margin-left: 10px;
-            padding-bottom: 12px;
-            padding-top: 12px;
+
+        .line-container .key {
+            width: 188px;
         }
-        #history {padding-left: 12px;}
-        h3 a {margin-left: 10px;}
     </style>
 
 
@@ -63,16 +65,16 @@
     <ul class="collapse">
         <li>
             <div class="title">
-                <h4>Parameters</h4>
+                <h4>HELP</h4>
                 <i class="iconfont icon-right"></i>
             </div>
 
-            <ul id="parameters">
-                <li><span class="parameter">project</span> (string, required) - the project name</li>
-                <li><span class="parameter">_version</span> (string, optional) - the version of the project to use, default: the latest version</li>
-                <li><span class="parameter">spider</span> (string, required) - the spider name</li>
-                <li><span class="parameter">jobid</span> (string, optional) - a job id used to identify the job, overrides the default generated UUID</li>
-                <li><span class="parameter">setting</span> (string, optional) - a Scrapy setting to use when running the spider.
+            <ul id="help">
+                <li><span>project</span> (string, required) - the project name</li>
+                <li><span>_version</span> (string, optional) - the version of the project to use, default: the latest version</li>
+                <li><span>spider</span> (string, required) - the spider name</li>
+                <li><span>jobid</span> (string, optional) - a job id used to identify the job, overrides the default generated UUID</li>
+                <li><span>setting</span> (string, optional) - a Scrapy setting to use when running the spider.
                     (See <a class="link" target="_blank" href="https://doc.scrapy.org/en/latest/topics/settings.html">Scrapy settings</a>)
                 </li>
                 <li>any other parameter is passed as spider argument.
@@ -84,7 +86,7 @@
 </div>
 
 
-<div class="wrap">
+<div class="wrap" style="padding-bottom: 24px;">
     <div id="message"></div>
 
     <div id="app">
@@ -121,145 +123,139 @@
 
             <div v-show="form.settingsAndArguments">
                 <el-form-item label="jobid">
-                    <el-col :span="11">
+                    <el-col :span="9">
                         <el-input v-model="form.jobid" placeholder="The job id used to identify the job"></el-input>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.jobid_switch"></el-switch>
                     </el-col>
                 </el-form-item>
 
                 <el-form-item label="USER_AGENT">
-                    <el-col :span="11">
+                    <el-col :span="9">
                         <el-select v-model="form.USER_AGENT" placeholder="The default User-Agent to use when crawling">
                             <el-option label="Mozilla/5.0 Windows NT Chrome..." value="chrome"></el-option>
                             <el-option label="Mozilla/5.0 iPhone Safari..." value="iOS"></el-option>
                             <el-option label="Mozilla/5.0 Linux; Android..." value="Android"></el-option>
                         </el-select>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.USER_AGENT_switch"></el-switch>
                     </el-col>
                 </el-form-item>
 
                 <el-form-item label="COOKIES_ENABLED">
-                    <el-col :span="11">
+                    <el-col :span="9">
                         <el-select v-model="form.COOKIES_ENABLED" placeholder="Whether to enable cookies middleware.">
                             <el-option label="True" value="True"></el-option>
                             <el-option label="False" value="False"></el-option>
                         </el-select>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.COOKIES_ENABLED_switch"></el-switch>
                     </el-col>
                 </el-form-item>
 
                 <el-form-item label="ROBOTSTXT_OBEY">
-                    <el-col :span="11">
+                    <el-col :span="9">
                         <el-select v-model="form.ROBOTSTXT_OBEY" placeholder="Whether to respect robots.txt policies">
                             <el-option label="True" value="True"></el-option>
                             <el-option label="False" value="False"></el-option>
                         </el-select>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.ROBOTSTXT_OBEY_switch"></el-switch>
                     </el-col>
                 </el-form-item>
 
                 <el-form-item label="CONCURRENT_REQUESTS">
-                    <el-col :span="11">
+                    <el-col :span="9">
                         <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="Default: 16"></el-input>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.CONCURRENT_REQUESTS_switch"></el-switch>
                     </el-col>
                 </el-form-item>
 
 
                 <el-form-item label="DOWNLOAD_DELAY">
-                    <el-col :span="11">
+                    <el-col :span="9">
                         <el-input v-model="form.DOWNLOAD_DELAY" placeholder="Default: 0"></el-input>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.DOWNLOAD_DELAY_switch"></el-switch>
                     </el-col>
                 </el-form-item>
 
                 <el-form-item label="additional">
-                    <el-col :span="11">
-                        <el-input type="textarea" v-model="form.additional" :autosize="{ minRows: 6, maxRows: 10}" placeholder="-d setting=DOWNLOAD_DELAY=2 -d arg1=val1"></el-input>
+                    <el-col :span="9">
+                        <el-input type="textarea" v-model="form.additional" :autosize="{ minRows: 4, maxRows: 10}" placeholder="-d setting=DOWNLOAD_DELAY=2 -d arg1=val1"></el-input>
                     </el-col>
-                    <el-col class="line" :span="0.1">&nbsp;</el-col>
-                    <el-col :span="11">
+                    <el-col class="line" :span="0.1">&nbsp;&nbsp;&nbsp;</el-col>
+                    <el-col :span="9">
                         <el-switch v-model="form.additional_switch"></el-switch>
                     </el-col>
                 </el-form-item>
             </div>
 
-
-            <el-form-item label-width="10px">
-                <el-button type="primary" style="font-size: 20px;" @click="checkCMD('form')">Check CMD</el-button>
-            </el-form-item>
-
-            <el-form-item label-width="10px" prop="CMD">
-                <el-input id="CMD" type="textarea" v-model="form.CMD" :autosize="{ minRows: 6, maxRows: 10}" readonly="readonly" placeholder="Press the 'Check CMD' button above to preview CMD"></el-input>
+            <el-form-item label="curl command" prop="cmd">
+                <el-col :span="9">
+                   <el-input id="cmd" type="textarea" v-model="form.cmd" :autosize="{ minRows: 7, maxRows: 10}" readonly="readonly" placeholder="Click the 'Check CMD' button before 'Run Spider'"></el-input>
+                </el-col>
             </el-form-item>
 
         </el-form>
     </div>
 
-
     <form id="form_run_spider" method="post" action="{{ url_schedule_run }}" enctype="multipart/form-data">
+        <input type="text" name="filename" hidden />
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <h3><a href="{{ url_overview }}">Simply pass in a group of nodes from the Overview page &raquo;</a></h3>
-        <div>
+        <a class="link" style="margin-left: 200px;" href="{{ url_overview }}">To pass in a group of nodes &raquo;</a>
+        <div class="line-container">
+            <div class="key"><span>*</span>multinodes</div>
             <input type="text" name="checked_amount" value="1" hidden />
-            <div class="multiselect" style="margin-left: 10px;">
-                <div class="selectBox" onclick="showCheckboxes()">
-                <select>
-                    <option id="selected_nodes_statement">{{ SCRAPYD_SERVERS[node-1] }}</option>
-                </select>
-                <div class="overSelect"></div>
+            <div class="multiselect">
+                <div class="selectBox" onclick="showCheckboxes();">
+                    <div class="value">
+                        <span id="selected_nodes_statement">{{ SCRAPYD_SERVERS[node-1] }}</span>
+                        <svg class="icon anchor" aria-hidden="true">
+                            <use xlink:href="#icon-down"></use>
+                        </svg>
+                    </div>
+                    <div class="overSelect"></div>
                 </div>
-                <div id="checkboxes">
-                    <label for="checkcurrent">
-                        <input type="checkbox" id="checkcurrent" />Check current node only
-                    </label>
-                    <label for="checkall">
-                        <input type="checkbox" id="checkall" />CheckAll / UncheckAll
-                    </label>
+                <div id="checkboxes" style="display: none;">
+                    <label for="checkcurrent"><input type="checkbox" id="checkcurrent" />Check current node only</label>
+                    <label for="checkall"><input type="checkbox" id="checkall" />CheckAll / UncheckAll</label>
                     <div id="nodes_checkboxes">
                     {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
                         {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
                         <span> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </span>
                         {% endif %}
 
-                        <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}">
+                        <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}" {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}>
                             <input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}"
-
-                            {% if loop.index in selected_nodes %}
-                            checked
-                            {% endif %}
-
+                            {% if loop.index in selected_nodes %}checked{% endif %}
                             />{{ SCRAPYD_SERVER }}
                         </label>
                     {% endfor %}
                     </div>
                 </div>
+                <div class="form-item-error">Select at least one node</div>
             </div>
         </div>
     {% endif %}
-
-        <input type="text" name="filename" hidden />
     </form>
-    <div class="action">
-        <a id="run_spider" class="button safe" href="javascript:;" onclick="runSpider('form');">Run Spider</a>
+
+    <div style="margin: 34px 0 16px 200px;">
+        <a class="button warning big" href="javascript:;" onclick="vm.checkCMD('form');">Check CMD</a>
+        <a id="run_spider" class="button safe big" href="javascript:;" onclick="runSpider('form');">Run Spider</a>
         <a id="history" class="link" target="_blank" href="{{ url_schedule_history }}">history</a>
     </div>
 </div>
@@ -272,14 +268,26 @@ var url_listspiders = "{{ url_listspiders }}";
 var url_schedule_check = "{{ url_schedule_check }}";
 
 
-// Put off
+
+
 {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+//https://stackoverflow.com/questions/6463486/jquery-drop-down-menu-closing-by-clicking-outside
+$(document).click(function(){
+    showCheckboxes('click_outside_close');
+});
+
+$('.multiselect').click(function(e){
+    e.stopPropagation();
+});
+
+
+// Put off
 window.onload = function(){
     {% if selected_nodes == [] %}
     if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) {
         var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
         var nodesSelected_new = [];
-        for (idx in nodesSelected) {
+        for (var idx in nodesSelected) {
             try {
                 var n = nodesSelected[idx];
                 my$('#checkbox_'+n).checked = true;
@@ -295,15 +303,17 @@ window.onload = function(){
     $('#checkall').click(function () {
         $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
         my$('#checkcurrent').checked = false;
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
     });
 
     $('#checkcurrent').click(function () {
         $('#checkboxes input:checkbox').not(this).prop('checked', false);
         my$('#checkcurrent').checked = true;
         my$('#checkbox_'+{{ node }}).checked = true;
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
     });
 
-    $('#checkboxes input[type=checkbox]').change(function() {
+    $('#nodes_checkboxes input[type=checkbox]').change(function() {
         checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
     });
 
@@ -312,18 +322,30 @@ window.onload = function(){
 {% endif %}
 
 
+function handleMessage(message){
+    if (message === undefined) {
+        my$('#message').innerHTML = '';
+        my$('#message').style.display = 'none';
+    } else {
+        my$('#message').innerHTML = message;
+        my$('#message').style.display = 'block';
+        my$('#message').style.border = "1px solid #f56c6c";
+    }
+}
+
+
 function runSpider(formName){
-    if(!my$('#form').CMD.value){
-        //alert("Press the 'Check CMD' button first");
+    if (!my$('#form').cmd.value) {
+        //alert("Click the 'Check CMD' button first");
         //vm.$refs[formName].validate();
         vm.$refs[formName].validate((valid) => {
             if (valid) {
                 console.log('validate pass');
             } else {
                 console.log('validate fail');
-                vm.$refs[formName].validateField('selectedProject', (error) => {if(!error){console.log('selectedProject pass');} else {my$('h2').scrollIntoView(); return false;} });
-                vm.$refs[formName].validateField('selectedVersion', (error) => {if(!error){console.log('selectedVersion pass');} else {my$('h2').scrollIntoView(); return false;} });
-                vm.$refs[formName].validateField('selectedSpider', (error) => {if(!error){console.log('selectedSpider pass');} else {my$('h2').scrollIntoView(); return false;} });
+                vm.$refs[formName].validateField('selectedProject', (error) => {if(!error){console.log('selectedProject pass');} else {goContentTop(); return false;} });
+                vm.$refs[formName].validateField('selectedVersion', (error) => {if(!error){console.log('selectedVersion pass');} else {goContentTop(); return false;} });
+                vm.$refs[formName].validateField('selectedSpider', (error) => {if(!error){console.log('selectedSpider pass');} else {goContentTop(); return false;} });
                 return false;
             }
         });
@@ -332,7 +354,8 @@ function runSpider(formName){
 
 {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
     if (checked_amount == 0) {
-        alert("Select at least one node");
+        //alert("Select at least one node");
+        checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
         return;
     }
 {% endif %}
@@ -366,7 +389,7 @@ var Main = {
                 CONCURRENT_REQUESTS: "", CONCURRENT_REQUESTS_switch:undefined,
                 DOWNLOAD_DELAY: "", DOWNLOAD_DELAY_switch:undefined,
                 additional: "-d setting=CLOSESPIDER_TIMEOUT=60 \r\n-d setting=CLOSESPIDER_PAGECOUNT=10 \r\n-d arg1=val1", additional_switch:undefined,
-                CMD: undefined,
+                cmd: undefined,
                 settingsAndArguments: false,
             },
 
@@ -374,7 +397,7 @@ var Main = {
                 selectedProject: [{ required: true, message: 'project is required', trigger: 'change' }],
                 selectedVersion: [{ required: true, message: 'version is required', trigger: 'change' }],
                 selectedSpider: [{ required: true, message: 'spider is required', trigger: 'change' }],
-                CMD: [{ required: true, message: "Press the 'Check CMD' button above to preview CMD", trigger: 'change' }],
+                cmd: [{ required: true, message: "Click the 'Check CMD' button first", trigger: 'change' }],
             }
         };
     },
@@ -416,40 +439,39 @@ var Main = {
             console.log(JSON.stringify(this.form));
 
             var formData = new FormData();
-            if(this.form.selectedProject && this.form.selectedVersion && this.form.selectedSpider) {
+            if (this.form.selectedProject && this.form.selectedVersion && this.form.selectedSpider) {
                 formData.append('project', this.form.selectedProject);
                 formData.append('_version', this.form.selectedVersion);
                 formData.append('spider', this.form.selectedSpider);
             } else {
-                my$('h2').scrollIntoView()
+                goContentTop();
                 //alert('Select a project first');
                 return;
             }
 
-            if(this.form.jobid_switch) {
+            if (this.form.jobid_switch) {
                 formData.append('jobid', this.form.jobid);
             }
-            if(this.form.USER_AGENT_switch) {
+            if (this.form.USER_AGENT_switch) {
                 formData.append('USER_AGENT', this.form.USER_AGENT);
             }
-            if(this.form.COOKIES_ENABLED_switch) {
+            if (this.form.COOKIES_ENABLED_switch) {
                 formData.append('COOKIES_ENABLED', this.form.COOKIES_ENABLED);
             }
-            if(this.form.ROBOTSTXT_OBEY_switch) {
+            if (this.form.ROBOTSTXT_OBEY_switch) {
                 formData.append('ROBOTSTXT_OBEY', this.form.ROBOTSTXT_OBEY);
             }
-            if(this.form.CONCURRENT_REQUESTS_switch) {
+            if (this.form.CONCURRENT_REQUESTS_switch) {
                 formData.append('CONCURRENT_REQUESTS', this.form.CONCURRENT_REQUESTS || '16');
             }
-            if(this.form.DOWNLOAD_DELAY_switch) {
+            if (this.form.DOWNLOAD_DELAY_switch) {
                 formData.append('DOWNLOAD_DELAY', this.form.DOWNLOAD_DELAY || '0');
             }
-            if(this.form.additional_switch) {
+            if (this.form.additional_switch) {
                 formData.append('additional', this.form.additional);
             }
 
-            console.log(formData);
-            my$('#message').innerHTML = '';
+            handleMessage();
             showLoader();
             var req = new XMLHttpRequest();
             req.onreadystatechange = function() {
@@ -457,13 +479,13 @@ var Main = {
                     hideLoader();
                     if (this.status == 200) {
                         obj = JSON.parse(this.responseText);
-                        my$('#form').CMD.value = obj.cmd;
+                        my$('#form').cmd.value = obj.cmd;
                         my$('#form_run_spider').filename.value = obj.filename;
                         console.log(my$('#form_run_spider').filename.value);
 
-                        vm.$refs[formName].clearValidate('CMD');
+                        vm.$refs[formName].clearValidate('cmd');
                     } else {
-                        alert("REQUEST got code: " + this.status);
+                        alert("REQUEST got code: " + this.status + ". Check the log of ScrapydWeb.");
                     }
                 }
             };
@@ -473,6 +495,7 @@ var Main = {
         },
 
         loadSCRAPYD_SERVERS:function(cba) {
+            handleMessage();
             this.projects = [];
             this.versions = [];
             this.spiders = [];
@@ -483,9 +506,9 @@ var Main = {
 
         //cba: visible-change callback arg, true when select options displayed, else false
         loadProjects:function(cba) {
-            if(cba) {
-                my$('#message').innerHTML = '';
-                $('#content').animate({scrollTop: 0}, 300);
+            if (cba) {
+                handleMessage();
+                goContentTop();
                 showLoader();
                 this.projects = [];
                 this.versions = [];
@@ -502,20 +525,28 @@ var Main = {
                         hideLoader();
                         if (this.status == 200) {
                             var obj = JSON.parse(this.responseText);
-                            if(obj.status != 'ok') {
-                                alert("REQUEST got status: "+obj.status);
-                                var message = obj.message;
-                                obj.message = "See details below";
-                                my$('#message').innerHTML = getRequestFailHtml(url_listprojects_new, 'status', obj.status)+'<pre>'+JSON.stringify(obj, null, 4)+'</pre><pre>'+message+'</pre>';
+                            if (obj.status != 'ok') {
+                                //alert("REQUEST got status: "+obj.status);
+                                var tip = obj.tip || '';
+                                if (tip) {
+                                    tip = '<h3>Tip</h3>' + tip;
+                                }
+                                var message = obj.message || '';
+                                if (message) {
+                                    obj.message = "See details below";
+                                    message = '<h3>Details</h3><pre>' + message + '</pre>';
+                                }
+                                var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
+                                handleMessage(getRequestFailHtml(url_listprojects_new, 'status', obj.status)+text+tip+message);
                             } else {
                                 vm.projects = obj.projects;
-                                if(vm.projects.length == 0){
-                                    alert("NO projects found. Please check out the Manage page");
+                                if (vm.projects.length == 0) {
+                                    alert("NO projects found. Check out the Manage page.");
                                 }
                             }
                         } else {
-                            alert("REQUEST got code: "+this.status);
-                            my$('#message').innerHTML = getRequestFailHtml(url_listprojects_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>';
+                            //alert("REQUEST got code: "+this.status);
+                            handleMessage(getRequestFailHtml(url_listprojects_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>');
                         }
                     }
                 };
@@ -525,24 +556,22 @@ var Main = {
         },
 
         loadVersions:function() {
-            my$('#message').innerHTML = '';
-            $('#content').animate({scrollTop: 0}, 300);
+            handleMessage();
+            goContentTop();
             showLoader();
             this.versions = [];
             this.spiders = [];
             this.form.selectedVersion = undefined;
             this.form.selectedSpider = undefined;
 
-
-            <!-- fetch("{{ url_listversions }}".replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject)) -->
-            <!-- .then(res=>res.json()) -->
-            <!-- .then( -->
-                <!-- res => { -->
-                    <!-- this.versions = res.versions; -->
-                <!-- } -->
-            <!-- ); -->
-            <!-- hideLoader(); -->
-
+            //fetch("{{ url_listversions }}".replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject))
+            //.then(res=>res.json())
+            //.then(
+            //    res => {
+            //        this.versions = res.versions;
+            //    }
+            //);
+            //hideLoader();
 
             var url_listversions_new = url_listversions.replace(/\/\d+/, '/'+(parseInt(this.SCRAPYD_SERVERS.indexOf(this.form.selectedSCRAPYD_SERVER))+1));
             url_listversions_new = url_listversions_new.replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject);
@@ -552,17 +581,25 @@ var Main = {
                     hideLoader();
                     if (this.status == 200) {
                         var obj = JSON.parse(this.responseText);
-                        if(obj.status != 'ok') {
-                            alert("REQUEST got status: "+obj.status);
-                            var message = obj.message;
-                            obj.message = "See details below";
-                            my$('#message').innerHTML = getRequestFailHtml(url_listversions_new, 'status', obj.status)+'<pre>'+JSON.stringify(obj, null, 4)+'</pre><pre>'+message+'</pre>';
+                        if (obj.status != 'ok') {
+                            //alert("REQUEST got status: "+obj.status);
+                            var tip = obj.tip || '';
+                            if (tip) {
+                                tip = '<h3>Tip</h3>' + tip;
+                            }
+                            var message = obj.message || '';
+                            if (message) {
+                                obj.message = "See details below";
+                                message = '<h3>Details</h3><pre>' + message + '</pre>';
+                            }
+                            var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
+                            handleMessage(getRequestFailHtml(url_listversions_new, 'status', obj.status)+text+tip+message);
                         } else {
                             vm.versions = obj.versions;
                         }
                     } else {
-                        alert("REQUEST got code: "+this.status);
-                        my$('#message').innerHTML = getRequestFailHtml(url_listversions_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>';
+                        //alert("REQUEST got code: "+this.status);
+                        handleMessage(getRequestFailHtml(url_listversions_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>');
                     }
                 }
             };
@@ -571,8 +608,8 @@ var Main = {
         },
 
         loadSpiders:function() {
-            my$('#message').innerHTML = '';
-            $('#content').animate({scrollTop: 0}, 300);
+            handleMessage();
+            goContentTop();
             showLoader();
             this.spiders = [];
             this.form.selectedSpider = undefined;
@@ -586,17 +623,25 @@ var Main = {
                     hideLoader();
                     if (this.status == 200) {
                         var obj = JSON.parse(this.responseText);
-                        if(obj.status != 'ok') {
-                            alert("REQUEST got status: "+obj.status);
-                            var message = obj.message;
-                            obj.message = "See details below";
-                            my$('#message').innerHTML = getRequestFailHtml(url_listspiders_new, 'status', obj.status)+'<pre>'+JSON.stringify(obj, null, 4)+'</pre><pre>'+message+'</pre>';
+                        if (obj.status != 'ok') {
+                            //alert("REQUEST got status: "+obj.status);
+                            var tip = obj.tip || '';
+                            if (tip) {
+                                tip = '<h3>Tip</h3>' + tip;
+                            }
+                            var message = obj.message || '';
+                            if (message) {
+                                obj.message = "See details below";
+                                message = '<h3>Details</h3><pre>' + message + '</pre>';
+                            }
+                            var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
+                            handleMessage(getRequestFailHtml(url_listspiders_new, 'status', obj.status)+text+tip+message);
                         } else {
                             vm.spiders = obj.spiders;
                         }
                     } else {
-                        alert("REQUEST got code: "+this.status);
-                        my$('#message').innerHTML = getRequestFailHtml(url_listspiders_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>';
+                        //alert("REQUEST got code: "+this.status);
+                        handleMessage(getRequestFailHtml(url_listspiders_new, 'code', this.status)+'<pre>Check the log of ScrapydWeb.</pre>');
                     }
                 }
             };

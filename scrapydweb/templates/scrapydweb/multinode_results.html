@@ -58,7 +58,7 @@
                     {% endif %}
 
                     {% if opt == 'stop' %}
-                    href="{{ url_dashboard_list[loop.index-1] }}"
+                    href="{{ g.url_dashboard_list[loop.index-1] }}"
                     {% else %}
                     href="{{ url_manage_list[loop.index-1] }}"
                     {% endif %}
@@ -85,7 +85,7 @@
     </table>
 
     <div class="action">
-        <a class="button safe" href="javascript:;" onclick="passToOverview();">Pass to Overview</a>
+        <a class="button safe big" href="javascript:;" onclick="passToOverview();">Pass to Overview</a>
     </div>
 </div>
 
@@ -115,7 +115,7 @@ function fireXHR(){
     //    return;
     //}
 
-    for(idx in selected_nodes){
+    for (var idx in selected_nodes) {
         var url = url_xhr.replace(/\/\d+/, '/'+selected_nodes[idx]);
         execXHR(selected_nodes[idx], url);
     }
@@ -129,7 +129,7 @@ function execXHR(idx, url){
         if (this.readyState == 4) {
             if (this.status == 200) {
                 var obj = JSON.parse(this.responseText);
-                if(obj.status == 'ok') {
+                if (obj.status == 'ok') {
                     console.log('#'+'node_name_'+idx, obj.node_name);
                     my$('#'+'node_name_'+idx).innerHTML = obj.node_name;
                     my$('#'+'status_'+idx).innerHTML = '<em class="pass">'+obj.status+'</em>';

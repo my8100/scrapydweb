@@ -26,12 +26,17 @@ class ItemsView(MyView):
     def dispatch_request(self, **kwargs):
         status_code, self.text = self.make_request(self.url, api=False, auth=self.AUTH)
         if status_code != 200 or not re.search(r'Directory listing for /items/', self.text):
+            if status_code == -1:
+                tip = 'Click the above link to make sure your Scrapyd server is accessable.'
+            else:
+                link = 'https://scrapyd.readthedocs.io/en/latest/config.html#items-dir'
+                tip = 'Check out <a class="link" href="{0}" target="_blank">{0}</a> for more info.'.format(link)
             kwargs = dict(
                 node=self.node,
                 url=self.url,
                 status_code=status_code,
                 text=self.text,
-                message='Check out https://scrapyd.readthedocs.io/en/latest/config.html#items-dir for help'
+                tip=tip
             )
             return render_template(self.template_fail, **kwargs)
 

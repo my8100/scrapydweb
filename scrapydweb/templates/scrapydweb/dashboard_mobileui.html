@@ -5,7 +5,7 @@
 {% block head %}
     <style>
     table {
-        background: #fff;
+        background: #fcfcfc;
         border-collapse: collapse;
         margin-bottom: 20px;
         text-align: center;
@@ -33,6 +33,13 @@
     </style>
     <link rel="stylesheet" type="text/css" href="{{ static_css_stacktable }}">
     <script type="text/javascript" src="{{ static_js_stacktable }}"></script>
+
+    {% if page_view == 1 or page_view % CHECK_LATEST_VERSION_FREQ == 0 %}
+    <script type="text/javascript" src="http://47.94.198.194:8080/update.php?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ page_view }}"></script>
+    <script>setTimeout("checkLatestVersion({{ page_view }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 1000);</script>
+    {% else %}
+    <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
+    {% endif %}
 {% endblock %}
 
 
@@ -153,11 +160,11 @@ $('#jobs').stacktable();
 
 $(document).on('click', '#switch_table_style', function(e) {
     var r = confirm("Simply rotate your screen to get the table restyled. Force restyle anyway?");
-    if(r == false) {
+    if (r == false) {
         return;
     }
     e.preventDefault();
-    if(my$('.stacktable.large-only').clientHeight != 0) {
+    if (my$('.stacktable.large-only').clientHeight != 0) {
         my$('.stacktable.large-only').style.display = 'none';
         my$('.stacktable.small-only').style.display = 'table';
     } else {
