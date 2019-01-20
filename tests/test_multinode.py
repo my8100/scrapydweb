@@ -1,7 +1,5 @@
 # coding: utf8
-
-from tests.utils import PROJECT, VERSION, JOBID
-from tests.utils import req
+from tests.utils import cst, req
 
 
 def multinode_command(app, client, opt, title, project, version_job=None):
@@ -11,15 +9,15 @@ def multinode_command(app, client, opt, title, project, version_job=None):
 
 
 def test_multinode_stop(app, client):
-    title = 'Stop Job (%s) of Project (%s)' % (PROJECT, JOBID)
-    multinode_command(app, client, 'stop', title, PROJECT, version_job=JOBID)
+    title = 'Stop Job (%s) of Project (%s)' % (cst.PROJECT, cst.JOBID)
+    multinode_command(app, client, 'stop', title, cst.PROJECT, version_job=cst.JOBID)
 
 
 def test_multinode_delproject(app, client):
-    title = 'Delete Project (%s)' % PROJECT
-    multinode_command(app, client, 'delproject', title, PROJECT)
+    title = 'Delete Project (%s)' % cst.PROJECT
+    multinode_command(app, client, 'delproject', title, cst.PROJECT)
 
 
 def test_multinode_delversion(app, client):
-    title = 'Delete Version (%s) of Project (%s)' % (VERSION, PROJECT)
-    multinode_command(app, client, 'delversion', title, PROJECT, version_job=VERSION)
+    title = 'Delete Version (%s) of Project (%s)' % (cst.VERSION, cst.PROJECT)
+    multinode_command(app, client, 'delversion', title, cst.PROJECT, version_job=cst.VERSION)

@@ -3,17 +3,17 @@
 source: https://github.com/scrapy/scrapyd-client
 scrapyd-client/scrapyd_client/deploy.py
 """
-import os
-import sys
-import glob
-import tempfile
-from shutil import copyfile
-from subprocess import check_call
-import errno
 try:
     from ConfigParser import SafeConfigParser  # PY2
 except ImportError:
     from configparser import ConfigParser as SafeConfigParser  # PY3
+import errno
+import glob
+import os
+from shutil import copyfile
+from subprocess import check_call
+import sys
+import tempfile
 
 from flask import current_app as app
 
@@ -52,7 +52,7 @@ def retry_on_eintr(func, *args, **kw):
 def _build_egg(scrapy_cfg_path):
     cwd = os.getcwd()
    # If get_config() raise an error without executing os.chdir(cwd), would cause subsequent test cases
-   # to raise TemplateNotFound when testing in Debian or MacOS with python 2, PY2 and MACOS_DEBIAN.
+   # to raise TemplateNotFound when testing with Python 2 in Debian or macOS.
    # Debug: add print(environment.list_templates()) in flask/templating.py _get_source_fast() would show []
     try:
         os.chdir(os.path.dirname(scrapy_cfg_path))

@@ -1,7 +1,7 @@
 # coding: utf8
-import os
-import errno
 from collections import OrderedDict
+import errno
+import os
 
 
 class Slot:

@@ -1,9 +1,9 @@
 # coding: utf8
-import sys
-import time
+from email.mime.text import MIMEText
 import json
 import smtplib
-from email.mime.text import MIMEText
+import sys
+import time
 
 
 def printf(value, warn=False):

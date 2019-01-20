@@ -15,8 +15,8 @@
 
 
 {% block neck %}
-<a class="button normal" href="javascript:;" onclick="forceLoader('{{ url_dashboard_mobile }}');">Dashboard</a>
-<a class="button warning" href="javascript:;" onclick="forceLoader('{{ url_stats_mobile }}')">Stats</a>
+<a class="button normal" href="javascript:;" onclick="forceLoader('{{ g.url_dashboard_list[node-1] }}');">Dashboard</a>
+<a class="button warning" href="javascript:;" onclick="forceLoader('{{ url_opt_opposite }}')">Stats</a>
 {% endblock %}
 
 
@@ -36,9 +36,9 @@
 <pre>{{ text }}</pre>
 
 <h3>PROJECT ({{ project }})<br>SPIDER ({{ spider }})</h3>
-{% if refresh_url_mobileui %}
-<a id="refresh_button" class="button normal" href="javascript:;" onclick="forceLoader('{{ refresh_url_mobileui }}');">
-Using cached version, press to refresh
+{% if url_refresh %}
+<a id="refresh_button" class="button danger" href="javascript:;" onclick="forceLoader('{{ url_refresh }}');">
+Press to refresh
 </a>
 <br>
 <br>
@@ -50,7 +50,6 @@ Using cached version, press to refresh
 $(function() {
     //$(window).scroll(function() {
     $(document).ready(function() {
-        {% if refresh_url_mobileui %}updateURL();{% endif %}
         hideLoader();
 
         $('div.go-top').show();
@@ -69,19 +68,13 @@ $(function() {
 
 
 <script>
-const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
-const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
+const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
 
-{% if refresh_url_mobileui %}
+{% if url_refresh %}
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
-    var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Cached <span style='color: black;'>" + seconds + "</span> seconds ago, press to hard reload";
-    if (seconds > LAST_LOG_ALERT_SECONDS) {
-        my$('#refresh_button').className = "button danger";
-    } else {
-        my$('#refresh_button').className = "button safe";
-    }
+    var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> seconds ago, press to reload (SLOW)";
 }, 1000);
 {% endif %}
 </script>

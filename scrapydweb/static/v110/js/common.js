@@ -143,7 +143,7 @@ function logout() {
 }
 
 
-function checkLatestVersion(page_view, SCRAPYDWEB_VERSION, GITHUB_URL) {
+function checkLatestVersion(pageview, SCRAPYDWEB_VERSION, GITHUB_URL) {
     console.log('checkLatestVersion');
     //In case navigate back from Github but show window.confirm() again
     var open_github = true;
@@ -170,7 +170,7 @@ function checkLatestVersion(page_view, SCRAPYDWEB_VERSION, GITHUB_URL) {
                 window.location = GITHUB_URL + "/blob/master/HISTORY.md";
             }
         }
-        else if (page_view == 1) {
+        else if (pageview == 1) {
             if (window.confirm("Would you like to STAR and help improve ScrapydWeb?")) {
                 //var win = window.open(GITHUB_URL, '_blank');
                 //win.focus();
@@ -283,7 +283,8 @@ function handleDropdown() {
 
 function forceLoader(url) {
     showLoader();
-    setTimeout("window.location = '"+url+"'; hideLoader();", 1000);
+    // setTimeout("window.location = '"+url+"'; hideLoader();", 1000);
+    setTimeout("window.location = '"+url+"'; ", 1000);
 }
 
 
@@ -300,10 +301,4 @@ function goContentTop() {
 function goLogBottom() {
     //$('html, body').animate({scrollTop: $(document).height()}, 300);
     $('html, body, #content').animate({scrollTop: $('#log').height()}, 300);
-}
-
-
-function updateURL() {
-    var search = location.search.replace('?refresh_cache=True&', '?').replace('?refresh_cache=True', '').replace('&refresh_cache=True', '')
-    history.pushState(null, '', window.location.pathname + search);
 }

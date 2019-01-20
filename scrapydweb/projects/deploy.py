@@ -1,30 +1,30 @@
 # coding: utf8
-import os
-import sys
-import io
-import glob
-import time
-from datetime import datetime
-import re
-import tempfile
-import zipfile
-import tarfile
-from shutil import copyfile, rmtree, copyfileobj
-from subprocess import CalledProcessError
 try:
     from ConfigParser import Error as ScrapyCfgParseError  # PY2
 except ImportError:
     from configparser import Error as ScrapyCfgParseError  # PY3
+from datetime import datetime
+import glob
+import io
+import os
+import re
+from shutil import copyfile, copyfileobj, rmtree
+from subprocess import CalledProcessError
+import sys
+import tarfile
+import tempfile
+import time
+import zipfile
 
-from .scrapyd_deploy import _build_egg, get_config
-from flask import render_template, request, url_for, redirect
+from flask import redirect, render_template, request, url_for
 from werkzeug.utils import secure_filename
 
 from ..myview import MyView
-from .utils import slot, mkdir_p
-from ..vars import DEPLOY_PATH
+from .scrapyd_deploy import _build_egg, get_config
+from .utils import mkdir_p, slot
 
 
+PY2 = True if sys.version_info[0] < 3 else False
 SCRAPY_CFG = """
 [settings]
 default = projectname.settings
@@ -34,7 +34,6 @@ url = http://localhost:6800/
 project = projectname
 
 """
-PY2 = True if sys.version_info[0] < 3 else False
 folder_project_dict = {}
 
 
@@ -82,7 +81,7 @@ class DeployView(MyView):
         if timestamps:
             max_timestamp_index = timestamps.index(max(timestamps))
             self.latest_folder = self.folders[max_timestamp_index]
-            self.logger.info('latest_folder: %s' % self.latest_folder)
+            self.logger.info('latest_folder: %s', self.latest_folder)
 
     @staticmethod
     def get_modification_time(path):
@@ -109,7 +108,7 @@ class DeployView(MyView):
             project = folder_project_dict.get(key, '')
             if project:
                 self.projects.append(project)
-                self.logger.debug('hit %s %s' % (key, project))
+                self.logger.debug('Hit %s %s', key, project)
                 continue
             else:
                 project = folder
@@ -120,21 +119,21 @@ class DeployView(MyView):
                     # project = get_config(scrapy_cfg).get('deploy', 'project', fallback=folder) or folder
                     project = get_config(scrapy_cfg).get('deploy', 'project')
                 except ScrapyCfgParseError as err:
-                    self.logger.error("%s parse error: %s" % (scrapy_cfg, err))
+                    self.logger.error("%s parse error: %s", scrapy_cfg, err)
                 finally:
                     project = project or folder
                     self.projects.append(project)
                     folder_project_dict[key] = project
-                    self.logger.debug('add %s %s' % (key, project))
+                    self.logger.debug('Add %s %s', key, project)
 
         keys_all = list(folder_project_dict.keys())
         keys_exist = ['%s__%s' % (_folder, _modification_time)
                       for (_folder, _modification_time) in zip(self.folders, self.modification_times)]
         diff = set(keys_all).difference(set(keys_exist))
         for key in diff:
-            self.logger.debug('pop %s %s' % (key, folder_project_dict.pop(key)))
+            self.logger.debug('Pop %s %s', key, folder_project_dict.pop(key))
         self.logger.info(self.json_dumps(folder_project_dict))
-        self.logger.info('folder_project_dict length: %s' % len(folder_project_dict))
+        self.logger.info('folder_project_dict length: %s', len(folder_project_dict))
 
 
 class UploadView(MyView):
@@ -236,7 +235,7 @@ class UploadView(MyView):
         # {'1': 'on',
         # '2': 'on',
         # 'checked_amount': '2',
-        # 'folder': 'ScrapydWeb-demo',
+        # 'folder': 'ScrapydWeb_demo',
         # 'project': 'demo',
         # 'version': '2018-09-05T03_13_50'}
 
@@ -270,7 +269,7 @@ class UploadView(MyView):
             return
 
         self.eggname = '%s_%s.egg' % (self.project, self.version)
-        self.eggpath = os.path.join(DEPLOY_PATH, self.eggname)
+        self.eggpath = os.path.join(self.DEPLOY_PATH, self.eggname)
         self.build_egg()
 
     def handle_uploaded_file(self):
@@ -288,11 +287,11 @@ class UploadView(MyView):
 
         if filename.endswith('egg'):
             self.eggname = filename
-            self.eggpath = os.path.join(DEPLOY_PATH, self.eggname)
+            self.eggpath = os.path.join(self.DEPLOY_PATH, self.eggname)
             file.save(self.eggpath)
             self.scrapy_cfg_not_found = False
         else:  # Compressed file
-            filepath = os.path.join(DEPLOY_PATH, filename)
+            filepath = os.path.join(self.DEPLOY_PATH, filename)
             file.save(filepath)
             tmpdir = self.uncompress_to_tmpdir(filepath)
 
@@ -303,7 +302,7 @@ class UploadView(MyView):
                 return
 
             self.eggname = re.sub(r'(\.zip|\.tar\.gz)$', '.egg', filename)
-            self.eggpath = os.path.join(DEPLOY_PATH, self.eggname)
+            self.eggpath = os.path.join(self.DEPLOY_PATH, self.eggname)
             self.build_egg()
 
     # https://gangmax.me/blog/2011/09/17/12-14-52-publish-532/
@@ -313,7 +312,7 @@ class UploadView(MyView):
     # macOS + PY2 would raise OSError: Illegal byte sequence
     # Ubuntu + PY2 would raise UnicodeDecodeError in search_scrapy_cfg_path() though f.extractall(tmpdir) works well
     def uncompress_to_tmpdir(self, filepath):
-        self.logger.debug("Uncompress %s" % filepath)
+        self.logger.debug("Uncompressing %s", filepath)
         tmpdir = tempfile.mkdtemp(prefix="scrapydweb-uncompress-")
         if zipfile.is_zipfile(filepath):
             with zipfile.ZipFile(filepath, 'r') as f:
@@ -337,11 +336,10 @@ class UploadView(MyView):
                 else:
                     f.extractall(tmpdir)
         else:  # tar.gz
-            with tarfile.open(filepath, 'r') as f:  # Open for reading with transparent compression (recommended).
-                f.extractall(tmpdir)
-                f.close()
+            with tarfile.open(filepath, 'r') as tar:  # Open for reading with transparent compression (recommended).
+                tar.extractall(tmpdir)
 
-        self.logger.debug("Uncompress to %s" % tmpdir)
+        self.logger.debug("Uncompressed to %s", tmpdir)
         # In case uploading a compressed file in which scrapy_cfg_dir contains none ascii in python 2,
         # whereas selecting a project when auto eggifying, scrapy_cfg_dir is unicode
         # print(repr(tmpdir))
@@ -353,10 +351,10 @@ class UploadView(MyView):
             self.scrapy_cfg_searched_paths.append(os.path.abspath(dirpath))
             self.scrapy_cfg_path = os.path.abspath(os.path.join(dirpath, 'scrapy.cfg'))
             if os.path.exists(self.scrapy_cfg_path):
-                self.logger.debug("scrapy_cfg_path: %s" % self.scrapy_cfg_path)
+                self.logger.debug("scrapy_cfg_path: %s", self.scrapy_cfg_path)
                 return
 
-        self.logger.error("scrapy.cfg NOT found in: %s" % search_path)
+        self.logger.error("scrapy.cfg NOT found in: %s", search_path)
         self.scrapy_cfg_path = ''
 
     def build_egg(self):
@@ -375,7 +373,7 @@ class UploadView(MyView):
         copyfile(egg, os.path.join(scrapy_cfg_dir, self.eggname))
         copyfile(egg, self.eggpath)
         rmtree(tmpdir)
-        self.logger.debug("egg file saved to: %s" % self.eggpath)
+        self.logger.debug("Egg file saved to: %s", self.eggpath)
 
     def prepare_data(self):
         with io.open(self.eggpath, 'rb') as f:
@@ -406,7 +404,7 @@ class DeployXhrView(MyView):
         content = self.slot.egg.get(self.eggname)
         # content = None  # For test only
         if not content:
-            eggpath = os.path.join(DEPLOY_PATH, self.eggname)
+            eggpath = os.path.join(self.DEPLOY_PATH, self.eggname)
             with io.open(eggpath, 'rb') as f:
                 content = f.read()
 

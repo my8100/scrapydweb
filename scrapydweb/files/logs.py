@@ -4,7 +4,7 @@ import re
 from flask import render_template, url_for
 
 from ..myview import MyView
-from ..vars import DEFAULT_LATEST_VERSION, pattern_directory, keys_directory
+from ..vars import DIRECTORY_KEYS, DIRECTORY_PATTERN
 
 
 class LogsView(MyView):
@@ -23,7 +23,7 @@ class LogsView(MyView):
         self.text = ''
 
     def dispatch_request(self, **kwargs):
-        status_code, self.text = self.make_request(self.url, api=False, auth=self.AUTH)
+        status_code, self.text = self.make_request(self.url, auth=self.AUTH, api=False)
         if status_code != 200 or not re.search(r'Directory listing for /logs/', self.text):
             kwargs = dict(
                 node=self.node,
@@ -37,32 +37,33 @@ class LogsView(MyView):
         return self.generate_response()
 
     def generate_response(self):
-        rows = [dict(zip(keys_directory, row)) for row in pattern_directory.findall(self.text)]
-
+        rows = [dict(zip(DIRECTORY_KEYS, row)) for row in re.findall(DIRECTORY_PATTERN, self.text)]
         for row in rows:
-            if self.project and self.spider:
-                # <a href="098726cca42b11e8a8b514dda9e91c2f.log">098726cca42b11e8a8b514dda9e91c2f.log</a>
-                m = re.search(r'>(.*?)<', row['filename'])
-                filename = m.group(1)
+            # <a href="demo/">demo/</a>     dir
+            # <a href="test/">test/</a>     dir
+            # <a href="a.log">a.log</a>     file
+            m = re.search(r'>(.*?)<', row['filename'])
+            filename = m.group(1)
+            if filename.endswith('/'):
+                row['filename'] = re.sub(r'href=', 'class="link" href=', row['filename'])
+            else:
                 row['filename'] = u'<a class="link" target="_blank" href="{}">{}</a>'.format(
                                    self.url + filename, filename)
-
-                row['url_log_utf8'] = url_for('log', node=self.node, opt='utf8',
-                                              project=self.project, spider=self.spider,
-                                              job=filename, with_ext='True')
+            if self.project and self.spider:
                 row['url_log_stats'] = url_for('log', node=self.node, opt='stats',
                                                project=self.project, spider=self.spider,
                                                job=filename, with_ext='True')
-
+                if filename.endswith('.json'):  # stats by LogParser
+                    row['url_log_utf8'] = ''
+                else:
+                    row['url_log_utf8'] = url_for('log', node=self.node, opt='utf8',
+                                                  project=self.project, spider=self.spider,
+                                                  job=filename, with_ext='True')
                 row['url_start'] = url_for('schedule.schedule', node=self.node, project=self.project,
-                                           version=DEFAULT_LATEST_VERSION, spider=self.spider)
+                                           version=self.DEFAULT_LATEST_VERSION, spider=self.spider)
                 row['url_multinode_start'] = url_for('overview', node=self.node,
                                                      opt='schedule', project=self.project,
-                                                     version_job=DEFAULT_LATEST_VERSION, spider=self.spider)
-            else:
-                # <a href="proxy/">proxy/</a>
-                row['filename'] = re.sub(r'href=', 'class="link" href=', row['filename'])
-
+                                                     version_job=self.DEFAULT_LATEST_VERSION, spider=self.spider)
         kwargs = dict(
             node=self.node,
             project=self.project,

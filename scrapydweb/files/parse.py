@@ -2,14 +2,13 @@
 import io
 import os
 import re
-import time
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for, send_from_directory
+from flask import Blueprint, flash, redirect, render_template, request, send_from_directory, url_for
+from logparser import parse
 from werkzeug.utils import secure_filename
 
 from ..myview import MyView
-from ..vars import PARSE_PATH, WARN
-from .utils import parse_log
+from ..vars import PARSE_PATH
 
 
 ALLOWED_EXTENSIONS = {'log', 'txt'}
@@ -32,26 +31,26 @@ class UploadLogView(MyView):
         if self.POST:
             file = request.files.get('file')
             if not file:
-                flash('No file selected', WARN)
+                flash('No file selected', self.WARN)
                 return redirect(request.url)
 
             if file.filename == '':
-                flash('Filename not found', WARN)
+                flash('Filename not found', self.WARN)
                 return redirect(request.url)
 
             if file.filename.rpartition('.')[-1] not in ALLOWED_EXTENSIONS:
-                flash('Only file type of %s is supported' % ALLOWED_EXTENSIONS, WARN)
+                flash('Only file type of %s is supported' % ALLOWED_EXTENSIONS, self.WARN)
                 return redirect(request.url)
 
             # Non-ASCII would be omitted and may set the filename as 'log' or 'txt'
             filename = secure_filename(file.filename)
             if filename in ALLOWED_EXTENSIONS:
                 filename = '%s.%s' % (self.get_now_string(), filename)
-            file.save(os.path.join(PARSE_PATH, filename))
+            file.save(os.path.join(self.PARSE_PATH, filename))
 
             return redirect(url_for('.uploaded', node=self.node, filename=filename))
         else:
-            url_parse_demo = url_for('.uploaded', node=self.node, filename='demo.txt')
+            url_parse_demo = url_for('.uploaded', node=self.node, filename='ScrapydWeb_demo.log')
             return render_template(self.template, node=self.node, url_parse_demo=url_parse_demo)
 
 
@@ -71,11 +70,11 @@ class UploadedLogView(MyView):
     def dispatch_request(self, **kwargs):
         try:
             # Use io.open for compatibility with Python 2
-            with io.open(os.path.join(PARSE_PATH, self.filename), encoding='utf8', errors='ignore') as f:
+            with io.open(os.path.join(self.PARSE_PATH, self.filename), encoding='utf-8', errors='ignore') as f:
                 self.text = f.read()
         except Exception as err:
             return render_template(self.template_fail, node=self.node,
-                                   alert="An error occurred when reading the uploaded log file",
+                                   alert="An error occurred when reading the uploaded logfile",
                                    text='%s\n%s' % (err.__class__.__name__, err))
 
         self.get_job_info()
@@ -85,23 +84,20 @@ class UploadedLogView(MyView):
             spider=self.spider,
             job=self.job,
             url_source=url_for('.source', filename=self.filename),
-            # url_utf8=url_utf8, # To hide url_utf8 link in page http://127.0.0.1:5000/log/uploaded/demo.txt
-            LAST_LOG_ALERT_SECONDS=self.LAST_LOG_ALERT_SECONDS
+            # url_utf8=url_utf8, # To hide url_utf8 link in page http://127.0.0.1:5000/log/uploaded/ScrapydWeb_demo.log
         )
-
-        parse_log(self.text, kwargs)
-        kwargs['last_refresh_timestamp'] = time.time()
-
+        kwargs.update(parse(self.text))
+        # self.logger.debug("Parsed result: %s" % self.json_dumps(kwargs))
         return render_template(self.template, node=self.node, **kwargs)
 
     def get_job_info(self):
         # 2018-08-21 12:21:45 [scrapy.utils.log] INFO: Scrapy 1.5.0 started (bot: proxy)
         m_project = re.search(r'\(bot:\s(.+?)\)', self.text)
-        self.project = m_project.group(1) if m_project else ''
+        self.project = m_project.group(1) if m_project else self.NA
 
         # 2018-08-21 12:21:45 [test] DEBUG: from_crawler
         m_spider = re.search(r'\[([^.]+?)\]\s+(?:DEBUG|INFO|WARNING|ERROR|CRITICAL)', self.text)
-        self.spider = m_spider.group(1) if m_spider else ''
+        self.spider = m_spider.group(1) if m_spider else self.NA
 
         # 'LOG_FILE': 'logs\\proxy\\test\\b2095ab0a4f911e8b98614dda9e91c2f.log',
         m_job = re.search(r'LOG_FILE.*?([\w-]+)\.(?:log|txt)', self.text)

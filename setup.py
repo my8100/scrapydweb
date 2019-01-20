@@ -1,6 +1,6 @@
 # coding: utf8
-import os
 import io
+import os
 import re
 
 from setuptools import find_packages, setup
@@ -12,7 +12,7 @@ about = {}
 with open(os.path.join(CWD, 'scrapydweb', '__version__.py')) as f:
     exec(f.read(), about)
 
-with io.open("README.md", 'r', encoding='utf8') as f:
+with io.open("README.md", 'r', encoding='utf-8') as f:
     long_description = re.sub(r':\w+:\s', '', f.read())  # Remove emojis
 
 
@@ -35,14 +35,15 @@ setup(
     install_requires=[
         "flask >= 1.0.2",
         "flask-compress >= 1.4.0",
+        "logparser",
         "requests",
-        "setuptools",
+        "setuptools"
     ],
 
     entry_points={
         "console_scripts": {
             "scrapydweb = scrapydweb.run:main"
-        },
+        }
     },
 
     classifiers=[
@@ -50,5 +51,5 @@ setup(
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7"
-    ],
+    ]
 )

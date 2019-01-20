@@ -1,3 +1,9 @@
+table .blue {color: #409EFF;}
+table .green {color: #67c23a;}
+table .orange {color: orange;}
+table .red {color: red;}
+table .blue, .green, .orange, .red {font-size: 20px;}
+
 #content pre {
     white-space: pre-wrap;
     /* word-wrap: break-word; */

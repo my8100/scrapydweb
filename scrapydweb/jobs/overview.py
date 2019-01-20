@@ -1,14 +1,12 @@
 # coding: utf8
-from flask import render_template, flash, url_for
+from flask import flash, render_template, url_for
 
 from ..myview import MyView
-from ..vars import CHECK_UPDATE, INFO, WARN
-
-
-page_view = 0 if CHECK_UPDATE else 1
+from ..vars import pageview_dict
 
 
 class OverviewView(MyView):
+    pageview_dict = pageview_dict
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -23,16 +21,16 @@ class OverviewView(MyView):
         self.selected_nodes = []
 
     def dispatch_request(self, **kwargs):
-        global page_view
-        page_view += 1
+        self.pageview_dict['overview'] += 1
+        self.logger.debug('pageview_dict: %s', self.pageview_dict)
 
         if self.SCRAPYD_SERVERS_AMOUNT > 1:
             if not self.ENABLE_AUTH:
-                flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", INFO)
-            if not self.ENABLE_CACHE:
-                flash("Set 'ENABLE_CACHE = True' to enable caching HTML for Log and Stats page", WARN)
+                flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", self.INFO)
+            if not self.ENABLE_LOGPARSER:
+                flash("Set 'ENABLE_LOGPARSER  = True' to run LogParser as a subprocess at startup", self.WARN)
             if not self.ENABLE_EMAIL:
-                flash("Set 'ENABLE_EMAIL = True' to enable email notice", INFO)
+                flash("Set 'ENABLE_EMAIL = True' to enable email notice", self.INFO)
 
         if self.POST:
             self.selected_nodes = self.get_selected_nodes()
@@ -51,9 +49,12 @@ class OverviewView(MyView):
             url=self.url,
             selected_nodes=self.selected_nodes,
             IS_IE_EDGE=self.IS_IE_EDGE,
-            page_view=page_view,
+            pageview=self.pageview_dict['overview'],
             FEATURES=self.FEATURES,
+            DEFAULT_LATEST_VERSION=self.DEFAULT_LATEST_VERSION,
             url_daemonstatus=url_for('api', node=self.node, opt='daemonstatus'),
+            url_liststats=url_for('api', node=self.node, opt='liststats', project='PROJECT_PLACEHOLDER',
+                                  version_spider_job='JOB_PLACEHOLDER'),
             url_listprojects=url_for('api', node=self.node, opt='listprojects'),
             url_listversions=url_for('api', node=self.node, opt='listversions', project='PROJECT_PLACEHOLDER'),
             url_listspiders=url_for('api', node=self.node, opt='listspiders', project='PROJECT_PLACEHOLDER',

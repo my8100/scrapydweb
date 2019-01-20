@@ -1,8 +1,7 @@
 # coding: utf8
 from flask import url_for
 
-from tests.utils import PROJECT, SPIDER, OK
-from tests.utils import req, sleep, upload_file_deploy
+from tests.utils import cst, req, sleep, upload_file_deploy
 
 
 jobid = ''
@@ -21,10 +20,11 @@ def test_dashboard(app, client):
 
 def test_api_start(app, client):
     global jobid
-    upload_file_deploy(app, client, filename='demo.egg', project=PROJECT, redirect_project=PROJECT)
+    upload_file_deploy(app, client, filename='demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
 
-    __, js = req(app, client, view='api', kws=dict(node=1, opt='start', project=PROJECT, version_spider_job=SPIDER),
-                 jskws=dict(status=OK), jskeys='jobid')
+    __, js = req(app, client, view='api',
+                 kws=dict(node=1, opt='start', project=cst.PROJECT, version_spider_job=cst.SPIDER),
+                 jskws=dict(status=cst.OK), jskeys='jobid')
     jobid = js['jobid']
 
 
@@ -32,21 +32,23 @@ def test_api_start(app, client):
 # 'status_code': 200, 'url': 'http://127.0.0.1:6800/cancel.json'}
 def test_api_stop(app, client):
     sleep()
-    req(app, client, view='api', kws=dict(node=1, opt='stop', project=PROJECT, version_spider_job=jobid),
-        jskws=dict(status=OK, prevstate='running'), nos='times')
+    req(app, client, view='api', kws=dict(node=1, opt='stop', project=cst.PROJECT, version_spider_job=jobid),
+        jskws=dict(status=cst.OK, prevstate='running'), nos='times')
 
 
 def test_api_forcestop(app, client):
     sleep(5)
-    req(app, client, view='api', kws=dict(node=1, opt='forcestop', project=PROJECT, version_spider_job=jobid),
-        jskws=dict(status=OK, prevstate=None, times=2))
+    req(app, client, view='api', kws=dict(node=1, opt='forcestop', project=cst.PROJECT, version_spider_job=jobid),
+        jskws=dict(status=cst.OK, prevstate=None, times=2))
 
 
 def test_log_utf8(app, client):
-    req(app, client, view='log', kws=dict(node=1, opt='utf8', project=PROJECT, spider=SPIDER, job=jobid, ui='mobile'),
-        ins='PROJECT (%s)' % PROJECT, mobileui=True)
+    req(app, client, view='log',
+        kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=jobid, ui='mobile'),
+        ins='PROJECT (%s)' % cst.PROJECT, mobileui=True)
 
 
 def test_log_stats(app, client):
-    req(app, client, view='log', kws=dict(node=1, opt='stats', project=PROJECT, spider=SPIDER, job=jobid, ui='mobile'),
+    req(app, client, view='log',
+        kws=dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=jobid, ui='mobile'),
         ins='current_time', mobileui=True)

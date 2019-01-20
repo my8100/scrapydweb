@@ -25,6 +25,8 @@ nav>.switch-node>a {font-size: 30px;}
 nav>.switch-node>a:hover {color: #409EFF;}
 nav>.switch-node span {font-size: 18px;}
 
+.forbid {cursor: not-allowed;}
+
 pre {
     white-space: pre-wrap;
     background-color: #e3e3e3;

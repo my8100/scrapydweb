@@ -1,17 +1,18 @@
 # coding: utf8
-import re
-import traceback
-import platform
 import logging
 from logging.config import dictConfig
+import platform
+import re
+import sys
+import traceback
 
-from flask import Flask, render_template
-from flask import current_app, url_for
+from flask import Flask, current_app, render_template, url_for
 from flask_compress import Compress
 
-from .__version__ import __version__, __url__
-from .vars import PYTHON_VERSION, DEFAULT_LATEST_VERSION
+from .__version__ import __url__, __version__
 
+
+PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
 
 # http://flask.pocoo.org/docs/1.0/logging/#basic-configuration
 dictConfig({
@@ -189,13 +190,12 @@ def handle_template_context(app):
     STATIC = 'static'
     VERSION = 'v' + __version__.replace('.', '')
     # MUST be commented out for released version
-    # VERSION = 'v100'
+    # VERSION = 'v110'
 
     @app.context_processor
     def inject_variable():
         return dict(
             CHECK_LATEST_VERSION_FREQ=100,
-            DEFAULT_LATEST_VERSION=DEFAULT_LATEST_VERSION,
             GITHUB_URL=__url__,
             PYTHON_VERSION=PYTHON_VERSION,
             SCRAPYDWEB_VERSION=__version__,

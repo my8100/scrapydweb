@@ -1,8 +1,7 @@
 # coding: utf8
 from flask import url_for
 
-from tests.utils import PROJECT, VERSION, SPIDER, JOBID, OK, DEFAULT_LATEST_VERSION
-from tests.utils import req_single_scrapyd, upload_file_deploy, sleep
+from tests.utils import cst, req_single_scrapyd, sleep, upload_file_deploy
 
 
 # http://flask.pocoo.org/docs/1.0/tutorial/tests/#id11
@@ -11,18 +10,18 @@ from tests.utils import req_single_scrapyd, upload_file_deploy, sleep
 
 
 # START button of Dashboard page / Run Spider button of Logs page
-# this.form.selectedProject = 'ScrapydWeb-demo';
+# this.form.selectedProject = 'ScrapydWeb_demo';
 # this.form.selectedVersion = 'default: the latest version';
 # this.loadSpiders();
 # this.form.selectedSpider = 'test';
 def test_schedule_with_url_project(app, client):
     ins = [
-        "selectedProject = '%s'" % PROJECT,
+        "selectedProject = '%s'" % cst.PROJECT,
         "selectedVersion = 'default: the latest version'",
         "this.loadSpiders();",
-        "selectedSpider = '%s'" % SPIDER
+        "selectedSpider = '%s'" % cst.SPIDER
     ]
-    kws = dict(node=1, project=PROJECT, version=DEFAULT_LATEST_VERSION, spider=SPIDER)
+    kws = dict(node=1, project=cst.PROJECT, version=cst.DEFAULT_LATEST_VERSION, spider=cst.SPIDER)
     req_single_scrapyd(app, client, view='schedule.schedule', kws=kws, ins=ins)
 
 
@@ -40,16 +39,16 @@ def test_schedule_with_url_project(app, client):
 # }
 
 # {
-# "project": "ScrapydWeb-demo",
+# "project": "ScrapydWeb_demo",
 # "_version": "default: the latest version",
 # "spider": "test"
 # }
 def test_check(app, client):
     data = {
-        'project': PROJECT,
-        '_version': VERSION,
-        'spider': SPIDER,
-        'jobid': JOBID,
+        'project': cst.PROJECT,
+        '_version': cst.VERSION,
+        'spider': cst.SPIDER,
+        'jobid': cst.JOBID,
         'USER_AGENT': 'chrome',
         'COOKIES_ENABLED': 'False',
         'ROBOTSTXT_OBEY': 'False',
@@ -59,15 +58,15 @@ def test_check(app, client):
     }
 
     data_ = {
-        'project': PROJECT,
-        '_version': DEFAULT_LATEST_VERSION,
-        'spider': SPIDER,
+        'project': cst.PROJECT,
+        '_version': cst.DEFAULT_LATEST_VERSION,
+        'spider': cst.SPIDER,
         'additional': '-d setting=CLOSESPIDER_TIMEOUT=60 -d arg1'
     }
     req_single_scrapyd(app, client, view='schedule.check', kws=dict(node=1), data=data,
-                       jskws=dict(filename='%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)))
+                       jskws=dict(filename='%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)))
     req_single_scrapyd(app, client, view='schedule.check', kws=dict(node=1), data=data_,
-                       jskws=dict(filename='%s_%s_%s.pickle' % (PROJECT, 'default-the-latest-version', SPIDER)))
+                       jskws=dict(filename='%s_%s_%s.pickle' % (cst.PROJECT, 'default-the-latest-version', cst.SPIDER)))
 
 
 # {
@@ -79,18 +78,18 @@ def test_check(app, client):
 # <h1>Redirecting...</h1>\n<p>You should be redirected automatically to target URL:
 # <a href="/1/dashboard/">/1/dashboard/</a>.  If not click the link.
 def test_run(app, client):
-    # ScrapydWeb-demo.egg: custom_settings = {}, also log settings & arguments
-    upload_file_deploy(app, client, filename='ScrapydWeb-demo.egg', project=PROJECT, redirect_project=PROJECT)
+    # ScrapydWeb_demo.egg: custom_settings = {}, also log settings & arguments
+    upload_file_deploy(app, client, filename='ScrapydWeb_demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     with app.test_request_context():
         req_single_scrapyd(app, client, view='schedule.run', kws=dict(node=1),
-                           data=dict(filename='%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)),
+                           data=dict(filename='%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)),
                            location=url_for('dashboard', node=1))
 
     sleep()
 
     ins = [
-        'JOB: %s' % JOBID,
+        'JOB: %s' % cst.JOBID,
         'USER_AGENT: Mozilla/5.0',
         'COOKIES_ENABLED: False',
         'ROBOTSTXT_OBEY: False',
@@ -101,26 +100,25 @@ def test_run(app, client):
         'self.arg1: val1'
     ]
     req_single_scrapyd(app, client, view='log',
-                       kws=dict(node=1, opt='utf8', project=PROJECT, spider=SPIDER, job=JOBID),
+                       kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=cst.JOBID),
                        ins=ins)
     req_single_scrapyd(app, client, view='api',
-                       kws=dict(node=1, opt='forcestop', project=PROJECT, version_spider_job=JOBID))
+                       kws=dict(node=1, opt='forcestop', project=cst.PROJECT, version_spider_job=cst.JOBID))
 
 
 def test_run_fail(app, client):
     req_single_scrapyd(app, client, view='schedule.run', kws=dict(node=1),
-                       data={'filename': '%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)},
+                       data={'filename': '%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)},
                        ins='Fail to schedule', set_to_second=True)
 
 
 def test_schedule_xhr(app, client):
     req_single_scrapyd(app, client, view='schedule.schedule_xhr',
-                       kws=dict(node=1, filename='%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)),
-                       jskws=dict(status=OK, jobid=JOBID))
+                       kws=dict(node=1, filename='%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)),
+                       jskws=dict(status=cst.OK, jobid=cst.JOBID))
     req_single_scrapyd(app, client, view='api',
-                       kws=dict(node=1, opt='forcestop', project=PROJECT, version_spider_job=JOBID))
+                       kws=dict(node=1, opt='forcestop', project=cst.PROJECT, version_spider_job=cst.JOBID))
 
 
 def test_history_log(app, client):
-    req_single_scrapyd(app, client, view='schedule.history', kws=dict(filename='history.log'),
-                       ins='history.log')
+    req_single_scrapyd(app, client, view='schedule.history', kws=dict(filename='history.log'), ins='history.log')

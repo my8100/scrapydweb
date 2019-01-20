@@ -10,7 +10,7 @@
     <script type="text/javascript" src="{{ static_js_icons_menu }}"></script>
     <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
 
-    {% if IS_MOBILE or g.IS_MOBILE %}
+    {% if g.IS_MOBILE %}
     <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown_mobileui }}">
     {% else %}
     <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown }}">
@@ -33,7 +33,7 @@
 <body>
 <nav>
     <div class="dropdown">
-        {% if IS_MOBILE or g.IS_MOBILE %}
+        {% if g.IS_MOBILE %}
         <a class="dropbtn" onclick="handleDropdown();">
         {% else %}
         <a class="dropbtn">
@@ -52,7 +52,7 @@
                 {% endif %}
 
                 <a {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}
-                href="javascript:;" onclick="forceLoader('{{ url_dashboard_list[loop.index-1] if url_dashboard_list else g.url_dashboard_list[loop.index-1] }}');">
+                href="javascript:;" onclick="forceLoader('{{ g.url_dashboard_list[loop.index-1] }}');">
                 {{ SCRAPYD_SERVER }}
                 </a>
             {% endfor %}
@@ -86,6 +86,7 @@
 
 {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
 <script>
+var loading = false;
 var node = {{ node }};
 var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
 

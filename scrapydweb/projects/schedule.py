@@ -1,16 +1,29 @@
 # coding: utf8
-import os
-import io
-import time
-import re
 from collections import OrderedDict
+import io
+import os
 import pickle
+import re
 
-from flask import Blueprint, render_template, request, url_for, send_from_directory, redirect
+from flask import Blueprint, redirect, render_template, request, send_from_directory, url_for
 
 from ..myview import MyView
+from ..vars import SCHEDULE_PATH
 from .utils import slot
-from ..vars import SCHEDULE_PATH, HISTORY_LOG, DEFAULT_LATEST_VERSION, UA_DICT
+
+
+HISTORY_LOG = os.path.join(SCHEDULE_PATH, 'history.log')
+
+UA_DICT = {
+    'chrome': ("Mozilla/5.0 (Windows NT 6.1; Win64; x64) "
+               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36"),
+    'iOS': ("Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) "
+            "AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1"),
+    'iPad': ("Mozilla/5.0 (iPad; CPU OS 9_1 like Mac OS X) "
+             "AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13B143 Safari/601.1"),
+    'Android': ("Mozilla/5.0 (Linux; Android 5.1.1; Nexus 6 Build/LYZ28E) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Mobile Safari/537.36")
+}
 
 
 def generate_cmd(auth, url, data):
@@ -34,11 +47,12 @@ def generate_cmd(auth, url, data):
 
 def new_history_log():
     if not os.path.exists(HISTORY_LOG):
-        with io.open(HISTORY_LOG, 'w', encoding='utf8') as f:
+        with io.open(HISTORY_LOG, 'w', encoding='utf-8') as f:
             f.write('#' * 50 + u'\nhistory.log')
 
 
 new_history_log()
+
 
 bp = Blueprint('schedule', __name__, url_prefix='/')
 
@@ -119,10 +133,10 @@ class CheckView(MyView):
         return self.json_dumps({'filename': self.filename, 'cmd': cmd})
 
     def prepare_data(self):
-        for k, d in [('project', 'projectname'), ('_version', DEFAULT_LATEST_VERSION),
+        for k, d in [('project', 'projectname'), ('_version', self.DEFAULT_LATEST_VERSION),
                      ('spider', 'spidername')]:
             self.data[k] = request.form.get(k, d)
-        if self.data['_version'] == DEFAULT_LATEST_VERSION:
+        if self.data['_version'] == self.DEFAULT_LATEST_VERSION:
             self.data.pop('_version')
 
         self.data['jobid'] = re.sub(r'[^0-9A-Za-z_-]', '', request.form.get('jobid', '')) or self.get_now_string()
@@ -158,7 +172,7 @@ class CheckView(MyView):
                                                           version=_version,
                                                           spider=self.data['spider'])
         self.filename = '%s.pickle' % re.sub(r'[^0-9A-Za-z_-]', '', _filename)
-        filepath = os.path.join(SCHEDULE_PATH, self.filename)
+        filepath = os.path.join(self.SCHEDULE_PATH, self.filename)
         with io.open(filepath, 'wb') as f:
             f.write(pickle.dumps(self.data))
 
@@ -203,18 +217,18 @@ class RunView(MyView):
         self.data = self.slot.data.get(self.filename)
         # self.data = None  # For test only
         if not self.data:
-            filepath = os.path.join(SCHEDULE_PATH, self.filename)
+            filepath = os.path.join(self.SCHEDULE_PATH, self.filename)
             with io.open(filepath, 'rb') as f:
                 self.data = pickle.loads(f.read())
 
     def update_history(self):
         new_history_log()
-        with io.open(HISTORY_LOG, 'r+', encoding='utf8') as f:
+        with io.open(HISTORY_LOG, 'r+', encoding='utf-8') as f:
             content_backup = f.read()
             f.seek(0)
             content = os.linesep.join([
                 '#' * 50,
-                time.ctime(),
+                self.get_now_string(True),
                 str([self.SCRAPYD_SERVERS[i - 1] for i in self.selected_nodes]),
                 generate_cmd(self.AUTH, self.url, self.data),
                 self.json_dumps(self.js),
@@ -231,14 +245,14 @@ class RunView(MyView):
             kwargs = dict(
                 node=self.node,
                 project=self.data['project'],
-                version=self.data.get('_version', DEFAULT_LATEST_VERSION),
+                version=self.data.get('_version', self.DEFAULT_LATEST_VERSION),
                 spider=self.data['spider'],
                 selected_nodes=self.selected_nodes,
                 first_selected_node=self.first_selected_node,
                 js=self.js,
                 url_dashboard_first_selected_node=url_for('dashboard', node=self.first_selected_node),
                 url_xhr=url_for('schedule.schedule_xhr', node=self.node, filename=self.filename),
-                url_overview=url_for('overview', node=self.node, opt='stop', project=self.data['project'],
+                url_overview=url_for('overview', node=self.node, opt='liststats', project=self.data['project'],
                                      version_job=self.js['jobid'])
             )
             return render_template(self.template, **kwargs)
@@ -273,7 +287,7 @@ class ScheduleXhrView(MyView):
         self.data = self.slot.data.get(self.filename)
         # self.data = None  # For test only
         if not self.data:
-            filepath = os.path.join(SCHEDULE_PATH, self.filename)
+            filepath = os.path.join(self.SCHEDULE_PATH, self.filename)
             with io.open(filepath, 'rb') as f:
                 self.data = pickle.loads(f.read())
 

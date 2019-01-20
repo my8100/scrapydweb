@@ -27,13 +27,21 @@ class ManageView(MyView):
         # _bind = '127.0.0.1' if self.SCRAPYDWEB_BIND == '0.0.0.0' else self.SCRAPYDWEB_BIND
         # _url = 'http://{}:{}{}'.format(_bind, self.SCRAPYDWEB_PORT, _url)
         # _auth = (self.USERNAME, self.PASSWORD) if self.ENABLE_AUTH else None
-        # status_code, self.text = self.make_request(_url, api=False, auth=_auth)
+        # status_code, self.text = self.make_request(_url, auth=_auth, api=False)
         self.js = json.loads(self.text)
 
         if self.js['status'] == 'ok':
             return getattr(self, self.opt)()
         else:
             return self.handle_status_error()
+
+    @staticmethod
+    def delproject():
+        return '<em class="pass">project deleted</em>'
+
+    @staticmethod
+    def delversion():
+        return '<em class="pass">version deleted</em>'
 
     def handle_status_error(self):
         if self.opt == 'listversions':
@@ -75,6 +83,18 @@ class ManageView(MyView):
         )
         return render_template('scrapydweb/manage.html', **kwargs)
 
+    def listspiders(self):
+        spiders = self.js['spiders']
+        results = []
+        for spider in spiders:
+            url_schedule = url_for('schedule.schedule', node=self.node,
+                                   project=self.project, version=self.version_spider_job, spider=spider)
+            url_multinode_schedule = url_for('overview', node=self.node, opt='schedule',
+                                             project=self.project, version_job=self.version_spider_job, spider=spider)
+            results.append((spider, url_schedule, url_multinode_schedule))
+
+        return render_template('scrapydweb/listspiders.html', node=self.node, results=results)
+
     def listversions(self):
         results = []
         for version in self.js['versions']:
@@ -99,23 +119,3 @@ class ManageView(MyView):
             url_delproject=url_for('manage', node=self.node, opt='delproject', project=self.project)
         )
         return render_template('scrapydweb/listversions.html', **kwargs)
-
-    def listspiders(self):
-        spiders = self.js['spiders']
-        results = []
-        for spider in spiders:
-            url_schedule = url_for('schedule.schedule', node=self.node,
-                                   project=self.project, version=self.version_spider_job, spider=spider)
-            url_multinode_schedule = url_for('overview', node=self.node, opt='schedule',
-                                             project=self.project, version_job=self.version_spider_job, spider=spider)
-            results.append((spider, url_schedule, url_multinode_schedule))
-
-        return render_template('scrapydweb/listspiders.html', node=self.node, results=results)
-
-    @staticmethod
-    def delversion():
-        return '<em class="pass">version deleted</em>'
-
-    @staticmethod
-    def delproject():
-        return '<em class="pass">project deleted</em>'

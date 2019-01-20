@@ -21,7 +21,7 @@ GitHub: https://github.com/my8100/scrapydweb
 
 
 ############################## ScrapydWeb #####################################
-# Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-CURRENT-HOST would make
+# Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-THE-CURRENT-HOST would make
 # ScrapydWeb server visible externally, otherwise, set it to '127.0.0.1'.
 # The default is '0.0.0.0'.
 SCRAPYDWEB_BIND = '0.0.0.0'
@@ -34,11 +34,21 @@ ENABLE_AUTH = False
 USERNAME = ''
 PASSWORD = ''
 
+# The default is False, set it to True and add both CERTIFICATE_FILEPATH and PRIVATEKEY_FILEPATH
+# to run ScrapydWeb in HTTPS mode.
+# Note that this feature is not fully tested, please leave your comment here if ScrapydWeb
+# raises any excepion at startup: https://github.com/my8100/scrapydweb/issues/18
+ENABLE_HTTPS = False
+# e.g. '/home/username/cert.pem'
+CERTIFICATE_FILEPATH = ''
+# e.g. '/home/username/cert.key'
+PRIVATEKEY_FILEPATH = ''
+
 
 ############################## Scrapy #########################################
 # ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
 # so that you can simply select a project to deploy, instead of eggifying it in advance.
-# e.g., 'C:/Users/username/myprojects/' or '/home/username/myprojects/'
+# e.g. 'C:/Users/username/myprojects/' or '/home/username/myprojects/'
 SCRAPY_PROJECTS_DIR = ''
 
 
@@ -56,29 +66,39 @@ SCRAPY_PROJECTS_DIR = ''
 # - the string format: username:password@ip:port#group
 #   - The default port would be 6800 if not provided,
 #   - Both basic auth and group are optional.
-#   - e.g., '127.0.0.1' or 'username:password@192.168.123.123:6801#group'
+#   - e.g. '127.0.0.1:6800' or 'username:password@localhost:6801#group'
 # - the tuple format: (username, password, ip, port, group)
-#   - When the username, password, or group is too complicated (e.g., contains ':@#'),
+#   - When the username, password, or group is too complicated (e.g. contains ':@#'),
 #   - or if ScrapydWeb fails to parse the string format passed in,
 #   - it's recommended to pass in a tuple of 5 elements.
-#   - e.g., ('', '', '127.0.0.1', '', '') or ('username', 'password', '192.168.123.123', '6801', 'group')
+#   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
 SCRAPYD_SERVERS = [
     '127.0.0.1:6800',
     # 'username:password@localhost:6801#group',
     ('username', 'password', 'localhost', '6801', 'group'),
 ]
 
-# If the IP part of a Scrapyd server is added as '127.0.0.1' in the SCRAPYD_SERVERS above,
+# If the IP part of a Scrapyd server is added as '127.0.0.1' or 'localhost' in the SCRAPYD_SERVERS above,
 # ScrapydWeb would try to read Scrapy logs directly from disk, instead of making a request
 # to the Scrapyd server.
 # Check out this link to find out where the Scrapy logs are stored:
 # https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir
-# e.g., 'C:/Users/username/logs/' or '/home/username/logs/'
+# e.g. 'C:/Users/username/logs/' or '/home/username/logs/'
 SCRAPYD_LOGS_DIR = ''
 
 # ScrapydWeb would try every extension in sequence to locate the Scrapy log.
 # The default is ['.log', '.log.gz', '.txt'].
 SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt']
+
+
+############################## LogParser ######################################
+# By default ScrapydWeb would automatically run LogParser as a subprocess at startup,
+# so that the stats of crawled_pages and scraped_items can be shown in the Dashboard page.
+# The default is True, set it to False to disable this behaviour.
+# Note that you can run the LogParser service separately via command 'logparser' as you like.
+# Run 'logparser -h' to find out the config file of LogParser for more advanced settings.
+# Visit https://github.com/my8100/logparser for more info.
+ENABLE_LOGPARSER = True
 
 
 ############################## Page Display ###################################
@@ -88,6 +108,10 @@ SHOW_SCRAPYD_ITEMS = True
 
 # The default is False, set it to True to show the Job column in the Dashboard page.
 SHOW_DASHBOARD_JOB_COLUMN = False
+
+# The default is 0, which means unlimited, set it to a positive integer so that
+# only the latest N finished jobs would be shown in the Dashboard page.
+DASHBOARD_FINISHED_JOBS_LIMIT = 0
 
 # If you stay on the Dashboard page, it would be reloaded automatically every N seconds.
 # The default is 300, set it to 0 to disable auto-reloading.
@@ -99,28 +123,9 @@ DASHBOARD_RELOAD_INTERVAL = 300
 DAEMONSTATUS_REFRESH_INTERVAL = 10
 
 
-############################## HTML Caching ###################################
-# By default ScrapydWeb would periodically cache HTML for the Log and Stats page in the background.
-# The default is True, set it to False to disable auto-caching.
-ENABLE_CACHE = True
-
-# Sleep N seconds before starting next round of HTML caching, the default is 300.
-CACHE_ROUND_INTERVAL = 300
-
-# Sleep N seconds between each request to the Scrapyd server while caching HTML, the default is 10.
-CACHE_REQUEST_INTERVAL = 10
-
-# The default is False, set it to True to delete all the cached HTML files on startup.
-DELETE_CACHE = False
-
-
 ############################## Email Notice ###################################
-# Keep in mind that "Email Notice" depends on "HTML Caching" to collect statistics,
-# so you have to enable "HTML Caching" by setting "ENABLE_CACHE = True" (check out the
-# "HTML Caching" section above) before setting "ENABLE_EMAIL = True".
-
 # In order to be notified (and stop or forcestop a job when triggered) in time,
-# you can reduce the value of CACHE_ROUND_INTERVAL and CACHE_REQUEST_INTERVAL,
+# you can reduce the value of POLL_ROUND_INTERVAL and POLL_REQUEST_INTERVAL,
 # at the cost of burdening both CPU and bandwidth of your servers.
 
 # Tip: set SCRAPYDWEB_BIND to the actual IP of your host, then you can visit ScrapydWeb
@@ -161,18 +166,18 @@ SMTP_OVER_SSL = False
 SMTP_CONNECTION_TIMEOUT = 10
 
 ########## sender & recipients ##########
-# e.g., 'username@gmail.com'
+# e.g. 'username@gmail.com'
 FROM_ADDR = ''
 
 # As for different email service provider, you might have to get an APP password (like Gmail)
 # or an authorization code (like QQ mail) and set it as the EMAIL_PASSWORD.
-# Check out below links to get more help:
+# Check out links below to get more help:
 # https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as the provider using Python?
 # https://stackoverflow.com/a/26053352/10517783 Python smtplib proxy support
-# e.g., 'password4gmail'
+# e.g. 'password4gmail'
 EMAIL_PASSWORD = ''
 
-# e.g., ['username@gmail.com', ]
+# e.g. ['username@gmail.com', ]
 TO_ADDRS = []
 
 ########## email working time ##########
@@ -181,8 +186,15 @@ TO_ADDRS = []
 EMAIL_WORKING_DAYS = []
 
 # From 0 to 23.
-# e.g., [9] + list(range(15, 18)) >>> [9, 15, 16, 17], or range(24) for 24 hours
+# e.g. [9] + list(range(15, 18)) >>> [9, 15, 16, 17], or range(24) for 24 hours
 EMAIL_WORKING_HOURS = []
+
+########## poll interval ##########
+# Sleep N seconds before starting next round of poll, the default is 300.
+POLL_ROUND_INTERVAL = 300
+
+# Sleep N seconds between each request to the Scrapyd server while polling, the default is 10.
+POLL_REQUEST_INTERVAL = 10
 
 ########## basic triggers ##########
 # Trigger email notice every N seconds for each running job.
@@ -239,9 +251,9 @@ LOG_IGNORE_TRIGGER_FORCESTOP = False
 # The default is False, set it to True to enable debug mode and the interactive debugger
 # would be shown in the browser instead of the "500 Internal Server Error" page.
 # Actually, it's not recommended to turn on debug mode, also no need,
-# since its side effects includes creating two caching subprocess in the background.
+# since its side effects includes creating two poll subprocess in the background.
 DEBUG = False
 
-# The default is False, set it to True to set the logging level to DEBUG for getting more
-# information about how ScrapydWeb works, especially while debugging.
+# The default is False, set it to True to set the logging level from WARNING to DEBUG
+# for getting more information about how ScrapydWeb works, especially while debugging.
 VERBOSE = False

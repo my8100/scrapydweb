@@ -12,7 +12,7 @@
     <!-- upload icon in deploy/parse page, right arrow icon in stats/manage page-->
     <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
 
-    {% if IS_MOBILE or g.IS_MOBILE %}
+    {% if g.IS_MOBILE %}
     <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown_mobileui }}">
     {% else %}
     <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown }}">
@@ -48,7 +48,7 @@
     <a class="title" target="_blank" href="{{ GITHUB_URL }}">ScrapydWeb</a>
 
     <div class="dropdown">
-        {% if IS_MOBILE or g.IS_MOBILE %}
+        {% if g.IS_MOBILE %}
         <a class="dropbtn" onclick="handleDropdown();">
         {% else %}
         <a class="dropbtn">
@@ -249,10 +249,11 @@
                     <!-- <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" /> -->
                 <!-- </a> -->
             <!-- </li> -->
-            <li id="github">
-                <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">
-                scrapydweb
-                </a>
+            <li class="github">
+                <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">scrapydweb</a>
+            </li>
+            <li class="github">
+                <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'logparser') }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">logparser</a>
             </li>
         </ul>
     </aside>
@@ -264,13 +265,14 @@
             {% endblock %}
 
             {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
                 <ul class="flashes">
+                {% if messages %}
                 {% for category, message in messages %}
                     <li class="{{ category }}">{{ message }}</li>
                 {% endfor %}
-                </ul>
                 {% endif %}
+                    <li id="logparser_stats" class="info" style="display: none;"></li>
+                </ul>
             {% endwith %}
 
             {% block body %}{% endblock %}
@@ -280,7 +282,7 @@
 
 <script>
 var loading = false;
-var refresh_daemonstatus = true;
+var refresh_daemonstatus = true;  // Used in logout()
 var node = {{ node }};
 var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
 var url_daemonstatus = "{{ g.url_daemonstatus }}";

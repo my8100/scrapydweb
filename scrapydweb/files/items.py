@@ -4,7 +4,7 @@ import re
 from flask import render_template
 
 from ..myview import MyView
-from ..vars import pattern_directory, keys_directory
+from ..vars import DIRECTORY_KEYS, DIRECTORY_PATTERN
 
 
 class ItemsView(MyView):
@@ -24,7 +24,7 @@ class ItemsView(MyView):
         self.text = ''
 
     def dispatch_request(self, **kwargs):
-        status_code, self.text = self.make_request(self.url, api=False, auth=self.AUTH)
+        status_code, self.text = self.make_request(self.url, auth=self.AUTH, api=False)
         if status_code != 200 or not re.search(r'Directory listing for /items/', self.text):
             if status_code == -1:
                 tip = 'Click the above link to make sure your Scrapyd server is accessable.'
@@ -43,20 +43,18 @@ class ItemsView(MyView):
         return self.generate_response()
 
     def generate_response(self):
-        rows = [dict(zip(keys_directory, row)) for row in pattern_directory.findall(self.text)]
-
+        rows = [dict(zip(DIRECTORY_KEYS, row)) for row in re.findall(DIRECTORY_PATTERN, self.text)]
         for row in rows:
-            # <a href="demo/">demo/</a>
-            # <a href="test/">test/</a>
-            # <a href="2018-10-09_225255.jl">2018-10-09_225255.jl</a>
-            if self.project and self.spider:
-                m = re.search(r'>(.*?)<', row['filename'])
-                filename = m.group(1)
+            # <a href="demo/">demo/</a>     dir
+            # <a href="test/">test/</a>     dir
+            # <a href="a.jl">a.jl</a>       file
+            m = re.search(r'>(.*?)<', row['filename'])
+            filename = m.group(1)
+            if filename.endswith('/'):
+                row['filename'] = re.sub(r'href=', 'class="link" href=', row['filename'])
+            else:
                 row['filename'] = u'<a class="link" target="_blank" href="{}">{}</a>'.format(
                                    self.url + filename, filename)
-            else:
-                row['filename'] = re.sub(r'href=', 'class="link" href=', row['filename'])
-
         kwargs = dict(
             node=self.node,
             project=self.project,
@@ -64,5 +62,4 @@ class ItemsView(MyView):
             url=self.url,
             rows=rows
         )
-
         return render_template(self.template, **kwargs)

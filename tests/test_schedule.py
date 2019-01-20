@@ -1,8 +1,7 @@
 # coding: utf8
 import re
 
-from tests.utils import PROJECT, VERSION, SPIDER, JOBID, ERROR
-from tests.utils import req, upload_file_deploy
+from tests.utils import cst, req, switch_scrapyd, upload_file_deploy
 
 
 # Multinode Run Spider button in deploy results page
@@ -16,13 +15,13 @@ def test_schedule_from_post(app, client):
 # CHECK first to generate xx.pickle for RUN
 def test_check(app, client):
     data = {
-        'project': PROJECT,
-        '_version': VERSION,
-        'spider': SPIDER,
-        'jobid': JOBID
+        'project': cst.PROJECT,
+        '_version': cst.VERSION,
+        'spider': cst.SPIDER,
+        'jobid': cst.JOBID
     }
     req(app, client, view='schedule.check', kws=dict(node=2), data=data,
-        jskws=dict(filename='%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)))
+        jskws=dict(filename='%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)))
 
 
 # {
@@ -32,18 +31,18 @@ def test_check(app, client):
 # "filename": "demo_2018-11-22T22_21_19_test.pickle"
 # }
 def test_run(app, client):
-    upload_file_deploy(app, client, filename='demo.egg', project=PROJECT, redirect_project=PROJECT)
+    upload_file_deploy(app, client, filename='demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     data = {
         '1': 'on',
         '2': 'on',
         'checked_amount': '2',
-        'filename': '%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)
+        'filename': '%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)
     }
     req(app, client, view='schedule.run', kws=dict(node=2), data=data,
         ins=['run results - ScrapydWeb', 'id="checkbox_2"', 'onclick="passToOverview();"'])
 
-    req(app, client, view='api', kws=dict(node=1, opt='forcestop', project=PROJECT, version_spider_job=JOBID))
+    req(app, client, view='api', kws=dict(node=1, opt='forcestop', project=cst.PROJECT, version_spider_job=cst.JOBID))
 
 
 def test_run_fail(app, client):
@@ -51,13 +50,13 @@ def test_run_fail(app, client):
         '1': 'on',
         '2': 'on',
         'checked_amount': '2',
-        'filename': '%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)
+        'filename': '%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)
     }
-    app.config['SCRAPYD_SERVERS'] = app.config['SCRAPYD_SERVERS'][::-1]
+    switch_scrapyd(app)
     req(app, client, view='schedule.run', kws=dict(node=2), data=data, ins='Multinode schedule terminated')
 
 
 def test_schedule_xhr(app, client):
     req(app, client, view='schedule.schedule_xhr',
-        kws=dict(node=2, filename='%s_%s_%s.pickle' % (PROJECT, VERSION, SPIDER)),
-        jskws=dict(status=ERROR))
+        kws=dict(node=2, filename='%s_%s_%s.pickle' % (cst.PROJECT, cst.VERSION, cst.SPIDER)),
+        jskws=dict(status=cst.ERROR))

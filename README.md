@@ -13,7 +13,7 @@
 ##
 ![overview](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/overview.png)
 
-## Scrapyd :x: ScrapydWeb
+## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: Recommended Reading
 [:link: How to efficiently manage your distributed web scraping projects](https://medium.com/@my8100/https-medium-com-my8100-how-to-efficiently-manage-your-distributed-web-scraping-projects-55ab13309820)
 
@@ -28,16 +28,16 @@
   - :computer_mouse: **Execute command on multinodes with just a few clicks**
 
 - :mag: Scrapy Log Analysis
-  - :1234: Stats collection
+  - :bar_chart: Stats collection
   - :chart_with_upwards_trend: **Progress visualization**
   - :bookmark_tabs: Logs categorization
 
 - :battery: Enhancements
-  - :card_index_dividers: HTML caching for the Log and Stats page
-  - :closed_lock_with_key: Basic auth for web UI
   - :package: **Auto eggify your projects**
+  - :male_detective: **Integrated with [:link: *LogParser*](https://github.com/my8100/logparser)**
   - :e-mail: **Email notice**
   - :iphone: Mobile UI
+  - :closed_lock_with_key: Basic auth for web UI
 
 </details>
 
@@ -72,7 +72,7 @@ python setup.py install
 ```
 
 ### :arrow_forward: Start
-1. Start ScrapydWeb via the `scrapydweb` command. (a config file would be generated for customizing settings on the first startup.)
+1. Start ScrapydWeb via command `scrapydweb`. (a config file would be generated for customizing settings at the first startup.)
 2. Visit http://127.0.0.1:5000 **(It's recommended to use Google Chrome for a better experience.)**
 
 ### :globe_with_meridians: Browser Support
@@ -136,7 +136,7 @@ $ source venv/scrapydweb/bin/activate
 
 
 ## :clipboard: Changelog
-Detailed changes for each release are documented in the [:link: HISTORY.md](./HISTORY.md).
+Detailed changes for each release are documented in the [:link: HISTORY.md](https://github.com/my8100/scrapydweb/blob/master/HISTORY.md).
 
 
 ## :man_technologist: Author
@@ -150,4 +150,4 @@ Detailed changes for each release are documented in the [:link: HISTORY.md](./HI
 
 
 ## :copyright: License
-This project is licensed under the GNU General Public License v3.0 - see the [:link: LICENSE](./LICENSE) file for details.
+This project is licensed under the GNU General Public License v3.0 - see the [:link: LICENSE](https://github.com/my8100/scrapydweb/blob/master/LICENSE) file for details.

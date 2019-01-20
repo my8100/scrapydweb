@@ -6,6 +6,7 @@
     <style>
         /* See stats.css */
         #content pre {white-space: pre-wrap;}
+        .button.danger {cursor: not-allowed;}
     </style>
     <link rel="stylesheet" type="text/css" href="{{ static_css_utf8 }}">
 {% endblock %}
@@ -25,7 +26,7 @@
     <div class="stick"></div>
 </div>
 
-<h3>PROJECT ({{ project }})<br>SPIDER ({{ spider }})</h3>
+<h3>PROJECT ({{ project }}), SPIDER ({{ spider }})</h3>
 
 <div class="wrap collapse-wrap">
     <!-- <h3>INFO</h3> -->
@@ -35,7 +36,7 @@
                 <h4>Stats</h4>
                 <i class="iconfont icon-right"></i>
             </div>
-            <p><a class="link" href="{{ url_stats }}" onclick="showLoader();">{{ url_stats }}</a></p>
+            <p><a class="link" href="{{ url_opt_opposite }}" onclick="showLoader();">{{ url_opt_opposite }}</a></p>
         </li>
         <li>
             <div class="title">
@@ -51,11 +52,9 @@
 <div id="log">
     <pre>{{ text }}</pre>
 </div>
-<h3>PROJECT ({{ project }})<br>SPIDER ({{ spider }})</h3>
-{% if refresh_url %}
-<a id="refresh_button" class="button normal" href="{{ refresh_url }}" onclick="showLoader();">
-Using cached version, click to refresh
-</a>
+<h3>PROJECT ({{ project }}), SPIDER ({{ spider }})</h3>
+{% if url_refresh %}
+<a id="refresh_button" class="button danger" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
 {% endif %}
 
 
@@ -63,7 +62,6 @@ Using cached version, click to refresh
 $(function() {
     //$(window).scroll(function() {
     $(document).ready(function() {
-        {% if refresh_url %}updateURL();{% endif %}
         hideLoader();
 
         $('div.go-top').show();
@@ -82,19 +80,13 @@ $(function() {
 
 
 <script>
-const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
-const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
+const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
 
-{% if refresh_url %}
+{% if url_refresh %}
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
-    var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Cached <span style='color: black;'>" + seconds + "</span> seconds ago, reload this page to request the latest cached version OR click to request a real-time version (which may be slow).";
-    if (seconds > LAST_LOG_ALERT_SECONDS) {
-        my$('#refresh_button').className = "button danger";
-    } else {
-        my$('#refresh_button').className = "button safe";
-    }
+    var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> seconds ago, click to hard reload (SLOW)";
 }, 1000);
 {% endif %}
 </script>

@@ -1,12 +1,25 @@
 Release History
 ===============
+1.1.0 (2019-01-20)
+------------------
+- Remove **HTML caching**
+- **Integrated with [:link: *LogParser*](https://github.com/my8100/logparser)**
+- Add 'List Stats' in the Overview page
+- Show crawled_pages and scraped_items in the Dashboard page
+- Bugs fixed
+  - Integrated with LogParser to avoid MemoryError when parsing large logfiles [(issue #11)](https://github.com/my8100/scrapydweb/issues/11)
+  - Add prompt for running Flask in production [(issue #17)](https://github.com/my8100/scrapydweb/issues/17)
+  - Support running ScrapydWeb in HTTPS mode [(issue #18)](https://github.com/my8100/scrapydweb/issues/18)
+- Change SCRAPYDWEB_SETTINGS_PY to 'scrapydweb_settings_v7.py'
+
+
 1.0.0 (2018-12-27)
 ------------------
 - Formal release of v1.0.0 :tada: :cake: :tada:
 - Bugs fixed
   - Remove inject_variable() in the base view class **to avoid memory leak** [(issue #14)](https://github.com/my8100/scrapydweb/issues/14)
   - Parse project name from scrapy.cfg instead of setting it to the folder name for auto eggifying [(issue #15)](https://github.com/my8100/scrapydweb/issues/15)
-  - Fix the 'CheckAll / UncheckAll' checkbox and the 'Upload file' javascript in Safari
+  - Fix the 'CheckAll / UncheckAll' checkbox and the 'Upload file' function in Safari
   - Fix the 'go-top' and 'go-bottom' buttons in Firefox
   - Fix faulty links in dropdown menu in the cached Log and Stats page of mobile UI
 - Introduce new UI for the Deploy page

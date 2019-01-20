@@ -1,36 +1,36 @@
 # coding: utf8
 from flask import url_for
 
-from tests.utils import VIEW_TITLE_MAP, HEADERS_DICT, req
+from tests.utils import cst, req, switch_scrapyd
 
 
 # Location: http://127.0.0.1:5000/1/dashboard/?ui=mobile
 def test_index(app, client):
     with app.test_request_context():
-        for __, headers in HEADERS_DICT.items():
+        for __, headers in cst.HEADERS_DICT.items():
             req(app, client, view='index', kws=dict(ui='mobile'), headers=headers,
                 location=url_for('dashboard', node=1, ui='mobile'))
 
         for key in ['Chrome', 'iPad']:
-            req(app, client, view='index', kws={}, headers=HEADERS_DICT[key],
+            req(app, client, view='index', kws={}, headers=cst.HEADERS_DICT[key],
                 location=url_for('overview', node=1))
 
         for key in ['iPhone', 'Android']:
-            req(app, client, view='index', kws={}, headers=HEADERS_DICT[key],
+            req(app, client, view='index', kws={}, headers=cst.HEADERS_DICT[key],
                 location=url_for('dashboard', node=1, ui='mobile'))
 
 
 def test_check_browser(app, client):
-    req(app, client, view='overview', kws=dict(node=2), headers=HEADERS_DICT['IE'], ins='checkBrowser();')
-    req(app, client, view='overview', kws=dict(node=2), headers=HEADERS_DICT['EDGE'], ins='checkBrowser();')
+    req(app, client, view='overview', kws=dict(node=2), headers=cst.HEADERS_DICT['IE'], ins='checkBrowser();')
+    req(app, client, view='overview', kws=dict(node=2), headers=cst.HEADERS_DICT['EDGE'], ins='checkBrowser();')
 
 
 def test_dropdown_for_mobile_device(app, client):
-    req(app, client, view='overview', kws=dict(node=2), headers=HEADERS_DICT['Chrome'],
+    req(app, client, view='overview', kws=dict(node=2), headers=cst.HEADERS_DICT['Chrome'],
         ins='dropdown.css', nos=['dropdown_mobileui.css', 'handleDropdown();'])
-    req(app, client, view='overview', kws=dict(node=2), headers=HEADERS_DICT['iPhone'],
+    req(app, client, view='overview', kws=dict(node=2), headers=cst.HEADERS_DICT['iPhone'],
         nos='dropdown.css', ins=['dropdown_mobileui.css', 'handleDropdown();'])
-    req(app, client, view='overview', kws=dict(node=2), headers=HEADERS_DICT['iPad'],
+    req(app, client, view='overview', kws=dict(node=2), headers=cst.HEADERS_DICT['iPad'],
         nos='dropdown.css', ins=['dropdown_mobileui.css', 'handleDropdown();'])
 
 
@@ -50,16 +50,16 @@ def test_check_update(app, client):
 
 
 def test_page(app, client):
-    for view, title in VIEW_TITLE_MAP.items():
+    for view, title in cst.VIEW_TITLE_MAP.items():
         req(app, client, view=view, kws=dict(node=1), ins=title)
 
     req(app, client, view='dashboard', kws=dict(node=2), ins='status_code: -1')
     req(app, client, view='items', kws=dict(node=2), ins='status_code: -1')
     req(app, client, view='logs', kws=dict(node=2), ins='status_code: -1')
 
-    app.config['SCRAPYD_SERVERS'] = app.config['SCRAPYD_SERVERS'][::-1]
+    switch_scrapyd(app)
 
-    for view, title in VIEW_TITLE_MAP.items():
+    for view, title in cst.VIEW_TITLE_MAP.items():
         req(app, client, view=view, kws=dict(node=2), ins=title)
 
 

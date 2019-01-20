@@ -1,37 +1,37 @@
 # coding: utf8
 from flask import url_for
 
-from tests.utils import VIEW_TITLE_MAP, HEADERS_DICT, req_single_scrapyd
+from tests.utils import cst, req_single_scrapyd
 
 
 # Location: http://127.0.0.1:5000/1/dashboard/?ui=mobile
 def test_index(app, client):
     with app.test_request_context():
-        for __, headers in HEADERS_DICT.items():
+        for __, headers in cst.HEADERS_DICT.items():
             req_single_scrapyd(app, client, view='index', kws=dict(ui='mobile'), headers=headers,
                                location=url_for('dashboard', node=1, ui='mobile'))
 
         for key in ['Chrome', 'iPad']:
-            req_single_scrapyd(app, client, view='index', kws={}, headers=HEADERS_DICT[key],
+            req_single_scrapyd(app, client, view='index', kws={}, headers=cst.HEADERS_DICT[key],
                                location=url_for('dashboard', node=1))  # NOT overview
 
         for key in ['iPhone', 'Android']:
-            req_single_scrapyd(app, client, view='index', kws={}, headers=HEADERS_DICT[key],
+            req_single_scrapyd(app, client, view='index', kws={}, headers=cst.HEADERS_DICT[key],
                                location=url_for('dashboard', node=1, ui='mobile'))
 
 
 def test_check_browser(app, client):
     ins = 'checkBrowser();'
-    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['IE'], ins=ins)
-    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['EDGE'], ins=ins)
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=cst.HEADERS_DICT['IE'], ins=ins)
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=cst.HEADERS_DICT['EDGE'], ins=ins)
 
 
 def test_dropdown_for_mobile_device(app, client):
-    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['Chrome'],
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=cst.HEADERS_DICT['Chrome'],
                        ins='dropdown.css', nos=['dropdown_mobileui.css', 'handleDropdown();'])
-    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['iPhone'],
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=cst.HEADERS_DICT['iPhone'],
                        nos='dropdown.css', ins=['dropdown_mobileui.css', 'handleDropdown();'])
-    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=HEADERS_DICT['iPad'],
+    req_single_scrapyd(app, client, view='dashboard', kws=dict(node=1), headers=cst.HEADERS_DICT['iPad'],
                        nos='dropdown.css', ins=['dropdown_mobileui.css', 'handleDropdown();'])
 
 
@@ -58,7 +58,7 @@ def test_check_update(app, client):
 
 
 def test_page(app, client):
-    for view, title in VIEW_TITLE_MAP.items():
+    for view, title in cst.VIEW_TITLE_MAP.items():
         req_single_scrapyd(app, client, view=view, kws=dict(node=1), ins=title)
 
 

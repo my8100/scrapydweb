@@ -13,7 +13,7 @@
 ##
 ![overview](./screenshots/overview.png)
 
-## Scrapyd :x: ScrapydWeb
+## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: 推荐阅读
 [:link: 如何简单高效地部署和监控分布式爬虫项目](https://juejin.im/post/5bebc5fd6fb9a04a053f3a0e)
 
@@ -33,11 +33,11 @@
   - :bookmark_tabs: 日志分类
 
 - :battery: 增强功能
-  - :card_index_dividers: 后台定时缓存 Log 和 Stats 页面
-  - :closed_lock_with_key: web UI 支持基本身份认证
   - :package: **自动打包项目**
+  - :male_detective: **集成 [:link: *LogParser*](https://github.com/my8100/logparser)**
   - :e-mail: **邮件通知**
   - :iphone: 移动端 UI
+  - :closed_lock_with_key: web UI 支持基本身份认证
 
 </details>
 

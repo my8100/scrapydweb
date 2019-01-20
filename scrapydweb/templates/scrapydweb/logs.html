@@ -38,8 +38,8 @@
                 <!-- <th>Spider</th> -->
 
                 {% if project and spider %}
-                <th>Log</th>
                 <th>Stats</th>
+                <th>Log</th>
                 {% endif %}
 
                 <th>Size</th>
@@ -54,8 +54,8 @@
             <td class="filename">{{ row['filename']|safe }}</td>
 
             {% if project and spider %}
-            <td><a class="state normal" href="{{ row['url_log_utf8'] }}" onclick="showLoader();">Log</a></td>
             <td><a class="state normal" href="{{ row['url_log_stats'] }}" onclick="showLoader();">Stats</a></td>
+            <td>{% if row['url_log_utf8'] %}<a class="state normal forbid" href="{{ row['url_log_utf8'] }}" onclick="showLoader();">Log</a>{% endif %}</td>
             {% endif %}
 
             <td>{{ row['size'] }}</td>

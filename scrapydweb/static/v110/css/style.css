@@ -44,6 +44,7 @@ em.fail {
     font-weight: bold;
 }
 
+.forbid {cursor: not-allowed;}
 
 pre {
     white-space: pre-wrap;
@@ -253,7 +254,7 @@ main>aside li#pypi a:hover{
     opacity: 0.7;
 }
 
-main>aside li#github{
+main>aside li.github{
     height: 25px;
     padding-top: 5px;
     padding-left: 20px;
@@ -529,7 +530,7 @@ table>tbody tr:last-child {
 
 .tab-content>li {
   display: none;
-  padding: 10px;
+  padding: 24px 8px 16px 8px;
 }
 
 .tab-content>li.active {

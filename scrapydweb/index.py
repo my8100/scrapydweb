@@ -1,5 +1,5 @@
 # coding: utf8
-from flask import url_for, redirect
+from flask import redirect, url_for
 
 from .myview import MyView
 
@@ -16,7 +16,7 @@ class IndexView(MyView):
             else:
                 return redirect(url_for('dashboard', node=self.node, ui=self.UI))
         else:
-            if self.IS_MOBILEUI or (self.IS_MOBILE and not self.IS_IPAD):
+            if self.USE_MOBILEUI or (self.IS_MOBILE and not self.IS_IPAD):
                 return redirect(url_for('dashboard', node=self.node, ui='mobile'))
             else:
                 return redirect(url_for('overview', node=self.node, ui=self.UI))

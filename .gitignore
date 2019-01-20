@@ -11,20 +11,19 @@ scrapydweb/data/*
 !scrapydweb/data/demo_projects/
 
 scrapydweb/data/parse/*
-!scrapydweb/data/parse/demo.txt
-!scrapydweb/data/parse/demo0.txt
+!scrapydweb/data/parse/ScrapydWeb_demo.log
 
 scrapydweb/data/demo_projects/*
-!scrapydweb/data/demo_projects/demo/
-!scrapydweb/data/demo_projects/demo - 副本/
+!scrapydweb/data/demo_projects/ScrapydWeb_demo/
+!scrapydweb/data/demo_projects/ScrapydWeb_demo - 副本/
 
-scrapydweb/data/demo_projects/demo/*
-!scrapydweb/data/demo_projects/demo/demo/
-!scrapydweb/data/demo_projects/demo/scrapy.cfg
+scrapydweb/data/demo_projects/ScrapydWeb_demo/*
+!scrapydweb/data/demo_projects/ScrapydWeb_demo/ScrapydWeb_demo/
+!scrapydweb/data/demo_projects/ScrapydWeb_demo/scrapy.cfg
 
-scrapydweb/data/demo_projects/demo - 副本/*
-!scrapydweb/data/demo_projects/demo - 副本/demo/
-!scrapydweb/data/demo_projects/demo - 副本/scrapy.cfg
+scrapydweb/data/demo_projects/ScrapydWeb_demo - 副本/*
+!scrapydweb/data/demo_projects/ScrapydWeb_demo - 副本/ScrapydWeb_demo/
+!scrapydweb/data/demo_projects/ScrapydWeb_demo - 副本/scrapy.cfg
 
 
 venv/

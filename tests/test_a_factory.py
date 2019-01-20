@@ -1,19 +1,11 @@
 # coding: utf8
 import os
 
-
 from scrapydweb import create_app
-from scrapydweb.run import SCRAPYDWEB_SETTINGS_PY, check_scrapyd_connectivity
-from scrapydweb.utils.utils import find_scrapydweb_settings_py
+from scrapydweb.run import SCRAPYDWEB_SETTINGS_PY
 from scrapydweb.utils.check_app_config import check_app_config, check_email
-from scrapydweb.utils.cache import printf  # Test the import action only
-from scrapydweb.utils.init_caching import init_caching
-from tests.utils import req, get_text
-
-"""
-with open('response.html', 'wb') as f:
-    f.write(response.data)
-"""
+from scrapydweb.utils.utils import find_scrapydweb_settings_py
+from tests.utils import get_text, req
 
 
 # http://flask.pocoo.org/docs/1.0/tutorial/tests/#factory
@@ -25,17 +17,6 @@ def test_config():
 def test_hello(client):
     response = client.get('/hello')
     assert get_text(response) == 'Hello, World!'
-
-
-def test_check_scrapyd_connectivity(app):
-    SCRAPYD_SERVERS = app.config['SCRAPYD_SERVERS']
-    SCRAPYD_SERVERS_GROUPS = app.config['SCRAPYD_SERVERS_GROUPS']
-    SCRAPYD_SERVERS_AUTHS = app.config['SCRAPYD_SERVERS_AUTHS']
-    servers = []
-    for (group, ip_port, auth) in zip(SCRAPYD_SERVERS_GROUPS, SCRAPYD_SERVERS, SCRAPYD_SERVERS_AUTHS):
-        ip, port = ip_port.split(':')
-        servers.append((group, ip, port, auth))
-    check_scrapyd_connectivity(servers)
 
 
 # def test_code_404(client):
@@ -53,8 +34,36 @@ def test_find_scrapydweb_settings_py():
     find_scrapydweb_settings_py(SCRAPYDWEB_SETTINGS_PY, os.getcwd())
 
 
-def test_app_config(app):
+def test_check_app_config(app, client):
+    app.config['SCRAPYD_SERVERS'][-1] = ('username', 'password', 'localhost', '6801', 'group')
+
+    # In conftest.py: ENABLE_LOGPARSER=False
+    assert not os.path.exists(app.config['STATS_JSON_PATH'])
     check_app_config(app.config)
+    strings = []
+
+    assert app.config['LOGPARSER_PID'] is None
+    strings.append('logparser_pid: None')
+
+    poll_pid = app.config['POLL_PID']
+    if app.config.get('ENABLE_EMAIL', False):
+        assert isinstance(poll_pid, int) and poll_pid > 0
+    else:
+        assert poll_pid is None
+    strings.append('poll_pid: %s' % poll_pid)
+
+    req(app, client, view='settings', kws=dict(node=1), ins=strings)
+    assert not os.path.exists(app.config['STATS_JSON_PATH'])
+
+    # Test ENABLE_EMAIL = False
+    if app.config.get('ENABLE_EMAIL', False):
+        app.config['ENABLE_EMAIL'] = False
+        check_app_config(app.config)
+        assert app.config['LOGPARSER_PID'] is None
+        assert app.config['POLL_PID'] is None
+        req(app, client, view='settings', kws=dict(node=1), ins='poll_pid: None')
+
+    # Test ENABLE_LOGPARSER = True, see test_enable_logparser()
 
 
 def test_check_email_with_fake_password(app):
@@ -63,7 +72,6 @@ def test_check_email_with_fake_password(app):
             return
 
         app.config['EMAIL_PASSWORD'] = 'fakepassword'
-
         try:
             check_email(app.config)
         except AssertionError:
@@ -84,15 +92,6 @@ def test_check_email_with_ssl_false(app):
         app.config['TO_ADDRS'] = app.config['TO_ADDRS_']
 
         check_email(app.config)
-
-
-# Test the import action only
-def test_cache_py(app, client):
-    printf("%s\n%s" % (app, client))
-
-
-def test_init_caching(app):
-    init_caching(app.config, os.getpid())
 
 
 def test_scrapyd_group(app, client):

@@ -1,16 +1,11 @@
 # coding: utf8
-import os
+from collections import OrderedDict, defaultdict
 import re
-from collections import defaultdict, OrderedDict
 
 from flask import render_template
 
 from ..myview import MyView
-from ..vars import EMAIL_TRIGGER_KEYS
 from ..utils.utils import json_dumps
-
-
-CWD = os.path.dirname(os.path.abspath(__file__))
 
 
 class SettingsView(MyView):
@@ -27,6 +22,11 @@ class SettingsView(MyView):
         return render_template(self.template, **self.kwargs)
 
     @staticmethod
+    def json_dumps(obj, sort_keys=False):
+        string = json_dumps(obj, sort_keys=sort_keys)
+        return string.replace(' true', ' True').replace(' false', ' False').replace(' null', ' None')
+
+    @staticmethod
     def protect(string):
         if not isinstance(string, str):
             return string
@@ -40,14 +40,13 @@ class SettingsView(MyView):
         else:
             return re.sub(r'^..(.*?)..$', r'**\1**', string)
 
-    @staticmethod
-    def json_dumps(obj, sort_keys=False):
-        string = json_dumps(obj, sort_keys=sort_keys)
-        return string.replace(' true', ' True').replace(' false', ' False').replace(' null', ' None')
-
     def update_kwargs(self):
         # User settings
-        self.kwargs['default_settings_py'] = os.path.join(os.path.dirname(CWD), 'default_settings.py')
+        self.kwargs['DEFAULT_SETTINGS_PY_PATH'] = self.DEFAULT_SETTINGS_PY_PATH
+        self.kwargs['SCRAPYDWEB_SETTINGS_PY_PATH'] = self.SCRAPYDWEB_SETTINGS_PY_PATH
+        self.kwargs['MAIN_PID'] = self.MAIN_PID
+        self.kwargs['LOGPARSER_PID'] = self.LOGPARSER_PID
+        self.kwargs['POLL_PID'] = self.POLL_PID
 
         # ScrapydWeb
         self.kwargs['scrapydweb_server'] = self.json_dumps(dict(
@@ -56,6 +55,11 @@ class SettingsView(MyView):
             ENABLE_AUTH=self.ENABLE_AUTH,
             USERNAME=self.protect(self.USERNAME),
             PASSWORD=self.protect(self.PASSWORD)
+        ))
+        self.kwargs['ENABLE_HTTPS'] = self.ENABLE_HTTPS
+        self.kwargs['enable_https_details'] = self.json_dumps(dict(
+            CERTIFICATE_FILEPATH=self.CERTIFICATE_FILEPATH,
+            PRIVATEKEY_FILEPATH=self.PRIVATEKEY_FILEPATH
         ))
 
         # Scrapy
@@ -71,24 +75,21 @@ class SettingsView(MyView):
         self.kwargs['SCRAPYD_LOGS_DIR'] = self.SCRAPYD_LOGS_DIR or "''"
         self.kwargs['SCRAPYD_LOG_EXTENSIONS'] = self.SCRAPYD_LOG_EXTENSIONS
 
+        # LogParser
+        self.kwargs['ENABLE_LOGPARSER'] = self.ENABLE_LOGPARSER
+
         # Page Display
         self.kwargs['page_display_details'] = self.json_dumps(dict(
             SHOW_SCRAPYD_ITEMS=self.SHOW_SCRAPYD_ITEMS,
             SHOW_DASHBOARD_JOB_COLUMN=self.SHOW_DASHBOARD_JOB_COLUMN,
+            DASHBOARD_FINISHED_JOBS_LIMIT=self.DASHBOARD_FINISHED_JOBS_LIMIT,
             DASHBOARD_RELOAD_INTERVAL=self.DASHBOARD_RELOAD_INTERVAL,
             DAEMONSTATUS_REFRESH_INTERVAL=self.DAEMONSTATUS_REFRESH_INTERVAL
         ))
 
-        # HTML Caching
-        self.kwargs['ENABLE_CACHE'] = self.ENABLE_CACHE
-        self.kwargs['html_caching_details'] = self.json_dumps(dict(
-            CACHE_ROUND_INTERVAL=self.CACHE_ROUND_INTERVAL,
-            CACHE_REQUEST_INTERVAL=self.CACHE_REQUEST_INTERVAL,
-            DELETE_CACHE=self.DELETE_CACHE
-        ))
-
         # Email Notice
         self.kwargs['ENABLE_EMAIL'] = self.ENABLE_EMAIL
+
         self.kwargs['smtp_settings'] = self.json_dumps(dict(
             SMTP_SERVER=self.SMTP_SERVER,
             SMTP_PORT=self.SMTP_PORT,
@@ -113,12 +114,17 @@ class SettingsView(MyView):
             )
         ])
 
+        self.kwargs['poll_interval'] = self.json_dumps(dict(
+            POLL_ROUND_INTERVAL=self.POLL_ROUND_INTERVAL,
+            POLL_REQUEST_INTERVAL=self.POLL_REQUEST_INTERVAL,
+        ))
+
         # email triggers
         d = OrderedDict()
         d['ON_JOB_RUNNING_INTERVAL'] = self.ON_JOB_RUNNING_INTERVAL
         d['ON_JOB_FINISHED'] = self.ON_JOB_FINISHED
 
-        for key in EMAIL_TRIGGER_KEYS:
+        for key in self.EMAIL_TRIGGER_KEYS:
             keys = ['LOG_%s_THRESHOLD' % key, 'LOG_%s_TRIGGER_STOP' % key, 'LOG_%s_TRIGGER_FORCESTOP' % key]
             d[key] = {k: getattr(self, k) for k in keys}
         value = self.json_dumps(d)

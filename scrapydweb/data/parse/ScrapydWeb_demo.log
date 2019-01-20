@@ -28,7 +28,7 @@
 2018-10-23 18:28:35 [scrapy.core.engine] INFO: Spider opened
 2018-10-23 18:28:35 [scrapy.extensions.logstats] INFO: Crawled 0 pages (at 0 pages/min), scraped 0 items (at 0 items/min)
 2018-10-23 18:28:35 [scrapy.extensions.telnet] DEBUG: Telnet console listening on 127.0.0.1:6023
-2018-10-23 18:28:35 [test] DEBUG: test utf8: 测试中文
+2018-10-23 18:28:35 [test] DEBUG: test Chinese: 测试中文
 2018-10-23 18:28:35 [test] DEBUG: 2018-08-20 09:13:06 [apps_redis] DEBUG: Resuming crawl (675840 requests scheduled)
 2018-10-23 18:28:35 [test] WARNING: warn
 2018-10-23 18:28:35 [test] ERROR: error
@@ -177,4 +177,4 @@ twisted.internet.error.TCPTimedOutError: TCP connection timed out: 10060: 由于
  'scheduler/enqueued': 7,
  'scheduler/enqueued/memory': 7,
  'start_time': datetime.datetime(2018, 10, 23, 10, 28, 35, 70938)}
-2018-10-23 18:29:41 [scrapy.core.engine] INFO: Spider closed (finished)
+2018-10-23 18:29:42 [scrapy.core.engine] INFO: Spider closed (finished)

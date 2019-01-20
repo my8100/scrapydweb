@@ -16,7 +16,7 @@ projects = [
     'demo_outer',
     'demo_unicode',
     'fakeproject',
-    'ScrapydWeb-demo',
+    'ScrapydWeb_demo',
     'scrapy_cfg_no_deploy_project',
     'scrapy_cfg_no_option_project',
     'scrapy_cfg_no_option_project_value',

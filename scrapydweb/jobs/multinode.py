@@ -1,5 +1,5 @@
 # coding: utf8
-from flask import url_for, render_template
+from flask import render_template, url_for
 
 from ..myview import MyView
 
@@ -24,12 +24,15 @@ class MultinodeView(MyView):
         if self.opt == 'stop':
             title = "Stop Job (%s) of Project (%s)" % (self.project, self.version_job)
             url_overview = url_for('overview', node=self.node, opt='listjobs', project=self.project)
+            btn_overview = "Overview &raquo; List Running Jobs"
         elif self.opt == 'delversion':
             title = "Delete Version (%s) of Project (%s)" % (self.version_job, self.project)
             url_overview = url_for('overview', node=self.node, opt='listversions', project=self.project)
+            btn_overview = "Overview &raquo; List Versions"
         else:  # elif opt == 'delproject':
             title = "Delete Project (%s)" % self.project
             url_overview = url_for('overview', node=self.node, opt='listprojects', project=self.project)
+            btn_overview = "Overview &raquo; List Projects"
 
         kwargs = dict(
             node=self.node,
@@ -40,6 +43,7 @@ class MultinodeView(MyView):
             selected_nodes=selected_nodes,
             url_xhr=url_xhr,
             url_overview=url_overview,
+            btn_overview=btn_overview,
             url_manage_list=[url_for('manage', node=n) for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)]
         )
         return render_template(self.template, **kwargs)

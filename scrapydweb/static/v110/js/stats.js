@@ -19,21 +19,28 @@
 
 
 
-function setColor(size) {
-
-    var cew_count_arr = new Array('log_critical_count', 'log_error_count', 'log_warning_count');
-    for (var idx in cew_count_arr) {
-        var ele = my$('#' + cew_count_arr[idx]);
-        if (ele.innerText != '0') {
-            ele.innerHTML = '<strong style="font-size: ' + size + 'px; color: red;">' + ele.innerText + '</strong>';
+function setColor() {
+    var reason_arr = new Array('shutdown_reason', 'finish_reason');
+    for (var idx in reason_arr) {
+        var ele = my$('#' + reason_arr[idx]);
+        if (ele.innerText != 'N/A') {
+            ele.innerHTML = '<strong class="blue">' + ele.innerText + '</strong>';
         }
     }
 
-    var log_count_arr = new Array('log_retry_count', 'log_redirect_count', 'log_ignore_count');
-    for (var idx in log_count_arr) {
-        var ele = my$('#' + log_count_arr[idx]);
+    var warning_log_count_arr = new Array('log_critical_count', 'log_error_count', 'log_warning_count');
+    for (var idx in warning_log_count_arr) {
+        var ele = my$('#' + warning_log_count_arr[idx]);
         if (ele.innerText != '0') {
-            ele.innerHTML = '<strong style="font-size: ' + size + 'px; color: orange;">' + ele.innerText + '</strong>';
+            ele.innerHTML = '<strong class="red">' + ele.innerText + '</strong>';
+        }
+    }
+
+    var info_log_count_arr = new Array('log_retry_count', 'log_redirect_count', 'log_ignore_count');
+    for (var idx in info_log_count_arr) {
+        var ele = my$('#' + info_log_count_arr[idx]);
+        if (ele.innerText != '0') {
+            ele.innerHTML = '<strong class="orange">' + ele.innerText + '</strong>';
         }
     }
 
@@ -42,14 +49,18 @@ function setColor(size) {
     var now_timestamp = Date.now() / 1000;
     for (var idx in latest_time_arr) {
         var ele = my$('#' + latest_time_arr[idx]);
-        var seconds = Math.ceil(now_timestamp - latest_timestamp_arr[idx]);
-        var result = timeAgo(seconds);
-        // console.log(seconds, result);
-
-        if (result.indexOf('second') == -1 ) {
-            ele.innerHTML = '<strong style="font-size: ' + size + 'px; color: #409EFF;">' + result + '</strong>';
+        var timestamp = latest_timestamp_arr[idx];
+        if (timestamp == 0) {
+            ele.innerText = 'N/A';
         } else {
-            ele.innerText = result;
+            var seconds = Math.ceil(now_timestamp - timestamp);
+            var result = timeAgo(seconds);
+            // console.log(seconds, result);
+            if (result.indexOf('second') == -1 ) {
+                ele.innerHTML = '<strong class="red">' + result + '</strong>';
+            } else {
+                ele.innerText = result;
+            }
         }
     }
 }
@@ -150,26 +161,3 @@ function draw(chart, datas, title, label_1, index_1, label_2, index_2) {
     });
 }
 
-
-function switchTab(id) {
-    for (var idx in id_of_tabs) {
-        i = id_of_tabs[idx];
-        var btn = my$('#btn_' + i);
-        var tab = my$('#tab_' + i);
-        if (i == id) {
-            btn.className = 'submenu submenu-pressed';
-            if (i == 'chart') {
-                tab.style.visibility = 'visible';
-            } else {
-                tab.style.display = '';
-            }
-        } else {
-            btn.className = 'submenu';
-            if (i == 'chart') {
-                tab.style.visibility = 'hidden';
-            } else {
-                tab.style.display = 'none';
-            }
-        }
-    }
-}

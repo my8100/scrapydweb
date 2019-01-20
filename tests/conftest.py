@@ -1,17 +1,18 @@
 # coding: utf8
 import os
-from shutil import rmtree
-import zipfile
 
 import pytest
 
 from scrapydweb import create_app
+from tests.utils import cst, set_env
 
 
 # MUST be updated: _SCRAPYD_SERVER and _SCRAPYD_SERVER_AUTH
 custom_settings = dict(
     _SCRAPYD_SERVER='127.0.0.1:6800',
     _SCRAPYD_SERVER_AUTH=None,  # Or ('yourusername', 'yourpassword')
+
+    SCRAPYD_LOGS_DIR='',  # For LogParser, defaults to the 'logs' directory that resides in current user directory
 
     ENABLE_EMAIL=False,  # Whether to execute testcases related to "Email Notice"
 
@@ -32,31 +33,31 @@ custom_settings = dict(
     TO_ADDRS_=['username@139.com']
 )
 
-CWD = os.path.dirname(os.path.abspath(__file__))
-data_folder = os.path.join(CWD, 'data')
 
-if os.path.isdir(data_folder):
-    rmtree(data_folder, ignore_errors=True)
-with zipfile.ZipFile(os.path.join(CWD, 'data.zip'), 'r') as f:
-    f.extractall(CWD)
+set_env(custom_settings)
 
 
 @pytest.fixture
 def app():
     config = dict(
         TESTING=True,
+
+        DEFAULT_SETTINGS_PY_PATH='',
+        SCRAPYDWEB_SETTINGS_PY_PATH='',
+        MAIN_PID=os.getpid(),
+        LOGPARSER_PID=0,
+        POLL_PID=0,
+
         SCRAPYD_SERVERS=[custom_settings['_SCRAPYD_SERVER'], 'not-exist:6801'],
         SCRAPYD_SERVERS_AUTHS=[custom_settings['_SCRAPYD_SERVER_AUTH'], ('username', 'password')],
         SCRAPYD_SERVERS_GROUPS=['', 'Scrapyd-group'],
-        SCRAPY_PROJECTS_DIR=os.path.join(CWD, 'data'),
-        SCRAPYD_LOGS_DIR='',
+        SCRAPY_PROJECTS_DIR=os.path.join(cst.CWD, 'data'),
 
-        VERBOSE=True,
+        ENABLE_LOGPARSER=False,
+
         EMAIL_WORKING_DAYS=list(range(1, 8)),
         EMAIL_WORKING_HOURS=list(range(24)),
-        # ON_JOB_FINISHED=True,
-        # LOG_CRITICAL_THRESHOLD=1,
-        # LOG_CRITICAL_TRIGGER_FORCESTOP=True
+        VERBOSE=True
     )
 
     config.update(custom_settings)

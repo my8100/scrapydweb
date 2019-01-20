@@ -8,7 +8,6 @@ class TestSpider(scrapy.Spider):
     # start_urls = ['http://httpbin.org/']
 
     custom_settings = {
-        # 'JOBDIR': 'crawls/test',
         'ROBOTSTXT_OBEY': False,
         'USER_AGENT': 'Mozilla/5.0',
         'COOKIES_ENABLED': False,
@@ -20,10 +19,10 @@ class TestSpider(scrapy.Spider):
     num = 1
 
     def start_requests(self):
-        self.log(u'test unicode: 测试中文')
-        self.logger.debug('2018-08-20 09:13:06 [apps_redis] DEBUG: Resuming crawl (675840 requests scheduled)')
+        self.log(u'test Chinese: 测试中文')
+        self.logger.debug('2019-01-01 00:00:01 [test] DEBUG: Resuming crawl (12345 requests scheduled)')
 
-        self.logger.warning('warn') #python2.7 AttributeError: 'LoggerAdapter' object has no attribute 'warn'
+        self.logger.warning('warn') # python2.7 AttributeError: 'LoggerAdapter' object has no attribute 'warn'
         self.logger.error('error')
         self.logger.warning('warning\n123abc')
         self.logger.error('error\n456abc')

@@ -13,18 +13,13 @@
             background-color: #ddd;
             text-align: left;
         }
-        .blue {
-            color: #409EFF;
-            font-size: 30px;
+        #content_charts>div {
+            height: 400px;
+            width: 100%;
         }
-        .blue a{
-            color: #409EFF;
-            text-decoration: underline;
-        }
-        .green {
-            color: #67c23a;
-            font-size: 30px;
-        }
+        #chart_total {margin-bottom: 16px;}
+        #content_categories, #content_logs {padding-top: 8px;}
+        .button.danger {cursor: not-allowed;}
     </style>
 {% endblock %}
 
@@ -34,8 +29,6 @@
 
 <script>
 window.onload = function(){
-    // Clear refresh_cache=True in href after clicking refresh cache button
-    {% if refresh_url %}updateURL();{% endif %}
     hideLoader();
 };
 </script>
@@ -43,34 +36,22 @@ window.onload = function(){
 
 
 {% block body %}
-<h3>PROJECT ({{ project }})<br>SPIDER ({{ spider }})</h3>
+<h3>PROJECT ({{ project }}), SPIDER ({{ spider }})</h3>
 
-<div class="wrap collapse-wrap">
-    <ul class="collapse">
-        {% if url_utf8 %}
-        <li>
-            <div class="title">
-                <h4>Log</h4>
-                <i class="iconfont icon-right"></i>
-            </div>
-            <p><a class="link" href="{{ url_utf8 }}" onclick="showLoader();">{{ url_utf8 }}</a></p>
-        </li>
+{% if url_refresh %}
+<div style="padding: 5px 0;">
+    {% if not url_jump %}
+        <a id="refresh_button" class="button danger" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
+    {% else %}
+        {% if 'realtime=True' in url_jump %}
+        <a id="refresh_button" class="button safe" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
+        <a class="button danger" href="{{ url_jump }}" onclick="showLoader();">Realtime version</a>
+        {% else %}
+        <a class="button safe" href="{{ url_jump }}" onclick="showLoader();">Cached version</a>
+        <a id="refresh_button" class="button danger" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
         {% endif %}
-
-        <li>
-            <div class="title">
-                <h4>Source</h4>
-                <i class="iconfont icon-right"></i>
-            </div>
-            <p><a class="link" target="_blank" href="{{ url_source }}">{{ url_source }}</a></p>
-        </li>
-    </ul>
+    {% endif %}
 </div>
-
-{% if refresh_url %}
-<a id="refresh_button" class="button normal" href="{{ refresh_url }}" onclick="showLoader();">
-Using cached version, click to refresh
-</a>
 {% endif %}
 
 <div class="tab-wrap wrap">
@@ -79,7 +60,8 @@ Using cached version, click to refresh
         {% if datas and datas[-1][1] %}
         <li id="header_charts">Progress visualization</li>
         {% endif %}
-        <li id="header_logs">Logs categorization</li>
+        <li id="header_categories">Log categorization</li>
+        <li id="header_logs">View log</li>
     </ul>
     <ul class="tab tab-content">
         <li id="content_stats">
@@ -88,27 +70,27 @@ Using cached version, click to refresh
                     <tr><th>project</th><td>{{ project }}</td></tr>
                     <tr><th>spider</th><td>{{ spider }}</td></tr>
                     <tr><th>job</th><td>{{ job }}</td></tr>
-                    <tr><th>start_time</th><td>{{ first_log_time }}</td></tr>
+                    <tr><th>first_log_time</th><td>{{ first_log_time }}</td></tr>
                     <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
-                    <tr><th>elasped</th><td>{{ elasped }}</td></tr>
+                    <tr><th>elapsed</th><td>{{ elapsed }}</td></tr>
                     <tr>
-                        <th>finish_reason</th>
-                        <td>
-                            <strong class="blue">
-                            <a href="{{ url_utf8 }}">{{ finish_reason or "NOT found in log" }}</a>
-                            </strong>
-                        </td>
+                        <th>crawled_pages</th>
+                        <td><strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong></td>
                     </tr>
+                    <tr>
+                        <th>scraped_items</th>
+                        <td><strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong></td>
+                    </tr>
+                    <tr><th>shutdown_reason</th><td id="shutdown_reason">{{ shutdown_reason }}</td></tr>
+                    <tr><th>finish_reason</th><td id="finish_reason">{{ finish_reason }}</td></tr>
 
-                    <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_critical_count }}</td></tr>
-                    <tr><th>log_error_count</th><td id="log_error_count">{{ log_error_count }}</td></tr>
-                    <tr><th>log_warning_count</th><td id="log_warning_count">{{ log_warning_count }}</td></tr>
-                    <tr><th>log_redirect_count</th><td id="log_redirect_count">{{ log_redirect_count }}</td></tr>
-                    <tr><th>log_retry_count</th><td id="log_retry_count">{{ log_retry_count }}</td></tr>
-                    <tr><th>log_ignore_count</th><td id="log_ignore_count">{{ log_ignore_count }}</td></tr>
+                    <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_categories['critical_logs']['count'] }}</td></tr>
+                    <tr><th>log_error_count</th><td id="log_error_count">{{ log_categories['error_logs']['count'] }}</td></tr>
+                    <tr><th>log_warning_count</th><td id="log_warning_count">{{ log_categories['warning_logs']['count'] }}</td></tr>
+                    <tr><th>log_redirect_count</th><td id="log_redirect_count">{{ log_categories['redirect_logs']['count'] }}</td></tr>
+                    <tr><th>log_retry_count</th><td id="log_retry_count">{{ log_categories['retry_logs']['count'] }}</td></tr>
+                    <tr><th>log_ignore_count</th><td id="log_ignore_count">{{ log_categories['ignore_logs']['count'] }}</td></tr>
 
-                    <tr><th>crawled_pages</th><td><strong class="green">{{ crawled_pages }}</strong></td></tr>
-                    <tr><th>scraped_items</th><td><strong class="green">{{ scraped_items }}</strong></td></tr>
                     <tr><th>latest_crawl</th><td id="latest_crawl"></td></tr>
                     <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
                     <tr><th>latest_log</th><td id="latest_log"></td></tr>
@@ -119,49 +101,29 @@ Using cached version, click to refresh
 
         {% if datas and datas[-1][1] %}
         <li id="content_charts">
-            <div id="chart_total" style="width: 100%; height: 400px;"></div>
-            <div id="chart_minute" style="width: 100%; height: 400px;"></div>
+            <div id="chart_total"></div>
+            <div id="chart_minute"></div>
         </li>
         {% endif %}
 
-        <li id="content_logs">
-            <div class="wrap collapse-wrap">
-                <h3 style="color: #409EFF;">cat logs</h3>
-                <ul class="collapse">
-                    <li>
-                        <div class="title">
-                            <h4>head -50</h4>
-                            <i class="iconfont icon-right"></i>
-                        </div>
-                        <pre>{{ head_lines }}</pre>
-                    </li>
-                   <li>
-                        <div class="title">
-                            <h4>tail -50</h4>
-                            <i class="iconfont icon-right"></i>
-                        </div>
-                        <pre>{{ tail_lines }}</pre>
-                    </li>
-                </ul>
-            </div>
-
+        <li id="content_categories">
             <div class="wrap collapse-wrap">
                 <ul class="collapse">
                     <h3 style="color: red;">WARNING+</h3>
-                {% for item in re_matches[:3] %}
-                    {% if not item['count'] %}
+                {% for title in ['critical_logs', 'error_logs', 'warning_logs'] %}
+                    {% if not log_categories[title]['count'] %}
                     {% else %}
                     <li>
                         <div class="title">
                             <h4>
-                                <div style="width: 200px; display: inline-block;">{{ item['log_title'] }}</div>
-                                {{ item['count'] }} in total
+                                <div style="width: 200px; display: inline-block;">{{ title }}</div>
+                                {{ log_categories[title]['count'] }} in total
                             </h4>
                             <i class="iconfont icon-right"></i>
                         </div>
 
-                        {% for line in item['lines'] %}
-                        <pre>{{ line }}</pre>
+                        {% for detail in log_categories[title]['details'] %}
+                        <pre>{{ detail }}</pre>
                         {% endfor %}
                     </li>
                     {% endif %}
@@ -173,20 +135,20 @@ Using cached version, click to refresh
                 <ul class="collapse">
                     <h3 style="color: orange;">INFO</h3>
 
-                {% for item in re_matches[3:] %}
-                    {% if not item['count'] %}
+                {% for title in ['redirect_logs', 'retry_logs', 'ignore_logs'] %}
+                    {% if not log_categories[title]['count'] %}
                     {% else %}
                     <li>
                         <div class="title">
                             <h4>
-                                <div style="width: 200px; display: inline-block;">{{ item['log_title'] }}</div>
-                                {{ item['count'] }} in total
+                                <div style="width: 200px; display: inline-block;">{{ title }}</div>
+                                {{ log_categories[title]['count'] }} in total
                             </h4>
                             <i class="iconfont icon-right"></i>
                         </div>
 
-                        {% for line in item['lines'] %}
-                        <pre>{{ line }}</pre>
+                        {% for detail in log_categories[title]['details'] %}
+                        <pre>{{ detail }}</pre>
                         {% endfor %}
                     </li>
                     {% endif %}
@@ -198,18 +160,58 @@ Using cached version, click to refresh
                 <ul class="collapse">
                     <h3 style="color: #67c23a;">DEBUG</h3>
 
-                {% for title, line in latest_matches %}
-                    {% if not line %}
+                {% for title, log in latest_matches.items() %}
+                    {% if not log %}
                     {% else %}
                     <li>
                         <div class="title">
                             <h4>{{ title }}</h4>
                             <i class="iconfont icon-right"></i>
                         </div>
-                        <pre>{{ line }}</pre>
+                        <pre>{{ log }}</pre>
                     </li>
                     {% endif %}
                 {% endfor %}
+                </ul>
+            </div>
+        </li>
+
+        <li id="content_logs">
+            <div class="wrap collapse-wrap">
+                <!-- <h3 style="color: #409EFF;">cat logs</h3> -->
+                <ul class="collapse">
+                    <li>
+                        <div class="title">
+                            <h4>Head</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <pre>{{ head }}</pre>
+                    </li>
+                   <li>
+                        <div class="title">
+                            <h4>Tail</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <pre>{{ tail }}</pre>
+                    </li>
+                    {% if url_opt_opposite %}
+                    <li>
+                        <div class="title">
+                            <h4>Log</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <p><a class="link forbid" target="_blank" href="{{ url_opt_opposite }}">{{ url_opt_opposite }}</a></p>
+                    </li>
+                    {% endif %}
+                    {% if url_source %}
+                    <li>
+                        <div class="title">
+                            <h4>Source</h4>
+                            <i class="iconfont icon-right"></i>
+                        </div>
+                        <p><a class="link" target="_blank" href="{{ url_source }}">{{ url_source }}</a></p>
+                    </li>
+                    {% endif %}
                 </ul>
             </div>
         </li>
@@ -222,25 +224,32 @@ var latest_crawl_timestamp = {{ latest_crawl_timestamp }};
 var latest_scrape_timestamp = {{ latest_scrape_timestamp }};
 var latest_log_timestamp = {{ latest_log_timestamp }};
 
-const LAST_REFRESH_TIMESTAMP = {{ last_refresh_timestamp }};
-const LAST_LOG_ALERT_SECONDS = {{ LAST_LOG_ALERT_SECONDS }};
+const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
 
 my$('#current_time').innerHTML = new Date();
-setColor(30);
+setColor();
 </script>
 
 
 <script>
-{% if refresh_url %}
+{% if url_refresh %}
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
-    var seconds = Math.ceil(now_timestamp - LAST_REFRESH_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Cached <span style='color: black;'>" + seconds + "</span> seconds ago, reload this page to request the latest cached version OR click to request a real-time version (which may be slow).";
-    if (seconds > LAST_LOG_ALERT_SECONDS) {
-        my$('#refresh_button').className = "button danger";
-    } else {
-        my$('#refresh_button').className = "button safe";
-    }
+    var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+    {% if not url_jump %}
+        var by = 'ScrapydWeb';
+        var click = 'click to hard reparse (SLOW)';
+    {% else %}
+        {% if 'realtime=True' in url_jump %}
+        var by = 'LogParser';
+        var click = 'click to request the latest cached version (FAST)';
+        {% else %}
+        var by = 'ScrapydWeb';
+        var click = 'click to hard reparse (SLOW)';
+        {% endif %}
+    {% endif %}
+    my$('#refresh_button').innerHTML = "Parsed by " + by + " <span style='color: black;'>" + seconds + "</span> seconds ago, " + click;
+    // my$('#refresh_button').className = "button danger";
 }, 1000);
 {% endif %}
 </script>
@@ -297,6 +306,7 @@ window.addEventListener('optimizedResize', function() {
     } else {
         var active_tab = 'stats';
     }
+    //console.log(active_tab);
 
     if (my$('#header_'+active_tab)) {
         my$('#header_'+active_tab).classList.add('active');
@@ -336,6 +346,7 @@ window.addEventListener('optimizedResize', function() {
 
         if (window.localStorage) {
             localStorage.setItem('stats_tab', target.id.split('_')[1]);
+            //console.log(localStorage.getItem('stats_tab'));
         }
     });
 })();

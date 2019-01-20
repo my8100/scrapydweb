@@ -1,51 +1,46 @@
 # coding: utf8
-import os
-import sys
 import argparse
+import os
 from shutil import copyfile
-from multiprocessing.dummy import Pool as ThreadPool
+import sys
 
-import requests
 from flask import request
 
 # from . import create_app  # --debug: ImportError: cannot import name 'create_app'
 from scrapydweb import create_app
-from scrapydweb.__version__ import __version__, __description__
-from scrapydweb.vars import pattern_scrapyd_server, LAST_CHECK_UPDATE
-from scrapydweb.utils.utils import printf, find_scrapydweb_settings_py, authenticate
+from scrapydweb.__version__ import __description__, __version__
 from scrapydweb.utils.check_app_config import check_app_config
-from scrapydweb.utils.init_caching import init_caching
+from scrapydweb.utils.utils import authenticate, find_scrapydweb_settings_py, printf
+from scrapydweb.vars import LAST_CHECK_UPDATE_PATH
 
 
+ALERT = '!' * 100
+STAR = '*' * 100
 CWD = os.path.dirname(os.path.abspath(__file__))
-SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v6.py'
-scrapydweb_settings_py_path = os.path.join(os.getcwd(), SCRAPYDWEB_SETTINGS_PY)
+DEFAULT_SETTINGS_PY_PATH = os.path.join(CWD, 'default_settings.py')
+SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v7.py'
 
 
 def main():
     main_pid = os.getpid()
-    printf("Main pid: %s" % main_pid)
     printf("ScrapydWeb version: %s" % __version__)
-    printf("Use the 'scrapydweb -h' command to get help")
-    printf("Loading default settings from %s" % os.path.join(CWD, 'default_settings.py'))
-
+    printf("Use 'scrapydweb -h' to get help")
+    printf("Main pid: %s" % main_pid)
+    printf("Loading default settings from %s" % DEFAULT_SETTINGS_PY_PATH)
     app = create_app()
+    app.config['MAIN_PID'] = main_pid
+    app.config['DEFAULT_SETTINGS_PY_PATH'] = DEFAULT_SETTINGS_PY_PATH
+    app.config['SCRAPYDWEB_SETTINGS_PY_PATH'] = os.path.join(os.getcwd(), SCRAPYDWEB_SETTINGS_PY)
     load_custom_settings(app.config)
 
     args = parse_args(app.config)
     # "scrapydweb -h" ends up here
     update_app_config(app.config, args)
-    # from pprint import pprint
-    # pprint(app.config)
     try:
         check_app_config(app.config)
     except AssertionError as err:
-        sys.exit("\n!!! %s\nCheck and update your settings in: %s" % (err, scrapydweb_settings_py_path))
-
-    if app.config.get('ENABLE_CACHE', True):
-        caching_pid = init_caching(app.config, main_pid)
-    else:
-        caching_pid = None
+        sys.exit("\n{alert}\n{err}\nCheck and update your settings in {path}\n{alert}".format(
+                 alert=ALERT, err=err, path=app.config['SCRAPYDWEB_SETTINGS_PY_PATH']))
 
     # https://stackoverflow.com/questions/34164464/flask-decorate-every-route-at-once
     @app.before_request
@@ -77,46 +72,69 @@ def main():
             DAEMONSTATUS_REFRESH_INTERVAL=app.config.get('DAEMONSTATUS_REFRESH_INTERVAL', 10),
             ENABLE_AUTH=app.config.get('ENABLE_AUTH', False),
             SHOW_SCRAPYD_ITEMS=app.config.get('SHOW_SCRAPYD_ITEMS', True),
-
-            main_pid=main_pid,
-            caching_pid=caching_pid,
-            scrapydweb_settings_py_path=scrapydweb_settings_py_path,
         )
 
-    printf("Visit ScrapydWeb at http://127.0.0.1:{port} or http://{bind}:{port}".format(
-        bind='IP-OF-CURRENT-HOST', port=app.config['SCRAPYDWEB_PORT']))
+    # To solve https://github.com/my8100/scrapydweb/issues/17
+    # http://flask.pocoo.org/docs/1.0/cli/?highlight=flask_debug#environments
+    # flask/helpers.py: get_env() The default is 'production'
+    # On Windows, get/set/delete: set FLASK_ENV, set FLASK_ENV=production, set set FLASK_ENV=
+    # if not os.environ.get('FLASK_ENV'):
+        # os.environ['FLASK_ENV'] = 'development'
+        # printf("The environment variable 'FLASK_ENV' has been set to 'development'", warn=True)
+        # printf("WARNING: Do not use the development server in a production. "
+               # "Check out http://flask.pocoo.org/docs/1.0/deploying/", warn=True)
+
+    # http://flask.pocoo.org/docs/1.0/config/?highlight=flask_debug#environment-and-debug-features
+    if app.config.get('DEBUG', False):
+        os.environ['FLASK_DEBUG'] = '1'
+        printf("It's not recommended to run ScrapydWeb in debug mode, set 'DEBUG = False' instead.", warn=True)
+    else:
+        os.environ['FLASK_DEBUG'] = '0'
 
     # site-packages/flask/app.py
-    # def run(self, host=None, port=None, debug=None, load_dotenv=True, **options):
     # Threaded mode is enabled by default.
-    app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'])  # , debug=True)
+    # https://stackoverflow.com/a/28590266/10517783 to run in HTTP or HTTPS mode
+    # site-packages/werkzeug/serving.py
+    if app.config.get('ENABLE_HTTPS', False):
+        protocol = 'https'
+        context = (app.config['CERTIFICATE_FILEPATH'], app.config['PRIVATEKEY_FILEPATH'])
+    else:
+        protocol = 'http'
+        context = None
+    print(STAR)
+    printf("Visit ScrapydWeb at {protocol}://127.0.0.1:{port} or {protocol}://IP-OF-THE-CURRENT-HOST:{port}".format(
+           protocol=protocol, port=app.config['SCRAPYDWEB_PORT']))
+    printf("For running Flask in production, check out http://flask.pocoo.org/docs/1.0/deploying/", warn=True)
+    print(STAR)
+    app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'], ssl_context=context)
 
 
 def load_custom_settings(config):
-    global scrapydweb_settings_py_path
-
     path = find_scrapydweb_settings_py(SCRAPYDWEB_SETTINGS_PY, os.getcwd())
 
-    print('*' * 100)
     if path:
-        scrapydweb_settings_py_path = path
-        printf("Overriding custom settings from %s" % scrapydweb_settings_py_path, warn=True)
-        config.from_pyfile(scrapydweb_settings_py_path)
+        config['SCRAPYDWEB_SETTINGS_PY_PATH'] = path
+        print(STAR)
+        printf("Overriding custom settings from %s" % path, warn=True)
+        print(STAR)
+        config.from_pyfile(path)
     else:
         try:
-            os.remove(LAST_CHECK_UPDATE)
+            os.remove(LAST_CHECK_UPDATE_PATH)
         except:
             pass
 
         try:
-            copyfile(os.path.join(CWD, 'default_settings.py'), scrapydweb_settings_py_path)
+            copyfile(config['DEFAULT_SETTINGS_PY_PATH'], config['SCRAPYDWEB_SETTINGS_PY_PATH'])
         except:
-            sys.exit("Please copy the 'default_settings.py' file from above path to current working directory,\n"
-                     "and rename it to '%s'.\n"
-                     "Then add your SCRAPYD_SERVERS in the file and restart scrapydweb." % SCRAPYDWEB_SETTINGS_PY)
+            sys.exit("\n{alert}\nPlease copy the 'default_settings.py' file from the path above "
+                     "to current working directory,\nand rename it to '{file}'.\n"
+                     "Then add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n{alert}".format(
+                      alert=ALERT, file=SCRAPYDWEB_SETTINGS_PY))
         else:
-            sys.exit("The config file '%s' has been copied to current working directory.\n"
-                     "Please add your SCRAPYD_SERVERS in the file and restart scrapydweb." % SCRAPYDWEB_SETTINGS_PY)
+            sys.exit("\n{alert}\nThe config file '{file}' has been copied to current working directory.\n"
+                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n{alert}".format(
+                      alert=ALERT, file=SCRAPYDWEB_SETTINGS_PY))
 
 
 def parse_args(config):
@@ -126,7 +144,7 @@ def parse_args(config):
     parser.add_argument(
         '-b', '--bind',
         default=SCRAPYDWEB_BIND,
-        help=("current: %s, note that setting to 0.0.0.0 or IP-OF-CURRENT-HOST would make ScrapydWeb server "
+        help=("current: %s, note that setting to 0.0.0.0 or IP-OF-THE-CURRENT-HOST would make ScrapydWeb server "
               "visible externally, otherwise, type '-b 127.0.0.1'") % SCRAPYDWEB_BIND
     )
 
@@ -152,20 +170,12 @@ def parse_args(config):
         help="current: ENABLE_AUTH = %s, append '--disable_auth' to disable basic auth for web UI" % ENABLE_AUTH
     )
 
-    ENABLE_CACHE = config.get('ENABLE_CACHE', True)
+    ENABLE_LOGPARSER = config.get('ENABLE_LOGPARSER', True)
     parser.add_argument(
-        '-dc', '--disable_cache',
+        '-dlp', '--disable_logparser',
         action='store_true',
-        help=("current: ENABLE_CACHE = %s, append '--disable_cache' to disable caching HTML for Log and Stats page "
-              "in the background periodically") % ENABLE_CACHE
-    )
-
-    DELETE_CACHE = config.get('DELETE_CACHE', False)
-    parser.add_argument(
-        '-del', '--delete_cache',
-        action='store_true',
-        help=("current: DELETE_CACHE = %s, append '--delete_cache' to delete cached HTML files "
-              "of Log and Stats page at startup" % DELETE_CACHE)
+        help=("current: ENABLE_LOGPARSER = %s, append '--disable_logparser' to disable running LogParser "
+              "as a subprocess at startup") % ENABLE_LOGPARSER
     )
 
     ENABLE_EMAIL = config.get('ENABLE_EMAIL', False)
@@ -203,80 +213,20 @@ def update_app_config(config, args):
     ))
 
     # scrapyd_server would be None if the -ss argument is not passed in
-    SCRAPYD_SERVERS = args.scrapyd_server or config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
-    servers = []
-    for idx, server in enumerate(SCRAPYD_SERVERS):
-        if isinstance(server, tuple):
-            assert len(server) == 5, ("Scrapyd server should be a tuple of 5 elements, "
-                                      "current value: %s" % str(server))
-            usr, psw, ip, port, group = server
-        else:
-            usr, psw, ip, port, group = pattern_scrapyd_server.search(server.strip()).groups()
-        ip = ip.strip() if ip and ip.strip() else '127.0.0.1'
-        port = port.strip() if port and port.strip() else '6800'
-        group = group.strip() if group and group.strip() else ''
-        auth = (usr, psw) if usr and psw else None
-        servers.append((group, ip, port, auth))
-
-    def key(arg):
-        group, ip, port, auth = arg
-        parts = ip.split('.')
-        parts = [('0' * (3 - len(part)) + part) for part in parts]
-        return [group, '.'.join(parts), int(port)]
-
-    servers = sorted(set(servers), key=key)
-    check_scrapyd_connectivity(servers)
-
-    config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for group, ip, port, auth in servers]
-    config['SCRAPYD_SERVERS_GROUPS'] = [group for group, ip, port, auth in servers]
-    config['SCRAPYD_SERVERS_AUTHS'] = [auth for group, ip, port, auth in servers]
+    if args.scrapyd_server:
+        config['SCRAPYD_SERVERS'] = args.scrapyd_server
 
     # action='store_true': default False
     if args.disable_auth:
         config['ENABLE_AUTH'] = False
-    if args.disable_cache:
-        config['ENABLE_CACHE'] = False
-    if args.delete_cache:
-        config['DELETE_CACHE'] = True
+    if args.disable_logparser:
+        config['ENABLE_LOGPARSER'] = False
     if args.disable_email:
         config['ENABLE_EMAIL'] = False
     if args.debug:
         config['DEBUG'] = True
     if args.verbose:
         config['VERBOSE'] = True
-
-
-def check_scrapyd_connectivity(servers):
-    printf("Checking connectivity of SCRAPYD_SERVERS")
-
-    def check_connectivity(server):
-        (group, ip, port, auth) = server
-        try:
-            r = requests.get('http://%s:%s' % (ip, port), auth=auth, timeout=3)
-            assert r.status_code == 200
-        except:
-            return False
-        else:
-            return True
-
-    # with ThreadPool(min(len(servers), 100)) as pool:  # Works in python 3.3 and up
-        # results = pool.map(check_connectivity, servers)
-    pool = ThreadPool(min(len(servers), 100))
-    results = pool.map(check_connectivity, servers)
-    pool.close()
-    pool.join()
-
-    print("Index {group:<20} {server:<21} Connectivity Auth".format(
-          group='Group', server='Scrapyd IP:Port'))
-    print('#' * 100)
-    for idx, ((group, ip, port, auth), result) in enumerate(zip(servers, results), 1):
-        print("{idx:_<5} {group:_<20} {server:_<22} {result:_<11} {auth}".format(
-              idx=idx, group=group or 'None', server='%s:%s' % (ip, port), auth=auth, result=str(result)))
-    print('#' * 100)
-
-    if not any(results):
-        sys.exit("\n!!! None of your SCRAPYD_SERVERS could be connected.\n"
-                 "Check and update the SCRAPYD_SERVERS item in: %s" % scrapydweb_settings_py_path)
 
 
 if __name__ == '__main__':
