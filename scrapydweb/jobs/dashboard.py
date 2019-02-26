@@ -95,9 +95,11 @@ class DashboardView(MyView):
                                            version_spider_job=row['spider'])
                 # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
                 if row['items']:
-                    _url_items = re.search(r"href='(.*?)'>", row['items']).group(1)
-                    # row['url_items'] = re.sub(r'/jobs$', _url_items, self.url) + _url_items
-                    row['url_items'] = urljoin(self.url, _url_items)
+                    url_items_search = re.search(r"href='(.*?)'>", row['items'])
+                    if url_items_search:
+                        _url_items = url_items_search.group(1)
+                        # row['url_items'] = re.sub(r'/jobs$', _url_items, self.url) + _url_items
+                        row['url_items'] = urljoin(self.url, _url_items)
 
                 if row['finish']:
                     finished_rows.append(row)
