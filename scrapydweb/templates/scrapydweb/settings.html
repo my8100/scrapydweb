@@ -63,6 +63,10 @@
                     <pre>{{ servers }}</pre>
                 </li>
                 <li>
+                    <div class="title"><h4>LOCAL_SCRAPYD_SERVER</h4><i class="iconfont icon-right"></i></div>
+                    <pre>{{ LOCAL_SCRAPYD_SERVER }}</pre>
+                </li>
+                <li>
                     <div class="title"><h4>SCRAPYD_LOGS_DIR</h4><i class="iconfont icon-right"></i></div>
                     <pre>{{ SCRAPYD_LOGS_DIR }}</pre>
                 </li>
@@ -77,9 +81,23 @@
             <h3>LogParser</h3>
             <ul class="collapse">
                 <li><div class="title"><h4>ENABLE_LOGPARSER = {{ ENABLE_LOGPARSER }}</h4></div></li>
+                <li><div class="title"><h4>version: {{ logparser_version }}</h4></div></li>
+                <li>
+                    <div class="title"><h4>settings.py</h4><i class="iconfont icon-right"></i></div>
+                    <p>{{ logparser_settings_py_path }}</p>
+                </li>
+                <li><div class="title"><h4>BACKUP_STATS_JSON_FILE = {{ BACKUP_STATS_JSON_FILE }}</h4></div></li>
             </ul>
         </div>
 
+        <div class="wrap collapse-wrap">
+            <h3>Timer tasks</h3>
+            <ul class="collapse">
+                <li><div class="title"><h4>scheduler.state: {{ scheduler_state }}</h4></div></li>
+                <li><div class="title"><h4>JOBS_SNAPSHOT_INTERVAL = {{ JOBS_SNAPSHOT_INTERVAL }}</h4></div></li>
+            </ul>
+        </div>
+        
         <div class="wrap collapse-wrap">
             <h3>Page Display</h3>
             <ul class="collapse">

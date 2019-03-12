@@ -6,7 +6,6 @@
     <style>
         /* See stats.css */
         #content pre {white-space: pre-wrap;}
-        .button.danger {cursor: not-allowed;}
     </style>
     <link rel="stylesheet" type="text/css" href="{{ static_css_utf8 }}">
 {% endblock %}
@@ -36,14 +35,14 @@
                 <h4>Stats</h4>
                 <i class="iconfont icon-right"></i>
             </div>
-            <p><a class="link" href="{{ url_opt_opposite }}" onclick="showLoader();">{{ url_opt_opposite }}</a></p>
+            <p><a class="link" href="{{ url_opt_opposite }}" target="_blank">{{ url_opt_opposite }}</a></p>
         </li>
         <li>
             <div class="title">
                 <h4>Source</h4>
                 <i class="iconfont icon-right"></i>
             </div>
-            <p><a class="link" target="_blank" href="{{ url_source }}">{{ url_source }}</a></p>
+            <p><a class="link" href="{{ url_source }}" target="_blank">{{ url_source }}</a></p>
         </li>
     </ul>
 </div>
@@ -86,7 +85,7 @@ const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
     var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> seconds ago, click to hard reload (SLOW)";
+    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> secs ago, click to hard reload (SLOW)";
 }, 1000);
 {% endif %}
 </script>

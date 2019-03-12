@@ -7,7 +7,7 @@ from flask import render_template, request, url_for
 from ..myview import MyView
 
 
-class ManageView(MyView):
+class ProjectsView(MyView):
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -23,14 +23,14 @@ class ManageView(MyView):
         # self.text = api(self.node, self.opt, self.project, self.version_spider_job)
         _url = url_for('api', node=self.node, opt=self.opt, project=self.project,
                        version_spider_job=self.version_spider_job)  # '/1/api/listprojects/'
-        self.text = self.get_response_from_view(_url)
+        self.text = self.get_response_from_view(_url, as_json=False)
         # _bind = '127.0.0.1' if self.SCRAPYDWEB_BIND == '0.0.0.0' else self.SCRAPYDWEB_BIND
         # _url = 'http://{}:{}{}'.format(_bind, self.SCRAPYDWEB_PORT, _url)
         # _auth = (self.USERNAME, self.PASSWORD) if self.ENABLE_AUTH else None
-        # status_code, self.text = self.make_request(_url, auth=_auth, api=False)
+        # status_code, self.text = self.make_request(_url, auth=_auth, as_json=False)
         self.js = json.loads(self.text)
 
-        if self.js['status'] == 'ok':
+        if self.js['status'] == self.OK:
             return getattr(self, self.opt)()
         else:
             return self.handle_status_error()
@@ -48,8 +48,8 @@ class ManageView(MyView):
             kwargs = dict(
                 url=self.js['url'],
                 status=self.js['status'],
-                url_deploy=url_for('deploy.deploy', node=self.node),
-                url_delproject=url_for('manage', node=self.node, opt='delproject', project=self.project),
+                url_deploy=url_for('deploy', node=self.node),
+                url_delproject=url_for('projects', node=self.node, opt='delproject', project=self.project),
                 project=self.project,
                 text=self.text,
                 tip=self.js.get('tip', '')
@@ -71,7 +71,7 @@ class ManageView(MyView):
     def listprojects(self):
         results = []
         for project in self.js['projects']:
-            url_listversions = url_for('manage', node=self.node, opt='listversions', project=project)
+            url_listversions = url_for('projects', node=self.node, opt='listversions', project=project)
             results.append((project, url_listversions))
 
         kwargs = dict(
@@ -79,17 +79,17 @@ class ManageView(MyView):
             url=self.js['url'],
             node_name=self.js['node_name'],
             results=results,
-            url_deploy=url_for('deploy.deploy', node=self.node)
+            url_deploy=url_for('deploy', node=self.node)
         )
-        return render_template('scrapydweb/manage.html', **kwargs)
+        return render_template('scrapydweb/projects.html', **kwargs)
 
     def listspiders(self):
         spiders = self.js['spiders']
         results = []
         for spider in spiders:
-            url_schedule = url_for('schedule.schedule', node=self.node,
+            url_schedule = url_for('schedule', node=self.node,
                                    project=self.project, version=self.version_spider_job, spider=spider)
-            url_multinode_schedule = url_for('overview', node=self.node, opt='schedule',
+            url_multinode_schedule = url_for('servers', node=self.node, opt='schedule',
                                              project=self.project, version_job=self.version_spider_job, spider=spider)
             results.append((spider, url_schedule, url_multinode_schedule))
 
@@ -103,11 +103,11 @@ class ManageView(MyView):
             except:
                 version_readable = ''
 
-            url_listspiders = url_for('manage', node=self.node, opt='listspiders', project=self.project,
+            url_listspiders = url_for('projects', node=self.node, opt='listspiders', project=self.project,
                                       version_spider_job=version)
-            url_multinode_delversion = url_for('overview', node=self.node, opt='delversion', project=self.project,
+            url_multinode_delversion = url_for('servers', node=self.node, opt='delversion', project=self.project,
                                                version_job=version)
-            url_delversion = url_for('manage', node=self.node, opt='delversion', project=self.project,
+            url_delversion = url_for('projects', node=self.node, opt='delversion', project=self.project,
                                      version_spider_job=version)
             results.append((version, version_readable, url_listspiders, url_multinode_delversion, url_delversion))
 
@@ -115,7 +115,7 @@ class ManageView(MyView):
             node=self.node,
             project=self.project,
             results=results,
-            url_multinode_delproject=url_for('overview', node=self.node, opt='delproject', project=self.project),
-            url_delproject=url_for('manage', node=self.node, opt='delproject', project=self.project)
+            url_multinode_delproject=url_for('servers', node=self.node, opt='delproject', project=self.project),
+            url_delproject=url_for('projects', node=self.node, opt='delproject', project=self.project)
         )
         return render_template('scrapydweb/listversions.html', **kwargs)

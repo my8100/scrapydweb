@@ -1,3 +1,4 @@
+*.html
 scrapydweb_settings.py
 scrapydweb_settings_v*.py
 

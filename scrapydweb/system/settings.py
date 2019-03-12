@@ -3,9 +3,11 @@ from collections import OrderedDict, defaultdict
 import re
 
 from flask import render_template
+from logparser import SETTINGS_PY_PATH as LOGPARSER_SETTINGS_PY_PATH
 
+from ..common import json_dumps
 from ..myview import MyView
-from ..utils.utils import json_dumps
+from ..vars import SCHEDULER_STATE_DICT
 
 
 class SettingsView(MyView):
@@ -42,8 +44,8 @@ class SettingsView(MyView):
 
     def update_kwargs(self):
         # User settings
-        self.kwargs['DEFAULT_SETTINGS_PY_PATH'] = self.DEFAULT_SETTINGS_PY_PATH
-        self.kwargs['SCRAPYDWEB_SETTINGS_PY_PATH'] = self.SCRAPYDWEB_SETTINGS_PY_PATH
+        self.kwargs['DEFAULT_SETTINGS_PY_PATH'] = self.handle_slash(self.DEFAULT_SETTINGS_PY_PATH)
+        self.kwargs['SCRAPYDWEB_SETTINGS_PY_PATH'] = self.handle_slash(self.SCRAPYDWEB_SETTINGS_PY_PATH)
         self.kwargs['MAIN_PID'] = self.MAIN_PID
         self.kwargs['LOGPARSER_PID'] = self.LOGPARSER_PID
         self.kwargs['POLL_PID'] = self.POLL_PID
@@ -52,6 +54,7 @@ class SettingsView(MyView):
         self.kwargs['scrapydweb_server'] = self.json_dumps(dict(
             SCRAPYDWEB_BIND=self.SCRAPYDWEB_BIND,
             SCRAPYDWEB_PORT=self.SCRAPYDWEB_PORT,
+            URL_SCRAPYDWEB=self.URL_SCRAPYDWEB,
             ENABLE_AUTH=self.ENABLE_AUTH,
             USERNAME=self.protect(self.USERNAME),
             PASSWORD=self.protect(self.PASSWORD)
@@ -63,7 +66,7 @@ class SettingsView(MyView):
         ))
 
         # Scrapy
-        self.kwargs['SCRAPY_PROJECTS_DIR'] = self.SCRAPY_PROJECTS_DIR or "''"
+        self.kwargs['SCRAPY_PROJECTS_DIR'] = self.handle_slash(self.SCRAPY_PROJECTS_DIR) or "''"
 
         # Scrapyd
         servers = defaultdict(list)
@@ -72,18 +75,26 @@ class SettingsView(MyView):
             servers[group].append(_server)
 
         self.kwargs['servers'] = self.json_dumps(servers)
-        self.kwargs['SCRAPYD_LOGS_DIR'] = self.SCRAPYD_LOGS_DIR or "''"
+        self.kwargs['LOCAL_SCRAPYD_SERVER'] = self.LOCAL_SCRAPYD_SERVER or "''"
+        self.kwargs['SCRAPYD_LOGS_DIR'] = self.handle_slash(self.SCRAPYD_LOGS_DIR) or "''"
         self.kwargs['SCRAPYD_LOG_EXTENSIONS'] = self.SCRAPYD_LOG_EXTENSIONS
 
         # LogParser
         self.kwargs['ENABLE_LOGPARSER'] = self.ENABLE_LOGPARSER
+        self.kwargs['logparser_version'] = self.LOGPARSER_VERSION
+        self.kwargs['logparser_settings_py_path'] = LOGPARSER_SETTINGS_PY_PATH
+        self.kwargs['BACKUP_STATS_JSON_FILE'] = self.BACKUP_STATS_JSON_FILE
+
+        # Timer Tasks
+        self.kwargs['scheduler_state'] = SCHEDULER_STATE_DICT[self.scheduler.state]
+        self.kwargs['JOBS_SNAPSHOT_INTERVAL'] = self.JOBS_SNAPSHOT_INTERVAL
 
         # Page Display
         self.kwargs['page_display_details'] = self.json_dumps(dict(
             SHOW_SCRAPYD_ITEMS=self.SHOW_SCRAPYD_ITEMS,
-            SHOW_DASHBOARD_JOB_COLUMN=self.SHOW_DASHBOARD_JOB_COLUMN,
-            DASHBOARD_FINISHED_JOBS_LIMIT=self.DASHBOARD_FINISHED_JOBS_LIMIT,
-            DASHBOARD_RELOAD_INTERVAL=self.DASHBOARD_RELOAD_INTERVAL,
+            SHOW_JOBS_JOB_COLUMN=self.SHOW_JOBS_JOB_COLUMN,
+            JOBS_FINISHED_JOBS_LIMIT=self.JOBS_FINISHED_JOBS_LIMIT,
+            JOBS_RELOAD_INTERVAL=self.JOBS_RELOAD_INTERVAL,
             DAEMONSTATUS_REFRESH_INTERVAL=self.DAEMONSTATUS_REFRESH_INTERVAL
         ))
 
@@ -94,12 +105,13 @@ class SettingsView(MyView):
             SMTP_SERVER=self.SMTP_SERVER,
             SMTP_PORT=self.SMTP_PORT,
             SMTP_OVER_SSL=self.SMTP_OVER_SSL,
-            SMTP_CONNECTION_TIMEOUT=self.SMTP_CONNECTION_TIMEOUT
+            SMTP_CONNECTION_TIMEOUT=self.SMTP_CONNECTION_TIMEOUT,
+            EMAIL_USERNAME=self.EMAIL_USERNAME,
+            EMAIL_PASSWORD=self.protect(self.EMAIL_PASSWORD),
         ))
 
         self.kwargs['sender_recipients'] = self.json_dumps(dict(
             FROM_ADDR=self.FROM_ADDR,
-            EMAIL_PASSWORD=self.protect(self.EMAIL_PASSWORD),
             TO_ADDRS=self.TO_ADDRS
         ))
 

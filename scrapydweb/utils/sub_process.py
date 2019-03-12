@@ -1,14 +1,17 @@
 # coding: utf8
 import atexit
 from ctypes import cdll
+import logging
 import os
 import platform
 import signal
 from subprocess import Popen
 import sys
 
-from .utils import json_dumps, printf
+from ..common import json_dumps
 
+
+logger = logging.getLogger(__name__)
 
 CWD = os.path.dirname(os.path.abspath(__file__))
 
@@ -42,15 +45,15 @@ def on_parent_exit(signame):
 # https://stackoverflow.com/a/19448255/10517783
 def kill_child(proc, title=''):
     proc.kill()
-    # A None value indicates that the process hasn’t terminated yet.
+    # A None value indicates that the process has not terminated yet.
     # A negative value -N indicates that the child was terminated by signal N (Unix only).
-    printf('%s subprocess (pid: %s) killed with returncode: %s' % (title, proc.pid, proc.wait()), warn=True)
+    logger.warning('%s subprocess (pid: %s) killed with returncode: %s', title, proc.pid, proc.wait())
 
 
 def init_logparser(config):
     logparser_subprocess = start_logparser(config)
     logparser_pid = logparser_subprocess.pid
-    printf("Running LogParser in the background with pid: %s" % logparser_pid)
+    logger.info("Running LogParser in the background with pid: %s", logparser_pid)
     atexit.register(kill_child, logparser_subprocess, 'LogParser')
     return logparser_pid
 
@@ -71,7 +74,7 @@ def start_logparser(config):
         try:
             logparser_subprocess = Popen(args, **kwargs)
         except Exception as err:
-            printf(err, warn=True)
+            logger.error(err)
             logparser_subprocess = Popen(args)
     else:
         logparser_subprocess = Popen(args)
@@ -82,20 +85,17 @@ def start_logparser(config):
 def init_poll(config):
     poll_subprocess = start_poll(config)
     poll_pid = poll_subprocess.pid
-    printf("Start polling job stats for email notice in the background with pid: %s" % poll_pid)
+    logger.info("Start polling job stats for email notice in the background with pid: %s", poll_pid)
     atexit.register(kill_child, poll_subprocess, 'Poll')
     return poll_pid
 
 
 def start_poll(config):
-    _bind = config.get('SCRAPYDWEB_BIND', '0.0.0.0')
-    _bind = '127.0.0.1' if _bind == '0.0.0.0' else _bind
     args = [
         sys.executable,
         os.path.join(CWD, 'poll.py'),
 
-        _bind,
-        str(config.get('SCRAPYDWEB_PORT', 5000)),
+        config['URL_SCRAPYDWEB'],
         config.get('USERNAME', '') if config.get('ENABLE_AUTH', False) else '',
         config.get('PASSWORD', '') if config.get('ENABLE_AUTH', False) else '',
         json_dumps(config.get('SCRAPYD_SERVERS', ['127.0.0.1'])),
@@ -117,7 +117,7 @@ def start_poll(config):
         try:
             poll_subprocess = Popen(args, **kwargs)
         except Exception as err:
-            printf(err, warn=True)
+            logger.error(err)
             poll_subprocess = Popen(args)
     else:
         poll_subprocess = Popen(args)

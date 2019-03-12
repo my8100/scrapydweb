@@ -2,10 +2,11 @@
 import os
 
 from scrapydweb import create_app
+from scrapydweb.common import find_scrapydweb_settings_py
 from scrapydweb.run import SCRAPYDWEB_SETTINGS_PY
 from scrapydweb.utils.check_app_config import check_app_config, check_email
-from scrapydweb.utils.utils import find_scrapydweb_settings_py
 from tests.utils import get_text, req
+from tests.test_z_cleantest import test_cleantest as cleantest
 
 
 # http://flask.pocoo.org/docs/1.0/tutorial/tests/#factory
@@ -35,7 +36,7 @@ def test_find_scrapydweb_settings_py():
 
 
 def test_check_app_config(app, client):
-    app.config['SCRAPYD_SERVERS'][-1] = ('username', 'password', 'localhost', '6801', 'group')
+    cleantest(app, client)
 
     # In conftest.py: ENABLE_LOGPARSER=False
     assert not os.path.exists(app.config['STATS_JSON_PATH'])
@@ -87,15 +88,16 @@ def test_check_email_with_ssl_false(app):
         app.config['SMTP_PORT'] = app.config['SMTP_PORT_']
         app.config['SMTP_OVER_SSL'] = app.config['SMTP_OVER_SSL_']
         app.config['SMTP_CONNECTION_TIMEOUT_'] = app.config['SMTP_CONNECTION_TIMEOUT_']
-        app.config['FROM_ADDR'] = app.config['FROM_ADDR_']
+        app.config['EMAIL_USERNAME'] = app.config['EMAIL_USERNAME_']
         app.config['EMAIL_PASSWORD'] = app.config['EMAIL_PASSWORD_']
+        app.config['FROM_ADDR'] = app.config['FROM_ADDR_']
         app.config['TO_ADDRS'] = app.config['TO_ADDRS_']
 
         check_email(app.config)
 
 
 def test_scrapyd_group(app, client):
-    req(app, client, view='overview', kws=dict(node=1), ins='Scrapyd-group')
+    req(app, client, view='servers', kws=dict(node=1), ins='Scrapyd-group')
 
 
 def test_scrapyd_auth(app, client):

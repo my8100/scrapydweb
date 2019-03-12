@@ -4,7 +4,7 @@ import re
 from flask import render_template, url_for
 
 from ..myview import MyView
-from ..vars import DIRECTORY_KEYS, DIRECTORY_PATTERN
+from ..vars import DIRECTORY_KEYS, DIRECTORY_PATTERN, HREF_NAME_PATTERN
 
 
 class LogsView(MyView):
@@ -23,14 +23,14 @@ class LogsView(MyView):
         self.text = ''
 
     def dispatch_request(self, **kwargs):
-        status_code, self.text = self.make_request(self.url, auth=self.AUTH, api=False)
+        status_code, self.text = self.make_request(self.url, auth=self.AUTH, as_json=False)
         if status_code != 200 or not re.search(r'Directory listing for /logs/', self.text):
             kwargs = dict(
                 node=self.node,
                 url=self.url,
                 status_code=status_code,
                 text=self.text,
-                tip='Click the above link to make sure your Scrapyd server is accessable.'
+                tip="Click the above link to make sure your Scrapyd server is accessable. "
             )
             return render_template(self.template_fail, **kwargs)
 
@@ -42,33 +42,32 @@ class LogsView(MyView):
             # <a href="demo/">demo/</a>     dir
             # <a href="test/">test/</a>     dir
             # <a href="a.log">a.log</a>     file
-            m = re.search(r'>(.*?)<', row['filename'])
-            filename = m.group(1)
-            if filename.endswith('/'):
-                row['filename'] = re.sub(r'href=', 'class="link" href=', row['filename'])
-            else:
-                row['filename'] = u'<a class="link" target="_blank" href="{}">{}</a>'.format(
-                                   self.url + filename, filename)
+            row['href'], row['filename'] = re.search(HREF_NAME_PATTERN, row['filename']).groups()
+            if not row['href'].endswith('/'):  # It's a file but not a directory
+                row['href'] = self.url + row['href']
+
             if self.project and self.spider:
-                row['url_log_stats'] = url_for('log', node=self.node, opt='stats',
-                                               project=self.project, spider=self.spider,
-                                               job=filename, with_ext='True')
-                if filename.endswith('.json'):  # stats by LogParser
-                    row['url_log_utf8'] = ''
+                row['url_stats'] = url_for('log', node=self.node, opt='stats', project=self.project,
+                                           spider=self.spider, job=row['filename'], with_ext='True')
+                if row['filename'].endswith('.json'):  # stats by LogParser
+                    row['url_utf8'] = ''
                 else:
-                    row['url_log_utf8'] = url_for('log', node=self.node, opt='utf8',
-                                                  project=self.project, spider=self.spider,
-                                                  job=filename, with_ext='True')
-                row['url_start'] = url_for('schedule.schedule', node=self.node, project=self.project,
-                                           version=self.DEFAULT_LATEST_VERSION, spider=self.spider)
-                row['url_multinode_start'] = url_for('overview', node=self.node,
-                                                     opt='schedule', project=self.project,
-                                                     version_job=self.DEFAULT_LATEST_VERSION, spider=self.spider)
+                    row['url_utf8'] = url_for('log', node=self.node, opt='utf8', project=self.project,
+                                              spider=self.spider, job=row['filename'], with_ext='True')
+        if self.project and self.spider:
+            url_schedule = url_for('schedule', node=self.node, project=self.project,
+                                   version=self.DEFAULT_LATEST_VERSION, spider=self.spider)
+            url_multinode_run = url_for('servers', node=self.node, opt='schedule', project=self.project,
+                                        version_job=self.DEFAULT_LATEST_VERSION, spider=self.spider)
+        else:
+            url_schedule = url_multinode_run = ''
         kwargs = dict(
             node=self.node,
             project=self.project,
             spider=self.spider,
             url=self.url,
+            url_schedule=url_schedule,
+            url_multinode_run=url_multinode_run,
             rows=rows
         )
         return render_template(self.template, **kwargs)

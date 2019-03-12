@@ -25,7 +25,7 @@
 
         .tab-content>li {
             padding-bottom: 0px;
-            padding-top: 22px;
+            padding-top: 30px;
         }
 
 
@@ -73,9 +73,10 @@
 
 {% block body %}
 <h2>
-    <a class="link" target="_blank" href="{{ url }}">
-    Add a version to a project, creating the project if it doesn't exist.
-    </a>
+    <a class="link" target="_blank" href="{{ url }}">Add a version to a project, creating the project if it doesn't exist.</a>
+    <label title="manage existing projects and versions">
+        <a class="button safe narrow" href="{{ url_projects }}">+</a>
+    </label>
 </h2>
 
 
@@ -87,7 +88,7 @@
                 <i class="iconfont icon-right"></i>
             </div>
 
-            <p>Deploying your project involves eggifying it and uploading the egg to Scrapyd.
+            <p>Deploying your project involves packaging it and uploading the egg file to Scrapyd.
                 (See <a class="link" target="_blank" href="https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json">Scrapyd addversion.json</a>)
                 You can do this manually, but the easiest way is to use the scrapyd-deploy tool.
                 (See <a class="link" target="_blank" href="https://github.com/scrapy/scrapyd-client">scrapyd-client</a>)
@@ -99,14 +100,14 @@
             </p>
             <br>
             <div style="margin-left: 8px;">
-                <p><strong>Auto eggifying (projects stored in the ScrapydWeb host)</strong></p>
-                <p>Step 1: set up the 'SCRAPY_PROJECTS_DIR' item for locating projects before starting up ScrapydWeb</p>
+                <p><strong>Auto packaging (projects stored in the ScrapydWeb host)</strong></p>
+                <p>Step 1: set up the SCRAPY_PROJECTS_DIR option for locating projects before starting up ScrapydWeb</p>
                 <p>Step 2: select any project found in SCRAPY_PROJECTS_DIR to deploy via this page</p>
                 <br>
                 <p><strong>Upload an egg file (from any host)</strong></p>
                 <p>Step 0: execute the "pip install scrapyd-client" command</p>
                 <p>Step 1: cd into your project's root, then execute the "scrapyd-deploy --build-egg projectname.egg" command</p>
-                <p>Step 2: upload the built egg via this page</p>
+                <p>Step 2: upload the built egg file via this page</p>
                 <br>
                 <p><strong>Upload a compressed file (from any host)</strong></p>
                 <p>Step 1: compress your project folder into an archive file (.zip) with an archiving software or via the tar command:
@@ -132,14 +133,14 @@
 
 <div class="tab-wrap wrap">
     <ul class="tab tab-header clear-float">
-        <li id="header_eggify">Auto eggifying</li>
+        <li id="header_package">Auto packaging</li>
         <li id="header_upload">Upload file</li>
     </ul>
     <ul class="tab tab-content">
-        <li id="content_eggify">
-            <!-- <p style="margin-left: 130px;" href="{{ url_overview }}">{{ projects|length|string }} projects found</p> -->
+        <li id="content_package">
+            <!-- <p style="margin-left: 130px;" href="{{ url_servers }}">{{ projects|length|string }} projects found</p> -->
             {% if folders|length == 0 %}
-            <h3>NO projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR item in the config file.</h3>
+            <h3>No projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR option in the config file.</h3>
             {% endif %}
             <div class="line-container">
                 <div class="key">folder</div>
@@ -183,7 +184,7 @@
             <div class="line-container">
                 <div class="key">file</div>
                 <div>
-                    <input type="text" id="filename" class="value readonly" readonly="readonly" placeholder="support filetype: egg, zip, and tar.gz" />
+                    <input type="text" id="filename" class="value readonly" readonly="readonly" placeholder="support file type: egg, zip, and tar.gz" />
                     <div class="form-item-error">select a file to upload</div>
                 </div>
                 <div id="filesize" class="key" style="padding-left: 12px; width: unset;"></div>
@@ -209,7 +210,7 @@
 
     <form method="post" action="{{ url_deploy_upload }}" enctype="multipart/form-data">
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="link" style="margin-left: 140px;" href="{{ url_overview }}">To pass in a group of nodes &raquo;</a>
+        <a class="link" style="margin-left: 140px;" href="{{ url_servers }}" target="_blank">To select nodes in the Servers page &raquo;</a>
         <div class="line-container">
             <div class="key" style="padding-left: 10px;"><span>*</span>multinodes</div>
             <input type="text" name="checked_amount" value="1" hidden />
@@ -224,8 +225,9 @@
                     <div class="overSelect"></div>
                 </div>
                 <div id="checkboxes" style="display: none;">
-                    <label for="checkcurrent"><input type="checkbox" id="checkcurrent" />Check current node only</label>
-                    <label for="checkall"><input type="checkbox" id="checkall" />CheckAll / UncheckAll</label>
+                    <label for="checkCurrent"><input type="checkbox" id="checkCurrent" />Check current node only</label>
+                    <label for="syncFromServersPage"><input type="checkbox" id="syncFromServersPage" />Sync from Servers page</label>
+                    <label for="checkAll"><input type="checkbox" id="checkAll" />CheckAll / UncheckAll</label>
                     <div id="nodes_checkboxes">
                     {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
                         {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
@@ -234,8 +236,7 @@
 
                         <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}" {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}>
                             <input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}"
-                            {% if loop.index in selected_nodes %}checked{% endif %}
-                            />{{ SCRAPYD_SERVER }}
+                            {% if loop.index in selected_nodes %}checked{% endif %} />{{ SCRAPYD_SERVER }}
                         </label>
                     {% endfor %}
                     </div>
@@ -252,21 +253,21 @@
             <input type="file" id="file" name="file" accept=".egg, .zip, .gz" />
             Select File
         </label>
-        <a id="submit" class="button safe big" href="javascript:;" onclick="eggify();">Eggify & Deploy</a>
+        <a id="submit" class="button safe big" href="javascript:;" onclick="package();">Package & Deploy</a>
     </div>
 </div>
 
 
 <script>
-//To avoid: var projects = [u'12345678901234567890',]
+// To avoid: var projects = [u'12345678901234567890',]
 var folders = [{% for folder in folders %}'{{ folder }}', {% endfor %}];
 var projects = [{% for project in projects %}'{{ project }}', {% endfor %}];
 var modification_times = {{ modification_times|safe }};
-console.log(folders);
-console.log(projects);
-console.log(modification_times);
+// console.log(folders);
+// console.log(projects);
+// console.log(modification_times);
 
-//https://stackoverflow.com/questions/574941/best-way-to-track-onchange-as-you-type-in-input-type-text
+// https://stackoverflow.com/questions/574941/best-way-to-track-onchange-as-you-type-in-input-type-text
 const typeProjectHandler = function(e) {
     var id = e.target.id;
     if ($.trim(e.target.value)) {
@@ -280,11 +281,11 @@ const typeProjectHandler = function(e) {
 </script>
 
 
-<!-- 'Auto eggifying' tab -->
+<!-- 'Auto packaging' tab -->
 <script>
 my$('#project_name').addEventListener('input', typeProjectHandler);
 
-function updateEggifyInputs() {
+function updatePackageInputs() {
     //var folder = my$('input[name="folder_selected"]').value;
     var folder = my$('#folder_selected').value;
     if (folder.length > 35) {
@@ -310,11 +311,11 @@ function updateEggifyInputs() {
 }
 
 $(function(){
-    updateEggifyInputs();
+    updatePackageInputs();
 });
 
 
-function checkEggifyInputs() {
+function checkPackageInputs() {
     var arr = ['#project_name', '#modification_time']; //'#folder_selected',
     for (var idx in arr) {
         var sel = arr[idx];
@@ -333,15 +334,15 @@ var div_folder_arr = my$$('.folders-content div');
 function handleDropdownProjects(folder_selected) {
     console.log('handleDropdownProjects');
     {% if folders|length == 0 %}
-    alert("NO projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR item in the config file.");
+    alert("No projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR option in the config file.");
     return;
     {% endif %}
 
-    my$('#content_eggify .value').style.border = "1px solid #409EFF";
+    my$('#content_package .value').style.border = "1px solid #409EFF";
 
     var x = my$('.folders-content-wrap');
     if (x.style.display != 'flex') {
-        my$('#content_eggify .icon.anchor').style.transform = 'rotate(-180deg)';
+        my$('#content_package .icon.anchor').style.transform = 'rotate(-180deg)';
         x.style.display = 'flex';
         div_folder_arr.forEach(function(elem) {
             if (elem.innerText == my$('#folder_selected').value) {
@@ -353,16 +354,16 @@ function handleDropdownProjects(folder_selected) {
             }
         });
     } else {
-        my$('#content_eggify .value').style.border = "1px solid #67c23a";
-        my$('#content_eggify .icon.anchor').style.transform = 'rotate(0deg)';
+        my$('#content_package .value').style.border = "1px solid #67c23a";
+        my$('#content_package .icon.anchor').style.transform = 'rotate(0deg)';
         x.style.display = 'none';
     }
 
     if (folder_selected !== undefined) {
         my$('#folder_selected').value = folder_selected;
-        updateEggifyInputs();
+        updatePackageInputs();
     }
-    checkEggifyInputs();
+    checkPackageInputs();
 }
 
 
@@ -378,14 +379,14 @@ $(document).click(function(){
     var x = my$('.folders-content-wrap');
     if (x.style.display == 'flex') {
         x.style.display = 'none';
-        my$('#content_eggify .value').style.border = "1px solid #67c23a";
-        my$('#content_eggify .icon.anchor').style.transform = 'rotate(0deg)';
+        my$('#content_package .value').style.border = "1px solid #67c23a";
+        my$('#content_package .icon.anchor').style.transform = 'rotate(0deg)';
     }
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
     showCheckboxes('click_outside_close');
     {% endif %}
 });
-$('#content_eggify .value').click(function(e){
+$('#content_package .value').click(function(e){
     e.stopPropagation();
 });
 
@@ -396,19 +397,19 @@ $('.multiselect').click(function(e){
 {% endif %}
 
 
-function eggify() {
+function package() {
     var folder = my$('#folder_selected').value; //hidden
     var project = my$('#project_name').value;  //editable
     //var version = modification_times[folders.indexOf(folder)];
     var version = my$('#modification_time').value;  //readonly
 
     {% if folders|length == 0 %}
-    alert("NO projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR item in the config file.");
+    alert("No projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR option in the config file.");
     return;
     {% endif %}
 
     if (!my$('#project_name').value || !my$('#modification_time').value) {
-        checkEggifyInputs();
+        checkPackageInputs();
         return;
     }
 
@@ -575,10 +576,10 @@ function upload() {
 
 // tab switcher
 function switchButtons(active_tab) {
-    if (active_tab == 'eggify') {
+    if (active_tab == 'package') {
         my$('#select-file-button').style.display = 'none';
-        my$('#submit').onclick = eggify;
-        my$('#submit').text = "Eggify & Deploy";
+        my$('#submit').onclick = package;
+        my$('#submit').text = "Package & Deploy";
     } else {
         my$('#select-file-button').style.display = 'block';
         my$('#submit').onclick = upload;
@@ -588,11 +589,16 @@ function switchButtons(active_tab) {
 
 (function() {
     if (window.localStorage) {
-        var active_tab = localStorage.getItem('deploy_tab') || 'eggify';
+        var active_tab = localStorage.getItem('deploy_tab') || 'package';
     } else {
-        var active_tab = 'eggify';
+        var active_tab = 'package';
     }
-
+    // before ScrapydWeb v1.2.0: deploy_tab: "eggify"
+    if (!my$('#header_' + active_tab)) {
+        console.log(active_tab);
+        active_tab = 'package';
+        console.log(active_tab);
+    } 
     my$('#header_' + active_tab).classList.add('active');
     my$('#content_' + active_tab).classList.add('active');
     switchButtons(active_tab);
@@ -644,17 +650,22 @@ window.onload = function() {
     }
     {% endif %}
 
-    $('#checkall').click(function () {
+    $('#checkAll').click(function () {
         $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
-        my$('#checkcurrent').checked = false;
+        my$('#checkCurrent').checked = false;
+        my$('#syncFromServersPage').checked = false;
         checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
     });
 
-    $('#checkcurrent').click(function () {
+    $('#checkCurrent').click(function () {
         $('#checkboxes input:checkbox').not(this).prop('checked', false);
-        my$('#checkcurrent').checked = true;
+        my$('#checkCurrent').checked = true;
         my$('#checkbox_'+{{ node }}).checked = true;
         checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+    });
+
+    $('#syncFromServersPage').click(function () {
+        syncFromServersPage({{ SCRAPYD_SERVERS_AMOUNT }});
     });
 
     $('#nodes_checkboxes input[type=checkbox]').change(function() {

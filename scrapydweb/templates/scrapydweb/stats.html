@@ -19,7 +19,6 @@
         }
         #chart_total {margin-bottom: 16px;}
         #content_categories, #content_logs {padding-top: 8px;}
-        .button.danger {cursor: not-allowed;}
     </style>
 {% endblock %}
 
@@ -56,15 +55,21 @@ window.onload = function(){
 
 <div class="tab-wrap wrap">
     <ul class="tab tab-header clear-float">
-        <li id="header_stats">Stats collection</li>
-        {% if datas and datas[-1][1] %}
+        <li id="header_analysis">Log analysis</li>
+        <li id="header_categories">Log categorization</li>
+        {% if datas|length > 1 %}
         <li id="header_charts">Progress visualization</li>
         {% endif %}
-        <li id="header_categories">Log categorization</li>
         <li id="header_logs">View log</li>
+        {% if crawler_stats %}
+        <li id="header_stats">Crawler.stats</li>
+        {% endif %}
+        {% if crawler_engine %}
+        <li id="header_engine">Crawler.engine</li>
+        {% endif %}
     </ul>
     <ul class="tab tab-content">
-        <li id="content_stats">
+        <li id="content_analysis">
             <div class="table vertical-table">
                 <table>
                     <tr><th>project</th><td>{{ project }}</td></tr>
@@ -72,14 +77,26 @@ window.onload = function(){
                     <tr><th>job</th><td>{{ job }}</td></tr>
                     <tr><th>first_log_time</th><td>{{ first_log_time }}</td></tr>
                     <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
-                    <tr><th>elapsed</th><td>{{ elapsed }}</td></tr>
+                    <tr><th>runtime</th><td>{{ runtime }}</td></tr>
                     <tr>
                         <th>crawled_pages</th>
-                        <td><strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong></td>
+                        <td>
+                        {% if pages is none %}
+                            N/A
+                        {% else %}
+                            <strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong>
+                        {% endif %}    
+                        </td>
                     </tr>
                     <tr>
                         <th>scraped_items</th>
-                        <td><strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong></td>
+                        <td>
+                        {% if items is none %}
+                            N/A
+                        {% else %}
+                            <strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong>
+                        {% endif %}        
+                        </td>
                     </tr>
                     <tr><th>shutdown_reason</th><td id="shutdown_reason">{{ shutdown_reason }}</td></tr>
                     <tr><th>finish_reason</th><td id="finish_reason">{{ finish_reason }}</td></tr>
@@ -95,16 +112,10 @@ window.onload = function(){
                     <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
                     <tr><th>latest_log</th><td id="latest_log"></td></tr>
                     <tr><th>current_time</th><td id="current_time"></td></tr>
+                    <tr><th>latest_item</th><td style="word-break: break-all;">{{ latest_matches['latest_item'] or 'N/A' }}</td></tr>
                 </table>
             </div>
         </li>
-
-        {% if datas and datas[-1][1] %}
-        <li id="content_charts">
-            <div id="chart_total"></div>
-            <div id="chart_minute"></div>
-        </li>
-        {% endif %}
 
         <li id="content_categories">
             <div class="wrap collapse-wrap">
@@ -176,6 +187,13 @@ window.onload = function(){
             </div>
         </li>
 
+        {% if datas|length > 1 %}
+        <li id="content_charts">
+            <div id="chart_total"></div>
+            <div id="chart_minute"></div>
+        </li>
+        {% endif %}
+
         <li id="content_logs">
             <div class="wrap collapse-wrap">
                 <!-- <h3 style="color: #409EFF;">cat logs</h3> -->
@@ -200,7 +218,7 @@ window.onload = function(){
                             <h4>Log</h4>
                             <i class="iconfont icon-right"></i>
                         </div>
-                        <p><a class="link forbid" target="_blank" href="{{ url_opt_opposite }}">{{ url_opt_opposite }}</a></p>
+                        <p><a class="link" target="_blank" href="{{ url_opt_opposite }}">{{ url_opt_opposite }}</a></p>
                     </li>
                     {% endif %}
                     {% if url_source %}
@@ -215,6 +233,30 @@ window.onload = function(){
                 </ul>
             </div>
         </li>
+
+        {% if crawler_stats %}
+        <li id="content_stats">
+            <div class="table vertical-table">
+                <table>
+                {% for k, v in crawler_stats.items() %}
+                    <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+                {% endfor %}
+                </table>
+            </div>
+        </li>
+        {% endif %}
+
+        {% if crawler_engine %}
+        <li id="content_engine">
+            <div class="table vertical-table">
+                <table>
+                {% for k, v in crawler_engine.items() %}
+                    <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+                {% endfor %}
+                </table>
+            </div>
+        </li>
+        {% endif %}
     </ul>
 </div>
 
@@ -248,15 +290,17 @@ setInterval(function() {
         var click = 'click to hard reparse (SLOW)';
         {% endif %}
     {% endif %}
-    my$('#refresh_button').innerHTML = "Parsed by " + by + " <span style='color: black;'>" + seconds + "</span> seconds ago, " + click;
+    my$('#refresh_button').innerHTML = "Parsed by " + by + " <span style='color: black;'>" + seconds + "</span> secs ago, " + click;
     // my$('#refresh_button').className = "button danger";
 }, 1000);
 {% endif %}
 </script>
 
 
-{% if datas and datas[-1][1] %}
+{% if datas|length > 1 %}
 <script>
+// If there is only one data point, would raise Uncaught TypeError: Cannot read property 'toFixed' of null
+// var datas = [['2019-01-01 00:00:01', 1, 2, 3, 4]];
 var datas = {{ datas|safe }};
 
 var chartsArr = [{
@@ -301,20 +345,24 @@ window.addEventListener('optimizedResize', function() {
 <script>
 // tab switcher
 (function() {
-    if (window.localStorage && document.referrer.search(/\/\d+\/log\/stats\//) != -1) {
-        var active_tab = localStorage.getItem('stats_tab') || 'stats';
+    var default_tab = 'analysis';
+    if (window.localStorage) {
+        if (document.referrer.search(/\/\d+\/log\/stats\//) == -1) {
+            localStorage.setItem('stats_tab', default_tab);
+        }
+        var active_tab = localStorage.getItem('stats_tab') || default_tab;
     } else {
-        var active_tab = 'stats';
+        var active_tab = default_tab;
     }
-    //console.log(active_tab);
+    console.log(active_tab);
 
-    if (my$('#header_'+active_tab)) {
-        my$('#header_'+active_tab).classList.add('active');
-        my$('#content_'+active_tab).classList.add('active');
-    } else {
-        my$('#header_stats').classList.add('active');
-        my$('#content_stats').classList.add('active');
+    if (!my$('#header_' + active_tab)) {
+        active_tab = default_tab;
+        console.log(active_tab);
     }
+    my$('#header_' + active_tab).classList.add('active');
+    my$('#content_' + active_tab).classList.add('active');
+
     if (my$('#chart_total')) {
         my$('#chart_total').dispatchEvent(new Event('resize'));
         my$('#chart_minute').dispatchEvent(new Event('resize'));
@@ -346,7 +394,7 @@ window.addEventListener('optimizedResize', function() {
 
         if (window.localStorage) {
             localStorage.setItem('stats_tab', target.id.split('_')[1]);
-            //console.log(localStorage.getItem('stats_tab'));
+            console.log(localStorage.getItem('stats_tab'));
         }
     });
 })();

@@ -10,7 +10,7 @@ from scrapydweb.vars import DEMO_PROJECTS_PATH
 from tests.utils import cst, req_single_scrapyd, set_single_scrapyd, upload_file_deploy
 
 
-def test_auto_eggifying_select_option(app, client):
+def test_auto_packaging_select_option(app, client):
     ins = [
         '(14 projects)',
         u"var folders = ['ScrapydWeb_demo', 'demo - 副本', 'demo',",
@@ -21,29 +21,29 @@ def test_auto_eggifying_select_option(app, client):
         '<div>demo_only_scrapy_cfg<'
     ]
     nos = ['<div>demo_without_scrapy_cfg<', '<h3>NO projects found']
-    req_single_scrapyd(app, client, view='deploy.deploy', kws=dict(node=1), ins=ins, nos=nos)
+    req_single_scrapyd(app, client, view='deploy', kws=dict(node=1), ins=ins, nos=nos)
 
     for project in [cst.PROJECT, 'demo']:
         with io.open(os.path.join(cst.CWD, 'data/%s/test' % project), 'w', encoding='utf-8') as f:
             f.write(u'')
         ins = ['id="folder_selected" value="%s"' % project, 'id="folder_selected_statement">%s<' % project]
-        req_single_scrapyd(app, client, view='deploy.deploy', kws=dict(node=1), ins=ins)
+        req_single_scrapyd(app, client, view='deploy', kws=dict(node=1), ins=ins)
 
     with io.open(os.path.join(cst.CWD, 'data/demo/test'), 'w', encoding='utf-8') as f:
         f.write(u'')
 
     # SCRAPY_PROJECTS_DIR=os.path.join(cst.CWD, 'data'),
     app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.CWD, 'not-exist')
-    req_single_scrapyd(app, client, view='deploy.deploy', kws=dict(node=1),
-                       ins=['(0 projects)', '<h3>NO projects found'])
+    req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
+                       ins=['(0 projects)', '<h3>No projects found'])
 
     app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.CWD, 'data', 'one_project_inside')
-    req_single_scrapyd(app, client, view='deploy.deploy', kws=dict(node=1),
+    req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
                        ins='(1 project)', nos='<h3>NO projects found')
 
     app.config['SCRAPY_PROJECTS_DIR'] = ''
-    req_single_scrapyd(app, client, view='deploy.deploy', kws=dict(node=1),
-                       ins=DEMO_PROJECTS_PATH, nos='<h3>NO projects found')
+    req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
+                       ins=DEMO_PROJECTS_PATH.replace('\\', '/'), nos='<h3>NO projects found')
 
 
 # {'status': 'error', 'message': 'Traceback
@@ -62,7 +62,7 @@ def test_addversion(app, client):
 # <h1>Redirecting...</h1>
 # <p>You should be redirected automatically to target URL:
 # <a href="/1/schedule/demo/2018-01-01T01_01_01/">/1/schedule/demo/2018-01-01T01_01_01/</a>.  If not click the link.
-def test_auto_eggifying(app, client):
+def test_auto_packaging(app, client):
     data = {
         'folder': cst.PROJECT,
         'project': cst.PROJECT,
@@ -71,10 +71,10 @@ def test_auto_eggifying(app, client):
     with app.test_request_context():
         # http://localhost/1/schedule/ScrapydWeb_demo/2018-01-01T01_01_01/
         req_single_scrapyd(app, client, view='deploy.upload', kws=dict(node=1), data=data,
-                           location=url_for('schedule.schedule', node=1, project=cst.PROJECT, version=cst.VERSION))
+                           location=url_for('schedule', node=1, project=cst.PROJECT, version=cst.VERSION))
 
 
-def test_auto_eggifying_unicode(app, client):
+def test_auto_packaging_unicode(app, client):
     if cst.WINDOWS_NOT_CP936:
         return
     data = {
@@ -84,7 +84,7 @@ def test_auto_eggifying_unicode(app, client):
     }
     with app.test_request_context():
         req_single_scrapyd(app, client, view='deploy.upload', kws=dict(node=1), data=data,
-                           location=url_for('schedule.schedule', node=1, project='demo-', version=cst.VERSION))
+                           location=url_for('schedule', node=1, project='demo_____', version=cst.VERSION))
 
 
 def test_scrapy_cfg(app, client):
@@ -98,7 +98,7 @@ def test_scrapy_cfg(app, client):
             if result:
                 req_single_scrapyd(app, client, view='deploy.upload', kws=dict(node=1), data=data, ins=result)
             else:
-                location = url_for('schedule.schedule', node=1, project=cst.PROJECT, version=cst.VERSION)
+                location = url_for('schedule', node=1, project=cst.PROJECT, version=cst.VERSION)
                 req_single_scrapyd(app, client, view='deploy.upload', kws=dict(node=1), data=data, location=location)
 
 
@@ -142,7 +142,7 @@ def test_upload_file_deploy(app, client):
         else:
             project = re.sub(r'\.egg|\.zip|\.tar\.gz', '', filename)
             project = 'demo_unicode' if project == u'副本' else project
-            redirect_project = re.sub(r'[^0-9A-Za-z_-]', '', project)
+            redirect_project = re.sub(cst.STRICT_NAME_PATTERN, '_', project)
         upload_file_deploy_singlenode(filename=filename, project=project, redirect_project=redirect_project)
 
     for filename, alert in cst.SCRAPY_CFG_DICT.items():

@@ -1,12 +1,15 @@
 # coding: utf8
 from flask import flash, render_template, url_for
 
+from ..common import handle_metadata
 from ..myview import MyView
-from ..vars import pageview_dict
 
 
-class OverviewView(MyView):
-    pageview_dict = pageview_dict
+metadata = dict(pageview=handle_metadata().get('pageview', 1))
+
+
+class ServersView(MyView):
+    metadata = metadata
 
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -17,18 +20,18 @@ class OverviewView(MyView):
         self.spider = self.view_args['spider']
 
         self.url = 'http://%s/daemonstatus.json' % self.SCRAPYD_SERVER
-        self.template = 'scrapydweb/overview.html'
+        self.template = 'scrapydweb/servers.html'
         self.selected_nodes = []
 
     def dispatch_request(self, **kwargs):
-        self.pageview_dict['overview'] += 1
-        self.logger.debug('pageview_dict: %s', self.pageview_dict)
+        self.metadata['pageview'] += 1
+        self.logger.debug('metadata: %s', self.metadata)
 
-        if self.SCRAPYD_SERVERS_AMOUNT > 1:
+        if self.SCRAPYD_SERVERS_AMOUNT > 1 and not (self.metadata['pageview'] > 2 and self.metadata['pageview'] % 100):
             if not self.ENABLE_AUTH:
                 flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", self.INFO)
-            if not self.ENABLE_LOGPARSER:
-                flash("Set 'ENABLE_LOGPARSER  = True' to run LogParser as a subprocess at startup", self.WARN)
+            if self.IS_LOCAL_SCRAPYD_SERVER and not self.ENABLE_LOGPARSER:
+                flash("Set 'ENABLE_LOGPARSER = True' to run LogParser as a subprocess at startup", self.WARN)
             if not self.ENABLE_EMAIL:
                 flash("Set 'ENABLE_EMAIL = True' to enable email notice", self.INFO)
 
@@ -49,7 +52,7 @@ class OverviewView(MyView):
             url=self.url,
             selected_nodes=self.selected_nodes,
             IS_IE_EDGE=self.IS_IE_EDGE,
-            pageview=self.pageview_dict['overview'],
+            pageview=self.metadata['pageview'],
             FEATURES=self.FEATURES,
             DEFAULT_LATEST_VERSION=self.DEFAULT_LATEST_VERSION,
             url_daemonstatus=url_for('api', node=self.node, opt='daemonstatus'),
@@ -60,8 +63,8 @@ class OverviewView(MyView):
             url_listspiders=url_for('api', node=self.node, opt='listspiders', project='PROJECT_PLACEHOLDER',
                                     version_spider_job='VERSION_PLACEHOLDER'),
             url_listjobs=url_for('api', node=self.node, opt='listjobs', project='PROJECT_PLACEHOLDER'),
-            url_deploy=url_for('deploy.deploy', node=self.node),
-            url_schedule=url_for('schedule.schedule', node=self.node, project='PROJECT_PLACEHOLDER',
+            url_deploy=url_for('deploy', node=self.node),
+            url_schedule=url_for('schedule', node=self.node, project='PROJECT_PLACEHOLDER',
                                  version='VERSION_PLACEHOLDER', spider='SPIDER_PLACEHOLDER'),
             url_stop=url_for('multinode', node=self.node, opt='stop', project='PROJECT_PLACEHOLDER',
                              version_job='JOB_PLACEHOLDER'),

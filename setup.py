@@ -33,11 +33,16 @@ setup(
     zip_safe=False,
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*",
     install_requires=[
-        "flask >= 1.0.2",
-        "flask-compress >= 1.4.0",
-        "logparser",
-        "requests",
-        "setuptools"
+        "APScheduler >= 3.5.3",  # Aug 15, 2018
+        "flask >= 1.0.2",  # May 2, 2018
+        # "Flask-APScheduler >= 1.11.0",  # Dec 1, 2018
+        "flask-compress >= 1.4.0",  # Jan 5, 2017
+        "Flask-SQLAlchemy >= 2.3.2",  # Oct 11, 2017
+        "logparser == 0.8.1",
+        "requests >= 2.21.0",  # Dec 10, 2018
+        "setuptools >= 40.6.3",  # Dec 11, 2018
+        "six >= 1.12.0",  # Dec 10, 2018
+        "SQLAlchemy >= 1.2.15"  # Dec 12, 2018
     ],
 
     entry_points={

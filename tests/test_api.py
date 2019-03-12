@@ -78,13 +78,17 @@ def test_delproject(app, client):
 
 # After test_enable_logparser()
 def test_liststats(app, client):
+    # {'status': 'ok', 'details': {'pages': 'N/A', 'items': 'N/A', 'project': 'ScrapydWeb_demo', 'spider': 'N/A',
+    # 'jobid': '2018-01-01T01_01_02', 'logparser_version': '0.8.0'}}
+    # 'jobid': 'FAKE_JOBID'
     for jobid in [cst.JOBID, cst.FAKE_JOBID]:
         kws = dict(node=1, opt='liststats', project=cst.PROJECT, version_spider_job=jobid)
-        jskws = dict(status=cst.OK, url='/logs/stats.json', logparser_version=cst.LOGPARSER_VERSION,
-                     project=cst.PROJECT, jobid=jobid)
-        jskeys = ['stats', 'spider', 'last_update_time', 'last_update_timestamp']
-        __, js = req(app, client, view='api', kws=kws, jskws=jskws, jskeys=jskeys)
+        __, js = req(app, client, view='api', kws=kws, jskeys=['status', 'details'])
+        assert js['details']['project'] == cst.PROJECT
         if jobid == cst.FAKE_JOBID:
-            assert js['spider'] == cst.NA
-        assert 'pages' in js['stats'] and 'items' in js['stats']
+            assert js['details']['spider'] == cst.NA
+        # else:
+        #     assert js['details']['spider'] == cst.SPIDER
+        assert js['details']['jobid'] == jobid
+        assert 'pages' in js['details'] and 'items' in js['details']
         assert 'datas' not in js

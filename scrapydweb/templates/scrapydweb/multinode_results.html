@@ -17,15 +17,15 @@
         <thead>
             <tr>
                 <th>
-                    <input type="checkbox" id="checkall" />
-                    <a class="state danger" href="javascript:;" onclick="invertSelection();">invert selection</a>
+                    <input type="checkbox" id="checkAll" />
+                    <a class="state warning" href="javascript:;" onclick="invertSelection();">invert selection</a>
                 </th>
                 <th>Index</th>
 
                 {% if opt == 'stop' %}
-                <th>Dashboard</th>
+                <th>Jobs</th>
                 {% else %}
-                <th>Manage Projects</th>
+                <th>Projects</th>
                 {% endif %}
 
                 <th>Node name</th>
@@ -49,23 +49,11 @@
                 <td><input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}" /></td>
                 <td >{{ loop.index }}</td>
                 <td>
-                    <a id="run_spider_{{ loop.index }}"
-
-                    {% if loop.index == node %}
-                    class="state safe"
-                    {% else %}
-                    class="state normal"
-                    {% endif %}
-
-                    {% if opt == 'stop' %}
-                    href="{{ g.url_dashboard_list[loop.index-1] }}"
-                    {% else %}
-                    href="{{ url_manage_list[loop.index-1] }}"
-                    {% endif %}
-
-                    target="_blank">
-                    {{ SCRAPYD_SERVERS[loop.index-1] }}
-                    </a>
+                    <a
+                    class={% if loop.index == node %}"state safe"{% else %}"state normal"{% endif %}
+                    href={% if opt == 'stop' %}"{{ g.url_jobs_list[loop.index-1] }}"{% else %}"{{ url_projects_list[loop.index-1] }}"{% endif %}
+                    target={% if selected_nodes|length > 1 %}"_blank"{% else %}"_self"{% endif %}
+                    >{{ SCRAPYD_SERVERS[loop.index-1] }}</a>
                 </td>
                 <td id="node_name_{{ loop.index }}"></td>
                 <td id="status_{{ loop.index }}"></td>
@@ -85,7 +73,7 @@
     </table>
 
     <div class="action">
-        <a class="button safe big" href="javascript:;" onclick="passToOverview();">{{ btn_overview|safe }}</a>
+        <a class="button safe big" href="javascript:;" onclick="passToServers();">{{ btn_servers|safe }}</a>
     </div>
 </div>
 
@@ -93,11 +81,11 @@
 <script>
 var selected_nodes = {{ selected_nodes }};
 var url_xhr = "{{ url_xhr }}";
-var url_overview = "{{ url_overview }}";
+var url_servers = "{{ url_servers }}";
 
 
 window.onload = function(){
-    $('#checkall').click(function () {
+    $('#checkAll').click(function () {
         $('table input:checkbox').not(this).prop('checked', this.checked);
     });
 

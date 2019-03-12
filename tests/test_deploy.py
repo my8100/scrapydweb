@@ -7,12 +7,12 @@ from tests.utils import cst, req, switch_scrapyd, upload_file_deploy
 
 
 def test_deploy_from_post(app, client):
-    text, __ = req(app, client, view='deploy.deploy', kws=dict(node=1), data={'1': 'on', '2': 'on'})
+    text, __ = req(app, client, view='deploy', kws=dict(node=1), data={'1': 'on', '2': 'on'})
     assert (re.search(r'id="checkbox_1".*?checked.*?/>', text, re.S)
             and re.search(r'id="checkbox_2".*?checked.*?/>', text, re.S))
 
 
-def test_auto_eggifying_select_option(app, client):
+def test_auto_packaging_select_option(app, client):
     ins = [
         '(14 projects)',
         u"var folders = ['ScrapydWeb_demo', 'demo - 副本', 'demo',",
@@ -23,7 +23,7 @@ def test_auto_eggifying_select_option(app, client):
         '<div>demo_only_scrapy_cfg<'
     ]
     nos = ['<div>demo_without_scrapy_cfg<', '<h3>NO projects found']
-    req(app, client, view='deploy.deploy', kws=dict(node=2), ins=ins, nos=nos)
+    req(app, client, view='deploy', kws=dict(node=2), ins=ins, nos=nos)
 
 
 # {'status': 'error', 'message': 'Traceback
@@ -44,7 +44,7 @@ def test_addversion(app, client):
 # <h1>Redirecting...</h1>
 # <p>You should be redirected automatically to target URL:
 # <a href="/1/schedule/demo/2018-01-01T01_01_01/">/1/schedule/demo/2018-01-01T01_01_01/</a>.  If not click the link.
-def test_auto_eggifying(app, client):
+def test_auto_packaging(app, client):
     data = {
         '1': 'on',
         'checked_amount': '1',
@@ -61,7 +61,7 @@ def test_auto_eggifying(app, client):
         ins=['deploy results - ScrapydWeb', 'onclick="multinodeRunSpider();"', 'id="checkbox_1"', 'id="checkbox_2"'])
 
 
-def test_auto_eggifying_unicode(app, client):
+def test_auto_packaging_unicode(app, client):
     if cst.WINDOWS_NOT_CP936:
         return
     data = {
@@ -71,7 +71,7 @@ def test_auto_eggifying_unicode(app, client):
         'project': u'demo - 副本',
         'version': cst.VERSION,
     }
-    req(app, client, view='deploy.upload', kws=dict(node=2), data=data, ins=['deploy results', 'demo-'])
+    req(app, client, view='deploy.upload', kws=dict(node=2), data=data, ins=['deploy results', 'demo_____'])
 
 
 def test_scrapy_cfg(app, client):
@@ -128,7 +128,7 @@ def test_upload_file_deploy(app, client):
         else:
             project = re.sub(r'\.egg|\.zip|\.tar\.gz', '', filename)
             project = 'demo_unicode' if project == u'副本' else project
-            redirect_project = re.sub(r'[^0-9A-Za-z_-]', '', project)
+            redirect_project = re.sub(cst.STRICT_NAME_PATTERN, '_', project)
         upload_file_deploy_multinode(filename=filename, project=project, redirect_project=redirect_project)
 
     for filename, alert in cst.SCRAPY_CFG_DICT.items():
@@ -153,4 +153,4 @@ def test_deploy_xhr(app, client):
         project=cst.PROJECT,
         version=cst.VERSION
     )
-    req(app, client, view='deploy.deploy_xhr', kws=kws, jskws=dict(status=cst.OK, project=cst.PROJECT))
+    req(app, client, view='deploy.xhr', kws=kws, jskws=dict(status=cst.OK, project=cst.PROJECT))

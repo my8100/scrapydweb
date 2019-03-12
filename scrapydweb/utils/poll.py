@@ -17,16 +17,13 @@ import requests
 from requests.adapters import HTTPAdapter
 
 
-logger = logging.getLogger('Poll')  # __name__
+logger = logging.getLogger('scrapydweb.utils.poll')  # __name__
 _handler = logging.StreamHandler()
-# _formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
-_formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)s in %(name)s: %(message)s",
-                               datefmt='%Y-%m-%d %H:%M:%S')
+_formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)-8s in %(name)s: %(message)s")
 _handler.setFormatter(_formatter)
 logger.addHandler(_handler)
 
-
-IN_WINDOWS = True if platform.system() == 'Windows' else False
+IN_WINDOWS = platform.system() == 'Windows'
 JOB_PATTERN = re.compile(r"""
                             <tr>
                                 <td>(?P<Project>.*?)</td>
@@ -46,12 +43,11 @@ JOB_KEYS = ['project', 'spider', 'job', 'pid', 'start', 'runtime', 'finish', 'lo
 class Poll(object):
     logger = logger
 
-    def __init__(self, scrapydweb_bind, scrapydweb_port, username, password,
+    def __init__(self, url_scrapydweb, username, password,
                  scrapyd_servers, scrapyd_servers_auths,
                  poll_round_interval, poll_request_interval,
                  main_pid, verbose, exit_timeout=0):
-        self.scrapydweb_bind = scrapydweb_bind
-        self.scrapydweb_port = scrapydweb_port
+        self.url_scrapydweb = url_scrapydweb
         self.auth = (username, password) if username and password else None
 
         self.scrapyd_servers = scrapyd_servers
@@ -80,15 +76,14 @@ class Poll(object):
         self.exit_timeout = exit_timeout
 
         self.init_time = time.time()
-        self.url_stats = ('http://{scrapydweb_bind}:{scrapydweb_port}/'
-                          '{node}/log/{opt}/{project}/{spider}/{job}/?job_finished={job_finished}')
+        self.url_stats = self.url_scrapydweb + '/{node}/log/{opt}/{project}/{spider}/{job}/?job_finished={job_finished}'
 
     def check_exit(self):
         exit_condition_1 = pid_exists is not None and not pid_exists(self.main_pid)
         exit_condition_2 = not IN_WINDOWS and not self.check_pid(self.main_pid)
         if exit_condition_1 or exit_condition_2:
             sys.exit("!!! Poll subprocess (pid: %s) exits "
-                     "since main_pid %s NOT exists" % (self.poll_pid, self.main_pid))
+                     "since main_pid %s not exists" % (self.poll_pid, self.main_pid))
 
     # https://stackoverflow.com/questions/568271/how-to-check-if-there-exists-a-process-with-a-given-pid-in-python
     @staticmethod
@@ -105,17 +100,17 @@ class Poll(object):
         running_jobs = []
         finished_jobs_set = set()
         self.logger.debug("[node %s] fetch_jobs: %s", node, url)
-        r = self.make_request(url, auth, post=False)
+        r = self.make_request(url, auth=auth, post=False)
         # Should not invoke update_finished_jobs() if fail to fetch jobs
         assert r is not None, "[node %s] fetch_jobs failed: %s" % (node, url)
 
         self.logger.debug("[node %s] fetch_jobs got (%s) %s bytes", node, r.status_code, len(r.content))
-        rows = [dict(zip(JOB_KEYS, row)) for row in re.findall(JOB_PATTERN, r.text)]
-        for row in rows:
-            job_tuple = (row['project'], row['spider'], row['job'])
-            if row['pid']:
+        jobs = [dict(zip(JOB_KEYS, job)) for job in re.findall(JOB_PATTERN, r.text)]
+        for job in jobs:
+            job_tuple = (job['project'], job['spider'], job['job'])
+            if job['pid']:
                 running_jobs.append(job_tuple)
-            elif row['finish']:
+            elif job['finish']:
                 finished_jobs_set.add(job_tuple)
         self.logger.info("[node %s] got running_jobs: %s", node, len(running_jobs))
         self.logger.info("[node %s] got finished_jobs_set: %s", node, len(finished_jobs_set))
@@ -125,8 +120,6 @@ class Poll(object):
         (project, spider, job) = job_tuple
         job_finished = 'True' if job_tuple in finished_jobs else ''
         kwargs = dict(
-            scrapydweb_bind=self.scrapydweb_bind,
-            scrapydweb_port=self.scrapydweb_port,
             node=node,
             opt='stats',
             project=project,
@@ -138,7 +131,7 @@ class Poll(object):
         url = self.url_stats.format(**kwargs)
         self.logger.debug("[node %s] fetch_stats: %s", node, url)
         # Make POST request to trigger email notice, see log.py
-        r = self.make_request(url, self.auth, post=True)
+        r = self.make_request(url, auth=self.auth, post=True)
         if r is None:
             self.logger.error("[node %s %s] fetch_stats failed: %s", node, self.scrapyd_servers[node-1], url)
             if job_finished:
@@ -155,7 +148,7 @@ class Poll(object):
             try:
                 self.run()
                 end_time = time.time()
-                self.logger.debug("Cost %.1f seconds", (end_time - start_time))
+                self.logger.debug("Took %.1f seconds", (end_time - start_time))
                 if 0 < self.exit_timeout < end_time - self.init_time:
                     self.logger.critical("GoodBye, exit_timeout: %s", self.exit_timeout)
                     break
@@ -163,7 +156,8 @@ class Poll(object):
                     self.logger.warning("Sleep %s seconds", self.poll_round_interval)
                     time.sleep(self.poll_round_interval)
             except KeyboardInterrupt:
-                sys.exit("!!! Poll subprocess (pid: %s) cancelled by KeyboardInterrupt" % self.poll_pid)
+                self.logger.warning("Poll subprocess (pid: %s) cancelled by KeyboardInterrupt", self.poll_pid)
+                sys.exit()
             except Exception:
                 self.logger.error(traceback.format_exc())
 
@@ -182,6 +176,10 @@ class Poll(object):
 
     def run(self):
         for node, (scrapyd_server, auth) in enumerate(zip(self.scrapyd_servers, self.scrapyd_servers_auths), 1):
+            # Update Jobs history
+            # url_jobs = self.url_scrapydweb + '/%s/jobs/' % node
+            # self.make_request(url_jobs, auth=self.auth, post=True)
+
             url_jobs = 'http://%s/jobs' % scrapyd_server
             # json.loads(json.dumps({'auth':(1,2)})) => {'auth': [1, 2]}
             auth = tuple(auth) if auth else None  # TypeError: 'list' object is not callable
@@ -225,7 +223,7 @@ class Poll(object):
 
 
 def main(args):
-    keys = ('scrapydweb_bind', 'scrapydweb_port', 'username', 'password',
+    keys = ('url_scrapydweb', 'username', 'password',
             'scrapyd_servers', 'scrapyd_servers_auths',
             'poll_round_interval', 'poll_request_interval',
             'main_pid', 'verbose', 'exit_timeout')
@@ -235,12 +233,12 @@ def main(args):
     kwargs['poll_round_interval'] = int(kwargs['poll_round_interval'])
     kwargs['poll_request_interval'] = int(kwargs['poll_request_interval'])
     kwargs['main_pid'] = int(kwargs['main_pid'])
-    kwargs['verbose'] = True if kwargs['verbose'] == 'True' else False
-    kwargs['exit_timeout'] = int(kwargs.setdefault('exit_timeout', 0))  # For test
+    kwargs['verbose'] = kwargs['verbose'] == 'True'
+    kwargs['exit_timeout'] = int(kwargs.setdefault('exit_timeout', 0))  # For test only
 
     poll = Poll(**kwargs)
     poll.main()
-    return poll.ignore_finished_bool_list  # For test
+    return poll.ignore_finished_bool_list  # For test only
 
 
 if __name__ == '__main__':

@@ -21,9 +21,9 @@ function showCheckboxes(click_outside_close) {
         my$('.selectBox .value').style.border = "1px solid #409EFF";  // blue
     }
 
-    // Otherwise: click the HELP section would trigger scrolling to bottom
+    // If click_outside_close and execute animate(), click the HELP section would trigger scrolling to bottom
     if (click_outside_close === undefined) {
-        $('html, body, #content').animate({scrollTop: $('#content').height()}, 300);
+        goContentBottom();
     }
 }
 
@@ -42,7 +42,7 @@ function checkCheckboxes(SCRAPYD_SERVERS_AMOUNT) {
         my$('#checkboxes').style.display = 'block';
         my$('#checkboxes').style.border = "1px solid #f56c6c";  // red
         my$('#checkboxes').style.borderTopWidth = '0';
-        $('html, body, #content').animate({scrollTop: $('#content').height()}, 300);
+        goContentBottom();
     } else {
         my$('.multiselect .form-item-error').style.display = 'none';
         my$('#checkboxes').style.border = "1px solid #67c23a";  // green
@@ -70,16 +70,16 @@ function invertSelection() {
 }
 
 
-function passToOverview() {
+function passToServers() {
     var checked_amount = my$$('tbody input[type="checkbox"]:checked').length;
     if (checked_amount == 0) {
-        var r = confirm("NONE of the nodes are selected, continue?");
+        var r = confirm("None of the nodes are selected, continue?");
         if (r == false) {
             return;
         }
     }
 
-    my$('form').action = url_overview;
+    my$('form').action = url_servers;
     my$('form').submit();
 }
 

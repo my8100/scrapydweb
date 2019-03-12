@@ -3,16 +3,12 @@
 {% block title %}items{% endblock %}
 
 {% block head %}
+    <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
     <style>
-        table {margin-bottom: 16px;}
-        .back-forward {margin: 16px 0;}
-        td.filename {
-            display: grid;
-            font-size: x-large;
-            word-break: break-all;
-        }
-        .action {margin: 16px 0;}
     </style>
+
+    <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
+    <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 
@@ -23,35 +19,111 @@
     </a>
 </h2>
 
+<div id="app">
+<template>
+    <el-col :span="4">
+        <el-button-group>
+            <el-button type="primary" onclick="window.history.back();" icon="el-icon-arrow-left" size="medium">Back</el-button>
+            <el-button type="primary" onclick="window.history.forward();" size="medium">Forward<i class="el-icon-arrow-right el-icon--right"></i></el-button>
+        </el-button-group>
+    </el-col>
+    
+{% if project and spider and rows %}
+    <el-button-group>
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        <el-button type="success" onclick="window.location='{{ url_multinode_run }}';" size="medium">multinode</el-button>
+        {% endif %}
+        <el-button type="success" onclick="window.location='{{ url_schedule }}';" size="medium">Run Spider ({{ spider }})</el-button>
+    </el-button-group>
+{% endif %}
 
-<div class="wrap">
-    <div class="back-forward">
-        <a class="button normal" href="javascript:;" onclick="window.history.back();">&laquo; Back</a>
-        <a class="button normal" href="javascript:;" onclick="window.history.forward();">Forward &raquo;</a>
-    </div>
+    <el-table
+        ref="multipleTable"
+        :data="tableData"
+        tooltip-effect="dark"
+        empty-text="There is nothing to display."
+        :max-height="maxHeight"
+        style="width: 100%;"
+        :size="size"
+        :default-sort="{prop: 'content_type', order: 'ascending'}"
+    >
 
-    <table>
-        <thead>
-            <tr>
-                <th>Filename</th>
-                <!-- <th>Project</th> -->
-                <!-- <th>Spider</th> -->
-                <th>Size</th>
-                <th>Content type</th>
-                <th>Content encoding</th>
-            </tr>
-        </thead>
+        <el-table-column prop="index" label="Index" sortable align="center" width="100"></el-table-column>
+        <el-table-column prop="content_type" label="Content type" sortable align="center" width="150"></el-table-column>
+        <el-table-column prop="content_encoding" label="Encoding" sortable align="center" width="110"></el-table-column>
+        <el-table-column prop="size" label="Size" sortable align="center" width="100" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
 
-        <tbody>
-    {% for row in rows %}
-        <tr class="{{ row['odd_even'] }}">
-            <td class="filename">{{ row['filename']|safe }}</td>
-            <td>{{ row['size'] }}</td>
-            <td>{{ row['content_type'] }}</td>
-            <td>{{ row['content_encoding'] }}</td>
-        </tr>
-    {% endfor %}
-        </tbody>
-    </table>
+        {% if project and spider %}
+        <el-table-column prop="stats" label="Stats" sortable align="center" width="80">
+            <template slot-scope="scope"><a class="state normal" :href="scope.row.url_stats" target="_blank">Stats</a></template>
+        </el-table-column>
+        <el-table-column prop="log" label="Log" sortable align="center" width="70">
+            <template slot-scope="scope"><a class="state normal" :href="scope.row.url_utf8" target="_blank">Log</a></template>
+        </el-table-column>
+        {% endif %}
+
+        <el-table-column prop="filename" label="Filename" sortable align="left" min-width="200">
+            <template slot-scope="scope"><a class="link" :href="scope.row.href" :target="scope.row.target">{{scope.row.filename}}</a></template>
+        </el-table-column>
+
+    </el-table>
+</template>
 </div>
+
+
+<script>
+var Main = {
+    data() {
+        return {
+            size: {% if rows|length > 10 %}'mini'{% else %}'—'{% endif %},
+            maxHeight: window.innerHeight - 220,
+
+            tableData: [
+        {% for row in rows %}
+            {
+                index: {{ loop.index }},
+                content_type: '{{ row["content_type"] }}',
+                content_encoding: '{{ row["content_encoding"] }}',
+                size: '{{ row["size"] }}',
+
+                {% if project and spider %}
+                url_stats: '{{ row["url_stats"] }}',
+                url_utf8: '{{ row["url_utf8"] }}',
+                {% endif %}
+                
+                href: '{{ row["href"] }}',
+                filename: '{{ row["filename"] }}',
+                target: {% if project and spider %}'_blank'{% else %}'_self'{% endif %},
+            },
+        {% endfor %}
+            ],
+
+        }
+    },
+
+    methods: {
+        calcSize(size) {
+            var size_M_re = size.match(/(\d+)M/);
+            var size_K_re = size.match(/(\d+)K/);  // 1K
+            var size_B_re = size.match(/(\d+)B/);  // 208B or ''
+            if (size_M_re) {
+                size = parseInt(size_M_re[1]) * 1000 * 1000;
+            } else if (size_K_re) {
+                size = parseInt(size_K_re[1]) * 1000;
+            } else if (size_B_re) {
+                size = parseInt(size_B_re[1]);
+            } else {
+                size = 0;
+            }
+            // console.log(size);
+            return size;
+        },
+        sortSize(a, b) {
+            return this.calcSize(a.size) > this.calcSize(b.size) ? 1 : -1;
+        },
+    }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
 {% endblock %}

@@ -7,9 +7,9 @@
     <title>{% block title %}{% endblock %} - ScrapydWeb</title>
 
     <link rel="stylesheet" type="text/css" href="{{ static_css_style }}">
-    <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_8deppr044pq.js"></script>  -->
+    <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_ofli8v3mxqq.js"></script>  -->
     <script type="text/javascript" src="{{ static_js_icons_menu }}"></script>
-    <!-- upload icon in deploy/parse page, right arrow icon in stats/manage page-->
+    <!-- upload icon in deploy/parse page, right arrow icon in stats | projects page-->
     <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
 
     {% if g.IS_MOBILE %}
@@ -65,7 +65,7 @@
                 <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
                 {% endif %}
 
-                <a href="{{ g.url_dashboard_list[loop.index-1] }}"
+                <a href="{{ g.url_jobs_list[loop.index-1] }}"
 
                 {% if loop.index == node %}
                 style="color: #409EFF; font-weight: 700;"
@@ -85,7 +85,7 @@
         <span>{{ node }} / {{ SCRAPYD_SERVERS_AMOUNT }}</span>
         <a href="javascript:;" onclick="switchNode(1);">&raquo;</a>
 
-        <label class="skip-node" title="skip unselected nodes in the Overview page">
+        <label class="skip-node" title="skip unselected nodes in the Servers page">
             <input id="skip_nodes_checkbox" type="checkbox">
             <span class="slider round"></span>
         </label>
@@ -93,12 +93,7 @@
 {% endif %}
 
     <ul id="nav_daemonstatus">
-        <li><a target="_blank" class="request"
-            {% if SCRAPYD_SERVERS_AUTHS[node-1] %}
-                href="{{ 'http://'+SCRAPYD_SERVERS_AUTHS[node-1][0]+':'+SCRAPYD_SERVERS_AUTHS[node-1][-1]+'@'+SCRAPYD_SERVERS[node-1] }}">
-            {% else %}
-                href="http://{{ SCRAPYD_SERVERS[node-1] }}">
-            {% endif %}
+        <li><a target="_blank" class="request" href="http://{{ SCRAPYD_SERVERS[node-1] }}">
                 <svg class="icon" aria-hidden="true">
                     <use xlink:href="#icon-host"></use>
                 </svg>
@@ -128,70 +123,64 @@
 
 <main>
     <aside>
-        <h3>Jobs</h3>
+        <h3>Overview</h3>
         <ul>
             <li>
-                <a id="menu_overview" href="{{ g.url_menu_overview }}" onclick="showLoader();">
+                <a id="menu_servers" href="{{ g.url_menu_servers }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-overview"></use>
+                        <use xlink:href="#icon-servers"></use>
                     </svg>
-                    <span>Overview</span>
+                    <span>Servers</span>
                 </a>
             </li>
-
             <li>
-                <a id="menu_dashboard" href="{{ g.url_menu_dashboard }}" onclick="showLoader();">
+                <a id="menu_jobs" href="{{ g.url_menu_jobs }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-dashboard"></use>
+                        <use xlink:href="#icon-jobs"></use>
                     </svg>
-                    <span>Dashboard</span>
+                    <span>Jobs</span>
+                </a>
+            </li>
+            <li>
+                <a id="menu_tasks" href="{{ g.url_menu_tasks }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-timer"></use>
+                    </svg>
+                    <span>Timer Tasks</span>
                 </a>
             </li>
         </ul>
 
-        <h3>Projects</h3>
+        <h3>Operations</h3>
         <ul>
             <li>
                 <a id="menu_deploy" href="{{ g.url_menu_deploy }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-upload"></use>
                     </svg>
-                    <span>Deploy</span>
+                    <span>Deploy Project</span>
                 </a>
             </li>
-
             <li>
                 <a id="menu_schedule" href="{{ g.url_menu_schedule }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-run"></use>
                     </svg>
-                    <span>Run</span>
-                </a>
-            </li>
-
-            <li>
-                <a id="menu_manage" href="{{ g.url_menu_manage }}" onclick="showLoader();">
-                    <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-manage"></use>
-                    </svg>
-                    <span>Manage</span>
+                    <span>Run Spider</span>
                 </a>
             </li>
         </ul>
 
         <h3>Files</h3>
         <ul>
-        {% if SHOW_SCRAPYD_ITEMS %}
             <li>
-                <a id="menu_items" href="{{ g.url_menu_items }}" onclick="showLoader();">
+                <a id="menu_projects" href="{{ g.url_menu_projects }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-items"></use>
+                        <use xlink:href="#icon-projects"></use>
                     </svg>
-                    <span>Items</span>
+                    <span>Projects</span>
                 </a>
             </li>
-        {% endif %}
-
             <li>
                 <a id="menu_logs" href="{{ g.url_menu_logs }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
@@ -205,9 +194,19 @@
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-parse"></use>
                     </svg>
-                    <span>Parse log</span>
+                    <span>Log Parser</span>
                 </a>
             </li>
+        {% if SHOW_SCRAPYD_ITEMS %}
+            <li>
+                <a id="menu_items" href="{{ g.url_menu_items }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-items"></use>
+                    </svg>
+                    <span>Items</span>
+                </a>
+            </li>
+        {% endif %}
         </ul>
 
         <h3>System</h3>
@@ -220,7 +219,6 @@
                     <span>Settings</span>
                 </a>
             </li>
-
             <li>
                 <a target="_blank" href="{{ g.url_menu_mobileui }}">
                     <svg class="icon" aria-hidden="true">
@@ -229,7 +227,6 @@
                     <span>Mobile UI</span>
                 </a>
             </li>
-
             {% if ENABLE_AUTH %}
             <li>
                 <a href="javascript:;" onclick="logout();">
@@ -308,7 +305,12 @@ $(function(){
             my$('#menu_' + re_menu[1] + '_' + re_menu[2]).classList.add('active')
         }
     }
-
+    {% if g.scheduler_state_paused %}
+        my$('#menu_tasks svg').style.color = 'red';
+    {% elif g.scheduler_state_running %}   
+        my$('#menu_tasks svg').style.color = '#67c23a';
+    {% endif %}    
+    
     refreshDaemonstatus(url_daemonstatus);
 
 })
@@ -332,7 +334,7 @@ function switchNode(change) {
             if (nodesSelected.length == 0) {
                 my$('#skip_nodes_checkbox').checked = false;
                 localStorage.setItem('skipNodesUnselected', 'false');
-                alert("NONE of the nodes are selected in the Overview page");
+                alert("None of the nodes are selected in the Servers page");
                 return;
             }
             var minNodeSelected = Math.min.apply(null, nodesSelected);
@@ -381,7 +383,7 @@ var skipNodesHandler = function() {
         if (this.checked && nodesSelected.length == 0) {
             //this.checked = !this.checked;
             this.checked = false;
-            alert("NONE of the nodes are selected in the Overview page");
+            alert("None of the nodes are selected in the Servers page");
         }
         localStorage.setItem('skipNodesUnselected', this.checked ? 'true' : 'false');
         console.log(localStorage);

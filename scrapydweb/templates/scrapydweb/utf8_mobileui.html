@@ -15,7 +15,7 @@
 
 
 {% block neck %}
-<a class="button normal" href="javascript:;" onclick="forceLoader('{{ g.url_dashboard_list[node-1] }}');">Dashboard</a>
+<a class="button normal" href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[node-1] }}');">Jobs</a>
 <a class="button warning" href="javascript:;" onclick="forceLoader('{{ url_opt_opposite }}')">Stats</a>
 {% endblock %}
 
@@ -74,7 +74,7 @@ const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
     var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> seconds ago, press to reload (SLOW)";
+    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> secs ago, press to reload (SLOW)";
 }, 1000);
 {% endif %}
 </script>

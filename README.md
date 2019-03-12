@@ -11,7 +11,7 @@
 
 
 ##
-![overview](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/overview.png)
+![servers](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/servers.png)
 
 ## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: Recommended Reading
@@ -33,8 +33,9 @@
   - :bookmark_tabs: Logs categorization
 
 - :battery: Enhancements
-  - :package: **Auto eggify your projects**
+  - :package: **Auto packaging**
   - :male_detective: **Integrated with [:link: *LogParser*](https://github.com/my8100/logparser)**
+  - :alarm_clock: **Timer tasks**
   - :e-mail: **Email notice**
   - :iphone: Mobile UI
   - :closed_lock_with_key: Basic auth for web UI
@@ -106,8 +107,9 @@ $ source venv/scrapydweb/bin/activate
 (scrapydweb) $ vi tests/conftest.py
 (scrapydweb) $ curl http://127.0.0.1:6800
 
-(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests/test_a_factory.py -s -vv
-(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests -s -vv
+# '-x': stop on first failure
+(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests/test_a_factory.py -s -vv -x
+(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests -s -vv --disable-warnings
 (scrapydweb) $ coverage report
 # To create an HTML report, check out htmlcov/index.html
 (scrapydweb) $ coverage html
@@ -123,14 +125,11 @@ $ source venv/scrapydweb/bin/activate
 <br>
 
 - Front End
-  - [:link: jQuery](https://github.com/jquery/jquery)
-  - [:link: Vue.js](https://github.com/vuejs/vue)
   - [:link: Element](https://github.com/ElemeFE/element)
   - [:link: ECharts](https://github.com/apache/incubator-echarts)
+
 - Back End
   - [:link: Flask](https://github.com/pallets/flask)
-  - [:link: Flask-Compress](https://pypi.org/project/Flask-Compress/)
-  - [:link: Requests](https://github.com/requests/requests)
 
 </details>
 

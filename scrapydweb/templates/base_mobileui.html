@@ -52,7 +52,7 @@
                 {% endif %}
 
                 <a {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}
-                href="javascript:;" onclick="forceLoader('{{ g.url_dashboard_list[loop.index-1] }}');">
+                href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[loop.index-1] }}');">
                 {{ SCRAPYD_SERVER }}
                 </a>
             {% endfor %}
@@ -80,6 +80,18 @@
         {% block loader %}
         <div class="loader" style="display: none;" onclick="hideLoader();"></div>
         {% endblock %}
+        
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            <ul class="flashes" style="display: none;">
+            {% if messages %}
+            {% for category, message in messages %}
+                <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+            {% endif %}
+                <li id="logparser_stats" class="info" style="display: none;"></li>
+            </ul>
+        {% endwith %}
+            
         {% block body %}{% endblock %}
     </div>
 </main>

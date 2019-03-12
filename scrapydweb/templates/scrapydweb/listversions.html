@@ -8,7 +8,7 @@
         {% endif %}
 
         <a class="button danger" href="javascript:;"
-        onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}', 'Delete project \'{{ project }}\'?');">
+        onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}');">
         Delete Project
         </a>
     </div>
@@ -35,10 +35,10 @@
                 </td>
                 <td id="delversion{{ project + version }}">
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state warning" href="{{ url_multinode_delversion }}">multinode</a>
+                    <a class="state delete" href="{{ url_multinode_delversion }}">multinode</a>
                     {% endif %}
 
-                    <a class="state warning" href="javascript:;"
+                    <a class="state delete" href="javascript:;"
                     onclick="execXHR(
                                 '{{ url_delversion }}',
                                 'delversion{{ project + version }}',

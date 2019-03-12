@@ -3,22 +3,28 @@ import logging
 from logging.config import dictConfig
 import platform
 import re
-import sys
+import time
 import traceback
 
 from flask import Flask, current_app, render_template, url_for
 from flask_compress import Compress
+from logparser import __version__ as LOGPARSER_VERSION
 
 from .__version__ import __url__, __version__
+from .common import handle_metadata
+from .database import Metadata, db
+from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
+# from .utils.scheduler import scheduler
 
 
-PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
-
+# https://stackoverflow.com/questions/18820274/how-to-suppress-sqlalchemy-engine-base-engine-logging-to-stdout
+# logging.getLogger('sqlalchemy.engine.base.Engine').propagate = False
+logging.getLogger('sqlalchemy.engine.base.Engine').setLevel(logging.WARNING)
 # http://flask.pocoo.org/docs/1.0/logging/#basic-configuration
 dictConfig({
     'version': 1,
     'formatters': {'default': {
-        'format': '[%(asctime)s] %(levelname)s in %(name)s: %(message)s',
+        'format': '[%(asctime)s] %(levelname)-8s in %(name)s: %(message)s',
     }},
     'handlers': {'wsgi': {
         'class': 'logging.StreamHandler',
@@ -31,6 +37,13 @@ dictConfig({
     }
 })
 
+# Comment out the dictConfig above first
+# https://docs.sqlalchemy.org/en/latest/core/engines.html#configuring-logging
+# https://apscheduler.readthedocs.io/en/latest/userguide.html#troubleshooting
+# logging.basicConfig()
+# logging.getLogger('apscheduler').setLevel(logging.DEBUG)
+# logging.getLogger('sqlalchemy.engine').setLevel(logging.DEBUG)
+
 
 def internal_server_error(error):
     kwargs = dict(
@@ -40,9 +53,9 @@ def internal_server_error(error):
         os=platform.platform(),
         python_version=PYTHON_VERSION,
         scrapydweb_version=__version__,
+        logparser_version=LOGPARSER_VERSION,
         scrapyd_servers_amount=len(current_app.config.get('SCRAPYD_SERVERS', []))
     )
-
     return render_template('500.html', **kwargs), 500
 
 
@@ -64,8 +77,9 @@ def create_app(test_config=None):
     @app.route('/hello')
     def hello():
         return 'Hello, World!'
-    handle_route(app)
 
+    handle_db(app)
+    handle_route(app)
     handle_template_context(app)
 
     # @app.errorhandler(404)
@@ -88,8 +102,42 @@ def create_app(test_config=None):
     compress.init_app(app)
 
     app.logger.setLevel(logging.DEBUG)
-
     return app
+
+
+def handle_db(app):
+    app.config['SQLALCHEMY_BINDS'] = SQLALCHEMY_BINDS
+    app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False  # https://stackoverflow.com/a/33790196/10517783
+    app.config['SQLALCHEMY_ECHO'] = True  # http://flask-sqlalchemy.pocoo.org/2.3/config/
+
+    # flask_sqlalchemy/__init__.py
+    # class SQLAlchemy(object):
+    #     def __init__(self, app=None
+    #         self.app = app
+    #         if app is not None:
+    #             self.init_app(app)
+    db.app = app  # https://github.com/viniciuschiele/flask-apscheduler/blob/master/examples/flask_context.py
+    db.init_app(app)  # http://flask-sqlalchemy.pocoo.org/2.3/contexts/
+    db.create_all()
+
+    @app.teardown_request
+    def handle_db_session(exception):
+        if exception:
+            db.session.rollback()
+        db.session.remove()
+
+    with db.app.app_context():
+        if not Metadata.query.filter_by(version=__version__).first():
+            metadata = Metadata(version=__version__)
+            db.session.add(metadata)
+            db.session.commit()
+    if time.time() - handle_metadata().get('last_check_update_timestamp', time.time()) > 3600 * 24 * 30:
+        handle_metadata('last_check_update_timestamp', time.time())
+        handle_metadata('pageview', 0)
+    else:
+        handle_metadata('pageview', 1)
+    # print(Metadata.query.filter_by(version=__version__).first())
 
 
 def handle_route(app):
@@ -98,65 +146,78 @@ def handle_route(app):
         for url, defaults in url_defaults_list:
             app.add_url_rule('/<int:node>/%s/' % url, defaults=defaults, view_func=view_func)
 
-    from .index import IndexView
+    from .views.index import IndexView
     index_view = IndexView.as_view('index')
     app.add_url_rule('/<int:node>/', view_func=index_view)
     app.add_url_rule('/', defaults=dict(node=1), view_func=index_view)
 
-    from .api import ApiView
+    from .views.api import ApiView
     register_view(ApiView, 'api', [
         ('api/<opt>/<project>/<version_spider_job>', None),
         ('api/<opt>/<project>', dict(version_spider_job=None)),
         ('api/<opt>', dict(project=None, version_spider_job=None))
     ])
 
-    # jobs
-    from .jobs.dashboard import DashboardView
-    register_view(DashboardView, 'dashboard', [('dashboard', None)])
+    from .myview import MetadataView
+    register_view(MetadataView, 'metadata', [('metadata', None)])
 
-    from .jobs.overview import OverviewView
-    register_view(OverviewView, 'overview', [
-        ('overview/<opt>/<project>/<version_job>/<spider>', None),
-        ('overview/<opt>/<project>/<version_job>', dict(spider=None)),
-        ('overview/<opt>/<project>', dict(version_job=None, spider=None)),
-        ('overview/<opt>', dict(project=None, version_job=None, spider=None)),
-        ('overview', dict(opt=None, project=None, version_job=None, spider=None))
+    # Overview
+    from .overview.jobs import JobsView, JobsXhrView
+    register_view(JobsView, 'jobs', [('jobs', None)])
+    register_view(JobsXhrView, 'jobs.xhr', [('jobs/xhr/<action>/<int:id>', None)])
+
+    from .overview.servers import ServersView
+    register_view(ServersView, 'servers', [
+        ('servers/<opt>/<project>/<version_job>/<spider>', None),
+        ('servers/<opt>/<project>/<version_job>', dict(spider=None)),
+        ('servers/<opt>/<project>', dict(version_job=None, spider=None)),
+        ('servers/<opt>', dict(project=None, version_job=None, spider=None)),
+        ('servers', dict(opt=None, project=None, version_job=None, spider=None))
     ])
 
-    from .jobs.multinode import MultinodeView
+    from .overview.multinode import MultinodeView
     register_view(MultinodeView, 'multinode', [
         ('multinode/<opt>/<project>/<version_job>', None),
         ('multinode/<opt>/<project>', dict(version_job=None))
     ])
 
-    # projects
-    from .projects.deploy import DeployView, UploadView, DeployXhrView
-    register_view(DeployView, 'deploy.deploy', [('deploy', None)])
-    register_view(UploadView, 'deploy.upload', [('deploy/upload', None)])
-    register_view(DeployXhrView, 'deploy.deploy_xhr', [('deploy/xhr/<eggname>/<project>/<version>', None)])
+    from .overview.tasks import TasksView, TasksXhrView
+    register_view(TasksView, 'tasks', [
+        ('tasks/<int:task_id>/<int:task_result_id>', None),
+        ('tasks/<int:task_id>', dict(task_result_id=None)),
+        ('tasks', dict(task_id=None, task_result_id=None))
+    ])
+    register_view(TasksXhrView, 'tasks.xhr', [
+        ('tasks/xhr/<action>/<int:task_id>/<int:task_result_id>', None),
+        ('tasks/xhr/<action>/<int:task_id>', dict(task_result_id=None)),
+        ('tasks/xhr/<action>', dict(task_id=None, task_result_id=None))
+    ])
 
-    from .projects.schedule import ScheduleView, CheckView, RunView, ScheduleXhrView
-    register_view(ScheduleView, 'schedule.schedule', [
+    from .overview.tasks import bp as bp_tasks_history
+    app.register_blueprint(bp_tasks_history)
+
+    # Operations
+    from .operations.deploy import DeployView, DeployUploadView, DeployXhrView
+    register_view(DeployView, 'deploy', [('deploy', None)])
+    register_view(DeployUploadView, 'deploy.upload', [('deploy/upload', None)])
+    register_view(DeployXhrView, 'deploy.xhr', [('deploy/xhr/<eggname>/<project>/<version>', None)])
+
+    from .operations.schedule import ScheduleView, ScheduleCheckView, ScheduleRunView, ScheduleXhrView, ScheduleTaskView
+    register_view(ScheduleView, 'schedule', [
         ('schedule/<project>/<version>/<spider>', None),
         ('schedule/<project>/<version>', dict(spider=None)),
         ('schedule/<project>', dict(version=None, spider=None)),
         ('schedule', dict(project=None, version=None, spider=None))
     ])
-    register_view(CheckView, 'schedule.check', [('schedule/check', None)])
-    register_view(RunView, 'schedule.run', [('schedule/run', None)])
-    register_view(ScheduleXhrView, 'schedule.schedule_xhr', [('schedule/xhr/<filename>', None)])
+    register_view(ScheduleCheckView, 'schedule.check', [('schedule/check', None)])
+    register_view(ScheduleRunView, 'schedule.run', [('schedule/run', None)])
+    register_view(ScheduleXhrView, 'schedule.xhr', [('schedule/xhr/<filename>', None)])
+    register_view(ScheduleTaskView, 'schedule.task', [('schedule/task', None)])
 
-    from .projects.schedule import bp as bp_schedule_history
+    from .operations.schedule import bp as bp_schedule_history
     app.register_blueprint(bp_schedule_history)
 
-    from .projects.manage import ManageView
-    register_view(ManageView, 'manage', [
-        ('manage/<opt>/<project>/<version_spider_job>', None),
-        ('manage/<opt>/<project>', dict(version_spider_job=None)),
-        ('manage', dict(opt='listprojects', project=None, version_spider_job=None))
-    ])
-
-    # files
+    # Files
     from .files.log import LogView
     register_view(LogView, 'log', [('log/<opt>/<project>/<spider>/<job>', None)])
 
@@ -174,6 +235,13 @@ def handle_route(app):
         ('items', dict(project=None, spider=None))
     ])
 
+    from .files.projects import ProjectsView
+    register_view(ProjectsView, 'projects', [
+        ('projects/<opt>/<project>/<version_spider_job>', None),
+        ('projects/<opt>/<project>', dict(version_spider_job=None)),
+        ('projects', dict(opt='listprojects', project=None, version_spider_job=None))
+    ])
+
     from .files.parse import UploadLogView, UploadedLogView
     register_view(UploadLogView, 'parse.upload', [('parse/upload', None)])
     register_view(UploadedLogView, 'parse.uploaded', [('parse/uploaded/<filename>', None)])
@@ -181,7 +249,7 @@ def handle_route(app):
     from .files.parse import bp as bp_parse_source
     app.register_blueprint(bp_parse_source)
 
-    # system
+    # System
     from .system.settings import SettingsView
     register_view(SettingsView, 'settings', [('settings', None)])
 
@@ -190,7 +258,7 @@ def handle_template_context(app):
     STATIC = 'static'
     VERSION = 'v' + __version__.replace('.', '')
     # MUST be commented out for released version
-    # VERSION = 'v110'
+    # VERSION = 'v120'
 
     @app.context_processor
     def inject_variable():

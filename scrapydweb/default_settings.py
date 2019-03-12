@@ -9,7 +9,7 @@ GitHub: https://github.com/my8100/scrapydweb
 
 ###############################################################################
 ###############################################################################
-## QUICK SETUP: Simply search and update the SCRAPYD_SERVERS item, leave the rest as default.
+## QUICK SETUP: Simply search and update the SCRAPYD_SERVERS option, leave the rest as default.
 ## Recommended Reading: [How to efficiently manage your distributed web scraping projects]
 ## (https://medium.com/@my8100)
 ## ------------------------------ Chinese -------------------------------------
@@ -22,7 +22,7 @@ GitHub: https://github.com/my8100/scrapydweb
 
 ############################## ScrapydWeb #####################################
 # Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-THE-CURRENT-HOST would make
-# ScrapydWeb server visible externally, otherwise, set it to '127.0.0.1'.
+# ScrapydWeb server visible externally; Otherwise, set it to '127.0.0.1'.
 # The default is '0.0.0.0'.
 SCRAPYDWEB_BIND = '0.0.0.0'
 # Accept connections on the specified port, the default is 5000.
@@ -47,7 +47,7 @@ PRIVATEKEY_FILEPATH = ''
 
 ############################## Scrapy #########################################
 # ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
-# so that you can simply select a project to deploy, instead of eggifying it in advance.
+# so that you can simply select a project to deploy, instead of packaging it in advance.
 # e.g. 'C:/Users/username/myprojects/' or '/home/username/myprojects/'
 SCRAPY_PROJECTS_DIR = ''
 
@@ -78,44 +78,62 @@ SCRAPYD_SERVERS = [
     ('username', 'password', 'localhost', '6801', 'group'),
 ]
 
-# If the IP part of a Scrapyd server is added as '127.0.0.1' or 'localhost' in the SCRAPYD_SERVERS above,
-# ScrapydWeb would try to read Scrapy logs directly from disk, instead of making a request
+# If both ScrapydWeb and one of your Scrapyd servers run on the same machine,
+# ScrapydWeb would try to directly read Scrapy logfiles from disk, instead of making a request
 # to the Scrapyd server.
+# e.g. '127.0.0.1:6800' or 'localhost:6801', do not forget the port number.
+LOCAL_SCRAPYD_SERVER = ''
 # Check out this link to find out where the Scrapy logs are stored:
 # https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir
 # e.g. 'C:/Users/username/logs/' or '/home/username/logs/'
 SCRAPYD_LOGS_DIR = ''
 
-# ScrapydWeb would try every extension in sequence to locate the Scrapy log.
+# ScrapydWeb would try every extension in sequence to locate the Scrapy logfile.
 # The default is ['.log', '.log.gz', '.txt'].
 SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt']
 
 
 ############################## LogParser ######################################
 # By default ScrapydWeb would automatically run LogParser as a subprocess at startup,
-# so that the stats of crawled_pages and scraped_items can be shown in the Dashboard page.
+# so that the stats of crawled_pages and scraped_items can be shown in the Jobs page.
 # The default is True, set it to False to disable this behaviour.
 # Note that you can run the LogParser service separately via command 'logparser' as you like.
 # Run 'logparser -h' to find out the config file of LogParser for more advanced settings.
 # Visit https://github.com/my8100/logparser for more info.
 ENABLE_LOGPARSER = True
 
+# Whether to backup the stats json files locally after you visit the Stats page of a job
+# so that it is still accessible even if the original logfile has been deleted.
+# The default is True, set it to False to disable this behaviour.
+BACKUP_STATS_JSON_FILE = True
+
+
+############################## Timer Tasks ####################################
+# Run ScrapydWeb with argument '-sw' or '--switch_scheduler_state', or click the ENABLED|DISABLED button
+# on the Timer Tasks page to turn on/off the scheduler for the timer tasks and the snapshot mechanism below.
+
+# The default is 300, which means ScrapydWeb would automatically create a snapshot of the Jobs page
+# and save the jobs info in the database in the background every 300 seconds.
+# Note that this behaviour would be paused if the scheduler for timer tasks is disabled.
+# Set it to 0 to disable this behaviour.
+JOBS_SNAPSHOT_INTERVAL = 300
+
 
 ############################## Page Display ###################################
 # The default is True, set it to False to hide the Items page, as well as
-# the Items column in the Dashboard page.
+# the Items column in the Jobs page.
 SHOW_SCRAPYD_ITEMS = True
 
-# The default is False, set it to True to show the Job column in the Dashboard page.
-SHOW_DASHBOARD_JOB_COLUMN = False
+# The default is True, set it to False to hide the Job column in the Jobs page with non-database view.
+SHOW_JOBS_JOB_COLUMN = True
 
 # The default is 0, which means unlimited, set it to a positive integer so that
-# only the latest N finished jobs would be shown in the Dashboard page.
-DASHBOARD_FINISHED_JOBS_LIMIT = 0
+# only the latest N finished jobs would be shown in the Jobs page with non-database view.
+JOBS_FINISHED_JOBS_LIMIT = 0
 
-# If you stay on the Dashboard page, it would be reloaded automatically every N seconds.
+# If your browser stays on the Jobs page, it would be reloaded automatically every N seconds.
 # The default is 300, set it to 0 to disable auto-reloading.
-DASHBOARD_RELOAD_INTERVAL = 300
+JOBS_RELOAD_INTERVAL = 300
 
 # The load status of the current Scrapyd server is checked every N seconds,
 # which is displayed in the top right corner of the page.
@@ -166,9 +184,10 @@ SMTP_OVER_SSL = False
 SMTP_CONNECTION_TIMEOUT = 10
 
 ########## sender & recipients ##########
-# e.g. 'username@gmail.com'
-FROM_ADDR = ''
-
+# Leave this option as '' to default to the FROM_ADDR option below; Otherwise, set it up
+# if your email service provider requires an username which is different from the FROM_ADDR option below to login.
+# e.g. 'username'
+EMAIL_USERNAME = ''
 # As for different email service provider, you might have to get an APP password (like Gmail)
 # or an authorization code (like QQ mail) and set it as the EMAIL_PASSWORD.
 # Check out links below to get more help:
@@ -177,8 +196,10 @@ FROM_ADDR = ''
 # e.g. 'password4gmail'
 EMAIL_PASSWORD = ''
 
+# e.g. 'username@gmail.com'
+FROM_ADDR = ''
 # e.g. ['username@gmail.com', ]
-TO_ADDRS = []
+TO_ADDRS = [FROM_ADDR]
 
 ########## email working time ##########
 # Monday is 1 and Sunday is 7.
@@ -250,10 +271,9 @@ LOG_IGNORE_TRIGGER_FORCESTOP = False
 ############################## System #########################################
 # The default is False, set it to True to enable debug mode and the interactive debugger
 # would be shown in the browser instead of the "500 Internal Server Error" page.
-# Actually, it's not recommended to turn on debug mode, also no need,
-# since its side effects includes creating two poll subprocess in the background.
+# Note that use_reloader is set to False in run.py
 DEBUG = False
 
-# The default is False, set it to True to set the logging level from WARNING to DEBUG
+# The default is False, set it to True to change the logging level from WARNING to DEBUG
 # for getting more information about how ScrapydWeb works, especially while debugging.
 VERBOSE = False

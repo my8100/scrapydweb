@@ -26,9 +26,9 @@
         padding-right: 12px;
         text-align: center;
     }
-    table tr:nth-child(1) td {word-break: break-all;}
-    table tr:nth-child(2) td {word-break: break-all;}
-    table tr:nth-child(3) td {word-break: break-all;}
+    #content_analysis tr:nth-child(1) td {word-break: break-all;}
+    #content_analysis tr:nth-child(2) td {word-break: break-all;}
+    #content_analysis tr:nth-child(3) td {word-break: break-all;}
     #content_categories, #content_logs {padding: 10px 0;}
     #content_logs p {
         margin: 0 20px;
@@ -50,10 +50,10 @@ window.onload = function(){
 
 
 {% block neck %}
-<a class="button normal" href="javascript:;" onclick="forceLoader('{{ g.url_dashboard_list[node-1] }}')">Dashboard</a>
+<a class="button normal" href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[node-1] }}')">Jobs</a>
 <!-- <a class="button warning" href="javascript:;" onclick="forceLoader('{{ url_utf8_mobile }}')">Log</a> -->
 {% if url_refresh %}
-<a id="refresh_button" class="button danger" href="javascript:;" onclick="forceLoader('{{ url_refresh }}');">Parsed</a>
+<a id="refresh_button" class="button warning" href="javascript:;" onclick="forceLoader('{{ url_refresh }}');">Parsed</a>
 {% endif %}
 {% endblock %}
 
@@ -61,16 +61,22 @@ window.onload = function(){
 {% block body %}
 <div class="tab-wrap wrap">
     <ul class="tab tab-header clear-float">
-        <li id="header_stats">Stats</li>
-        {% if datas and datas[-1][1] %}
+        <li id="header_analysis">Analysis</li>
+        <li id="header_categories">Categories</li>
+        {% if datas|length > 1 %}
         <li id="header_charts">Charts</li>
         {% endif %}
-        <li id="header_categories">Categories</li>
-        <li id="header_logs">View log</li>
+        <li id="header_logs">Logs</li>
+        {% if crawler_stats %}
+        <li id="header_stats">Crawler.stats</li>
+        {% endif %}
+        {% if crawler_engine %}
+        <li id="header_engine">Crawler.engine</li>
+        {% endif %}
     </ul>
 
     <ul class="tab tab-content">
-        <li id="content_stats">
+        <li id="content_analysis">
             <div class="table vertical-table">
                 <table border="1">
                     <tr><th>project</th><td>{{ project }}</td></tr>
@@ -78,15 +84,26 @@ window.onload = function(){
                     <tr><th>job</th><td>{{ job }}</td></tr>
                     <tr><th>first_log_time</th><td>{{ first_log_time }}</td></tr>
                     <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
-                    <tr><th>elapsed</th><td>{{ elapsed }}</td></tr>
-
+                    <tr><th>runtime</th><td>{{ runtime }}</td></tr>
                     <tr>
                         <th>crawled_pages</th>
-                        <td><strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong></td>
+                        <td>
+                        {% if pages is none %}
+                            N/A
+                        {% else %}
+                            <strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong>
+                        {% endif %}
+                        </td>
                     </tr>
                     <tr>
                         <th>scraped_items</th>
-                        <td><strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong></td>
+                        <td>
+                        {% if items is none %}
+                            N/A
+                        {% else %}
+                            <strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong>
+                        {% endif %}
+                        </td>
                     </tr>
                     <tr><th>shutdown_reason</th><td id="shutdown_reason">{{ shutdown_reason }}</td></tr>
                     <tr><th>finish_reason</th><td id="finish_reason">{{ finish_reason }}</td></tr>
@@ -102,16 +119,10 @@ window.onload = function(){
                     <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
                     <tr><th>latest_log</th><td id="latest_log"></td></tr>
                     <tr><th>current_time</th><td id="current_time"></td></tr>
+                    <tr><th>latest_item</th><td style="word-break: break-all;">{{ latest_matches['latest_item'] or 'N/A' }}</td></tr>
                 </table>
             </div>
         </li>
-
-        {% if datas and datas[-1][1] %}
-        <li id="content_charts">
-            <div id="chart_total" style="width: 100%; height: 400px;"></div>
-            <div id="chart_minute" style="width: 100%; height: 400px;"></div>
-        </li>
-        {% endif %}
 
         <li id="content_categories">
             <div class="wrap collapse-wrap">
@@ -183,6 +194,13 @@ window.onload = function(){
             </div>
         </li>
 
+        {% if datas|length > 1 %}
+        <li id="content_charts">
+            <div id="chart_total" style="width: 100%; height: 400px;"></div>
+            <div id="chart_minute" style="width: 100%; height: 400px;"></div>
+        </li>
+        {% endif %}
+
         <li id="content_logs">
             <div class="wrap collapse-wrap">
                 <!-- <h3 style="color: #409EFF;">cat logs</h3> -->
@@ -206,7 +224,7 @@ window.onload = function(){
                             <h4>Log</h4>
                             <i class="iconfont icon-right"></i>
                         </div>
-                        <p><a class="link forbid" target="_blank" href="{{ url_opt_opposite }}">{{ url_opt_opposite }}</a></p>
+                        <p><a class="link" target="_blank" href="{{ url_opt_opposite }}">{{ url_opt_opposite }}</a></p>
                     </li>
                     <li>
                         <div class="title">
@@ -218,6 +236,30 @@ window.onload = function(){
                 </ul>
             </div>
         </li>
+
+        {% if crawler_stats %}
+        <li id="content_stats">
+            <div class="table vertical-table">
+                <table border="1">
+                {% for k, v in crawler_stats.items() %}
+                    <tr><th>{{ k.replace('/', ' / ').replace('_', ' ') }}</th><td>{{ v }}</td></tr>
+                {% endfor %}
+                </table>
+            </div>
+        </li>
+        {% endif %}
+
+        {% if crawler_engine %}
+        <li id="content_engine">
+            <div class="table vertical-table">
+                <table border="1">
+                {% for k, v in crawler_engine.items() %}
+                    <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+                {% endfor %}
+                </table>
+            </div>
+        </li>
+        {% endif %}
     </ul>
 </div>
 
@@ -242,13 +284,13 @@ setColor();
 setInterval(function() {
     var now_timestamp = Date.now() / 1000;
     var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Parsed <span style='color: black;'>" + seconds + "</span>s ago";
+    my$('#refresh_button').innerHTML = "Parsed <span style='color: black;'>" + seconds + "</span> secs ago";
 }, 1000);
 {% endif %}
 </script>
 
 
-{% if datas and datas[-1][1] %}
+{% if datas|length > 1 %}
 <script>
 var datas = {{ datas|safe }};
 
@@ -294,19 +336,24 @@ window.addEventListener('optimizedResize', function() {
 <script>
 // tab switcher
 (function() {
-    if (window.localStorage && document.referrer.search(/\/\d+\/log\/stats\//) != -1) {
-        var active_tab = localStorage.getItem('active_tab') || 'stats';
+    var default_tab = 'analysis';
+    if (window.localStorage) {
+        if (document.referrer.search(/\/\d+\/log\/stats\//) == -1) {
+            localStorage.setItem('stats_tab', default_tab);
+        }
+        var active_tab = localStorage.getItem('stats_tab') || default_tab;
     } else {
-        var active_tab = 'stats';
+        var active_tab = default_tab;
     }
+    console.log(active_tab);
 
-    if (my$('#header_'+active_tab)) {
-        my$('#header_'+active_tab).classList.add('active');
-        my$('#content_'+active_tab).classList.add('active');
-    } else {
-        my$('#header_stats').classList.add('active');
-        my$('#content_stats').classList.add('active');
+    if (!my$('#header_' + active_tab)) {
+        active_tab = default_tab;
+        console.log(active_tab);
     }
+    my$('#header_' + active_tab).classList.add('active');
+    my$('#content_' + active_tab).classList.add('active');
+
     if (my$('#chart_total')) {
         my$('#chart_total').dispatchEvent(new Event('resize'));
         my$('#chart_minute').dispatchEvent(new Event('resize'));
@@ -337,7 +384,8 @@ window.addEventListener('optimizedResize', function() {
         }
 
         if (window.localStorage) {
-            localStorage.setItem('active_tab', target.id.split('_')[1]);
+            localStorage.setItem('stats_tab', target.id.split('_')[1]);
+            console.log(localStorage.getItem('stats_tab'));
         }
     });
 })();

@@ -10,18 +10,18 @@ def test_listprojects(app, client):
     # upload_file_deploy(app, client, filename='demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
     upload_file_deploy(app, client, filename='demo.zip', project=cst.PROJECT, redirect_project=cst.PROJECT)
 
-    req(app, client, view='manage', kws=dict(node=1), ins='Get the list of projects uploaded')
+    req(app, client, view='projects', kws=dict(node=1), ins='Get the list of projects uploaded')
 
 
 def test_listversions(app, client):
     with app.test_request_context():
-        url_delproject = url_for('manage', node=1, opt='delproject', project=cst.PROJECT)
-        req(app, client, view='manage', kws=dict(node=1, opt='listversions', project=cst.PROJECT),
+        url_delproject = url_for('projects', node=1, opt='delproject', project=cst.PROJECT)
+        req(app, client, view='projects', kws=dict(node=1, opt='listversions', project=cst.PROJECT),
             ins=['Delete Project', 'Delete Version', url_delproject])
 
         # {"status": "ok", "versions": []}
-        url_delproject = url_for('manage', node=1, opt='delproject', project=cst.FAKE_PROJECT)
-        req(app, client, view='manage', kws=dict(node=1, opt='listversions', project=cst.FAKE_PROJECT),
+        url_delproject = url_for('projects', node=1, opt='delproject', project=cst.FAKE_PROJECT)
+        req(app, client, view='projects', kws=dict(node=1, opt='listversions', project=cst.FAKE_PROJECT),
             ins=['Delete Project', url_delproject], nos='Delete the version')
 
 
@@ -33,31 +33,31 @@ def test_listspiders_del(app, client):
         d = OrderedDict()  # For python 2 compatibility
 
         d['listspiders'] = dict(
-            url=url_for('manage', node=1, opt='listspiders', project=cst.PROJECT, version_spider_job=cst.VERSION),
+            url=url_for('projects', node=1, opt='listspiders', project=cst.PROJECT, version_spider_job=cst.VERSION),
             checks=['Run Spider (test)']
         )
         d['listspiders_fail'] = dict(
-            url=url_for('manage', node=1, opt='listspiders',
+            url=url_for('projects', node=1, opt='listspiders',
                         project=cst.FAKE_PROJECT, version_spider_job=cst.FAKE_VERSION),
             checks=['listspiders.json', 'No such file or directory']
         )
 
         d['delversion'] = dict(
-            url=url_for('manage', node=1, opt='delversion', project=cst.PROJECT, version_spider_job=cst.VERSION),
+            url=url_for('projects', node=1, opt='delversion', project=cst.PROJECT, version_spider_job=cst.VERSION),
             checks=['version deleted']
         )
         d['delversion_fail'] = dict(
-            url=url_for('manage', node=1, opt='delversion',
+            url=url_for('projects', node=1, opt='delversion',
                         project=cst.FAKE_PROJECT, version_spider_job=cst.FAKE_VERSION),
             checks=['delversion.json', 'See details below']
         )
 
         d['delproject'] = dict(
-            url=url_for('manage', node=1, opt='delproject', project=cst.PROJECT),
+            url=url_for('projects', node=1, opt='delproject', project=cst.PROJECT),
             checks=['project deleted']
         )
         d['delproject_fail'] = dict(
-            url=url_for('manage', node=1, opt='delproject', project=cst.FAKE_PROJECT),
+            url=url_for('projects', node=1, opt='delproject', project=cst.FAKE_PROJECT),
             checks=['delproject.json', 'See details below']
         )
 

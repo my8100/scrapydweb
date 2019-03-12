@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}parse log{% endblock %}
+{% block title %}log parser{% endblock %}
 
 {% block head %}
     <style>
@@ -11,16 +11,21 @@
             /* opacity: 0; */
             /* cursor: default; */
         }
+        .upload input {
+            width: 1px;
+            position: absolute;
+            opacity: 0.01;
+        }
     </style>
 {% endblock %}
 
 
 {% block body %}
-<h2>Upload a scrapy logfile to parse</h2>
+<h2>Upload a scrapy logfile to parse.</h2>
 <div class="wrap">
     <form method="post" enctype="multipart/form-data">
         <div class="upload">
-            <label class="upload-button">
+            <label class="button warning">
                 <input id="file" type="file" name="file" accept=".log, .txt" />
                 Select
             </label>

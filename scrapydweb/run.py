@@ -1,5 +1,6 @@
 # coding: utf8
 import argparse
+import logging
 import os
 from shutil import copyfile
 import sys
@@ -9,25 +10,29 @@ from flask import request
 # from . import create_app  # --debug: ImportError: cannot import name 'create_app'
 from scrapydweb import create_app
 from scrapydweb.__version__ import __description__, __version__
+from scrapydweb.common import authenticate, find_scrapydweb_settings_py, handle_metadata, handle_slash
+from scrapydweb.vars import SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING
 from scrapydweb.utils.check_app_config import check_app_config
-from scrapydweb.utils.utils import authenticate, find_scrapydweb_settings_py, printf
-from scrapydweb.vars import LAST_CHECK_UPDATE_PATH
 
 
-ALERT = '!' * 100
-STAR = '*' * 100
+logger = logging.getLogger(__name__)
+apscheduler_logger = logging.getLogger('apscheduler')
+
+STAR = '\n%s\n' % ('*' * 100)
 CWD = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_SETTINGS_PY_PATH = os.path.join(CWD, 'default_settings.py')
-SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v7.py'
+SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v8.py'
 
 
 def main():
+    apscheduler_logger.setLevel(logging.ERROR)  # To hide warning logging in scheduler.py until app.run()
     main_pid = os.getpid()
-    printf("ScrapydWeb version: %s" % __version__)
-    printf("Use 'scrapydweb -h' to get help")
-    printf("Main pid: %s" % main_pid)
-    printf("Loading default settings from %s" % DEFAULT_SETTINGS_PY_PATH)
+    logger.info("ScrapydWeb version: %s", __version__)
+    logger.info("Use 'scrapydweb -h' to get help")
+    logger.info("Main pid: %s", main_pid)
+    logger.debug("Loading default settings from %s", handle_slash(DEFAULT_SETTINGS_PY_PATH))
     app = create_app()
+    handle_metadata('main_pid', main_pid)  # In handle_metadata(): with db.app.app_context():
     app.config['MAIN_PID'] = main_pid
     app.config['DEFAULT_SETTINGS_PY_PATH'] = DEFAULT_SETTINGS_PY_PATH
     app.config['SCRAPYDWEB_SETTINGS_PY_PATH'] = os.path.join(os.getcwd(), SCRAPYDWEB_SETTINGS_PY)
@@ -39,8 +44,9 @@ def main():
     try:
         check_app_config(app.config)
     except AssertionError as err:
-        sys.exit("\n{alert}\n{err}\nCheck and update your settings in {path}\n{alert}".format(
-                 alert=ALERT, err=err, path=app.config['SCRAPYDWEB_SETTINGS_PY_PATH']))
+        logger.error("Check app config fail: ")
+        sys.exit(u"\n{err}\nCheck and update your settings in {path}\n".format(
+                 err=err, path=handle_slash(app.config['SCRAPYDWEB_SETTINGS_PY_PATH'])))
 
     # https://stackoverflow.com/questions/34164464/flask-decorate-every-route-at-once
     @app.before_request
@@ -80,14 +86,14 @@ def main():
     # On Windows, get/set/delete: set FLASK_ENV, set FLASK_ENV=production, set set FLASK_ENV=
     # if not os.environ.get('FLASK_ENV'):
         # os.environ['FLASK_ENV'] = 'development'
-        # printf("The environment variable 'FLASK_ENV' has been set to 'development'", warn=True)
-        # printf("WARNING: Do not use the development server in a production. "
-               # "Check out http://flask.pocoo.org/docs/1.0/deploying/", warn=True)
+        # print("The environment variable 'FLASK_ENV' has been set to 'development'")
+        # print("WARNING: Do not use the development server in a production. "
+               # "Check out http://flask.pocoo.org/docs/1.0/deploying/")
 
     # http://flask.pocoo.org/docs/1.0/config/?highlight=flask_debug#environment-and-debug-features
     if app.config.get('DEBUG', False):
         os.environ['FLASK_DEBUG'] = '1'
-        printf("It's not recommended to run ScrapydWeb in debug mode, set 'DEBUG = False' instead.", warn=True)
+        logger.info("Note that use_reloader is set to False in run.py")
     else:
         os.environ['FLASK_DEBUG'] = '0'
 
@@ -95,18 +101,21 @@ def main():
     # Threaded mode is enabled by default.
     # https://stackoverflow.com/a/28590266/10517783 to run in HTTP or HTTPS mode
     # site-packages/werkzeug/serving.py
+    # https://stackoverflow.com/questions/13895176/sqlalchemy-and-sqlite-database-is-locked
     if app.config.get('ENABLE_HTTPS', False):
         protocol = 'https'
         context = (app.config['CERTIFICATE_FILEPATH'], app.config['PRIVATEKEY_FILEPATH'])
     else:
         protocol = 'http'
         context = None
-    print(STAR)
-    printf("Visit ScrapydWeb at {protocol}://127.0.0.1:{port} or {protocol}://IP-OF-THE-CURRENT-HOST:{port}".format(
-           protocol=protocol, port=app.config['SCRAPYDWEB_PORT']))
-    printf("For running Flask in production, check out http://flask.pocoo.org/docs/1.0/deploying/", warn=True)
-    print(STAR)
-    app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'], ssl_context=context)
+
+    print("{star}Visit ScrapydWeb at {protocol}://127.0.0.1:{port} "
+          "or {protocol}://IP-OF-THE-CURRENT-HOST:{port}{star}\n".format(
+           star=STAR, protocol=protocol, port=app.config['SCRAPYDWEB_PORT']))
+    logger.info("For running Flask in production, check out http://flask.pocoo.org/docs/1.0/deploying/")
+    apscheduler_logger.setLevel(logging.DEBUG)
+    app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'],
+            ssl_context=context, use_reloader=False)
 
 
 def load_custom_settings(config):
@@ -114,27 +123,21 @@ def load_custom_settings(config):
 
     if path:
         config['SCRAPYDWEB_SETTINGS_PY_PATH'] = path
-        print(STAR)
-        printf("Overriding custom settings from %s" % path, warn=True)
-        print(STAR)
+        print(u"{star}Overriding custom settings from {path}{star}".format(star=STAR, path=handle_slash(path)))
         config.from_pyfile(path)
     else:
-        try:
-            os.remove(LAST_CHECK_UPDATE_PATH)
-        except:
-            pass
-
+        logger.error("%s not found: ", SCRAPYDWEB_SETTINGS_PY)
         try:
             copyfile(config['DEFAULT_SETTINGS_PY_PATH'], config['SCRAPYDWEB_SETTINGS_PY_PATH'])
         except:
-            sys.exit("\n{alert}\nPlease copy the 'default_settings.py' file from the path above "
-                     "to current working directory,\nand rename it to '{file}'.\n"
-                     "Then add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n{alert}".format(
-                      alert=ALERT, file=SCRAPYDWEB_SETTINGS_PY))
+            sys.exit("\nPlease copy the 'default_settings.py' file from the path above to current working directory,\n"
+                     "and rename it to '{file}'.\n"
+                     "Then add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n".format(
+                      file=SCRAPYDWEB_SETTINGS_PY))
         else:
-            sys.exit("\n{alert}\nThe config file '{file}' has been copied to current working directory.\n"
-                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n{alert}".format(
-                      alert=ALERT, file=SCRAPYDWEB_SETTINGS_PY))
+            sys.exit("\nThe config file '{file}' has been copied to current working directory.\n"
+                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n".format(
+                      file=SCRAPYDWEB_SETTINGS_PY))
 
 
 def parse_args(config):
@@ -178,6 +181,14 @@ def parse_args(config):
               "as a subprocess at startup") % ENABLE_LOGPARSER
     )
 
+    SCHEDULER_STATE = SCHEDULER_STATE_DICT[handle_metadata().get('scheduler_state', STATE_RUNNING)]
+    parser.add_argument(
+        '-sw', '--switch_scheduler_state',
+        action='store_true',
+        help=("current: %s, append '--switch_scheduler_state' to switch the state of scheduler "
+              "for timer tasks") % SCHEDULER_STATE
+    )
+
     ENABLE_EMAIL = config.get('ENABLE_EMAIL', False)
     parser.add_argument(
         '-de', '--disable_email',
@@ -205,7 +216,7 @@ def parse_args(config):
 
 
 def update_app_config(config, args):
-    printf("Reading settings from command line: %s" % args)
+    logger.debug("Reading settings from command line: %s", args)
 
     config.update(dict(
         SCRAPYDWEB_BIND=args.bind,
@@ -221,6 +232,11 @@ def update_app_config(config, args):
         config['ENABLE_AUTH'] = False
     if args.disable_logparser:
         config['ENABLE_LOGPARSER'] = False
+    if args.switch_scheduler_state:
+        if handle_metadata().get('scheduler_state', STATE_RUNNING) == STATE_RUNNING:
+            handle_metadata('scheduler_state', STATE_PAUSED)
+        else:
+            handle_metadata('scheduler_state', STATE_RUNNING)
     if args.disable_email:
         config['ENABLE_EMAIL'] = False
     if args.debug:

@@ -1,17 +1,21 @@
 # coding: utf8
+import glob
+import io
 import json
 import locale
-import io
 import os
 import platform
+import re
 from shutil import rmtree, copy
 import sys
 import time
 import zipfile
 
 from flask import url_for
+from six import string_types
 
 from logparser import __version__ as logparser_version
+from scrapydweb.vars import DATABASE_PATH, LEGAL_NAME_PATTERN, STATS_PATH, setup_logfile
 
 
 class Constant(object):
@@ -28,7 +32,10 @@ class Constant(object):
     NA = 'N/A'
     OK = 'ok'
     ERROR = 'error'
+    BIGINT = 9876543210
     DEFAULT_LATEST_VERSION = 'default: the latest version'
+    STRICT_NAME_PATTERN = re.compile(r'[^0-9A-Za-z_]')
+    DEMO_JOBID = 'ScrapydWeb_demo'
     DEMO_LOG = 'ScrapydWeb_demo.log'
     DEMO_JSON = 'ScrapydWeb_demo.json'
     DEMO_UNFINISHED_LOG = 'ScrapydWeb_demo_unfinished.log'
@@ -36,6 +43,9 @@ class Constant(object):
 
     CWD = os.path.dirname(os.path.abspath(__file__))
     LOGPARSER_VERSION = logparser_version
+
+    # ?flash=Add task #1 (Chinese 中文) successfully, next run at 2019-01-01 00:00:01.176468+08:00. Reload this page
+    TASK_NEXT_RUN_TIME_PATTERN = re.compile(r"[ ]task #(\d+).+?next run at (.+?)\.[ ]")
 
     # default UA: werkzeug/0.14.1
     HEADERS_DICT = dict(
@@ -49,7 +59,7 @@ class Constant(object):
 
     SCRAPY_CFG_DICT = dict(
         demo_only_scrapy_cfg='No module named',  # Result from Scrapyd server
-        demo_without_scrapy_cfg='scrapy.cfg NOT found',
+        demo_without_scrapy_cfg='scrapy.cfg not found',
 
         scrapy_cfg_no_settings_default='No section: &#39;settings&#39;',
         scrapy_cfg_no_section_settings='File contains no section headers.',
@@ -65,12 +75,13 @@ class Constant(object):
     )
 
     VIEW_TITLE_MAP = {
-        'overview': 'Monitor and control',
-        'dashboard': 'Get the list of pending',
+        'servers': 'Monitor and control',
+        'jobs': 'Get the list of pending',
+        'tasks': 'Get the list of timer tasks',
 
-        'deploy.deploy': 'Add a version to a project',
-        'schedule.schedule': 'Schedule a spider run',
-        'manage': 'Get the list of projects uploaded',
+        'deploy': 'Add a version to a project',
+        'schedule': 'Schedule a spider run',
+        'projects': 'Get the list of projects uploaded',
 
         'logs': 'Directory listing for /logs/',
         'parse.upload': 'Upload a scrapy logfile to parse',
@@ -78,7 +89,7 @@ class Constant(object):
     }
 
     (_language_code, _encoding) = locale.getdefaultlocale()
-    WINDOWS_NOT_CP936 = True if platform.system() == 'Windows' and _encoding != 'cp936' else False
+    WINDOWS_NOT_CP936 = platform.system() == 'Windows' and _encoding != 'cp936'
 
 
 cst = Constant()
@@ -89,7 +100,7 @@ def get_text(response):
 
 
 def req(app, client, view='', kws=None, url='', data=None, ins=None, nos=None, jskws=None, jskeys=None,
-        location=None, mobileui=False, headers=None, single_scrapyd=False, set_to_second=False):
+        location=None, mobileui=False, headers=None, single_scrapyd=False, set_to_second=False, save=''):
     if single_scrapyd:
         set_single_scrapyd(app, set_to_second)
 
@@ -100,80 +111,144 @@ def req(app, client, view='', kws=None, url='', data=None, ins=None, nos=None, j
             response = client.post(url, headers=headers, data=data, content_type='multipart/form-data')
         else:
             response = client.get(url, headers=headers)
-        # with io.open('response.html', 'wb') as f:
-            # f.write(response.data)
+        if save:
+            with io.open('%s.html' % save, 'wb') as f:
+                f.write(response.data)
         text = get_text(response)
         # print(text)
         js = {}
         try:
             # js = response.get_json()
             js = json.loads(text)
-        except ValueError:  # includes JSONDecodeError
+        except ValueError:  # issubclass(JSONDecodeError, ValueError)
             pass
-        # print(js)
-        if isinstance(ins, str):
-            assert ins in text
-        elif isinstance(ins, list):
-            for i in ins:
-                assert i in text
-        elif ins:
-            raise TypeError("The argument 'ins' should be either a string or a list")
-
-        if isinstance(nos, str):
-            assert nos not in text
-        elif isinstance(nos, list):
-            for n in nos:
-                assert n not in text
-        elif nos:
-            raise TypeError("The argument 'nos' should be either a string or a list")
-
-        if location:
-            try:
-                assert response.headers['Location'].endswith(location)
-            except AssertionError:
-                assert location in response.headers['Location']
-
-        if jskws:
-            for k, v in jskws.items():
+        print("js: %s" % js)
+        try:
+            if isinstance(ins, string_types):
                 try:
-                    assert js[k] == v
+                    print("ins: %s" % ins)
+                except:  # For compatibility with Win10 Python2
+                    print("ins: %s" % repr(ins))
+                assert ins in text
+            elif isinstance(ins, list):
+                for i in ins:
+                    try:
+                        print("ins: %s" % i)
+                    except:
+                        print("ins: %s" % repr(i))
+                    assert i in text
+            elif ins:
+                raise TypeError("The argument 'ins' should be either a string or a list")
+
+            if isinstance(nos, string_types):
+                print("nos: %s" % nos)
+                assert nos not in text
+            elif isinstance(nos, list):
+                for n in nos:
+                    print("nos: %s" % n)
+                    assert n not in text
+            elif nos:
+                raise TypeError("The argument 'nos' should be either a string or a list")
+
+            if location:
+                print("response.headers['Location']: %s" % response.headers['Location'])
+                print("location: %s" % location)
+                try:
+                    assert response.headers['Location'].endswith(location)
                 except AssertionError:
-                    # v is an element of js[k] or a substring of js[k]
-                    assert v in js[k]
+                    assert location in response.headers['Location']
 
-        if jskeys:
-            if isinstance(jskeys, str):
-                assert jskeys in js.keys()
-            elif isinstance(jskeys, list):
-                for k in jskeys:
-                    assert k in js.keys()
-            elif jskeys:
-                raise TypeError("The argument 'jskeys' should be either a string or a list")
+            if jskws:
+                for k, v in jskws.items():
+                    print("jskws: %s = %s" % (k, v))
+                    try:
+                        assert js[k] == v
+                    except AssertionError:
+                        # v is an element of js[k] or a substring of js[k]
+                        assert v in js[k]
 
-        if mobileui:
-            assert 'Desktop version' in text
-        else:
-            assert 'Desktop version' not in text
+            if jskeys:
+                if isinstance(jskeys, string_types):
+                    print("jskeys: %s" % jskeys)
+                    assert jskeys in js.keys()
+                elif isinstance(jskeys, list):
+                    for k in jskeys:
+                        print("jskeys: %s" % k)
+                        assert k in js.keys()
+                elif jskeys:
+                    raise TypeError("The argument 'jskeys' should be either a string or a list")
+
+            if mobileui:
+                assert 'Desktop version' in text
+            else:
+                assert 'Desktop version' not in text
+        except:
+            with io.open('response.html', 'wb') as f:
+                f.write(response.data)
+            raise
 
         return text, js
 
 
 def req_single_scrapyd(*args, **kwargs):
-    kwargs.update({'single_scrapyd': True})
+    kwargs.update(single_scrapyd=True)
     return req(*args, **kwargs)
 
 
-def set_env(custom_settings):
+def set_single_scrapyd(app, set_to_second=False):
+    if len(app.config['SCRAPYD_SERVERS']) > 1:
+        index = -1 if set_to_second else 0
+        app.config['SCRAPYD_SERVERS'] = [app.config['SCRAPYD_SERVERS'][index]]
+        app.config['SCRAPYD_SERVERS_AUTHS'] = [app.config['SCRAPYD_SERVERS_AUTHS'][index]]
+        app.config['SCRAPYD_SERVERS_AMOUNT'] = 1
+
+
+def switch_scrapyd(app):
+    if len(app.config['SCRAPYD_SERVERS']) > 1:
+        app.config['SCRAPYD_SERVERS'] = app.config['SCRAPYD_SERVERS'][::-1]
+        app.config['SCRAPYD_SERVERS_AUTHS'] = app.config['SCRAPYD_SERVERS_AUTHS'][::-1]
+
+
+def sleep(seconds=10):
+    time.sleep(seconds)
+
+
+def replace_file_content(filepath, old, new):
+    with io.open(filepath, 'r+', encoding='utf-8') as f:
+        content = f.read()
+        f.seek(0)
+        f.write(content.replace(old, new))
+        print("replace %s to %s in %s" % (old, new, filepath))
+
+
+def setup_env(custom_settings):
+    for file in glob.glob(os.path.join(DATABASE_PATH, '*.db')):
+        os.remove(file)
+        print("Removed %s" % file)
+
+    if os.path.isdir(STATS_PATH):
+        rmtree(STATS_PATH, ignore_errors=True)
+        print("rmtree %s" % STATS_PATH)
+
+    setup_logfile(delete=True)
+    print("setup_logfile(delete=True)")
+
     if not custom_settings.get('SCRAPYD_LOGS_DIR', ''):
         custom_settings['SCRAPYD_LOGS_DIR'] = os.path.join(os.path.expanduser('~'), 'logs')
-        print("Set SCRAPYD_LOGS_DIR to: %s" % custom_settings['SCRAPYD_LOGS_DIR'])
+        print("Setting SCRAPYD_LOGS_DIR to: %s" % custom_settings['SCRAPYD_LOGS_DIR'])
     scrapyd_logs_dir = custom_settings['SCRAPYD_LOGS_DIR']
     if not os.path.isdir(scrapyd_logs_dir):
         sys.exit("custom_settings['SCRAPYD_LOGS_DIR'] not found: %s" % repr(scrapyd_logs_dir))
+    else:
+        logs_ScrapydWeb_demo = os.path.join(scrapyd_logs_dir, cst.PROJECT)
+        if os.path.isdir(logs_ScrapydWeb_demo):
+            rmtree(logs_ScrapydWeb_demo, ignore_errors=True)
+            print("rmtree %s" % logs_ScrapydWeb_demo)
 
     data_folder = os.path.join(cst.CWD, 'data')
     if os.path.isdir(data_folder):
         rmtree(data_folder, ignore_errors=True)
+    sleep(3)
     with zipfile.ZipFile(os.path.join(cst.CWD, 'data.zip'), 'r') as f:
         f.extractall(cst.CWD)
 
@@ -189,38 +264,19 @@ def set_env(custom_settings):
         print("Copied to %s from %s" % (dst, src))
         # 'finish_reason': 'finished',
         if filename == cst.DEMO_UNFINISHED_LOG:
-            with io.open(dst, 'r+', encoding='utf-8') as f:
-                content = f.read()
-                f.seek(0)
-                f.write(content.replace("'finish_reason'", ''))
-            print("Remove 'finish_reason' in %s" % dst)
+            replace_file_content(dst, "'finish_reason'", "'finish_reason_removed'")
     stats_json_path = os.path.join(scrapyd_logs_dir, 'stats.json')
     demo_json_path = os.path.join(spider_path, cst.DEMO_JSON)
     demo_unfinished_json_path = os.path.join(spider_path, cst.DEMO_UNFINISHED_JSON)
     custom_settings['STATS_JSON_PATH'] = stats_json_path
     custom_settings['DEMO_JSON_PATH'] = demo_json_path
+    custom_settings['DEMO_LOG_PATH'] = os.path.join(spider_path, cst.DEMO_LOG)
     for path in [stats_json_path, demo_json_path, demo_unfinished_json_path]:
         if os.path.exists(path):
             os.remove(path)
             print("Deleted: %s" % path)
-
-
-def set_single_scrapyd(app, set_to_second=False):
-    if len(app.config['SCRAPYD_SERVERS']) > 1:
-        index = -1 if set_to_second else 0
-        app.config['SCRAPYD_SERVERS'] = [app.config['SCRAPYD_SERVERS'][index]]
-        app.config['SCRAPYD_SERVERS_AUTHS'] = [app.config['SCRAPYD_SERVERS_AUTHS'][index]]
-        app.config['SCRAPYD_SERVERS_AMOUNT'] = 1
-
-
-def sleep(seconds=10):
-    time.sleep(seconds)
-
-
-def switch_scrapyd(app):
-    if len(app.config['SCRAPYD_SERVERS']) > 1:
-        app.config['SCRAPYD_SERVERS'] = app.config['SCRAPYD_SERVERS'][::-1]
-        app.config['SCRAPYD_SERVERS_AUTHS'] = app.config['SCRAPYD_SERVERS_AUTHS'][::-1]
+    node = re.sub(LEGAL_NAME_PATTERN, '-', re.sub(r'[.:]', '_', custom_settings['_SCRAPYD_SERVER']))
+    custom_settings['BACKUP_DEMO_JSON_PATH'] = os.path.join(STATS_PATH, node, cst.PROJECT, cst.SPIDER, cst.DEMO_JSON)
 
 
 def upload_file_deploy(app, client, filename, project, multinode=False,
@@ -239,7 +295,7 @@ def upload_file_deploy(app, client, filename, project, multinode=False,
         if fail:
             assert response.status_code == 200 and "fail - ScrapydWeb" in text
         else:
-            url_redirect = url_for('schedule.schedule', node=1, project=redirect_project, version=cst.VERSION)
+            url_redirect = url_for('schedule', node=1, project=redirect_project, version=cst.VERSION)
             if multinode:
                 assert response.status_code == 200 and "deploy results - ScrapydWeb" in text and url_redirect in text
             else:

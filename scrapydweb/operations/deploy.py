@@ -1,8 +1,4 @@
 # coding: utf8
-try:
-    from ConfigParser import Error as ScrapyCfgParseError  # PY2
-except ImportError:
-    from configparser import Error as ScrapyCfgParseError  # PY3
 from datetime import datetime
 import glob
 import io
@@ -10,21 +6,21 @@ import os
 import re
 from shutil import copyfile, copyfileobj, rmtree
 from subprocess import CalledProcessError
-import sys
 import tarfile
 import tempfile
 import time
 import zipfile
 
 from flask import redirect, render_template, request, url_for
+from six.moves.configparser import Error as ScrapyCfgParseError
 from werkzeug.utils import secure_filename
 
 from ..myview import MyView
 from .scrapyd_deploy import _build_egg, get_config
 from .utils import mkdir_p, slot
+from ..vars import PY2
 
 
-PY2 = True if sys.version_info[0] < 3 else False
 SCRAPY_CFG = """
 [settings]
 default = projectname.settings
@@ -63,13 +59,14 @@ class DeployView(MyView):
         kwargs = dict(
             node=self.node,
             url=self.url,
+            url_projects=url_for('projects', node=self.node),
             selected_nodes=self.get_selected_nodes(),
             folders=self.folders,
             projects=self.projects,
             modification_times=self.modification_times,
             latest_folder=self.latest_folder,
-            SCRAPY_PROJECTS_DIR=self.SCRAPY_PROJECTS_DIR,
-            url_overview=url_for('overview', node=self.node, opt='deploy'),
+            SCRAPY_PROJECTS_DIR=self.SCRAPY_PROJECTS_DIR.replace('\\', '/'),
+            url_servers=url_for('servers', node=self.node, opt='deploy'),
             url_deploy_upload=url_for('deploy.upload', node=self.node)
         )
         return render_template(self.template, **kwargs)
@@ -103,12 +100,12 @@ class DeployView(MyView):
     def parse_scrapy_cfg(self):
         for (idx, scrapy_cfg) in enumerate(self.scrapy_cfg_list):
             folder = self.folders[idx]
-            key = '%s__%s' % (folder, self.modification_times[idx])
+            key = '%s (%s)' % (folder, self.modification_times[idx])
 
             project = folder_project_dict.get(key, '')
             if project:
                 self.projects.append(project)
-                self.logger.debug('Hit %s %s', key, project)
+                self.logger.debug('Hit %s, project %s', key, project)
                 continue
             else:
                 project = folder
@@ -124,19 +121,19 @@ class DeployView(MyView):
                     project = project or folder
                     self.projects.append(project)
                     folder_project_dict[key] = project
-                    self.logger.debug('Add %s %s', key, project)
+                    self.logger.debug('Add %s, project %s', key, project)
 
         keys_all = list(folder_project_dict.keys())
-        keys_exist = ['%s__%s' % (_folder, _modification_time)
+        keys_exist = ['%s (%s)' % (_folder, _modification_time)
                       for (_folder, _modification_time) in zip(self.folders, self.modification_times)]
         diff = set(keys_all).difference(set(keys_exist))
         for key in diff:
-            self.logger.debug('Pop %s %s', key, folder_project_dict.pop(key))
+            self.logger.debug('Pop %s, project %s', key, folder_project_dict.pop(key))
         self.logger.info(self.json_dumps(folder_project_dict))
         self.logger.info('folder_project_dict length: %s', len(folder_project_dict))
 
 
-class UploadView(MyView):
+class DeployUploadView(MyView):
     methods = ['POST']
 
     def __init__(self):
@@ -174,15 +171,15 @@ class UploadView(MyView):
                 alert = "Fail to deploy project:"
 
             if self.scrapy_cfg_not_found:
-                text = "scrapy.cfg NOT found"
-                tip = "Make sure that the 'scrapy.cfg' file resides in your project directory."
+                text = "scrapy.cfg not found"
+                tip = "Make sure that the 'scrapy.cfg' file resides in your project directory. "
             elif self.scrapy_cfg_parse_error:
                 text = self.scrapy_cfg_parse_error
-                tip = "Check the content of the 'scrapy.cfg' file in your project directory."
+                tip = "Check the content of the 'scrapy.cfg' file in your project directory. "
             else:
                 text = self.build_egg_subprocess_error
                 tip = ("Check the content of the 'scrapy.cfg' file in your project directory. "
-                       "Or build the egg file by yourself instead.")
+                       "Or build the egg file by yourself instead. ")
 
             if self.scrapy_cfg_not_found:
                 message = "scrapy_cfg_searched_paths:\n%s" % self.json_dumps(self.scrapy_cfg_searched_paths)
@@ -193,9 +190,9 @@ class UploadView(MyView):
                                    alert=alert, text=text, tip=tip, message=message)
         else:
             self.prepare_data()
-            status_code, self.js = self.make_request(self.url, self.data, auth=self.AUTH)
+            status_code, self.js = self.make_request(self.url, data=self.data, auth=self.AUTH)
 
-        if self.js['status'] != 'ok':
+        if self.js['status'] != self.OK:
             # With multinodes, would try to deploy to the first selected node first
             if self.selected_nodes_amount > 1:
                 alert = ("Multinode deployment terminated, "
@@ -210,7 +207,7 @@ class UploadView(MyView):
                                    alert=alert, text=self.json_dumps(self.js), message=message)
         else:
             if self.selected_nodes_amount == 0:
-                return redirect(url_for('schedule.schedule', node=self.node,
+                return redirect(url_for('schedule', node=self.node,
                                         project=self.project, version=self.version))
             else:
                 kwargs = dict(
@@ -220,14 +217,14 @@ class UploadView(MyView):
                     js=self.js,
                     project=self.project,
                     version=self.version,
-                    url_manage_first_selected_node=url_for('manage', node=self.first_selected_node),
-                    url_manage_list=[url_for('manage', node=n) for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)],
-                    url_xhr=url_for('deploy.deploy_xhr', node=self.node, eggname=self.eggname,
+                    url_projects_first_selected_node=url_for('projects', node=self.first_selected_node),
+                    url_projects_list=[url_for('projects', node=n) for n in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)],
+                    url_xhr=url_for('deploy.xhr', node=self.node, eggname=self.eggname,
                                     project=self.project, version=self.version),
-                    url_schedule=url_for('schedule.schedule', node=self.node, project=self.project,
+                    url_schedule=url_for('schedule', node=self.node, project=self.project,
                                          version=self.version),
-                    url_overview=url_for('overview', node=self.node, opt='schedule', project=self.project,
-                                         version_job=self.version)
+                    url_servers=url_for('servers', node=self.node, opt='schedule', project=self.project,
+                                        version_job=self.version)
                 )
                 return render_template(self.template, **kwargs)
 
@@ -240,7 +237,7 @@ class UploadView(MyView):
         # 'version': '2018-09-05T03_13_50'}
 
         # With multinodes, would try to deploy to the first selected node first
-        self.selected_nodes_amount = int(request.form.get('checked_amount', 0))
+        self.selected_nodes_amount = request.form.get('checked_amount', default=0, type=int)
         if self.selected_nodes_amount:
             self.selected_nodes = self.get_selected_nodes()
             self.first_selected_node = self.selected_nodes[0]
@@ -250,8 +247,9 @@ class UploadView(MyView):
         else:
             self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
 
-        self.project = re.sub(r'[^0-9A-Za-z_-]', '', request.form.get('project', '')) or self.get_now_string()
-        self.version = re.sub(r'[^0-9A-Za-z_-]', '', request.form.get('version', '')) or self.get_now_string()
+        # Error: Project names must begin with a letter and contain only letters, numbers and underscores
+        self.project = re.sub(self.STRICT_NAME_PATTERN, '_', request.form.get('project', '')) or self.get_now_string()
+        self.version = re.sub(self.LEGAL_NAME_PATTERN, '-', request.form.get('version', '')) or self.get_now_string()
 
         if request.files.get('file'):
             self.handle_uploaded_file()
@@ -341,7 +339,7 @@ class UploadView(MyView):
 
         self.logger.debug("Uncompressed to %s", tmpdir)
         # In case uploading a compressed file in which scrapy_cfg_dir contains none ascii in python 2,
-        # whereas selecting a project when auto eggifying, scrapy_cfg_dir is unicode
+        # whereas selecting a project for auto packaging, scrapy_cfg_dir is unicode
         # print(repr(tmpdir))
         # print(type(tmpdir))
         return tmpdir.decode('utf8') if PY2 else tmpdir
@@ -354,7 +352,7 @@ class UploadView(MyView):
                 self.logger.debug("scrapy_cfg_path: %s", self.scrapy_cfg_path)
                 return
 
-        self.logger.error("scrapy.cfg NOT found in: %s", search_path)
+        self.logger.error("scrapy.cfg not found in: %s", search_path)
         self.scrapy_cfg_path = ''
 
     def build_egg(self):
@@ -413,5 +411,5 @@ class DeployXhrView(MyView):
             'version': self.version,
             'egg': content
         }
-        status_code, js = self.make_request(self.url, data, auth=self.AUTH)
+        status_code, js = self.make_request(self.url, data=data, auth=self.AUTH)
         return self.json_dumps(js)

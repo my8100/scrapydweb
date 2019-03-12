@@ -4,6 +4,8 @@ from datetime import date, datetime
 import io
 import json
 import os
+import re
+from socket import gethostname
 from subprocess import Popen
 import sys
 import tarfile
@@ -35,6 +37,8 @@ job_finished_set = set()
 # http://flask.pocoo.org/docs/1.0/api/#flask.views.View
 # http://flask.pocoo.org/docs/1.0/views/
 class LogView(MyView):
+    job_data_dict = job_data_dict
+    job_finished_set = job_finished_set
 
     def __init__(self):
         super(self.__class__, self).__init__()  # super().__init__()
@@ -45,10 +49,6 @@ class LogView(MyView):
         self.job = self.view_args['job']
 
         self.job_key = '/%s/%s/%s/%s' % (self.node, self.project, self.spider, self.job)
-        self.job_data_dict = job_data_dict
-        self.job_finished_set = job_finished_set
-
-        self.local_scrapyd_server = self.SCRAPYD_SERVER.split(':')[0] in ['127.0.0.1', 'localhost']
 
         # Note that self.SCRAPYD_LOGS_DIR may be an empty string
         # Extension like '.log' is excluded here.
@@ -59,9 +59,13 @@ class LogView(MyView):
         self.with_ext = request.args.get('with_ext', None)
         if self.with_ext:
             self.SCRAPYD_LOG_EXTENSIONS = ['']
+            if self.job.endswith('.tar.gz'):
+                job_without_ext = self.job[:-len('.tar.gz')]
+            else:
+                job_without_ext = os.path.splitext(self.job)[0]  # '1.1.log' => ('1.1', '.log')
+        else:
+            job_without_ext = self.job
 
-        # 'a', 'a.log', 'a.tar.gz' => 'a'
-        job_without_ext = self.job.split('.')[0]
         # json file by LogParser
         self.json_path = os.path.join(self.SCRAPYD_LOGS_DIR, self.project, self.spider, job_without_ext + '.json')
         self.json_url = u'http://{}/logs/{}/{}/{}.json'.format(self.SCRAPYD_SERVER, self.project, self.spider,
@@ -71,10 +75,9 @@ class LogView(MyView):
         self.text = ''
         self.template = 'scrapydweb/%s%s.html' % (self.opt, '_mobileui' if self.USE_MOBILEUI else '')
         self.kwargs = dict(node=self.node, project=self.project, spider=self.spider,
-                           job=job_without_ext if self.with_ext else self.job,
-                           url_refresh='', url_jump='')
+                           job=job_without_ext, url_refresh='', url_jump='')
 
-        # Request that comes from poll POST for finished job and links of finished job in the Dashboard page
+        # Request that comes from poll POST for finished job and links of finished job in the Jobs page
         # would be attached with the query string '?job_finished=True'
         self.job_finished = request.args.get('job_finished', None)
 
@@ -88,6 +91,10 @@ class LogView(MyView):
             self.stats_realtime = True if request.args.get('realtime', None) else False
             self.stats_logparser = not self.stats_realtime
         self.logparser_valid = False
+        self.backup_stats_valid = False
+        spider_path = self.mkdir_spider_path()
+        self.backup_stats_path = os.path.join(spider_path, job_without_ext + '.json')
+        self.stats = {}
 
         # job_data for email notice: ([0] * 8, [False] * 6, False, time.time())
         self.job_stats_previous = []
@@ -100,28 +107,30 @@ class LogView(MyView):
         self.flag = ''
 
     def dispatch_request(self, **kwargs):
-        # Try to request stats by LogParser to avoid reading/requesting the entire raw log
+        # Try to request stats by LogParser to avoid reading/requesting the whole log
         if self.stats_logparser:
-            if self.local_scrapyd_server and self.SCRAPYD_LOGS_DIR:
-                self.kwargs.update(self.read_local_stats_by_logparser())
+            if self.IS_LOCAL_SCRAPYD_SERVER and self.SCRAPYD_LOGS_DIR:
+                self.read_local_stats_by_logparser()
             if not self.logparser_valid:
-                self.kwargs.update(self.request_stats_by_logparser())
+                self.request_stats_by_logparser()
 
         if not self.logparser_valid and not self.text:
             # Try to read local logfile
-            if self.local_scrapyd_server and self.SCRAPYD_LOGS_DIR:
+            if self.IS_LOCAL_SCRAPYD_SERVER and self.SCRAPYD_LOGS_DIR:
                 self.read_local_scrapy_log()
-            # Has to request scrapy log
+            # Has to request scrapy logfile
             if not self.text:
                 self.request_scrapy_log()
                 if self.status_code != 200:
-                    kwargs = dict(
-                        node=self.node,
-                        url=self.url,
-                        status_code=self.status_code,
-                        text=self.text
-                    )
-                    return render_template(self.template_fail, **kwargs)
+                    if self.stats_logparser:
+                        self.load_backup_stats()
+                    if not self.backup_stats_valid:
+                        kwargs = dict(node=self.node, url=self.url, status_code=self.status_code, text=self.text)
+                        return render_template(self.template_fail, **kwargs)
+            else:
+                self.url += self.SCRAPYD_LOG_EXTENSIONS[0]
+        else:
+            self.url += self.SCRAPYD_LOG_EXTENSIONS[0]
 
         self.update_kwargs()
 
@@ -132,42 +141,52 @@ class LogView(MyView):
 
     def read_local_stats_by_logparser(self):
         self.logger.debug("Try to read local stats by LogParser: %s", self.json_path)
-        js = {}
-        if os.path.exists(self.json_path):
-            try:
-                with io.open(self.json_path, 'r', encoding='utf-8') as f:
-                    js = json.loads(f.read())
-                assert 'logparser_version' in js, "'logparser_version' NOT found in stats by LogParser: %s" % js
-            except Exception as err:
-                self.logger.error("Fail to read local stats by LogParser: %s", err)
-            else:
-                self.logparser_valid = True
-                msg = "LogParser v%s, last_update_time: %s, %s" % (js['logparser_version'],
-                                                                   js['last_update_time'], self.json_path)
-                self.logger.info(msg)
-                flash(msg, self.INFO)
+        try:
+            with io.open(self.json_path, 'r', encoding='utf-8') as f:
+                js = json.loads(f.read())
+        except Exception as err:
+            self.logger.error("Fail to read local stats from %s: %s", self.json_path, err)
+            return
         else:
-            self.logger.warning("Fail to find local stats by LogParser: %s", self.json_path)
-        return js
+            if js.get('logparser_version') != self.LOGPARSER_VERSION:
+                msg = "Mismatching logparser_version %s in local stats" % js.get('logparser_version')
+                self.logger.warning(msg)
+                flash(msg, self.WARN)
+                return
+            self.logparser_valid = True
+            self.stats = js
+            msg = "Using local stats: LogParser v%s, last updated at %s, %s" % (
+                js['logparser_version'], js['last_update_time'], self.handle_slash(self.json_path))
+            self.logger.info(msg)
+            flash(msg, self.INFO)
 
     def request_stats_by_logparser(self):
         self.logger.debug("Try to request stats by LogParser: %s", self.json_url)
-        # self.make_request() would check the value of key 'status' if api=True
-        status_code, js = self.make_request(self.json_url, auth=self.AUTH, api=True, json_dumps=False)
+        # self.make_request() would check the value of key 'status' if as_json=True
+        status_code, js = self.make_request(self.json_url, auth=self.AUTH, as_json=True, dumps_json=False)
         if status_code != 200:
-            self.logger.error("Fail to request stats by LogParser, got status_code: %s", status_code)
-            flash("'pip install logparser' on the current Scrapyd host and "
-                  "get it started via command 'logparser'", self.WARN)
-        elif 'logparser_version' not in js:
-            self.logger.warning("'logparser_version' NOT found in stats by LogParser: %s", js)
-            flash("'logparser_version' NOT found in the stats by LogParser (%s)" % self.json_url, self.WARN)
+            self.logger.error("Fail to request stats from %s, got status_code: %s", self.json_url, status_code)
+            if self.IS_LOCAL_SCRAPYD_SERVER and self.ENABLE_LOGPARSER:
+                flash("Request to %s got code %s, wait until LogParser parses the log. " % (self.json_url, status_code),
+                      self.INFO)
+            else:
+                flash(("'pip install logparser' on host '%s' and run command 'logparser'. "
+                       "Or wait until LogParser parses the log. ") % self.SCRAPYD_SERVER, self.WARN)
+            return
+        elif js.get('logparser_version') != self.LOGPARSER_VERSION:
+            msg = "'pip install -U logparser' on host '%s' to update LogParser to v%s" % (
+                self.SCRAPYD_SERVER, self.LOGPARSER_VERSION)
+            self.logger.warning(msg)
+            flash(msg, self.WARN)
+            return
         else:
             self.logparser_valid = True
-            msg = "LogParser v%s, last_update_time: %s, %s" % (js['logparser_version'], js['last_update_time'],
-                                                               self.json_url)
+            # TODO: dirty data
+            self.stats = js
+            msg = "LogParser v%s, last updated at %s, %s" % (
+                js['logparser_version'], js['last_update_time'], self.json_url)
             self.logger.info(msg)
             flash(msg, self.INFO)
-        return js
 
     def read_local_scrapy_log(self):
         for ext in self.SCRAPYD_LOG_EXTENSIONS:
@@ -178,22 +197,86 @@ class LogView(MyView):
                     break
                 with io.open(log_path, 'r', encoding='utf-8', errors='ignore') as f:
                     self.text = f.read()
-                self.logger.debug("Using local logfile: %s", log_path)
-                flash("Using local logfile: %s" % log_path, self.INFO)
+                log_path = self.handle_slash(log_path)
+                msg = "Using local logfile: %s" % log_path
+                self.logger.debug(msg)
+                flash(msg, self.INFO)
                 break
 
     def request_scrapy_log(self):
         for ext in self.SCRAPYD_LOG_EXTENSIONS:
             url = self.url + ext
-            self.status_code, self.text = self.make_request(url, auth=self.AUTH, api=False)
+            self.status_code, self.text = self.make_request(url, auth=self.AUTH, as_json=False)
             if self.status_code == 200:
                 self.url = url
                 self.logger.debug("Got logfile from %s", self.url)
                 break
         else:
-            self.logger.warning("Fail to request logfile from %s with extensions %s",
-                                self.url, self.SCRAPYD_LOG_EXTENSIONS)
-            self.url = '%s%s' % (self.url, self.SCRAPYD_LOG_EXTENSIONS[0])
+            msg = "Fail to request logfile from %s with extensions %s" % (self.url, self.SCRAPYD_LOG_EXTENSIONS)
+            self.logger.error(msg)
+            flash(msg, self.WARN)
+            self.url += self.SCRAPYD_LOG_EXTENSIONS[0]
+
+    def mkdir_spider_path(self):
+        node_path = os.path.join(self.STATS_PATH,
+                                 re.sub(self.LEGAL_NAME_PATTERN, '-', re.sub(r'[.:]', '_', self.SCRAPYD_SERVER)))
+        project_path = os.path.join(node_path, self.project)
+        spider_path = os.path.join(project_path, self.spider)
+
+        if not os.path.isdir(self.STATS_PATH):
+            os.mkdir(self.STATS_PATH)
+        if not os.path.isdir(node_path):
+            os.mkdir(node_path)
+        if not os.path.isdir(project_path):
+            os.mkdir(project_path)
+        if not os.path.isdir(spider_path):
+            os.mkdir(spider_path)
+        return spider_path
+
+    def backup_stats(self):
+        # TODO: delete backup stats json file when the job is deleted in the Jobs page with database view
+        try:
+            with io.open(self.backup_stats_path, 'w', encoding='utf-8', errors='ignore') as f:
+                f.write(self.json_dumps(self.stats))
+        except Exception as err:
+            self.logger.error("Fail to backup stats to %s: %s" % (self.backup_stats_path, err))
+            try:
+                os.remove(self.backup_stats_path)
+            except:
+                pass
+        else:
+            self.logger.info("Saved backup stats to %s", self.backup_stats_path)
+
+    def load_backup_stats(self):
+        self.logger.debug("Try to load backup stats by LogParser: %s", self.json_path)
+        try:
+            with io.open(self.backup_stats_path, 'r', encoding='utf-8') as f:
+                js = json.loads(f.read())
+        except Exception as err:
+            self.logger.error("Fail to load backup stats from %s: %s", self.backup_stats_path, err)
+        else:
+            if js.get('logparser_version') != self.LOGPARSER_VERSION:
+                msg = "Mismatching logparser_version %s in backup stats" % js.get('logparser_version')
+                self.logger.warning(msg)
+                flash(msg, self.WARN)
+                return
+            self.logparser_valid = True
+            self.backup_stats_valid = True
+            self.stats = js
+            msg = "Using backup stats: LogParser v%s, last updated at %s, %s" % (
+                js['logparser_version'], js['last_update_time'], self.handle_slash(self.backup_stats_path))
+            self.logger.info(msg)
+            flash(msg, self.WARN)
+
+    @staticmethod
+    def get_ordered_dict(adict):
+        # 'source', 'last_update_time', 'last_update_timestamp', other keys in order
+        odict = OrderedDict()
+        for k in ['source', 'last_update_time', 'last_update_timestamp']:
+            odict[k] = adict.pop(k)
+        for k in sorted(adict.keys()):
+            odict[k] = adict[k]
+        return odict
 
     def update_kwargs(self):
         if self.utf8_realtime:
@@ -204,14 +287,24 @@ class LogView(MyView):
             else:
                 self.kwargs['url_refresh'] = 'javascript:location.reload(true);'
         else:
-            # Parsed data comes from json.loads, for compatibility with Python 2, 
+            # Parsed data comes from json.loads, for compatibility with Python 2,
             # use str(time_) to avoid [u'2019-01-01 00:00:01', 0, 0, 0, 0] in JavaScript.
             if self.logparser_valid:
-                for d in self.kwargs['datas']:
+                for d in self.stats['datas']:
                     d[0] = str(d[0])
             else:
-                self.logger.warning('Parse the entire raw log')
-                self.kwargs.update(parse(self.text))
+                self.logger.warning('Parse the whole log')
+                self.stats = parse(self.text)
+                # Note that the crawler_engine is not available when using parse()
+                self.stats['crawler_engine'] = {}
+            # For sorted orders in stats.html with Python 2
+            for k in ['crawler_stats', 'crawler_engine']:
+                if self.stats[k]:
+                    self.stats[k] = self.get_ordered_dict(self.stats[k])
+
+            if self.BACKUP_STATS_JSON_FILE:
+                self.backup_stats()
+            self.kwargs.update(self.stats)
 
             if (self.kwargs['finish_reason'] == self.NA
                and not self.job_finished
@@ -249,7 +342,7 @@ class LogView(MyView):
         self.logger.info(self.job_data_dict)
         self.job_stats = [self.kwargs['log_categories'][k.lower() + '_logs']['count']
                           for k in self.EMAIL_TRIGGER_KEYS]
-        self.job_stats.extend([self.kwargs['pages'], self.kwargs['items']])
+        self.job_stats.extend([self.kwargs['pages'] or 0, self.kwargs['items'] or 0])  # May be None by LogParser
         self.job_stats_diff = [j - i for i, j in zip(self.job_stats_previous, self.job_stats)]
 
         self.set_email_content_kwargs()
@@ -260,33 +353,41 @@ class LogView(MyView):
         # For compatibility with Python 2, use OrderedDict() to keep insertion order
         self.email_content_kwargs = OrderedDict()
         self.email_content_kwargs['SCRAPYD_SERVER'] = self.SCRAPYD_SERVER
+        self.email_content_kwargs['hostname'] = gethostname()
         self.email_content_kwargs['project'] = self.kwargs['project']
         self.email_content_kwargs['spider'] = self.kwargs['spider']
         self.email_content_kwargs['job'] = self.kwargs['job']
-        self.email_content_kwargs['start_time'] = self.kwargs['first_log_time']
+        self.email_content_kwargs['first_log_time'] = self.kwargs['first_log_time']
         self.email_content_kwargs['latest_log_time'] = self.kwargs['latest_log_time']
-        self.email_content_kwargs['elapsed'] = self.kwargs['elapsed']
+        self.email_content_kwargs['runtime'] = self.kwargs['runtime']
         self.email_content_kwargs['shutdown_reason'] = self.kwargs['shutdown_reason']
         self.email_content_kwargs['finish_reason'] = self.kwargs['finish_reason']
         self.email_content_kwargs['url_stats'] = request.url + '%sui=mobile' % '&' if request.args else '?'
 
-        for idx, i in enumerate(EMAIL_CONTENT_KEYS):
+        for idx, key in enumerate(EMAIL_CONTENT_KEYS):
             if self.job_stats_diff[idx]:
-                self.email_content_kwargs[i] = '%s + %s' % (self.job_stats_previous[idx], self.job_stats_diff[idx])
+                self.email_content_kwargs[key] = '%s + %s' % (self.job_stats_previous[idx], self.job_stats_diff[idx])
             else:
-                self.email_content_kwargs[i] = self.job_stats[idx]
+                self.email_content_kwargs[key] = self.job_stats[idx]
+        # pages and items may be None by LogParser
+        if self.kwargs['pages'] is None:
+            self.email_content_kwargs['crawled_pages'] = self.NA
+        if self.kwargs['items'] is None:
+            self.email_content_kwargs['scraped_items'] = self.NA
 
-        _bind = '127.0.0.1' if self.SCRAPYDWEB_BIND == '0.0.0.0' else self.SCRAPYDWEB_BIND
         _url_stop = url_for('api', node=self.node, opt='stop', project=self.project, version_spider_job=self.job)
-        self.email_content_kwargs['url_stop'] = 'http://%s:%s%s' % (_bind, self.SCRAPYDWEB_PORT, _url_stop)
+        self.email_content_kwargs['url_stop'] = self.URL_SCRAPYDWEB + _url_stop
 
         now_timestamp = time.time()
         for k in ['latest_crawl', 'latest_scrape', 'latest_log']:
             ts = self.kwargs['%s_timestamp' % k]
-            self.email_content_kwargs[k] = self.NA if ts == 0 else "%s seconds ago" % int(now_timestamp - ts)
+            self.email_content_kwargs[k] = self.NA if ts == 0 else "%s secs ago" % int(now_timestamp - ts)
 
         self.email_content_kwargs['current_time'] = self.get_now_string(True)
-        self.email_content_kwargs['logparser_version'] = self.kwargs.get('logparser_version', self.NA)
+        self.email_content_kwargs['logparser_version'] = self.kwargs['logparser_version']
+        self.email_content_kwargs['latest_item'] = self.kwargs['latest_matches']['latest_item'] or self.NA
+        self.email_content_kwargs['Crawler.stats'] = self.kwargs['crawler_stats']
+        self.email_content_kwargs['Crawler.engine'] = self.kwargs['crawler_engine']
 
     def set_email_flag(self):
         if self.ON_JOB_FINISHED and self.job_finished:
@@ -333,13 +434,21 @@ class LogView(MyView):
             now_day = date.isoweekday(date.today())
             now_hour = datetime.now().hour
             if now_day in self.EMAIL_WORKING_DAYS and now_hour in self.EMAIL_WORKING_HOURS:
-                self.EMAIL_KWARGS['subject'] = '%s %s #scrapydweb' % (self.flag, self.job_key)
+                kwargs = dict(
+                    flag=self.flag,
+                    pages=self.NA if self.kwargs['pages'] is None else self.kwargs['pages'],
+                    items=self.NA if self.kwargs['items'] is None else self.kwargs['items'],
+                    job_key=self.job_key,
+                    latest_item=self.kwargs['latest_matches']['latest_item'][:100] or self.NA
+                )
+                subject = u"{flag} [{pages}p, {items}i] {job_key} {latest_item} #scrapydweb".format(**kwargs)
+                self.EMAIL_KWARGS['subject'] = subject
                 self.EMAIL_KWARGS['content'] = self.json_dumps(self.email_content_kwargs, sort_keys=False)
 
                 args = [
                     sys.executable,
                     os.path.join(os.path.dirname(CWD), 'utils', 'send_email.py'),
-                    self.json_dumps(self.EMAIL_KWARGS)
+                    self.json_dumps(self.EMAIL_KWARGS, ensure_ascii=True)
                 ]
                 self.logger.info("Sending email: %s", self.EMAIL_KWARGS['subject'])
                 Popen(args)

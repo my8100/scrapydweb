@@ -15,11 +15,11 @@
         <thead>
             <tr>
                 <th>
-                    <input type="checkbox" id="checkall" />
-                    <a class="state danger" href="javascript:;" onclick="invertSelection();">invert selection</a>
+                    <input type="checkbox" id="checkAll" />
+                    <a class="state warning" href="javascript:;" onclick="invertSelection();">invert selection</a>
                 </th>
                 <th>Index</th>
-                <th>Manage Projects</th>
+                <th>Projects</th>
                 <th>Node Name</th>
                 <th>Status</th>
                 <th>Project</th>
@@ -37,16 +37,10 @@
                 <td>{{ first_selected_node }}</td>
                 <td>
                     <a
-                    {% if first_selected_node == node %}
-                    class="state safe"
-                    {% else %}
-                    class="state normal"
-                    {% endif %}
-
-                    href="{{ url_manage_first_selected_node }}"
-                    target="_blank">
-                    {{ SCRAPYD_SERVERS[first_selected_node-1] }}
-                    </a>
+                    class={% if first_selected_node == node %}"state safe"{% else %}"state normal"{% endif %}
+                    href="{{ url_projects_first_selected_node }}"
+                    target={% if selected_nodes|length > 1 %}"_blank"{% else %}"_self"{% endif %}
+                    >{{ SCRAPYD_SERVERS[first_selected_node-1] }}</a>
                 </td>
                 <td>{{ js['node_name'] }}</td>
                 <td><em class="pass">{{ js['status'] }}</em></td>
@@ -61,16 +55,10 @@
                 <td >{{ loop.index }}</td>
                 <td>
                     <a
-                    {% if loop.index == node %}
-                    class="state safe"
-                    {% else %}
-                    class="state normal"
-                    {% endif %}
-
-                    href="{{ url_manage_list[loop.index-1] }}"
-                    target="_blank">
-                    {{ SCRAPYD_SERVERS[loop.index-1] }}
-                    </a>
+                    class={% if loop.index == node %}"state safe"{% else %}"state normal"{% endif %}
+                    href="{{ url_projects_list[loop.index-1] }}"
+                    target={% if selected_nodes|length > 1 %}"_blank"{% else %}"_self"{% endif %}
+                    >{{ SCRAPYD_SERVERS[loop.index-1] }}</a>
                 </td>
                 <td id="node_name_{{ loop.index }}"></td>
                 <td id="status_{{ loop.index }}"></td>
@@ -86,7 +74,7 @@
 
     <div class="action">
         <a class="button safe big" href="javascript:;" onclick="multinodeRunSpider();">{% if selected_nodes|length > 1 %}Multinode {% endif %}Run Spider</a>
-        <a class="button normal big" href="javascript:;" onclick="passToOverview();">Overview &raquo; Run Spider</a>
+        <a class="button normal big" href="javascript:;" onclick="passToServers();">Servers &raquo; Run Spider</a>
     </div>
 </div>
 
@@ -97,11 +85,11 @@ var selected_nodes = {{ selected_nodes }};
 
 var url_xhr = "{{ url_xhr }}";
 var url_schedule = "{{ url_schedule }}";
-var url_overview = "{{ url_overview }}";
+var url_servers = "{{ url_servers }}";
 
 
 window.onload = function(){
-    $('#checkall').click(function () {
+    $('#checkAll').click(function () {
         $('table input:checkbox').not(this).prop('checked', this.checked);
     });
 

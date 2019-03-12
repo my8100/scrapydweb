@@ -1,14 +1,19 @@
 # coding: utf8
+from collections import OrderedDict
 from email.mime.text import MIMEText
 import json
+import logging
 import smtplib
 import sys
 import time
 
 
-def printf(value, warn=False):
-    prefix = "!!!" if warn else ">>>"
-    print("%s %s" % (prefix, value))
+logger = logging.getLogger('scrapydweb.utils.send_email')  # __name__
+_handler = logging.StreamHandler()
+_formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)-8s in %(name)s: %(message)s")
+_handler.setFormatter(_formatter)
+logger.addHandler(_handler)
+logger.setLevel(logging.DEBUG)
 
 
 # https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as provider using Python?
@@ -21,17 +26,24 @@ def send_email(**kwargs):
     smtp_port = kwargs['smtp_port']
     smtp_over_ssl = kwargs['smtp_over_ssl']
     smtp_connection_timeout = kwargs['smtp_connection_timeout']
-    from_addr = kwargs['from_addr']
+    email_username = kwargs['email_username']
     email_password = kwargs['email_password']
+    from_addr = kwargs['from_addr']
     to_addrs = kwargs['to_addrs']
     subject = kwargs['subject']
     content = kwargs['content']
+    # https://stackoverflow.com/questions/6921699/can-i-get-json-to-load-into-an-ordereddict/6921760#6921760
+    # data = json.loads('{"foo":1, "bar": 2}', object_pairs_hook=OrderedDict)
+    # In log.py : ensure_ascii=True
+    content = json.dumps(json.loads(content, object_pairs_hook=OrderedDict),
+                         sort_keys=False, indent=4, ensure_ascii=False)
 
     msg = MIMEText(u'%s\n%s' % (time.ctime(), content), 'plain', 'utf-8')
     msg['From'] = from_addr
     msg['Subject'] = u'{} {}'.format(time.strftime('%H:%M'), subject)
 
     result = False
+    server = None
     try:
         if smtp_over_ssl:
             server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=smtp_connection_timeout)
@@ -41,29 +53,30 @@ def send_email(**kwargs):
             server.starttls()
         if need_debug:
             server.set_debuglevel(1)  # For debug
-        server.login(from_addr, email_password)
+        server.login(email_username, email_password)
         server.sendmail(from_addr, to_addrs, msg.as_string())
     except Exception as err:
-        printf("FAIL to send email: %s" % subject)
+        logger.error("FAIL to send email: %s", subject)
         try:
-            printf("FAIL reason: %s" % err.args[-1].decode('utf8'))
+            logger.info("FAIL reason: %s", err.args[-1].decode('utf8'))
         except:
             try:
-                printf("FAIL reason: %s" % err.args[-1].decode('gbk'))
+                logger.info("FAIL reason: %s", err.args[-1].decode('gbk'))
             except:
-                printf("FAIL reason: %s" % err)
+                logger.info("FAIL reason: %s", err)
         if to_retry:
-            kwargs.update({'to_retry': False, 'need_debug': True})
-            printf("Retrying...")
+            kwargs.update(to_retry=False, need_debug=True)
+            logger.debug("Retrying...")
             send_email(**kwargs)
     else:
         result = True
-        printf("Email sent: %s" % subject)
+        logger.info("Email sent: %s", subject)
     finally:
-        try:
-            server.quit()
-        except:
-            pass
+        if server is not None:
+            try:
+                server.quit()
+            except:
+                pass
 
     return result
 

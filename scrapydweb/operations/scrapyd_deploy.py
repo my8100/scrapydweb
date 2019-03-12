@@ -3,10 +3,6 @@
 source: https://github.com/scrapy/scrapyd-client
 scrapyd-client/scrapyd_client/deploy.py
 """
-try:
-    from ConfigParser import SafeConfigParser  # PY2
-except ImportError:
-    from configparser import ConfigParser as SafeConfigParser  # PY3
 import errno
 import glob
 import os
@@ -16,6 +12,7 @@ import sys
 import tempfile
 
 from flask import current_app as app
+from six.moves.configparser import SafeConfigParser
 
 
 _SETUP_PY_TEMPLATE = """# Automatically created by: scrapydweb x scrapyd-client

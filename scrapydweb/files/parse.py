@@ -17,7 +17,7 @@ bp = Blueprint('parse', __name__, url_prefix='/')
 
 @bp.route('/parse/source/<filename>')
 def source(filename):
-    return send_from_directory(PARSE_PATH, filename, mimetype='text/plain')
+    return send_from_directory(PARSE_PATH, filename, mimetype='text/plain', cache_timeout=0)
 
 
 class UploadLogView(MyView):

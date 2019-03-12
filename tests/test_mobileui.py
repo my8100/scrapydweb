@@ -10,12 +10,12 @@ jobid = ''
 def test_index(app, client):
     with app.test_request_context():
         req(app, client, view='index', kws=dict(ui='mobile'),
-            location=url_for('dashboard', node=1, ui='mobile'))
+            location=url_for('jobs', node=1, ui='mobile'))
 
 
-def test_dashboard(app, client):
-    req(app, client, view='dashboard', kws=dict(node=1, ui='mobile'),
-        ins='dashboard - mobileui - ScrapydWeb', mobileui=True)
+def test_jobs(app, client):
+    req(app, client, view='jobs', kws=dict(node=1, ui='mobile'),
+        ins='jobs - mobileui - ScrapydWeb', mobileui=True)
 
 
 def test_api_start(app, client):

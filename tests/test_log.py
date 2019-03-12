@@ -13,18 +13,17 @@ from tests.utils import cst, req, sleep, upload_file_deploy
 
 
 def test_log_utf8_stats(app, client):
-    upload_file_deploy(app, client, filename='demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
+    upload_file_deploy(app, client, filename='ScrapydWeb_demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     with app.test_request_context():
         kws = dict(node=1, opt='start', project=cst.PROJECT, version_spider_job=cst.SPIDER)
         __, js = req(app, client, view='api', kws=kws)
         jobid = js['jobid']
-
         sleep()
 
         # the Stats page
         req(app, client, view='log', kws=dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=jobid),
-            ins='Stats collection')
+            ins='Log analysis')
         # the Log page
         req(app, client, view='log', kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=jobid),
             ins='log - ScrapydWeb')
@@ -34,16 +33,68 @@ def test_log_utf8_stats(app, client):
         req(app, client, view='log', kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=jobid),
             ins='log - ScrapydWeb')
 
-        # the Dashboard page
+        # the Jobs page GET
         url_stop = url_for('api', node=1, opt='stop', project=cst.PROJECT, version_spider_job=jobid)
-        req(app, client, view='dashboard', kws=dict(node=1), ins=url_stop)
+        url_jobs_classic = url_for('jobs', node=1, style='classic')
+        url_jobs_database = url_for('jobs', node=1, style='database')
+        req(app, client, view='jobs', kws=dict(node=1, style='classic'),
+            ins=[url_stop, url_jobs_database, 'class="table wrap"'], nos="Vue.extend(Main)")
+        req(app, client, view='jobs', kws=dict(node=1, style='database'),
+            ins=[url_stop, url_jobs_classic, "Vue.extend(Main)"], nos='class="table wrap"')
 
+        # ?raise_exception=True
+        req(app, client, view='jobs', kws=dict(node=1, style='database'),
+            ins=[url_stop, url_jobs_classic, "Vue.extend(Main)"], nos='class="table wrap"')
+        req(app, client, view='jobs', kws=dict(node=1),
+            ins=[url_stop, url_jobs_classic, "Vue.extend(Main)"], nos='class="table wrap"')
+        req(app, client, view='metadata', kws=dict(node=1), jskws=dict(jobs_style='database'))
+
+        req(app, client, view='jobs', kws=dict(node=1, raise_exception='True'),
+            ins=[url_stop, url_jobs_database, 'class="table wrap"'], nos="Vue.extend(Main)")
+        req(app, client, view='metadata', kws=dict(node=1), jskws=dict(jobs_style='classic'))
+        req(app, client, view='jobs', kws=dict(node=1),
+            ins=[url_stop, url_jobs_database, 'class="table wrap"'], nos="Vue.extend(Main)")
+
+        # jobs POST data={}
+        jobs_key = '%s/%s/%s' % (cst.PROJECT, cst.SPIDER, jobid)  # type unicode in Python 2
+        print('######')
+        print(repr(jobs_key))
+        print(type(jobs_key))
+        __, js = req(app, client, view='jobs', kws=dict(node=1), data={}, jskeys=jobs_key)
+        jobs_id = js[jobs_key]['id']
+        jobs_start = js[jobs_key]['start']
+        assert js[jobs_key]['deleted'] == '0'
+
+        # JobsXhrView delete running job
+        req(app, client, view='jobs.xhr', kws=dict(node=1, action='delete', id=jobs_id),
+            jskws=dict(status=cst.OK))
+        # Recover deleted running job
+        req(app, client, view='jobs', kws=dict(node=1, style='database'),
+            ins=['Recover deleted job:', url_stop, 'id: %s,' % jobs_id, jobs_start])
+
+        # forcestop
         client.get(url_for('api', node=1, opt='forcestop', project=cst.PROJECT, version_spider_job=jobid))
+        sleep()
 
-        # /1/schedule/ScrapydWeb_demo/default:%20the%20latest%20version/test/
-        url_start = url_for('schedule.schedule', node=1, project=cst.PROJECT,
+        # /1/schedule/ScrapydWeb_demo/default:%20the%20latest%20version/test/   NOT unique
+        url_start = url_for('schedule', node=1, project=cst.PROJECT,
                             version=cst.DEFAULT_LATEST_VERSION, spider=cst.SPIDER)
-        req(app, client, view='dashboard', kws=dict(node=1), ins=url_start)
+        req(app, client, view='jobs', kws=dict(node=1, style='classic'), ins=url_start)
+        req(app, client, view='jobs', kws=dict(node=1, style='database'), ins=url_start)
+
+        # JobsXhrView delete finished
+        req(app, client, view='jobs.xhr', kws=dict(node=1, action='delete', id=jobs_id),
+            jskws=dict(status=cst.OK))
+        # JobsView: query_jobs(): self.jobs = self.Job.query.filter_by(deleted=NOT_DELETED)
+        # POST data={}
+        req(app, client, view='jobs', kws=dict(node=1), data={},
+            nos=['id: %s,' % jobs_id, jobs_start])
+        req(app, client, view='jobs', kws=dict(node=1, style='database'),
+            nos=['id: %s,' % jobs_id, jobs_start])
+        req(app, client, view='jobs', kws=dict(node=1, style='classic'), ins=jobs_start)
+        # delete id not exist
+        req(app, client, view='jobs.xhr', kws=dict(node=1, action='delete', id=cst.BIGINT),
+            jskws=dict(status=cst.ERROR))
 
 
 def test_log_not_exist(app, client):
@@ -79,7 +130,7 @@ def test_inside_the_logs_page(app, client):
                                            job=cst.DEMO_JSON, with_ext='True')
                 assert url_utf8_of_json not in text
 
-                url_run_spider = url_for('schedule.schedule', node=1, project=cst.PROJECT,
+                url_run_spider = url_for('schedule', node=1, project=cst.PROJECT,
                                          version=cst.DEFAULT_LATEST_VERSION, spider=cst.SPIDER)
                 assert url_run_spider in text
 
@@ -98,7 +149,7 @@ def test_demo_log_with_extension(app, client):
         url_demo_log_source = 'http://%s/logs/%s/%s/%s' % (scrapyd_server, cst.PROJECT, cst.SPIDER, cst.DEMO_LOG)
         # the Stats page
         kws = dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.DEMO_LOG, with_ext='True')
-        ins = ['<tr><th>elapsed</th><td>0:01:08</td></tr>', 'id="finish_reason">finished<',
+        ins = ['<tr><th>runtime</th><td>0:01:08</td></tr>', 'id="finish_reason">finished<',
                '<h4>Log</h4>', url_utf8, '<h4>Source</h4>', url_demo_log_source]
         req(app, client, view='log', kws=kws, ins=ins)
         # the Log page
@@ -113,7 +164,7 @@ def test_demo_log_with_extension(app, client):
                             job=cst.DEMO_JSON, with_ext='True')
         url_demo_json_source = 'http://%s/logs/%s/%s/%s' % (scrapyd_server, cst.PROJECT, cst.SPIDER, cst.DEMO_JSON)
         kws = dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.DEMO_JSON, with_ext='True')
-        ins = ['<tr><th>elapsed</th><td>0:01:08</td></tr>', 'id="finish_reason">finished<']
+        ins = ['<tr><th>runtime</th><td>0:01:08</td></tr>', 'id="finish_reason">finished<']
         req(app, client, view='log', kws=kws, ins=ins,
             nos=['<h4>Log</h4>', url_utf8_, '<h4>Source</h4>', url_demo_json_source])
 
@@ -151,7 +202,8 @@ def test_parse_uploaded_demo_log(app, client):
     ins = [
         'PROJECT (demo), SPIDER (test)',
         '<tr><th>job</th><td>2018-10-23_182826</td></tr>',
-        'Stats collection', '0:01:08',
+        'Log analysis',
+        '0:01:08',
         '"green">3<',
         '"green">2<',
         'id="finish_reason">finished<',
@@ -181,8 +233,7 @@ def test_poll_py(app):
     _bind = app.config.get('SCRAPYDWEB_BIND', '0.0.0.0')
     _bind = '127.0.0.1' if _bind == '0.0.0.0' else _bind
     args = [
-        _bind,
-        str(app.config.get('SCRAPYDWEB_PORT', 5000)),
+        'http://%s:%s' % (_bind, app.config.get('SCRAPYDWEB_PORT', 5000)),
         app.config.get('USERNAME', '') if app.config.get('ENABLE_AUTH', False) else '',
         app.config.get('PASSWORD', '') if app.config.get('ENABLE_AUTH', False) else '',
         json.dumps(app.config.get('SCRAPYD_SERVERS', ['127.0.0.1'])),
@@ -213,13 +264,14 @@ def test_email(app, client):
 
     def post_for_poll(job, job_finished=''):
         kws = dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=job, job_finished=job_finished)
-        req(app, client, view='log', kws=kws, data={}, ins='Stats collection')
+        req(app, client, view='log', kws=kws, data={}, ins='Log analysis')
 
     # Simulate poll post 'Finished'
     app.config['ON_JOB_FINISHED'] = True
     jobid = start_a_job()
     post_for_poll(jobid, job_finished='True')
     forcestop_a_job(jobid)
+    sleep()
 
     # Simulate poll post 'ForceStopped'
     app.config['ON_JOB_FINISHED'] = False
@@ -228,6 +280,7 @@ def test_email(app, client):
     jobid = start_a_job()
     post_for_poll(jobid)
     forcestop_a_job(jobid)
+    sleep()
 
     # Simulate poll post 'Stopped'
     app.config['LOG_CRITICAL_THRESHOLD'] = 0
@@ -236,6 +289,7 @@ def test_email(app, client):
     jobid = start_a_job()
     post_for_poll(jobid)
     forcestop_a_job(jobid)
+    sleep()
 
     # Simulate poll post 'Triggered'
     app.config['LOG_REDIRECT_THRESHOLD'] = 0
@@ -243,17 +297,18 @@ def test_email(app, client):
     jobid = start_a_job()
     post_for_poll(jobid)
     forcestop_a_job(jobid)
+    sleep()
 
     # Simulate poll post 'Running'
     app.config['LOG_IGNORE_THRESHOLD'] = 0
     app.config['ON_JOB_RUNNING_INTERVAL'] = 5
     jobid = start_a_job()
-    post_for_poll(jobid)  # Would NOT trigger email
+    post_for_poll(jobid)  # Would not trigger email
 
     sleep()
     post_for_poll(jobid)  # Would trigger email
 
     app.config['ON_JOB_RUNNING_INTERVAL'] = 0
     sleep()
-    post_for_poll(jobid)  # Would NOT trigger email
+    post_for_poll(jobid)  # Would not trigger email
     forcestop_a_job(jobid)

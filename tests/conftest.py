@@ -4,7 +4,11 @@ import os
 import pytest
 
 from scrapydweb import create_app
-from tests.utils import cst, set_env
+from tests.utils import cst, setup_env
+
+
+# Win10 Python2 Scrapyd error: environment can only contain strings
+# https://github.com/scrapy/scrapyd/issues/231
 
 
 # MUST be updated: _SCRAPYD_SERVER and _SCRAPYD_SERVER_AUTH
@@ -20,27 +24,30 @@ custom_settings = dict(
     SMTP_PORT=465,
     SMTP_OVER_SSL=True,
     SMTP_CONNECTION_TIMEOUT=10,
-    FROM_ADDR='username@qq.com',
+    EMAIL_USERNAME='username@qq.com',
     EMAIL_PASSWORD='password',
+    FROM_ADDR='username@qq.com',
     TO_ADDRS=['username@qq.com'],
 
     SMTP_SERVER_='smtp.139.com',  # Used in tests/test_a_factory.py/test_check_email_with_ssl_false()
     SMTP_PORT_=25,
     SMTP_OVER_SSL_=False,
     SMTP_CONNECTION_TIMEOUT_=10,
-    FROM_ADDR_='username@139.com',
+    EMAIL_USERNAME_='username@139.com',
     EMAIL_PASSWORD_='password',
+    FROM_ADDR_='username@139.com',
     TO_ADDRS_=['username@139.com']
 )
 
 
-set_env(custom_settings)
+setup_env(custom_settings)
 
 
 @pytest.fixture
 def app():
     config = dict(
         TESTING=True,
+        # SERVER_NAME='127.0.0.1:5000',  # http://flask.pocoo.org/docs/0.12/config/#builtin-configuration-values
 
         DEFAULT_SETTINGS_PY_PATH='',
         SCRAPYDWEB_SETTINGS_PY_PATH='',
@@ -49,9 +56,11 @@ def app():
         POLL_PID=0,
 
         SCRAPYD_SERVERS=[custom_settings['_SCRAPYD_SERVER'], 'not-exist:6801'],
+        LOCAL_SCRAPYD_SERVER=custom_settings['_SCRAPYD_SERVER'],
         SCRAPYD_SERVERS_AUTHS=[custom_settings['_SCRAPYD_SERVER_AUTH'], ('username', 'password')],
         SCRAPYD_SERVERS_GROUPS=['', 'Scrapyd-group'],
         SCRAPY_PROJECTS_DIR=os.path.join(cst.CWD, 'data'),
+
 
         ENABLE_LOGPARSER=False,
 
@@ -80,6 +89,8 @@ def app():
     yield app
 
 
+# https://stackoverflow.com/questions/41065584/using-url-for-in-tests
+# TODO: follow_redirects=True
 @pytest.fixture
 def client(app):
     return app.test_client()

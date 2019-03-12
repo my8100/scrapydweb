@@ -475,6 +475,11 @@ table>tbody tr:last-child {
     padding-bottom: 12px;
 }
 
+.button.narrow {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 .state.normal{
     background: #409EFF;
 }
@@ -483,13 +488,18 @@ table>tbody tr:last-child {
     background: #67c23a;
 }
 
-.state.danger {
-    background: #fd6b6e;
+.state.delete {
+    background: #909399;
 }
 
 .state.warning {
     background: #feb324;
 }
+
+.state.danger {
+    background: #fd6b6e;
+}
+
 
 .button.normal{
     background: #409EFF;
@@ -499,13 +509,18 @@ table>tbody tr:last-child {
     background: #67c23a;
 }
 
-.button.danger {
-    background: #fd6b6e;
+.button.delete {
+    background: #909399;
 }
 
 .button.warning {
     background: #feb324;
 }
+
+.button.danger {
+    background: #fd6b6e;
+}
+
 
 
 .tab-header {
@@ -650,7 +665,7 @@ table>tbody tr:last-child {
     margin-bottom: -16px;
 }
 
-#content_eggify .icon.anchor,
+#content_package .icon.anchor,
 .multiselect .icon.anchor{
     width: 1rem;
     height: 1rem;
@@ -741,7 +756,8 @@ table>tbody tr:last-child {
 }
 
 #checkboxes>label:nth-child(1),
-#checkboxes>label:nth-child(2) {
+#checkboxes>label:nth-child(2),
+#checkboxes>label:nth-child(3) {
     font-weight: 700;
 }
 

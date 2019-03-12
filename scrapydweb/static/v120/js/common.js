@@ -28,7 +28,7 @@ function uploadLogfile() {
     //var filename = my$('form')['file'].value;
     var logfile = my$('#file').files[0];
     if (logfile === undefined) {
-        alert("Select a log or txt file");
+        alert("Select a log or txt file first");
         return;
     }
 
@@ -83,20 +83,10 @@ function refreshDaemonstatus(url_daemonstatus) {
                 } else {
                     refresh_daemonstatus_fail_times += 1;
                     setDaemonstatus('?', '?', '?', '?');
-                    //if(refresh_daemonstatus_fail_times >= 3 && refresh_daemonstatus_fail_times % 3 == 0){
-                        //alert('FAIL to refresh daemonstatus, check '+obj.url);
-                    //    if (window.confirm("FAIL to refresh daemonstatus, open a new tab for details?")) {
-                    //        var win = window.open(obj.url, '_blank');
-                    //        win.focus();
-                    //    }
-                    //}
                 }
             } else {
                 refresh_daemonstatus_fail_times += 1;
                 setDaemonstatus('?', '?', '?', '?');
-                //if(refresh_daemonstatus_fail_times >= 3 && refresh_daemonstatus_fail_times % 3 == 0){
-                //    alert("FAIL to refresh daemonstatus, status code is "+this.status+", check the log of ScrapydWeb");
-                //}
             }
         }
     };
@@ -224,7 +214,7 @@ function checkBrowser() {
 }
 
 
-function dashboardXHR(url, forcestop, id) {
+function jobsXHR(url, forcestop, id) {
     //console.log('forcestop: '+forcestop);
     //console.log('id: '+id);
     if (forcestop == true) {
@@ -246,7 +236,7 @@ function dashboardXHR(url, forcestop, id) {
                 alert(this.responseText);
                 window.location.reload(true);
             } else {
-                alert("REQUEST got code: " + this.status + ", check the log of ScrapydWeb");
+                alert("REQUEST got code: " + this.status + ", check out the log of ScrapydWeb");
                 if (id !== undefined) {
                     my$('#'+id).innerHTML = getRequestFailHtml(url, 'code', this.status);
                 } else {
@@ -298,7 +288,106 @@ function goContentTop() {
 }
 
 
+function goContentBottom() {
+    if (my$('#run_spider')) {
+        my$('#run_spider').scrollIntoView();  // For 'more timer settings'
+    } else {
+        $('html, body, #content').animate({scrollTop: $('#content').height()}, 300);
+    }
+}
+
+
 function goLogBottom() {
     //$('html, body').animate({scrollTop: $(document).height()}, 300);
     $('html, body, #content').animate({scrollTop: $('#log').height()}, 300);
+}
+
+
+function taskXHR(url){
+    showLoader();
+    var url_complete = [location.protocol, '//', location.host, url].join('');
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            hideLoader();
+            if (this.status == 200) {
+                console.log(this.responseText);
+                var obj = JSON.parse(this.responseText);
+                if (obj.status == 'ok') {
+                    // For the fire action: "url_jump": "/1/tasks/2/"
+                    if (obj.url_jump) {
+                        var location_pathname = obj.url_jump;
+                    } else {
+                        var location_pathname = location.pathname;
+                    }
+                    try {
+                        // throw 'testing';
+                        location.href = [location.protocol, '//', location.host, location_pathname, '?flash=', obj.tip.replace(/#/g, '%23')].join('');
+                        return;
+                    } catch(err) {
+                        console.log(err);
+                    }
+                } else {
+                    alert("REQUEST to " + url_complete + " got status: " + obj.status + ", " + obj.message);
+                }
+            } else {
+                alert("REQUEST to " + url_complete + " got code: " + this.status + ". Check out the log of ScrapydWeb");
+            }
+            location.reload(true);
+        }
+    };
+    req.open('post', url, Async = true);
+    req.send();
+}
+
+
+function deleteRowXHR(url){
+    showLoader();
+    var url_complete = [location.protocol, '//', location.host, url].join('');
+    var req = new XMLHttpRequest();
+    req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+            hideLoader();
+            if (this.status == 200) {
+                // console.log(this.responseText);
+                var obj = JSON.parse(this.responseText);
+                if (obj.status == 'ok') {
+                    console.log(obj.tip);
+                    return;
+                } else {
+                    alert("REQUEST to " + url_complete + " got status: " + obj.status + ", " + obj.message);
+                }
+            } else {
+                alert("REQUEST to " + url_complete + " got code: " + this.status + ". Check out the log of ScrapydWeb");
+            }
+            location.reload(true);
+        }
+    };
+    req.open('post', url, Async = true);
+    req.send();
+}
+
+function syncFromServersPage(SCRAPYD_SERVERS_AMOUNT){
+    if (window.localStorage) {
+        if (JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) {
+            $('#checkboxes input:checkbox').not(this).prop('checked', false);
+            my$('#syncFromServersPage').checked = true;
+            var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+            var nodesSelected_new = [];
+            for (var idx in nodesSelected) {
+                try {
+                    var n = nodesSelected[idx];
+                    my$('#checkbox_'+n).checked = true;
+                    nodesSelected_new.push(n);
+                } catch(err) {console.log(err);}
+            }
+            checkCheckboxes(SCRAPYD_SERVERS_AMOUNT);
+            return;
+        } else {
+            alert("No selected nodes found, check out the Servers page");
+        }
+    } else {
+        alert("window.localStorage is not available");
+    }
+    my$('#syncFromServersPage').checked = false;
 }

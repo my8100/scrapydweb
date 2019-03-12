@@ -11,7 +11,7 @@
 
 
 ##
-![overview](./screenshots/overview.png)
+![servers](./screenshots/servers.png)
 
 ## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: 推荐阅读
@@ -35,6 +35,7 @@
 - :battery: 增强功能
   - :package: **自动打包项目**
   - :male_detective: **集成 [:link: *LogParser*](https://github.com/my8100/logparser)**
+  - :alarm_clock: **定时器任务**
   - :e-mail: **邮件通知**
   - :iphone: 移动端 UI
   - :closed_lock_with_key: web UI 支持基本身份认证
@@ -106,8 +107,9 @@ $ source venv/scrapydweb/bin/activate
 (scrapydweb) $ vi tests/conftest.py
 (scrapydweb) $ curl http://127.0.0.1:6800
 
-(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests/test_a_factory.py -s -v
-(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests -s -vv
+# '-x': 在第一次出现失败时停止测试
+(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests/test_a_factory.py -s -vv -x
+(scrapydweb) $ coverage run --source=scrapydweb -m pytest tests -s -vv --disable-warnings
 (scrapydweb) $ coverage report
 # 生成 HTML 报告, 文件位于 htmlcov/index.html
 (scrapydweb) $ coverage html
@@ -123,14 +125,10 @@ $ source venv/scrapydweb/bin/activate
 <br>
 
 - 前端
-  - [:link: jQuery](https://github.com/jquery/jquery)
-  - [:link: Vue.js](https://github.com/vuejs/vue)
   - [:link: Element](https://github.com/ElemeFE/element)
   - [:link: ECharts](https://github.com/apache/incubator-echarts)
 - 后端
   - [:link: Flask](https://github.com/pallets/flask)
-  - [:link: Flask-Compress](https://pypi.org/project/Flask-Compress/)
-  - [:link: Requests](https://github.com/requests/requests)
 
 </details>
 
