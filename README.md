@@ -44,9 +44,7 @@
 
 
 ## :eyes: Preview
-- [:framed_picture: Screenshots](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
-
-- [:film_strip: Gif Demo](https://github.com/my8100/files/tree/master/scrapydweb/README_GIF.md)
+[:framed_picture: Screenshots](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
 
 
 ## :computer: Getting Started

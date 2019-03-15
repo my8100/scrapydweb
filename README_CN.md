@@ -44,9 +44,7 @@
 
 
 ## :eyes: 预览
-- [:framed_picture: 界面截图](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
-
-- [:film_strip: 动图演示](https://github.com/my8100/files/tree/master/scrapydweb/README_GIF.md)
+[:framed_picture: 界面截图](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
 
 
 ## :computer: 上手
