@@ -11,11 +11,11 @@
 
 
 ##
-![servers](./screenshots/servers.png)
+![servers](https://raw.githubusercontent.com/my8100/scrapydweb/master/screenshots/servers.png)
 
 ## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: 推荐阅读
-[:link: 如何简单高效地部署和监控分布式爬虫项目](https://juejin.im/post/5bebc5fd6fb9a04a053f3a0e)
+[:link: 如何简单高效地部署和监控分布式爬虫项目](https://github.com/my8100/files/blob/master/scrapydweb/README_CN.md)
 
 
 ## :star: 功能特性
@@ -41,10 +41,6 @@
   - :closed_lock_with_key: web UI 支持基本身份认证
 
 </details>
-
-
-## :eyes: 预览
-[:framed_picture: 界面截图](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
 
 
 ## :computer: 上手

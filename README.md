@@ -15,7 +15,7 @@
 
 ## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: Recommended Reading
-[:link: How to efficiently manage your distributed web scraping projects](https://medium.com/@my8100/https-medium-com-my8100-how-to-efficiently-manage-your-distributed-web-scraping-projects-55ab13309820)
+[:link: How to efficiently manage your distributed web scraping projects](https://github.com/my8100/files/blob/master/scrapydweb/README.md)
 
 
 ## :star: Features
@@ -41,10 +41,6 @@
   - :closed_lock_with_key: Basic auth for web UI
 
 </details>
-
-
-## :eyes: Preview
-[:framed_picture: Screenshots](https://github.com/my8100/files/tree/master/scrapydweb/README.md)
 
 
 ## :computer: Getting Started
