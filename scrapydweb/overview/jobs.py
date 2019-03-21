@@ -186,7 +186,7 @@ class JobsView(MyView):
             # Specify 'extend_existing=True' to redefine options and columns on an existing Table object.
             if "is already defined for this MetaData instance" in str(err):
                 flash("Please restart ScrapydWeb to work around this occasional bug!", self.WARN)
-            if self.style == 'database':
+            if self.style == 'database' and not self.POST:
                 self.style = 'classic'
                 self.template = 'scrapydweb/jobs_classic.html'
                 self.metadata['style'] = self.style

@@ -35,8 +35,6 @@ class TasksView(MyView):
         self.task_id = self.view_args['task_id']  # <int:task_id>, 0 ok, -1 fail
         self.task_result_id = self.view_args['task_result_id']  # <int:task_result_id>
 
-        self.task = Task.query.get(self.task_id) if self.task_id else None
-
         self.flash = request.args.get('flash', '')
         self.per_page = request.args.get('per_page', default=self.metadata['per_page'], type=int)
         if self.per_page != self.metadata['per_page']:
@@ -45,6 +43,11 @@ class TasksView(MyView):
             self.logger.debug("Change per_page to %s", self.metadata['per_page'])
         self.page = request.args.get('page', default=1, type=int)
 
+        # If self.task is defined before handle_metadata('tasks_per_page', self.per_page)
+        # Instance <Task at 0x58140f0> is not bound to a Session;
+        # attribute refresh operation cannot proceed
+        # (Background on this error at: http://sqlalche.me/e/bhk3)
+        self.task = Task.query.get(self.task_id) if self.task_id else None
         self.kwargs = {}
         self.template = ''
 

@@ -5,7 +5,7 @@ import io
 import json
 import os
 import re
-from socket import gethostname
+# from socket import gethostname
 from subprocess import Popen
 import sys
 import tarfile
@@ -353,7 +353,7 @@ class LogView(MyView):
         # For compatibility with Python 2, use OrderedDict() to keep insertion order
         self.email_content_kwargs = OrderedDict()
         self.email_content_kwargs['SCRAPYD_SERVER'] = self.SCRAPYD_SERVER
-        self.email_content_kwargs['hostname'] = gethostname()
+        # self.email_content_kwargs['hostname'] = gethostname()
         self.email_content_kwargs['project'] = self.kwargs['project']
         self.email_content_kwargs['spider'] = self.kwargs['spider']
         self.email_content_kwargs['job'] = self.kwargs['job']

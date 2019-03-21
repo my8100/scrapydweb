@@ -220,7 +220,7 @@ print(get_localzone())</pre>
                     </el-col>
                 </el-form-item>
                 {% endif %}
-                
+
                 <el-form-item class="main_settings" label="action">
                     <el-col :span="9">
                         <el-select v-model="form.action" @change='timerTaskAction'>
@@ -447,7 +447,7 @@ window.onload = function(){
     $('#syncFromServersPage').click(function () {
         syncFromServersPage({{ SCRAPYD_SERVERS_AMOUNT }});
     });
-    
+
     $('#nodes_checkboxes input[type=checkbox]').change(function() {
         checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
     });
@@ -541,7 +541,7 @@ var Main = {
                 hour: '{{ hour }}',  // '9,17,8-20/4'
                 minute: '{{ minute }}',  // '0'
                 second: '{{ second }}',
-                
+
                 start_date: '{{ start_date }}',
                 end_date: '{{ end_date }}',
 
@@ -595,7 +595,7 @@ var Main = {
         if (!this.form.jobid) {
             this.form.jobid = now.toISOString().slice(0,19).replace(/:/g, "_");
         }
-        
+
 
 {% if project %}
     	this.form.selectedProject = '{{ project }}';
@@ -676,7 +676,7 @@ var Main = {
             if (this.form.expandTimerTask) {
                 formData.append('action', this.form.action);
                 formData.append('task_id', this.form.task_id);
-                
+
                 formData.append('trigger', this.form.trigger);
                 formData.append('name', this.form.name);
                 formData.append('replace_existing', this.form.replace_existing);
@@ -823,7 +823,7 @@ var Main = {
                             var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
                             handleMessage(getRequestFailHtml(url_listversions_new, 'status', obj.status)+text+tip+message);
                         } else {
-                            vm.versions = obj.versions;
+                            vm.versions = ['default: the latest version'].concat(obj.versions);
                         }
                     } else {
                         //alert("REQUEST got code: "+this.status);
