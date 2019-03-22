@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 from datetime import datetime
 import glob
 import io

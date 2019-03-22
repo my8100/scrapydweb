@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
 source: https://github.com/scrapy/scrapyd-client
 scrapyd-client/scrapyd_client/deploy.py

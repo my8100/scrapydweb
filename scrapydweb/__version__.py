@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 
 __title__ = 'scrapydweb'
 __version__ = '1.2.0'

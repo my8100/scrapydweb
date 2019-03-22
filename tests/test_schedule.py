@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 import re
 
 from scrapy import __version__ as scrapy_version

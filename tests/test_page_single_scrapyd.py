@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 from flask import url_for
 
 from tests.utils import cst, req_single_scrapyd

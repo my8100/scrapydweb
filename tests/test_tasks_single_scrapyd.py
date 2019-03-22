@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
 REF: test_schedule_single_scrapyd.py
 """

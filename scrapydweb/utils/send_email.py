@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 from collections import OrderedDict
 from email.mime.text import MIMEText
 import json

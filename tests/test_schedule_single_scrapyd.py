@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 import time
 from flask import url_for
 

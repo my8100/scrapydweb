@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 from flask import flash, render_template, url_for
 
 from ..common import handle_metadata

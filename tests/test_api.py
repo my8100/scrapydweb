@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 from tests.utils import cst, req, upload_file_deploy
 
 

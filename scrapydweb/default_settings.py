@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 """
 How ScrapydWeb works:
 BROWSER_HOST <<<>>> SCRAPYDWEB_BIND:SCRAPYDWEB_PORT <<<>>> your SCRAPYD_SERVERS

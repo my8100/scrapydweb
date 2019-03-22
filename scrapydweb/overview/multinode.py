@@ -1,4 +1,4 @@
-# coding: utf8
+# coding: utf-8
 from flask import render_template, url_for
 
 from ..myview import MyView
