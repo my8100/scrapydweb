@@ -1,6 +1,6 @@
 :abc: English | [:mahjong: 简体中文](https://github.com/my8100/scrapydweb/blob/master/README_CN.md)
 
-# ScrapydWeb: A full-featured web UI for Scrapyd cluster management, with Scrapy log analysis & visualization supported.
+# ScrapydWeb: Web application for Scrapyd cluster management, with support for Scrapy log analysis & visualization.
 
 [![PyPI - scrapydweb Version](https://img.shields.io/pypi/v/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![Downloads - total](https://pepy.tech/badge/scrapydweb)](https://pepy.tech/project/scrapydweb)
@@ -16,6 +16,12 @@
 ## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: Recommended Reading
 [:link: How to efficiently manage your distributed web scraping projects](https://github.com/my8100/files/blob/master/scrapydweb/README.md)
+
+[:link: How to set up Scrapyd cluster on Heroku](https://github.com/my8100/scrapyd-cluster-on-heroku)
+
+
+## :eyes: Demo
+[:link: scrapydweb.herokuapp.com](https://scrapydweb.herokuapp.com)
 
 
 ## :star: Features

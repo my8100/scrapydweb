@@ -1,6 +1,6 @@
 [:abc: English](./README.md) | :mahjong: 简体中文
 
-# ScrapydWeb:  用于 Scrapyd 集群管理的全功能 web UI，支持 Scrapy 日志分析和可视化
+# ScrapydWeb：用于 Scrapyd 集群管理的web应用，支持 Scrapy 日志分析和可视化。
 
 [![PyPI - scrapydweb Version](https://img.shields.io/pypi/v/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![Downloads - total](https://pepy.tech/badge/scrapydweb)](https://pepy.tech/project/scrapydweb)
@@ -16,6 +16,12 @@
 ## Scrapyd :x: ScrapydWeb :x: LogParser
 ### :book: 推荐阅读
 [:link: 如何简单高效地部署和监控分布式爬虫项目](https://github.com/my8100/files/blob/master/scrapydweb/README_CN.md)
+
+[:link: 如何免费创建云端爬虫集群](https://github.com/my8100/scrapyd-cluster-on-heroku/blob/master/README_CN.md)
+
+
+## :eyes: 在线体验
+[:link: scrapydweb.herokuapp.com](https://scrapydweb.herokuapp.com)
 
 
 ## :star: 功能特性
