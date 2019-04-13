@@ -78,10 +78,10 @@ ol {
 ul#links{
     position: absolute;
     bottom: 0;
-    padding-top: 30px;
-    padding-bottom: 30px;
+    margin-top: 30px;
+    margin-bottom: 30px;
 }
-@media (max-height: 745px) {
+@media (max-height: 800px) {
   ul#links { position: relative; }
 }
 
@@ -191,6 +191,11 @@ nav i {
 main {
     display: flex;
     flex-grow: 1;
+    /* Fix the bug that <nav> scrolls in the Run Spider and the Settings page */
+    height: -moz-calc(100% - 51px);  /* Firefox */
+    height: -webkit-calc(100% - 51px);  /* WebKit */
+    height: -o-calc(100% - 51px);  /* Opera */
+    height: calc(100% - 51px);  /* Standard */
 }
 
 main>aside {

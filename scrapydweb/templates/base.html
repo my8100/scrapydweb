@@ -252,6 +252,9 @@
             <li class="github">
                 <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'logparser') }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">logparser</a>
             </li>
+            <li class="github">
+                <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'scrapyd-cluster-on-heroku') }}" aria-label="@my8100 on GitHub">scrapyd-cluster</a>
+            </li>
         </ul>
     </aside>
 
@@ -307,10 +310,10 @@ $(function(){
     }
     {% if g.scheduler_state_paused %}
         my$('#menu_tasks svg').style.color = 'red';
-    {% elif g.scheduler_state_running %}   
+    {% elif g.scheduler_state_running %}
         my$('#menu_tasks svg').style.color = '#67c23a';
-    {% endif %}    
-    
+    {% endif %}
+
     refreshDaemonstatus(url_daemonstatus);
 
 })
