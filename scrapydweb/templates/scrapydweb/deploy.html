@@ -289,7 +289,7 @@ function updatePackageInputs() {
     //var folder = my$('input[name="folder_selected"]').value;
     var folder = my$('#folder_selected').value;
     if (folder.length > 35) {
-        my$('#folder_selected_statement').innerText = folder.slice(0, 14) + '......' + folder.slice(-15, );
+        my$('#folder_selected_statement').innerText = folder.slice(0, 16) + '...' + folder.slice(-16, );
     } else {
         my$('#folder_selected_statement').innerText = folder;  //<span>
     }
@@ -598,7 +598,7 @@ function switchButtons(active_tab) {
         console.log(active_tab);
         active_tab = 'package';
         console.log(active_tab);
-    } 
+    }
     my$('#header_' + active_tab).classList.add('active');
     my$('#content_' + active_tab).classList.add('active');
     switchButtons(active_tab);

@@ -4,7 +4,12 @@
 .dropdown {
     position: relative;
     margin-left: 15px;
-    width: 220px;
+    /* width: 220px; */
+    /* width: -moz-fit-content; */
+    /* width: fit-content; */
+    min-width: 220px;
+    width: max-content;
+    width: -moz-max-content;  /* Firefox on Ubuntu */
     height: 32px;
     align-self: center;
     border: 1px solid #67c23a;
@@ -52,7 +57,10 @@
 
 .dropdown-content-wrap {
     display: none;
-    width: 220px;
+    /* width: 220px; */
+    min-width: 220px;
+    width: max-content;
+    width: -moz-max-content;  /* Firefox on Ubuntu */
     max-height: 70vh; /* 360px */
     overflow: hidden;
     z-index: 9999;

@@ -50,7 +50,13 @@ function checkCheckboxes(SCRAPYD_SERVERS_AMOUNT) {
 
         if (checked_amount == 1) {
             var input_id = my$('#nodes_checkboxes input[type="checkbox"]:checked').id.slice(9);
-            my$('#selected_nodes_statement').innerText = my$('#label_'+input_id).textContent.replace(/^\s+|\s+$/g, '');
+            // my$('#selected_nodes_statement').innerText = my$('#label_'+input_id).textContent.replace(/^\s+|\s+$/g, '');
+            var statement = my$('#label_'+input_id).textContent.replace(/^\s+|\s+$/g, '');
+            if (statement.length > 35) {
+                my$('#selected_nodes_statement').innerText = statement.slice(0, 16) + '...' + statement.slice(-16, );
+            } else {
+                my$('#selected_nodes_statement').innerText = statement;
+            }
         } else if (checked_amount == SCRAPYD_SERVERS_AMOUNT) {
             my$('#selected_nodes_statement').innerText = "All "+SCRAPYD_SERVERS_AMOUNT+" nodes selected";
         } else {

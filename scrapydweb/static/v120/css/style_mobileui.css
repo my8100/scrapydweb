@@ -21,6 +21,11 @@ body {
     overflow: hidden;
 }
 
+nav>.switch-node {
+    text-align: center;
+    min-width: 100px;
+    z-index: 2;
+}
 nav>.switch-node>a {font-size: 30px;}
 nav>.switch-node>a:hover {color: #409EFF;}
 nav>.switch-node span {font-size: 18px;}

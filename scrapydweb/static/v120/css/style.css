@@ -151,7 +151,11 @@ nav>.title>.version {
     z-index: 1;
 }
 
-nav>.switch-node {text-align: center;}
+nav>.switch-node {
+    text-align: center;
+    min-width: 100px;
+    z-index: 2;
+}
 nav>.switch-node>a {
     color: #909090;
     line-height: 50px;
@@ -773,6 +777,10 @@ table>tbody tr:last-child {
     padding-left: 16px;
 }
 
+#nodes_checkboxes {
+    width: max-content;
+    width: -moz-max-content;  /* Firefox on Ubuntu */
+}
 
 
 /* skip unselected nodes START */
