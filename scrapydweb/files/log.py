@@ -41,7 +41,7 @@ class LogView(MyView):
     job_finished_set = job_finished_set
 
     def __init__(self):
-        super(self.__class__, self).__init__()  # super().__init__()
+        super(LogView, self).__init__()  # super().__init__()
 
         self.opt = self.view_args['opt']
         self.project = self.view_args['project']

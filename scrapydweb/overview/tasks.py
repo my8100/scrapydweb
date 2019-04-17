@@ -30,7 +30,7 @@ class TasksView(MyView):
     metadata = metadata
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(TasksView, self).__init__()
 
         self.task_id = self.view_args['task_id']  # <int:task_id>, 0 ok, -1 fail
         self.task_result_id = self.view_args['task_result_id']  # <int:task_result_id>
@@ -255,7 +255,7 @@ class TasksView(MyView):
 class TasksXhrView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(TasksXhrView, self).__init__()
 
         self.action = self.view_args['action']  # pause|resume|remove|delete|dump|fire
         self.task_id = self.view_args['task_id']  # <int:task_id>

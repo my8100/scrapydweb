@@ -47,7 +47,7 @@ class JobsView(MyView):
     metadata = metadata
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(JobsView, self).__init__()
 
         style = request.args.get('style')
         self.style = style if style in ['database', 'classic'] else self.metadata['style']
@@ -417,7 +417,7 @@ class JobsXhrView(MyView):
     metadata = metadata
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(JobsXhrView, self).__init__()
 
         self.action = self.view_args['action']  # delete
         self.id = self.view_args['id']  # <int:id>

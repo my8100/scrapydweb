@@ -10,7 +10,7 @@ from ..myview import MyView
 class ProjectsView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ProjectsView, self).__init__()
 
         self.opt = self.view_args['opt']
         self.project = self.view_args['project']

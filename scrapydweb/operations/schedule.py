@@ -53,7 +53,7 @@ def history():
 class ScheduleView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ScheduleView, self).__init__()
 
         self.project = self.view_args['project']
         self.version = self.view_args['version']
@@ -209,7 +209,7 @@ class ScheduleView(MyView):
 class ScheduleCheckView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ScheduleCheckView, self).__init__()
 
         self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
         self.template = 'scrapydweb/schedule.html'
@@ -328,7 +328,7 @@ class ScheduleCheckView(MyView):
 class ScheduleRunView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ScheduleRunView, self).__init__()
 
         self.url = ''
         self.template = 'scrapydweb/schedule_results.html'
@@ -592,7 +592,7 @@ class ScheduleRunView(MyView):
 class ScheduleXhrView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ScheduleXhrView, self).__init__()
 
         self.filename = self.view_args['filename']
         self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
@@ -614,7 +614,7 @@ class ScheduleXhrView(MyView):
 class ScheduleTaskView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ScheduleTaskView, self).__init__()
 
         self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
         self.task_id = request.form['task_id']

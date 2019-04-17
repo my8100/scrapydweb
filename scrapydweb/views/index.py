@@ -7,7 +7,7 @@ from ..myview import MyView
 class IndexView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(IndexView, self).__init__()
 
     def dispatch_request(self, **kwargs):
         if self.SCRAPYD_SERVERS_AMOUNT == 1:

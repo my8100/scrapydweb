@@ -11,7 +11,7 @@ API_MAP = dict(start='schedule', stop='cancel', forcestop='cancel', liststats='l
 class ApiView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(ApiView, self).__init__()
 
         self.opt = self.view_args['opt']
         self.project = self.view_args['project']

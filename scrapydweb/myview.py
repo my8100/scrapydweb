@@ -315,7 +315,7 @@ class MyView(View):
 class MetadataView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(MetadataView, self).__init__()
 
     def dispatch_request(self, **kwargs):
         return self.json_dumps(handle_metadata())

@@ -23,7 +23,7 @@ def source(filename):
 class UploadLogView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(UploadLogView, self).__init__()
 
         self.template = 'scrapydweb/parse.html'
 
@@ -57,7 +57,7 @@ class UploadLogView(MyView):
 class UploadedLogView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(UploadedLogView, self).__init__()
 
         self.filename = self.view_args['filename']
         self.template = 'scrapydweb/stats.html'

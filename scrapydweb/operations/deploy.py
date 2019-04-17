@@ -36,7 +36,7 @@ folder_project_dict = {}
 class DeployView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(DeployView, self).__init__()
 
         self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
         self.template = 'scrapydweb/deploy.html'
@@ -137,7 +137,7 @@ class DeployUploadView(MyView):
     methods = ['POST']
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(DeployUploadView, self).__init__()
 
         self.url = ''
         self.template = 'scrapydweb/deploy_results.html'
@@ -388,7 +388,7 @@ class DeployUploadView(MyView):
 class DeployXhrView(MyView):
 
     def __init__(self):
-        super(self.__class__, self).__init__()
+        super(DeployXhrView, self).__init__()
 
         self.eggname = self.view_args['eggname']
         self.project = self.view_args['project']
