@@ -35,6 +35,7 @@ JOB_PATTERN = re.compile(r"""
                                 (?:<td>(?P<Finish>.*?)</td>)?
                                 (?:<td>(?P<Log>.*?)</td>)?
                                 (?:<td>(?P<Items>.*?)</td>)?
+                                [\w\W]*?  # Temp support for Scrapyd v1.3.0 (not released)
                             </tr>
                           """, re.X)
 JOB_KEYS = ['project', 'spider', 'job', 'pid', 'start', 'runtime', 'finish', 'log', 'items']
@@ -105,7 +106,9 @@ class Poll(object):
         assert r is not None, "[node %s] fetch_jobs failed: %s" % (node, url)
 
         self.logger.debug("[node %s] fetch_jobs got (%s) %s bytes", node, r.status_code, len(r.content))
-        jobs = [dict(zip(JOB_KEYS, job)) for job in re.findall(JOB_PATTERN, r.text)]
+        # Temp support for Scrapyd v1.3.0 (not released)
+        text = re.sub(r'<thead>.*?</thead>', '', r.text, flags=re.S)
+        jobs = [dict(zip(JOB_KEYS, job)) for job in re.findall(JOB_PATTERN, text)]
         for job in jobs:
             job_tuple = (job['project'], job['spider'], job['job'])
             if job['pid']:
@@ -167,6 +170,7 @@ class Poll(object):
                 r = self.session.post(url, auth=auth, timeout=self.timeout)
             else:
                 r = self.session.get(url, auth=auth, timeout=self.timeout)
+            r.encoding = 'utf-8'
             assert r.status_code == 200, "got status_code %s" % r.status_code
         except Exception as err:
             self.logger.error("make_request failed: %s\n%s", url, err)

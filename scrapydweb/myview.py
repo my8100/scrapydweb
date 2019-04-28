@@ -241,7 +241,7 @@ class MyView(View):
                 r = session.post(url, data=data, auth=auth, timeout=timeout)
             else:
                 r = session.get(url, auth=auth, timeout=timeout)
-            r.encoding = 'utf8'
+            r.encoding = 'utf-8'
         except Exception as err:
             # self.logger.error('!!!!! %s %s' % (err.__class__.__name__, err))
             self.logger.error("!!!!! error with %s: %s", url, err)
