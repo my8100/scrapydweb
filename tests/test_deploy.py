@@ -15,8 +15,8 @@ def test_deploy_from_post(app, client):
 def test_auto_packaging_select_option(app, client):
     ins = [
         '(14 projects)',
-        u"var folders = ['ScrapydWeb_demo', 'demo - 副本', 'demo',",
-        "var projects = ['ScrapydWeb_demo', 'demo-copy', 'demo',",
+        u"var folders = ['demo - 副本', 'demo',",
+        "var projects = ['demo-copy', 'demo',",
         '<div>%s<' % cst.PROJECT,
         u'<div>demo - 副本<',
         '<div>demo<',

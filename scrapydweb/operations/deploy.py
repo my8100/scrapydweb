@@ -3,6 +3,7 @@ from datetime import datetime
 import glob
 import io
 import os
+from pprint import pformat
 import re
 from shutil import copyfile, copyfileobj, rmtree
 from subprocess import CalledProcessError
@@ -11,7 +12,7 @@ import tempfile
 import time
 import zipfile
 
-from flask import redirect, render_template, request, url_for
+from flask import flash, redirect, render_template, request, url_for
 from six.moves.configparser import Error as ScrapyCfgParseError
 from werkzeug.utils import secure_filename
 
@@ -49,8 +50,7 @@ class DeployView(MyView):
         self.latest_folder = ''
 
     def dispatch_request(self, **kwargs):
-        # Python 'ascii' codec can't decode byte
-        self.scrapy_cfg_list = sorted(glob.glob(os.path.join(self.SCRAPY_PROJECTS_DIR, '*', u'scrapy.cfg')))
+        self.set_scrapy_cfg_list()
         self.project_paths = [os.path.dirname(i) for i in self.scrapy_cfg_list]
         self.folders = [os.path.basename(i) for i in self.project_paths]
         self.get_modification_times()
@@ -71,31 +71,72 @@ class DeployView(MyView):
         )
         return render_template(self.template, **kwargs)
 
+    def set_scrapy_cfg_list(self):
+        # Python 'ascii' codec can't decode byte
+        try:
+            self.scrapy_cfg_list = glob.glob(os.path.join(self.SCRAPY_PROJECTS_DIR, '*', u'scrapy.cfg'))
+        except UnicodeDecodeError:
+            if PY2:
+                for name in os.listdir(os.path.join(self.SCRAPY_PROJECTS_DIR, u'')):
+                    if not isinstance(name, unicode):
+                        msg = "Ignore non-unicode filename %s in %s" % (repr(name), self.SCRAPY_PROJECTS_DIR)
+                        self.logger.error(msg)
+                        flash(msg, self.WARN)
+                    else:
+                        scrapy_cfg = os.path.join(self.SCRAPY_PROJECTS_DIR, name, u'scrapy.cfg')
+                        if os.path.exists(scrapy_cfg):
+                            self.scrapy_cfg_list.append(scrapy_cfg)
+            else:
+                raise
+        # '/home/username/Downloads/scrapydweb/scrapydweb/data/demo_projects/\udc8b\udc8billegal/scrapy.cfg'
+        # UnicodeEncodeError: 'utf-8' codec can't encode characters in position 64-65: surrogates not allowed
+        new_scrapy_cfg_list = []
+        for scrapy_cfg in self.scrapy_cfg_list:
+            try:
+                scrapy_cfg.encode('utf-8')
+            except UnicodeEncodeError:
+                msg = "Ignore scrapy.cfg in illegal pathname %s" % repr(os.path.dirname(scrapy_cfg))
+                self.logger.error(msg)
+                flash(msg, self.WARN)
+            else:
+                new_scrapy_cfg_list.append(scrapy_cfg)
+        self.scrapy_cfg_list = new_scrapy_cfg_list
+
+        self.scrapy_cfg_list.sort(key=lambda x: x.lower())
+
     def get_modification_times(self):
-        timestamps = [self.get_modification_time(i) for i in self.project_paths]
-        self.modification_times = [datetime.fromtimestamp(i).strftime('%Y-%m-%dT%H_%M_%S') for i in timestamps]
+        timestamps = [self.get_modification_time(path) for path in self.project_paths]
+        self.modification_times = [datetime.fromtimestamp(ts).strftime('%Y-%m-%dT%H_%M_%S') for ts in timestamps]
 
         if timestamps:
             max_timestamp_index = timestamps.index(max(timestamps))
             self.latest_folder = self.folders[max_timestamp_index]
             self.logger.info('latest_folder: %s', self.latest_folder)
 
-    @staticmethod
-    def get_modification_time(path):
+    def get_modification_time(self, path, func_walk=os.walk, retry=True):
         # https://stackoverflow.com/a/29685234/10517783
         # https://stackoverflow.com/a/13454267/10517783
         filepath_list = []
-
         in_top_dir = True
-        for dirpath, dirnames, filenames in os.walk(path):
-            if in_top_dir:
-                in_top_dir = False
-                dirnames[:] = [d for d in dirnames if d not in ['build', 'project.egg-info']]
-                filenames = [f for f in filenames if not (f.endswith('.egg') or f in ['setup.py', 'setup_backup.py'])]
-            for filename in filenames:
-                filepath_list.append(os.path.join(dirpath, filename))
-
-        return max([os.path.getmtime(f) for f in filepath_list] or [time.time()])
+        try:
+            for dirpath, dirnames, filenames in func_walk(path):
+                if in_top_dir:
+                    in_top_dir = False
+                    dirnames[:] = [d for d in dirnames if d not in ['build', 'project.egg-info']]
+                    filenames = [f for f in filenames
+                                 if not (f.endswith('.egg') or f in ['setup.py', 'setup_backup.py'])]
+                for filename in filenames:
+                    filepath_list.append(os.path.join(dirpath, filename))
+        except UnicodeDecodeError:
+            msg = "Found illegal filenames in %s" % path
+            self.logger.error(msg)
+            flash(msg, self.WARN)
+            if PY2 and retry:
+                return self.get_modification_time(path, func_walk=self.safe_walk, retry=False)
+            else:
+                raise
+        else:
+            return max([os.path.getmtime(f) for f in filepath_list] or [time.time()])
 
     def parse_scrapy_cfg(self):
         for (idx, scrapy_cfg) in enumerate(self.scrapy_cfg_list):
@@ -182,7 +223,8 @@ class DeployUploadView(MyView):
                        "Or build the egg file by yourself instead. ")
 
             if self.scrapy_cfg_not_found:
-                message = "scrapy_cfg_searched_paths:\n%s" % self.json_dumps(self.scrapy_cfg_searched_paths)
+                # Handle case when scrapy.cfg not found in zip file which contains illegal pathnames in PY3
+                message = "scrapy_cfg_searched_paths:\n%s" % pformat(self.scrapy_cfg_searched_paths)
             else:
                 message = "# The 'scrapy.cfg' file in your project directory should be like:\n%s" % SCRAPY_CFG
 
@@ -344,16 +386,25 @@ class DeployUploadView(MyView):
         # print(type(tmpdir))
         return tmpdir.decode('utf8') if PY2 else tmpdir
 
-    def search_scrapy_cfg_path(self, search_path):
-        for dirpath, dirnames, filenames in os.walk(search_path):
-            self.scrapy_cfg_searched_paths.append(os.path.abspath(dirpath))
-            self.scrapy_cfg_path = os.path.abspath(os.path.join(dirpath, 'scrapy.cfg'))
-            if os.path.exists(self.scrapy_cfg_path):
-                self.logger.debug("scrapy_cfg_path: %s", self.scrapy_cfg_path)
-                return
-
-        self.logger.error("scrapy.cfg not found in: %s", search_path)
-        self.scrapy_cfg_path = ''
+    def search_scrapy_cfg_path(self, search_path, func_walk=os.walk, retry=True):
+        try:
+            for dirpath, dirnames, filenames in func_walk(search_path):
+                self.scrapy_cfg_searched_paths.append(os.path.abspath(dirpath))
+                self.scrapy_cfg_path = os.path.abspath(os.path.join(dirpath, 'scrapy.cfg'))
+                if os.path.exists(self.scrapy_cfg_path):
+                    self.logger.debug("scrapy_cfg_path: %s", self.scrapy_cfg_path)
+                    return
+        except UnicodeDecodeError:
+            msg = "Found illegal filenames in %s" % search_path
+            self.logger.error(msg)
+            flash(msg, self.WARN)
+            if PY2 and retry:
+                self.search_scrapy_cfg_path(search_path, func_walk=self.safe_walk, retry=False)
+            else:
+                raise
+        else:
+            self.logger.error("scrapy.cfg not found in: %s", search_path)
+            self.scrapy_cfg_path = ''
 
     def build_egg(self):
         try:

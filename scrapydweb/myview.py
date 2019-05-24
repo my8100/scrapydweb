@@ -1,9 +1,10 @@
 # coding: utf-8
 import logging
+import os
 import re
 
 from flask import current_app as app
-from flask import g, request, url_for
+from flask import flash, g, request, url_for
 from flask.views import View
 from logparser import __version__ as LOGPARSER_VERSION
 
@@ -310,6 +311,52 @@ class MyView(View):
             g.url_menu_mobileui = url_for('index', node=self.node, ui='mobile')
             g.scheduler_state_paused = self.scheduler.state == STATE_PAUSED and self.any_running_apscheduler_jobs
             g.scheduler_state_running = self.scheduler.state == STATE_RUNNING and self.any_running_apscheduler_jobs
+
+    # Issue #48 [PY2] UnicodeDecodeError raised when there are some files with illegal filenames in `SCRAPY_PROJECTS_DIR`
+    # https://stackoverflow.com/questions/21772271/unicodedecodeerror-when-performing-os-walk
+    # https://xuanwo.io/2018/04/01/python-os-walk/
+    # Tested in Ubuntu:
+    # touch $(echo -e "\x8b\x8bFile")
+    # mkdir $(echo -e "\x8b\x8bFolder")
+    def safe_walk(self, top, topdown=True, onerror=None, followlinks=False):
+        islink, join, isdir = os.path.islink, os.path.join, os.path.isdir
+
+        # touch $(echo -e "\x8b\x8bThis is a bad filename")
+        # ('top: ', u'/home/username/download/scrapydweb/scrapydweb/data/demo_projects/ScrapydWeb_demo')
+        # ('names: ', ['\x8b\x8bThis', u'ScrapydWeb_demo', u'filename', u'scrapy.cfg', u'a', u'is', u'bad'])
+        try:
+            names = os.listdir(top)
+        except OSError as err:
+            if onerror is not None:
+                onerror(err)
+            return
+
+        new_names = []
+        for name in names:
+            if isinstance(name, unicode):
+                new_names.append(name)
+            else:
+                msg = "Ignore non-unicode filename %s in %s" % (repr(name), top)
+                self.logger.error(msg)
+                flash(msg, self.WARN)
+        names = new_names
+
+        dirs, nondirs = [], []
+        for name in names:
+            if isdir(join(top, name)):
+                dirs.append(name)
+            else:
+                nondirs.append(name)
+
+        if topdown:
+            yield top, dirs, nondirs
+        for name in dirs:
+            new_path = join(top, name)
+            if followlinks or not islink(new_path):
+                for x in self.safe_walk(new_path, topdown, onerror, followlinks):
+                    yield x
+        if not topdown:
+            yield top, dirs, nondirs
 
 
 class MetadataView(MyView):

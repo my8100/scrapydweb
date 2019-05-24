@@ -13,8 +13,8 @@ from tests.utils import cst, req_single_scrapyd, set_single_scrapyd, upload_file
 def test_auto_packaging_select_option(app, client):
     ins = [
         '(14 projects)',
-        u"var folders = ['ScrapydWeb_demo', 'demo - 副本', 'demo',",
-        "var projects = ['ScrapydWeb_demo', 'demo-copy', 'demo',",
+        u"var folders = ['demo - 副本', 'demo',",
+        "var projects = ['demo-copy', 'demo',",
         '<div>%s<' % cst.PROJECT,
         u'<div>demo - 副本<',
         '<div>demo<',
