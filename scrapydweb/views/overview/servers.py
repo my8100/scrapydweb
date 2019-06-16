@@ -1,7 +1,7 @@
 # coding: utf-8
 from flask import flash, render_template, url_for
 
-from ..common import handle_metadata
+from ...common import handle_metadata
 from ..myview import MyView
 
 

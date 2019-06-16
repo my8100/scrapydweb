@@ -8,11 +8,11 @@ from flask import flash, g, request, url_for
 from flask.views import View
 from logparser import __version__ as LOGPARSER_VERSION
 
-from .__version__ import __version__ as SCRAPYDWEB_VERSION
-from .common import get_now_string, get_response_from_view, handle_metadata, handle_slash, json_dumps, session
-from .vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, DEPLOY_PATH, EMAIL_TRIGGER_KEYS, PARSE_PATH,
-                   LEGAL_NAME_PATTERN, SCHEDULE_PATH, STATE_PAUSED, STATE_RUNNING, STATS_PATH, STRICT_NAME_PATTERN)
-from .utils.scheduler import scheduler
+from ..__version__ import __version__ as SCRAPYDWEB_VERSION
+from ..common import get_now_string, get_response_from_view, handle_metadata, handle_slash, json_dumps, session
+from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, DEPLOY_PATH, EMAIL_TRIGGER_KEYS, PARSE_PATH,
+                    LEGAL_NAME_PATTERN, SCHEDULE_PATH, STATE_PAUSED, STATE_RUNNING, STATS_PATH, STRICT_NAME_PATTERN)
+from ..utils.scheduler import scheduler
 
 
 class MyView(View):

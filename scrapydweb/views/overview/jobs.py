@@ -7,8 +7,8 @@ import traceback
 from flask import flash, get_flashed_messages, render_template, request, url_for
 from six.moves.urllib.parse import urljoin
 
-from ..common import handle_metadata
-from ..database import create_jobs_table, db
+from ...common import handle_metadata
+from ...models import create_jobs_table, db
 from ..myview import MyView
 
 

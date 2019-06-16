@@ -70,7 +70,7 @@ def create_jobs_table(server):
 
     return Job
     # sqlalchemy/ext/declarative/clsregistry.py:128: SAWarning: This declarative base already contains a class
-    # with the same class name and module name as scrapydweb.database.Job,
+    # with the same class name and module name as scrapydweb.models.Job,
     # and will be replaced in the string-lookup table.
     # https://stackoverflow.com/questions/27773489/dynamically-create-a-python-subclass-in-a-function
     # return type('Job_%s' % server, (Job, ), dict(__tablename__=server,  __bind_key__='jobs'))

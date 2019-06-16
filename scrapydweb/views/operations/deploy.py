@@ -16,10 +16,10 @@ from flask import flash, redirect, render_template, request, url_for
 from six.moves.configparser import Error as ScrapyCfgParseError
 from werkzeug.utils import secure_filename
 
+from ...vars import PY2
 from ..myview import MyView
 from .scrapyd_deploy import _build_egg, get_config
 from .utils import mkdir_p, slot
-from ..vars import PY2
 
 
 SCRAPY_CFG = """

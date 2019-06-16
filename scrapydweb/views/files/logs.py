@@ -1,31 +1,30 @@
 # coding: utf-8
-import os
 import re
 
 from flask import render_template, url_for
 
+from ...vars import DIRECTORY_KEYS, DIRECTORY_PATTERN, HREF_NAME_PATTERN
 from ..myview import MyView
-from ..vars import DIRECTORY_KEYS, DIRECTORY_PATTERN, HREF_NAME_PATTERN
 
 
-class ItemsView(MyView):
+class LogsView(MyView):
     methods = ['GET']
 
     def __init__(self):
-        super(ItemsView, self).__init__()
+        super(LogsView, self).__init__()
 
         self.project = self.view_args['project']
         self.spider = self.view_args['spider']
 
-        self.url = 'http://{}/items/{}{}'.format(self.SCRAPYD_SERVER,
-                                                 '%s/' % self.project if self.project else '',
-                                                 '%s/' % self.spider if self.spider else '')
-        self.template = 'scrapydweb/items.html'
+        self.url = 'http://{}/logs/{}{}'.format(self.SCRAPYD_SERVER,
+                                                '%s/' % self.project if self.project else '',
+                                                '%s/' % self.spider if self.spider else '')
+        self.template = 'scrapydweb/logs.html'
         self.text = ''
 
     def dispatch_request(self, **kwargs):
         status_code, self.text = self.make_request(self.url, auth=self.AUTH, as_json=False)
-        if status_code != 200 or not re.search(r'Directory listing for /items/', self.text):
+        if status_code != 200 or not re.search(r'Directory listing for /logs/', self.text):
             kwargs = dict(
                 node=self.node,
                 url=self.url,
@@ -42,20 +41,19 @@ class ItemsView(MyView):
         for row in rows:
             # <a href="demo/">demo/</a>     dir
             # <a href="test/">test/</a>     dir
-            # <a href="a.jl">a.jl</a>       file
+            # <a href="a.log">a.log</a>     file
             row['href'], row['filename'] = re.search(HREF_NAME_PATTERN, row['filename']).groups()
             if not row['href'].endswith('/'):  # It's a file but not a directory
                 row['href'] = self.url + row['href']
 
             if self.project and self.spider:
-                if row['filename'].endswith('.tar.gz'):
-                    filename_without_ext = row['filename'][:-len('.tar.gz')]
-                else:
-                    filename_without_ext = os.path.splitext(row['filename'])[0]  # '1.1.jl' => ('1.1', '.jl')
                 row['url_stats'] = url_for('log', node=self.node, opt='stats', project=self.project,
-                                           spider=self.spider, job=filename_without_ext)
-                row['url_utf8'] = url_for('log', node=self.node, opt='utf8', project=self.project,
-                                          spider=self.spider, job=filename_without_ext)
+                                           spider=self.spider, job=row['filename'], with_ext='True')
+                if row['filename'].endswith('.json'):  # stats by LogParser
+                    row['url_utf8'] = ''
+                else:
+                    row['url_utf8'] = url_for('log', node=self.node, opt='utf8', project=self.project,
+                                              spider=self.spider, job=row['filename'], with_ext='True')
         if self.project and self.spider:
             url_schedule = url_for('schedule', node=self.node, project=self.project,
                                    version=self.DEFAULT_LATEST_VERSION, spider=self.spider)

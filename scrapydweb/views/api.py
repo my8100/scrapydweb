@@ -2,7 +2,7 @@
 import re
 import time
 
-from ..myview import MyView
+from .myview import MyView
 
 
 API_MAP = dict(start='schedule', stop='cancel', forcestop='cancel', liststats='logs/stats')

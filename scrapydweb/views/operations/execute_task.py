@@ -5,9 +5,9 @@ import re
 import time
 import traceback
 
-from ..common import get_now_string, get_response_from_view, handle_metadata
-from ..database import Task, TaskResult, TaskJobResult, db
-from ..utils.scheduler import scheduler
+from ...common import get_now_string, get_response_from_view, handle_metadata
+from ...models import Task, TaskResult, TaskJobResult, db
+from ...utils.scheduler import scheduler
 
 
 apscheduler_logger = logging.getLogger('apscheduler')

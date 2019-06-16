@@ -12,11 +12,11 @@ import traceback
 
 from flask import Blueprint, redirect, render_template, request, send_file, url_for
 
-from ..database import Task, db
+from ...models import Task, db
+from ...vars import RUN_SPIDER_HISTORY_LOG, UA_DICT
 from ..myview import MyView
-from ..vars import RUN_SPIDER_HISTORY_LOG, UA_DICT
-from .utils import slot
 from .execute_task import execute_task
+from .utils import slot
 
 
 apscheduler_logger = logging.getLogger('apscheduler')

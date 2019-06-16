@@ -12,7 +12,7 @@ from logparser import __version__ as LOGPARSER_VERSION
 
 from .__version__ import __url__, __version__
 from .common import handle_metadata
-from .database import Metadata, db
+from .models import Metadata, db
 from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
 # from .utils.scheduler import scheduler
 
@@ -158,15 +158,15 @@ def handle_route(app):
         ('api/<opt>', dict(project=None, version_spider_job=None))
     ])
 
-    from .myview import MetadataView
+    from .views.myview import MetadataView
     register_view(MetadataView, 'metadata', [('metadata', None)])
 
     # Overview
-    from .overview.jobs import JobsView, JobsXhrView
+    from .views.overview.jobs import JobsView, JobsXhrView
     register_view(JobsView, 'jobs', [('jobs', None)])
     register_view(JobsXhrView, 'jobs.xhr', [('jobs/xhr/<action>/<int:id>', None)])
 
-    from .overview.servers import ServersView
+    from .views.overview.servers import ServersView
     register_view(ServersView, 'servers', [
         ('servers/<opt>/<project>/<version_job>/<spider>', None),
         ('servers/<opt>/<project>/<version_job>', dict(spider=None)),
@@ -175,13 +175,13 @@ def handle_route(app):
         ('servers', dict(opt=None, project=None, version_job=None, spider=None))
     ])
 
-    from .overview.multinode import MultinodeView
+    from .views.overview.multinode import MultinodeView
     register_view(MultinodeView, 'multinode', [
         ('multinode/<opt>/<project>/<version_job>', None),
         ('multinode/<opt>/<project>', dict(version_job=None))
     ])
 
-    from .overview.tasks import TasksView, TasksXhrView
+    from .views.overview.tasks import TasksView, TasksXhrView
     register_view(TasksView, 'tasks', [
         ('tasks/<int:task_id>/<int:task_result_id>', None),
         ('tasks/<int:task_id>', dict(task_result_id=None)),
@@ -193,16 +193,16 @@ def handle_route(app):
         ('tasks/xhr/<action>', dict(task_id=None, task_result_id=None))
     ])
 
-    from .overview.tasks import bp as bp_tasks_history
+    from .views.overview.tasks import bp as bp_tasks_history
     app.register_blueprint(bp_tasks_history)
 
     # Operations
-    from .operations.deploy import DeployView, DeployUploadView, DeployXhrView
+    from .views.operations.deploy import DeployView, DeployUploadView, DeployXhrView
     register_view(DeployView, 'deploy', [('deploy', None)])
     register_view(DeployUploadView, 'deploy.upload', [('deploy/upload', None)])
     register_view(DeployXhrView, 'deploy.xhr', [('deploy/xhr/<eggname>/<project>/<version>', None)])
 
-    from .operations.schedule import ScheduleView, ScheduleCheckView, ScheduleRunView, ScheduleXhrView, ScheduleTaskView
+    from .views.operations.schedule import ScheduleView, ScheduleCheckView, ScheduleRunView, ScheduleXhrView, ScheduleTaskView
     register_view(ScheduleView, 'schedule', [
         ('schedule/<project>/<version>/<spider>', None),
         ('schedule/<project>/<version>', dict(spider=None)),
@@ -214,43 +214,43 @@ def handle_route(app):
     register_view(ScheduleXhrView, 'schedule.xhr', [('schedule/xhr/<filename>', None)])
     register_view(ScheduleTaskView, 'schedule.task', [('schedule/task', None)])
 
-    from .operations.schedule import bp as bp_schedule_history
+    from .views.operations.schedule import bp as bp_schedule_history
     app.register_blueprint(bp_schedule_history)
 
     # Files
-    from .files.log import LogView
+    from .views.files.log import LogView
     register_view(LogView, 'log', [('log/<opt>/<project>/<spider>/<job>', None)])
 
-    from .files.logs import LogsView
+    from .views.files.logs import LogsView
     register_view(LogsView, 'logs', [
         ('logs/<project>/<spider>', None),
         ('logs/<project>', dict(spider=None)),
         ('logs', dict(project=None, spider=None))
     ])
 
-    from .files.items import ItemsView
+    from .views.files.items import ItemsView
     register_view(ItemsView, 'items', [
         ('items/<project>/<spider>', None),
         ('items/<project>', dict(spider=None)),
         ('items', dict(project=None, spider=None))
     ])
 
-    from .files.projects import ProjectsView
+    from .views.files.projects import ProjectsView
     register_view(ProjectsView, 'projects', [
         ('projects/<opt>/<project>/<version_spider_job>', None),
         ('projects/<opt>/<project>', dict(version_spider_job=None)),
         ('projects', dict(opt='listprojects', project=None, version_spider_job=None))
     ])
 
-    from .files.parse import UploadLogView, UploadedLogView
+    from .views.files.parse import UploadLogView, UploadedLogView
     register_view(UploadLogView, 'parse.upload', [('parse/upload', None)])
     register_view(UploadedLogView, 'parse.uploaded', [('parse/uploaded/<filename>', None)])
 
-    from .files.parse import bp as bp_parse_source
+    from .views.files.parse import bp as bp_parse_source
     app.register_blueprint(bp_parse_source)
 
     # System
-    from .system.settings import SettingsView
+    from .views.system.settings import SettingsView
     register_view(SettingsView, 'settings', [('settings', None)])
 
 

@@ -7,8 +7,8 @@ from flask import Blueprint, flash, redirect, render_template, request, send_fro
 from logparser import parse
 from werkzeug.utils import secure_filename
 
+from ...vars import PARSE_PATH
 from ..myview import MyView
-from ..vars import PARSE_PATH
 
 
 ALLOWED_EXTENSIONS = {'log', 'txt'}

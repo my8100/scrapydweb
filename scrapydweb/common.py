@@ -12,7 +12,7 @@ from requests.adapters import HTTPAdapter
 from requests.auth import _basic_auth_str
 
 from .__version__ import __version__
-from .database import Metadata, db
+from .models import Metadata, db
 
 
 session = requests.Session()

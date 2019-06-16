@@ -14,10 +14,10 @@ import time
 from flask import flash, render_template, request, url_for
 from logparser import parse
 
+from ...vars import CWD as root_dir
 from ..myview import MyView
 
 
-CWD = os.path.dirname(os.path.abspath(__file__))
 EMAIL_CONTENT_KEYS = [
     'log_critical_count',
     'log_error_count',
@@ -447,7 +447,7 @@ class LogView(MyView):
 
                 args = [
                     sys.executable,
-                    os.path.join(os.path.dirname(CWD), 'utils', 'send_email.py'),
+                    os.path.join(root_dir, 'utils', 'send_email.py'),
                     self.json_dumps(self.EMAIL_KWARGS, ensure_ascii=True)
                 ]
                 self.logger.info("Sending email: %s", self.EMAIL_KWARGS['subject'])

@@ -6,10 +6,10 @@ import traceback
 
 from flask import Blueprint, flash, render_template, request, send_file, url_for
 
-from ..common import handle_metadata
-from ..database import Task, TaskResult, TaskJobResult, db
+from ...common import handle_metadata
+from ...models import Task, TaskResult, TaskJobResult, db
+from ...vars import SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING, TIMER_TASKS_HISTORY_LOG
 from ..myview import MyView
-from ..vars import SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING, TIMER_TASKS_HISTORY_LOG
 
 
 apscheduler_logger = logging.getLogger('apscheduler')

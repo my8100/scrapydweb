@@ -1,7 +1,7 @@
 # coding: utf-8
 from flask import redirect, url_for
 
-from ..myview import MyView
+from .myview import MyView
 
 
 class IndexView(MyView):
