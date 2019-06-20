@@ -85,7 +85,7 @@ window.onload = function(){
                             N/A
                         {% else %}
                             <strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong>
-                        {% endif %}    
+                        {% endif %}
                         </td>
                     </tr>
                     <tr>
@@ -95,7 +95,7 @@ window.onload = function(){
                             N/A
                         {% else %}
                             <strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong>
-                        {% endif %}        
+                        {% endif %}
                         </td>
                     </tr>
                     <tr><th>shutdown_reason</th><td id="shutdown_reason">{{ shutdown_reason }}</td></tr>
@@ -128,7 +128,11 @@ window.onload = function(){
                         <div class="title">
                             <h4>
                                 <div style="width: 200px; display: inline-block;">{{ title }}</div>
-                                {{ log_categories[title]['count'] }} in total
+                                {% if log_categories[title]['details']|length < log_categories[title]['count'] %}
+                                    last {{ log_categories[title]['details']|length }} of {{ log_categories[title]['count'] }}
+                                {% else %}
+                                    {{ log_categories[title]['count'] }} in total
+                                {% endif %}
                             </h4>
                             <i class="iconfont icon-right"></i>
                         </div>
@@ -153,7 +157,11 @@ window.onload = function(){
                         <div class="title">
                             <h4>
                                 <div style="width: 200px; display: inline-block;">{{ title }}</div>
-                                {{ log_categories[title]['count'] }} in total
+                                {% if log_categories[title]['details']|length < log_categories[title]['count'] %}
+                                    last {{ log_categories[title]['details']|length }} of {{ log_categories[title]['count'] }}
+                                {% else %}
+                                    {{ log_categories[title]['count'] }} in total
+                                {% endif %}
                             </h4>
                             <i class="iconfont icon-right"></i>
                         </div>
