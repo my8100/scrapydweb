@@ -7,7 +7,8 @@ import re
 from ..common import handle_metadata, handle_slash, json_dumps, session
 from ..utils.scheduler import scheduler
 from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, EMAIL_TRIGGER_KEYS,
-                    SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING)
+                    SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING,
+                    SCHEDULE_ADDITIONAL, UA_DICT)
 from .send_email import send_email
 from .sub_process import init_logparser, init_poll
 
@@ -42,7 +43,7 @@ def check_app_config(config):
         else:
             should_be = "an instance of %s%s" % (is_instance, ' and not empty' if non_empty else '')
 
-        value = config.get(key, default)
+        value = config.setdefault(key, default)
         kws = dict(
             key=key,
             should_be=should_be,
@@ -61,7 +62,7 @@ def check_app_config(config):
 
     # ScrapydWeb
     check_assert('SCRAPYDWEB_BIND', '0.0.0.0', str, non_empty=True)
-    SCRAPYDWEB_PORT = config.get('SCRAPYDWEB_PORT', 5000)
+    SCRAPYDWEB_PORT = config.setdefault('SCRAPYDWEB_PORT', 5000)
     try:
         assert not isinstance(SCRAPYDWEB_PORT, bool)
         SCRAPYDWEB_PORT = int(SCRAPYDWEB_PORT)
@@ -147,6 +148,31 @@ def check_app_config(config):
              "on the current ScrapydWeb host.\nNote that you can run the LogParser service separately "
              "via command 'logparser' as you like. ")
     check_assert('BACKUP_STATS_JSON_FILE', True, bool)
+
+    # Run Spider
+    check_assert('SCHEDULE_EXPAND_SETTINGS_ARGUMENTS', False, bool)
+    check_assert('SCHEDULE_CUSTOM_USER_AGENT', '', str)
+    config['SCHEDULE_CUSTOM_USER_AGENT'] = config['SCHEDULE_CUSTOM_USER_AGENT'] or 'Mozilla/5.0'
+    UA_DICT.update(custom=config['SCHEDULE_CUSTOM_USER_AGENT'])
+    if config.get('SCHEDULE_USER_AGENT', None) is not None:
+        check_assert('SCHEDULE_USER_AGENT', '', str)
+        user_agent = config['SCHEDULE_USER_AGENT']
+        assert user_agent in UA_DICT.keys(), \
+            "SCHEDULE_USER_AGENT should be any value of %s. Current value: %s" % (UA_DICT.keys(), user_agent)
+    if config.get('SCHEDULE_ROBOTSTXT_OBEY', None) is not None:
+        check_assert('SCHEDULE_ROBOTSTXT_OBEY', False, bool)
+    if config.get('SCHEDULE_COOKIES_ENABLED', None) is not None:
+        check_assert('SCHEDULE_COOKIES_ENABLED', False, bool)
+    if config.get('SCHEDULE_CONCURRENT_REQUESTS', None) is not None:
+        check_assert('SCHEDULE_CONCURRENT_REQUESTS', 16, int, allow_zero=False)
+    if config.get('SCHEDULE_DOWNLOAD_DELAY', None) is not None:
+        download_delay = config['SCHEDULE_DOWNLOAD_DELAY']
+        if isinstance(download_delay, float):
+            assert download_delay >= 0.0, \
+                "SCHEDULE_DOWNLOAD_DELAY should a non-negative number. Current value: %s" % download_delay
+        else:
+            check_assert('SCHEDULE_DOWNLOAD_DELAY', 0, int)
+    check_assert('SCHEDULE_ADDITIONAL', SCHEDULE_ADDITIONAL, str)
 
     # Page Display
     check_assert('SHOW_SCRAPYD_ITEMS', True, bool)

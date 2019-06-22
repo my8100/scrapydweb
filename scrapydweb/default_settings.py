@@ -119,6 +119,37 @@ BACKUP_STATS_JSON_FILE = True
 JOBS_SNAPSHOT_INTERVAL = 300
 
 
+############################## Run Spider #####################################
+# The default is False, set it to True to automatically
+# expand the 'settings & arguments' section in the Run Spider page.
+SCHEDULE_EXPAND_SETTINGS_ARGUMENTS = False
+
+# The default is 'Mozilla/5.0', set it a non-empty string to customize the default value of `custom`
+# in the drop-down list of `USER_AGENT`.
+SCHEDULE_CUSTOM_USER_AGENT = 'Mozilla/5.0'
+
+# The default is None, set it to any value of ['custom', 'Chrome', 'iPhone', 'iPad', 'Android']
+# to customize the default value of `USER_AGENT`.
+SCHEDULE_USER_AGENT = None
+
+# The default is None, set it to True or False to customize the default value of `ROBOTSTXT_OBEY`.
+SCHEDULE_ROBOTSTXT_OBEY = None
+
+# The default is None, set it to True or False to customize the default value of `COOKIES_ENABLED`.
+SCHEDULE_COOKIES_ENABLED = None
+
+# The default is None, set it to a non-negative integer to customize the default value of `CONCURRENT_REQUESTS`.
+SCHEDULE_CONCURRENT_REQUESTS = None
+
+# The default is None, set it to a non-negative number to customize the default value of `DOWNLOAD_DELAY`.
+SCHEDULE_DOWNLOAD_DELAY = None
+
+# The default is "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1",
+# set it to '' or any non-empty string to customize the default value of `additional`.
+# Use '\r\n' as the line separator.
+SCHEDULE_ADDITIONAL = "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1"
+
+
 ############################## Page Display ###################################
 # The default is True, set it to False to hide the Items page, as well as
 # the Items column in the Jobs page.

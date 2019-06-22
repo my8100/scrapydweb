@@ -42,7 +42,9 @@ STRICT_NAME_PATTERN = re.compile(r'[^0-9A-Za-z_]')
 LEGAL_NAME_PATTERN = re.compile(r'[^0-9A-Za-z_-]')
 
 # For schedule.py
+SCHEDULE_ADDITIONAL = "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1"
 UA_DICT = {
+    'custom': "Mozilla/5.0",
     'Chrome': ("Mozilla/5.0 (Windows NT 10.0; WOW64) "
                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"),
     'iPhone': ("Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) "

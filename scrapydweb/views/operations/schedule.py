@@ -170,15 +170,18 @@ class ScheduleView(MyView):
                                     version_spider_job='VERSION_PLACEHOLDER'),
             url_schedule_check=url_for('schedule.check', node=self.node)
         ))
-        self.kwargs.setdefault('expand_settings_arguments', False)
+        self.kwargs.setdefault('expand_settings_arguments', self.SCHEDULE_EXPAND_SETTINGS_ARGUMENTS)
         self.kwargs.setdefault('jobid', '')
-        self.kwargs.setdefault('USER_AGENT', '')  # Chrome|iPhone|iPad|Android
-        self.kwargs.setdefault('ROBOTSTXT_OBEY', '')
-        self.kwargs.setdefault('COOKIES_ENABLED', '')
-        self.kwargs.setdefault('CONCURRENT_REQUESTS', '')
-        self.kwargs.setdefault('DOWNLOAD_DELAY', '')
-        _additional = "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1"
-        self.kwargs.setdefault('additional', _additional)
+        # self.kwargs.setdefault('UA_DICT', UA_DICT)
+        self.kwargs.setdefault('CUSTOM_USER_AGENT', self.SCHEDULE_CUSTOM_USER_AGENT)
+        # custom|Chrome|iPhone|iPad|Android
+        self.kwargs.setdefault('USER_AGENT', '' if self.SCHEDULE_USER_AGENT is None else self.SCHEDULE_USER_AGENT)
+        self.kwargs.setdefault('ROBOTSTXT_OBEY', '' if self.SCHEDULE_ROBOTSTXT_OBEY is None else self.SCHEDULE_ROBOTSTXT_OBEY)
+        self.kwargs.setdefault('COOKIES_ENABLED', '' if self.SCHEDULE_COOKIES_ENABLED is None else self.SCHEDULE_COOKIES_ENABLED)
+        self.kwargs.setdefault('CONCURRENT_REQUESTS', '' if self.SCHEDULE_CONCURRENT_REQUESTS is None else self.SCHEDULE_CONCURRENT_REQUESTS)
+        self.kwargs.setdefault('DOWNLOAD_DELAY', '' if self.SCHEDULE_DOWNLOAD_DELAY is None else self.SCHEDULE_DOWNLOAD_DELAY)
+        # additional = "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1"
+        self.kwargs.setdefault('additional', self.SCHEDULE_ADDITIONAL)
 
         self.kwargs.setdefault('expand_timer_task', 'add_task' in request.args)  # '+' button in the TimeTasks page
         self.kwargs.setdefault('task_id', 0)

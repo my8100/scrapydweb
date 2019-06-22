@@ -9,9 +9,11 @@ from flask.views import View
 from logparser import __version__ as LOGPARSER_VERSION
 
 from ..__version__ import __version__ as SCRAPYDWEB_VERSION
-from ..common import get_now_string, get_response_from_view, handle_metadata, handle_slash, json_dumps, session
-from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, DEPLOY_PATH, EMAIL_TRIGGER_KEYS, PARSE_PATH,
-                    LEGAL_NAME_PATTERN, SCHEDULE_PATH, STATE_PAUSED, STATE_RUNNING, STATS_PATH, STRICT_NAME_PATTERN)
+from ..common import (get_now_string, get_response_from_view, handle_metadata,
+                      handle_slash, json_dumps, session)
+from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, DEPLOY_PATH,
+                    EMAIL_TRIGGER_KEYS, PARSE_PATH, LEGAL_NAME_PATTERN, SCHEDULE_ADDITIONAL,
+                    SCHEDULE_PATH, STATE_PAUSED, STATE_RUNNING, STATS_PATH, STRICT_NAME_PATTERN)
 from ..utils.scheduler import scheduler
 
 
@@ -99,6 +101,16 @@ class MyView(View):
         # Timer Tasks
         self.scheduler = scheduler
         self.JOBS_SNAPSHOT_INTERVAL = app.config.get('JOBS_SNAPSHOT_INTERVAL', 300)
+
+        # Run Spider
+        self.SCHEDULE_EXPAND_SETTINGS_ARGUMENTS = app.config.get('SCHEDULE_EXPAND_SETTINGS_ARGUMENTS', False)
+        self.SCHEDULE_CUSTOM_USER_AGENT = app.config.get('SCHEDULE_CUSTOM_USER_AGENT', 'Mozilla/5.0')
+        self.SCHEDULE_USER_AGENT = app.config.get('SCHEDULE_USER_AGENT', None)
+        self.SCHEDULE_ROBOTSTXT_OBEY = app.config.get('SCHEDULE_ROBOTSTXT_OBEY', None)
+        self.SCHEDULE_COOKIES_ENABLED = app.config.get('SCHEDULE_COOKIES_ENABLED', None)
+        self.SCHEDULE_CONCURRENT_REQUESTS = app.config.get('SCHEDULE_CONCURRENT_REQUESTS', None)
+        self.SCHEDULE_DOWNLOAD_DELAY = app.config.get('SCHEDULE_DOWNLOAD_DELAY', None)
+        self.SCHEDULE_ADDITIONAL = app.config.get('SCHEDULE_ADDITIONAL', SCHEDULE_ADDITIONAL)
 
         # Page Display
         self.SHOW_SCRAPYD_ITEMS = app.config.get('SHOW_SCRAPYD_ITEMS', True)

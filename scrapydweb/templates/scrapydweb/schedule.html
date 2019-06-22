@@ -159,6 +159,7 @@ print(get_localzone())</pre>
                 <el-form-item label="USER_AGENT">
                     <el-col :span="9">
                         <el-select v-model="form.USER_AGENT" placeholder="the default User-Agent for crawling" clearable>
+                            <el-option :label="form.CUSTOM_USER_AGENT" value="custom"></el-option>
                             <el-option label="Mozilla/5.0 Windows NT Chrome..." value="Chrome"></el-option>
                             <el-option label="Mozilla/5.0 iPhone Safari..." value="iPhone"></el-option>
                             <el-option label="Mozilla/5.0 iPad Safari..." value="iPad"></el-option>
@@ -187,13 +188,13 @@ print(get_localzone())</pre>
 
                 <el-form-item label="CONCURRENT_REQUESTS">
                     <el-col :span="9">
-                        <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="defaults to 16" clearable></el-input>
+                        <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="defaults to 16 in Scrapy" clearable></el-input>
                     </el-col>
                 </el-form-item>
 
                 <el-form-item label="DOWNLOAD_DELAY">
                     <el-col :span="9">
-                        <el-input v-model="form.DOWNLOAD_DELAY" placeholder="defaults to 0" clearable></el-input>
+                        <el-input v-model="form.DOWNLOAD_DELAY" placeholder="defaults to 0 in Scrapy" clearable></el-input>
                     </el-col>
                 </el-form-item>
 
@@ -214,7 +215,7 @@ print(get_localzone())</pre>
                 <el-form-item class="main_settings" label="target">
                     <el-col :span="9">
                         <el-select v-model="form.replace_existing" @change='timerTaskReplaceExisting'>
-                            <el-option label="Update task #{{ task_id }}" value="True"></el-option>
+                            <el-option :label="`Update task #` + form.task_id" value="True"></el-option>
                             <el-option label="Save as a new task" value="False"></el-option>
                         </el-select>
                     </el-col>
@@ -301,7 +302,7 @@ print(get_localzone())</pre>
                 </el-form-item>
                 <el-form-item label="timezone" v-show="form.expandTimerTaskMoreSettings">
                     <el-col :span="9">
-                        <el-input v-model="form.timezone" placeholder="defaults to {{ timezone }}, (via: from tzlocal import get_localzone)" clearable></el-input>
+                        <el-input v-model="form.timezone" :placeholder="`defaults to ` + form._timezone + `, (via: from tzlocal import get_localzone)`" clearable></el-input>
                     </el-col>
                 </el-form-item>
                 <el-form-item label="jitter (0)" v-show="form.expandTimerTaskMoreSettings">
@@ -520,6 +521,7 @@ var Main = {
 
                 // jobid: now.toISOString().slice(0,19).replace(/:/g, "_"),
                 jobid: '{{ jobid }}',
+                CUSTOM_USER_AGENT: '{{ CUSTOM_USER_AGENT }}',
                 USER_AGENT: '{{ USER_AGENT }}',
                 ROBOTSTXT_OBEY: '{{ ROBOTSTXT_OBEY }}',
                 COOKIES_ENABLED: '{{ COOKIES_ENABLED }}',
@@ -546,6 +548,7 @@ var Main = {
                 end_date: '{{ end_date }}',
 
                 timezone: '{{ timezone }}',
+                _timezone: '{{ timezone }}',
                 jitter: {{ jitter }},  // 0
                 misfire_grace_time: {{ misfire_grace_time }},  // 600
                 coalesce: '{{ coalesce }}',

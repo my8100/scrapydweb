@@ -89,6 +89,18 @@ class SettingsView(MyView):
         self.kwargs['scheduler_state'] = SCHEDULER_STATE_DICT[self.scheduler.state]
         self.kwargs['JOBS_SNAPSHOT_INTERVAL'] = self.JOBS_SNAPSHOT_INTERVAL
 
+        # Run Spider
+        self.kwargs['run_spider_details'] = self.json_dumps(dict(
+            SCHEDULE_EXPAND_SETTINGS_ARGUMENTS=self.SCHEDULE_EXPAND_SETTINGS_ARGUMENTS,
+            SCHEDULE_CUSTOM_USER_AGENT=self.SCHEDULE_CUSTOM_USER_AGENT,
+            SCHEDULE_USER_AGENT=self.SCHEDULE_USER_AGENT,
+            SCHEDULE_ROBOTSTXT_OBEY=self.SCHEDULE_ROBOTSTXT_OBEY,
+            SCHEDULE_COOKIES_ENABLED=self.SCHEDULE_COOKIES_ENABLED,
+            SCHEDULE_CONCURRENT_REQUESTS=self.SCHEDULE_CONCURRENT_REQUESTS,
+            SCHEDULE_DOWNLOAD_DELAY=self.SCHEDULE_DOWNLOAD_DELAY,
+            SCHEDULE_ADDITIONAL=self.SCHEDULE_ADDITIONAL
+        ))
+
         # Page Display
         self.kwargs['page_display_details'] = self.json_dumps(dict(
             SHOW_SCRAPYD_ITEMS=self.SHOW_SCRAPYD_ITEMS,
