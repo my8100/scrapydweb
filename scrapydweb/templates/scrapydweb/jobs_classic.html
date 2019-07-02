@@ -46,6 +46,7 @@
                 <th>Project</th>
                 <th>Spider</th>
                 <th>Job</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="tbody_pending">
@@ -54,6 +55,12 @@
                 <td>{{ job['project'] }}</td>
                 <td>{{ job['spider'] }}</td>
                 <td>{{ job['job'] }}</td>
+                <td id="pending_cancel_{{ loop.index }}">
+                    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+                    <a class="state warning" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
+                    {% endif %}
+                    <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='pending_cancel_{{ loop.index }}');">Cancel</a>
+                </td>
             </tr>
         {% endfor %}
         </tbody>
@@ -94,6 +101,7 @@
                 {% if SHOW_JOBS_JOB_COLUMN %}
                 <td>{{ job['job'] }}</td>
                 {% endif %}
+
                 <td>{{ job['pid'] }}</td>
                 <td>{{ job['start'] }}</td>
                 <td>{{ job['runtime'] }}</td>
@@ -130,6 +138,7 @@
                 {% if SHOW_JOBS_JOB_COLUMN %}
                 <th>Job</th>
                 {% endif %}
+
                 <th>Start</th>
                 <th>Runtime</th>
                 <th>Finish</th>
@@ -241,7 +250,7 @@ window.onload = function() {
                         var seconds = Math.ceil(Date.now() / 1000 - obj.last_update_timestamp);
                         my$('#logparser_last_update').innerHTML = "by LogParser: " + "<span style='color: red;'>" + seconds + "</span> secs ago";
                     }, 1000);
-                    
+
                     // Update Jobs database
                     var r = new XMLHttpRequest();
                     r.open('post', '{{ url_liststats }}'.replace('/api/liststats', '/jobs'), Async = true);

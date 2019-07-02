@@ -87,7 +87,7 @@
             <template slot-scope="scope"><a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_stats" target="_blank">Stats</a></template>
         </el-table-column>
 
-        <el-table-column prop="action" label="Action" sortable align="center" width="165" :sort-method="sortByIndex">
+        <el-table-column prop="action" label="Action" sortable align="center" width="170" :sort-method="sortByIndex">
             <template slot-scope="scope">
                 <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}} manually</span>
                 <a class="state warning" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">multinode</a>
@@ -185,12 +185,12 @@ var Main = {
                 url_items: '{{ job.url_items }}',
                 items_display: {% if SHOW_SCRAPYD_ITEMS and job.url_items %}''{% else %}'none'{% endif %},
 
-                action: {% if job.finish %}'Start'{% elif job.start %}'Stop'{% else %}''{% endif %},
-                action_class: {% if job.finish %}'state safe'{% else %}'state danger'{% endif %},
+                action: {% if job.finish %}'Start'{% elif job.pid %}'Stop'{% else %}'Cancel'{% endif %},
+                action_class: {% if job.finish %}'state safe'{% elif job.pid %}'state danger'{% else %}'state warning'{% endif %},
                 url_action: '{{ job.url_action }}',
                 url_multinode: '{{ job.url_multinode }}',
 
-                display_action: {% if job.start and not job.to_be_killed %}''{% else %}'none'{% endif %},
+                display_action: {% if not job.to_be_killed %}''{% else %}'none'{% endif %},
                 display_kill: {% if job.to_be_killed %}''{% else %}'none'{% endif %},
                 pid_color: {% if job.to_be_killed %}'red'{% else %}'unset'{% endif %},
 
@@ -311,7 +311,7 @@ var Main = {
                                     var job = vm.tableData[idx]['job'];
                                     var pages = obj.datas[project][spider][job]['pages'];
                                     var items = obj.datas[project][spider][job]['items']
-                                    
+
                                     if (pages === null) {
                                         vm.tableData[idx]['pages'] = 'N/A';
                                         vm.tableData[idx]['pages_class'] = '';
@@ -319,7 +319,7 @@ var Main = {
                                         vm.tableData[idx]['pages'] = pages;
                                         vm.tableData[idx]['pages_class'] = pages == 0 ? 'count_warn' : 'count_info';
                                     }
-                                    
+
                                     if (items === null) {
                                         vm.tableData[idx]['items'] = 'N/A';
                                         vm.tableData[idx]['items_class'] = '';
@@ -327,7 +327,7 @@ var Main = {
                                         vm.tableData[idx]['items'] = items;
                                         vm.tableData[idx]['items_class'] = items == 0 ? 'count_warn' : 'count_info';
                                     }
-                                    
+
                                     console.log(vm.tableData[idx]['job'], vm.tableData[idx]['pages'], vm.tableData[idx]['items'])
                                 } catch(err) {
                                     // console.log(err);

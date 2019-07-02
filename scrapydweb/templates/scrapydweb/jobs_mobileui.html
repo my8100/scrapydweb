@@ -88,6 +88,17 @@
          {% if SHOW_JOBS_JOB_COLUMN %}
         <td>{{ job['job'] }}</td>
         {% endif %}
+
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false);">Cancel</a></td>
     </tr>
 {% endfor %}
 
@@ -251,7 +262,7 @@ window.onload = function() {
                             logparser_last_updates[k].innerHTML = "by LogParser: " + "<span style='color: red;'>" + seconds + "</span> secs ago";
                         }
                     }, 1000);
-                    
+
                     // Update Jobs database
                     var r = new XMLHttpRequest();
                     r.open('post', '{{ url_liststats }}'.replace('/api/liststats', '/jobs'), Async = true);

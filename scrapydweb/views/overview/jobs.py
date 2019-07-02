@@ -267,7 +267,10 @@ class JobsView(MyView):
                 record.status = STATUS_RUNNING
             else:
                 record.status = STATUS_FINISHED
-            if self.liststats_datas and job['start']:
+            if not job['start']:
+                record.pages = None
+                record.items = None
+            elif self.liststats_datas:
                 try:
                     data = self.liststats_datas[job['project']][job['spider']][job['job']]
                     record.pages = data['pages']  # Logparser: None or non-negative int
@@ -306,15 +309,7 @@ class JobsView(MyView):
                 job.runtime = job.runtime or ''
                 job.finish = job.finish or ''  # None for Pending and Running jobs
                 job.update_time = self.remove_microsecond(job.update_time)
-                if job.start:
-                    job.pages = self.NA if job.pages is None else job.pages  # May be 0
-                    job.items = self.NA if job.items is None else job.items  # May be 0
-                # else:  # Would still be None
-                #     job.pages = ''
-                #     job.items = ''
                 job.to_be_killed = True if job.pid and job.pid not in current_running_job_pids else False
-                if not job.start:  # Pending
-                    continue
                 if job.finish:
                     job.url_multinode = url_for('servers', node=self.node, opt='schedule', project=job.project,
                                                 version_job=self.DEFAULT_LATEST_VERSION, spider=job.spider)
@@ -325,6 +320,13 @@ class JobsView(MyView):
                                                 version_job=job.job)
                     job.url_action = url_for('api', node=self.node, opt='stop', project=job.project,
                                              version_spider_job=job.job)
+                if job.start:
+                    job.pages = self.NA if job.pages is None else job.pages  # May be 0
+                    job.items = self.NA if job.items is None else job.items  # May be 0
+                else:  # Pending
+                    job.pages = None  # from Running/Finished to Pending
+                    job.items = None
+                    continue
                 job_finished = 'True' if job.finish else None
                 job.url_utf8 = url_for('log', node=self.node, opt='utf8', project=job.project, ui=self.UI,
                                        spider=job.spider, job=job.job, job_finished=job_finished)
@@ -352,23 +354,24 @@ class JobsView(MyView):
             if not job['start']:
                 self.pending_jobs.append(job)
             else:
+                if job['finish']:
+                    self.finished_jobs.append(job)
+                    job['url_multinode_run'] = url_for('servers', node=self.node, opt='schedule', project=job['project'],
+                                                       version_job=self.DEFAULT_LATEST_VERSION, spider=job['spider'])
+                    job['url_schedule'] = url_for('schedule', node=self.node, project=job['project'],
+                                                  version=self.DEFAULT_LATEST_VERSION, spider=job['spider'])
+                    job['url_start'] = url_for('api', node=self.node, opt='start', project=job['project'],
+                                               version_spider_job=job['spider'])
+                else:
+                    self.running_jobs.append(job)
+                    job['url_forcestop'] = url_for('api', node=self.node, opt='forcestop', project=job['project'],
+                                                   version_spider_job=job['job'])
+
                 job_finished = 'True' if job['finish'] else None
                 job['url_utf8'] = url_for('log', node=self.node, opt='utf8', project=job['project'], ui=self.UI,
                                           spider=job['spider'], job=job['job'], job_finished=job_finished)
                 job['url_stats'] = url_for('log', node=self.node, opt='stats', project=job['project'], ui=self.UI,
                                            spider=job['spider'], job=job['job'], job_finished=job_finished)
-                job['url_multinode_stop'] = url_for('servers', node=self.node, opt='stop', project=job['project'],
-                                                    version_job=job['job'])
-                job['url_stop'] = url_for('api', node=self.node, opt='stop', project=job['project'],
-                                          version_spider_job=job['job'])
-                job['url_forcestop'] = url_for('api', node=self.node, opt='forcestop', project=job['project'],
-                                               version_spider_job=job['job'])
-                job['url_multinode_run'] = url_for('servers', node=self.node, opt='schedule', project=job['project'],
-                                                   version_job=self.DEFAULT_LATEST_VERSION, spider=job['spider'])
-                job['url_schedule'] = url_for('schedule', node=self.node, project=job['project'],
-                                              version=self.DEFAULT_LATEST_VERSION, spider=job['spider'])
-                job['url_start'] = url_for('api', node=self.node, opt='start', project=job['project'],
-                                           version_spider_job=job['spider'])
                 # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
                 m = re.search(HREF_PATTERN, job['href_items'])
                 if m:
@@ -376,10 +379,11 @@ class JobsView(MyView):
                 else:
                     job['url_items'] = ''
 
-                if job['finish']:
-                    self.finished_jobs.append(job)
-                else:
-                    self.running_jobs.append(job)
+            if not job['finish']:
+                job['url_multinode_stop'] = url_for('servers', node=self.node, opt='stop', project=job['project'],
+                                                    version_job=job['job'])
+                job['url_stop'] = url_for('api', node=self.node, opt='stop', project=job['project'],
+                                          version_spider_job=job['job'])
 
     def set_kwargs(self):
         self.kwargs = dict(
