@@ -13,6 +13,7 @@ import time
 import zipfile
 
 from flask import flash, redirect, render_template, request, url_for
+from six import text_type
 from six.moves.configparser import Error as ScrapyCfgParseError
 from werkzeug.utils import secure_filename
 
@@ -78,7 +79,7 @@ class DeployView(MyView):
         except UnicodeDecodeError:
             if PY2:
                 for name in os.listdir(os.path.join(self.SCRAPY_PROJECTS_DIR, u'')):
-                    if not isinstance(name, unicode):
+                    if not isinstance(name, text_type):
                         msg = "Ignore non-unicode filename %s in %s" % (repr(name), self.SCRAPY_PROJECTS_DIR)
                         self.logger.error(msg)
                         flash(msg, self.WARN)

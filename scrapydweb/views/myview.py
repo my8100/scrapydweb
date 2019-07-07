@@ -7,6 +7,7 @@ from flask import current_app as app
 from flask import flash, g, request, url_for
 from flask.views import View
 from logparser import __version__ as LOGPARSER_VERSION
+from six import text_type
 
 from ..__version__ import __version__ as SCRAPYDWEB_VERSION
 from ..common import (get_now_string, get_response_from_view, handle_metadata,
@@ -345,7 +346,7 @@ class MyView(View):
 
         new_names = []
         for name in names:
-            if isinstance(name, unicode):
+            if isinstance(name, text_type):
                 new_names.append(name)
             else:
                 msg = "Ignore non-unicode filename %s in %s" % (repr(name), top)
