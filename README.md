@@ -138,7 +138,7 @@ $ source venv/scrapydweb/bin/activate
 
 
 ## :clipboard: Changelog
-Detailed changes for each release are documented in the [:link: HISTORY.md](https://github.com/my8100/scrapydweb/blob/master/HISTORY.md).
+Detailed changes for each release are documented in [:link: HISTORY.md](https://github.com/my8100/scrapydweb/blob/master/HISTORY.md).
 
 
 ## :man_technologist: Author
