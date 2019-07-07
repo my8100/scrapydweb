@@ -11,11 +11,11 @@ GitHub: https://github.com/my8100/scrapydweb
 ###############################################################################
 ## QUICK SETUP: Simply search and update the SCRAPYD_SERVERS option, leave the rest as default.
 ## Recommended Reading: [How to efficiently manage your distributed web scraping projects]
-## (https://medium.com/@my8100)
+## (https://github.com/my8100/files/blob/master/scrapydweb/README.md)
 ## ------------------------------ Chinese -------------------------------------
 ## 快速设置：搜索并更新 SCRAPYD_SERVERS 配置项即可，其余配置项保留默认值。
 ## 推荐阅读：[如何简单高效地部署和监控分布式爬虫项目]
-## (https://juejin.im/post/5bebc5fd6fb9a04a053f3a0e)
+## (https://github.com/my8100/files/blob/master/scrapydweb/README_CN.md)
 ###############################################################################
 ###############################################################################
 
