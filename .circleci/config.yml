@@ -84,7 +84,7 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
-            # flake8 --exclude=venv* --statistics
+            flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
             coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings -x
 
