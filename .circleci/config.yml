@@ -1,0 +1,136 @@
+# Python CircleCI 2.1 configuration file
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.2
+
+jobs:
+  py37: &test-template
+    docker:
+      - image: circleci/python:3.7
+
+    working_directory: ~/repo
+
+    parameters:
+      is-py27:
+        type: boolean
+        default: false
+      use-git:
+        type: boolean
+        default: false
+
+    steps:
+      - run:
+          name: Install telnet
+          command: |
+            sudo apt-get update && sudo apt-get install telnet
+
+      - run:
+          name: Setup env
+          command: |
+            mkdir ~/logs
+            ls -l ~
+
+      - checkout
+
+      - when:
+          condition: <<parameters.is-py27>>
+          steps:
+            - run:
+                name: Create virtual env in PY2
+                command: |
+                  virtualenv ./venv
+      - unless:
+          condition: <<parameters.is-py27>>
+          steps:
+            - run:
+                name: Create virtual env in PY3
+                command: |
+                  python3 -m venv venv
+
+      - run:
+          name: Install dependencies
+          command: |
+            # python3 -m venv venv
+            # virtualenv ./venv
+            . venv/bin/activate
+            which python
+            python --version
+            pip install -r requirements.txt
+            pip install -r requirements-tests.txt
+
+      - when:
+          condition: <<parameters.use-git>>
+          steps:
+            - run:
+                name: Git Scrapy, Scrapyd, and LogParser
+                command: |
+                  . venv/bin/activate
+                  pip install -U git+https://github.com/scrapy/scrapy.git
+                  pip install -U git+https://github.com/scrapy/scrapyd.git
+                  pip install -U git+https://github.com/my8100/logparser.git
+
+      - run:
+          name: Launch Scrapyd
+          command: |
+            cd ~
+            printf "[scrapyd]\nusername = admin\n#password = 12345\n" > scrapyd.conf
+            nohup ~/repo/venv/bin/scrapyd > ~/scrapyd.log 2>&1 &
+            sleep 5
+            cat ~/scrapyd.log
+            cd -
+
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            # flake8 --exclude=venv* --statistics
+            coverage erase
+            coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings -x
+
+      - run:
+          name: Generate report
+          command: |
+            . venv/bin/activate
+            coverage report
+            coverage html
+            coverage xml
+            coveralls
+            ls -la
+      - store_artifacts:
+          path: htmlcov
+      - store_artifacts:
+          path: coverage.xml
+      - codecov/upload:
+          file: coverage.xml
+
+  py27:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7
+
+  py35:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.5
+
+  py36:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+
+  py37-git:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7
+
+workflows:
+  test:
+    jobs:
+      - py27:
+          is-py27: true
+      # - py35
+      - py36
+      - py37
+      - py37-git:
+          use-git: true
