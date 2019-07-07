@@ -361,7 +361,7 @@ def check_email(config):
 
     logger.debug("Trying to send email (smtp_connection_timeout=%s)...", config.get('SMTP_CONNECTION_TIMEOUT', 10))
     result = send_email(**kwargs)
-    if not result:
+    if not result and os.environ.get('TEST_ON_CIRCLECI', 'False') == 'False':
         logger.debug("kwargs for send_email():\n%s", json_dumps(kwargs, sort_keys=False))
     assert result, "Fail to send email. Modify the email settings above or pass in the argument '--disable_email'"
 

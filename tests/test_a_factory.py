@@ -67,12 +67,15 @@ def test_check_app_config(app, client):
     # Test ENABLE_LOGPARSER = True, see test_enable_logparser()
 
 
-def test_check_email_with_fake_password(app):
+def test_check_email_with_fake_account(app):
     with app.test_request_context():
         if not app.config.get('ENABLE_EMAIL', False):
             return
 
-        app.config['EMAIL_PASSWORD'] = 'fakepassword'
+        app.config['EMAIL_USERNAME'] = 'username@qq.com'
+        app.config['EMAIL_PASSWORD'] = 'password'
+        app.config['FROM_ADDR'] = 'username@qq.com'
+        app.config['TO_ADDRS'] = ['username@qq.com']
         try:
             check_email(app.config)
         except AssertionError:

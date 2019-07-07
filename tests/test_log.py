@@ -13,6 +13,7 @@ from tests.utils import cst, req, sleep, upload_file_deploy
 
 
 def test_log_utf8_stats(app, client):
+    # In ScrapydWeb_demo.egg: CONCURRENT_REQUESTS=1, DOWNLOAD_DELAY=10
     upload_file_deploy(app, client, filename='ScrapydWeb_demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     with app.test_request_context():

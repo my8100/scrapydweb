@@ -30,6 +30,7 @@ def test_api_start(app, client):
 
 # {'prevstate': running, 'status': 'ok',
 # 'status_code': 200, 'url': 'http://127.0.0.1:6800/cancel.json'}
+# In demo.egg: 'CONCURRENT_REQUESTS': 1, 'DOWNLOAD_DELAY': 10
 def test_api_stop(app, client):
     sleep()
     req(app, client, view='api', kws=dict(node=1, opt='stop', project=cst.PROJECT, version_spider_job=jobid),
