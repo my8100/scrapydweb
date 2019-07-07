@@ -29,7 +29,7 @@ custom_settings = dict(
     FROM_ADDR=os.environ.get('FROM_ADDR', 'username@qq.com'),
     TO_ADDRS=[os.environ.get('TO_ADDRS', 'username@qq.com')],
 
-    SMTP_SERVER_='smtp.139.com',  # Used in tests/test_a_factory.py/test_check_email_with_ssl_false()
+    SMTP_SERVER_='',  # Used in tests/test_a_factory.py/test_check_email_with_ssl_false(), e.g. smtp.139.com
     SMTP_PORT_=25,
     SMTP_OVER_SSL_=False,
     SMTP_CONNECTION_TIMEOUT_=10,
