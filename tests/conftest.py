@@ -18,25 +18,25 @@ custom_settings = dict(
 
     SCRAPYD_LOGS_DIR='',  # For LogParser, defaults to the 'logs' directory that resides in current user directory
 
-    ENABLE_EMAIL=False,  # Whether to execute testcases related to "Email Notice"
+    ENABLE_EMAIL=os.environ.get('ENABLE_EMAIL', 'False') == 'True',  # Whether to execute testcases related to "Email Notice"
 
     SMTP_SERVER='smtp.qq.com',
     SMTP_PORT=465,
     SMTP_OVER_SSL=True,
     SMTP_CONNECTION_TIMEOUT=10,
-    EMAIL_USERNAME='username@qq.com',
-    EMAIL_PASSWORD='password',
-    FROM_ADDR='username@qq.com',
-    TO_ADDRS=['username@qq.com'],
+    EMAIL_USERNAME=os.environ.get('EMAIL_USERNAME', 'username@qq.com'),
+    EMAIL_PASSWORD=os.environ.get('EMAIL_PASSWORD', 'password'),
+    FROM_ADDR=os.environ.get('FROM_ADDR', 'username@qq.com'),
+    TO_ADDRS=[os.environ.get('TO_ADDRS', 'username@qq.com')],
 
     SMTP_SERVER_='smtp.139.com',  # Used in tests/test_a_factory.py/test_check_email_with_ssl_false()
     SMTP_PORT_=25,
     SMTP_OVER_SSL_=False,
     SMTP_CONNECTION_TIMEOUT_=10,
-    EMAIL_USERNAME_='username@139.com',
-    EMAIL_PASSWORD_='password',
-    FROM_ADDR_='username@139.com',
-    TO_ADDRS_=['username@139.com']
+    EMAIL_USERNAME_=os.environ.get('EMAIL_USERNAME_', 'username@139.com'),
+    EMAIL_PASSWORD_=os.environ.get('EMAIL_PASSWORD_', 'password'),
+    FROM_ADDR_=os.environ.get('FROM_ADDR_', 'username@139.com'),
+    TO_ADDRS_=[os.environ.get('TO_ADDRS_', 'username@139.com')]
 )
 
 
