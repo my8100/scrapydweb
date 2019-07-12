@@ -121,6 +121,7 @@ def handle_db(app):
     db.init_app(app)  # http://flask-sqlalchemy.pocoo.org/2.3/contexts/
     db.create_all()
 
+    # https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-vii-error-handling
     @app.teardown_request
     def handle_db_session(exception):
         if exception:

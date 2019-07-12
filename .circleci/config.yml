@@ -74,7 +74,7 @@ jobs:
           name: Launch Scrapyd
           command: |
             cd ~
-            printf "[scrapyd]\nusername = admin\n#password = 12345\n" > scrapyd.conf
+            printf "[scrapyd]\nusername = admin\npassword = 12345\n" > scrapyd.conf
             nohup ~/repo/venv/bin/scrapyd > ~/scrapyd.log 2>&1 &
             sleep 5
             cat ~/scrapyd.log

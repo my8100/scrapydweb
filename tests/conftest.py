@@ -14,7 +14,7 @@ from tests.utils import cst, setup_env
 # MUST be updated: _SCRAPYD_SERVER and _SCRAPYD_SERVER_AUTH
 custom_settings = dict(
     _SCRAPYD_SERVER='127.0.0.1:6800',
-    _SCRAPYD_SERVER_AUTH=None,  # Or ('yourusername', 'yourpassword')
+    _SCRAPYD_SERVER_AUTH=('admin', '12345'),  # Or None
 
     SCRAPYD_LOGS_DIR='',  # For LogParser, defaults to the 'logs' directory that resides in current user directory
 
@@ -29,7 +29,7 @@ custom_settings = dict(
     FROM_ADDR=os.environ.get('FROM_ADDR', 'username@qq.com'),
     TO_ADDRS=[os.environ.get('TO_ADDRS', 'username@qq.com')],
 
-    SMTP_SERVER_='',  # Used in tests/test_a_factory.py/test_check_email_with_ssl_false(), e.g. smtp.139.com
+    SMTP_SERVER_=os.environ.get('SMTP_SERVER_', ''),  # Used in test_check_email_with_ssl_false(), e.g. smtp.139.com
     SMTP_PORT_=25,
     SMTP_OVER_SSL_=False,
     SMTP_CONNECTION_TIMEOUT_=10,
@@ -45,6 +45,15 @@ setup_env(custom_settings)
 
 @pytest.fixture
 def app():
+    fake_server = 'scrapydweb-fake-domain.com:443'
+    SCRAPYD_SERVERS = [custom_settings['_SCRAPYD_SERVER'], fake_server]
+    if custom_settings['_SCRAPYD_SERVER_AUTH']:
+        username, password = custom_settings['_SCRAPYD_SERVER_AUTH']
+        authed_server = '%s:%s@%s' % (username, password, custom_settings['_SCRAPYD_SERVER'])
+        _SCRAPYD_SERVERS = [authed_server, fake_server]
+    else:
+        _SCRAPYD_SERVERS = SCRAPYD_SERVERS
+
     config = dict(
         TESTING=True,
         # SERVER_NAME='127.0.0.1:5000',  # http://flask.pocoo.org/docs/0.12/config/#builtin-configuration-values
@@ -55,12 +64,12 @@ def app():
         LOGPARSER_PID=0,
         POLL_PID=0,
 
-        SCRAPYD_SERVERS=[custom_settings['_SCRAPYD_SERVER'], 'not-exist:6801'],
+        SCRAPYD_SERVERS=SCRAPYD_SERVERS,
+        _SCRAPYD_SERVERS=_SCRAPYD_SERVERS,
         LOCAL_SCRAPYD_SERVER=custom_settings['_SCRAPYD_SERVER'],
         SCRAPYD_SERVERS_AUTHS=[custom_settings['_SCRAPYD_SERVER_AUTH'], ('username', 'password')],
         SCRAPYD_SERVERS_GROUPS=['', 'Scrapyd-group'],
         SCRAPY_PROJECTS_DIR=os.path.join(cst.CWD, 'data'),
-
 
         ENABLE_LOGPARSER=False,
 

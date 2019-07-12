@@ -56,14 +56,14 @@ def send_email(**kwargs):
         server.login(email_username, email_password)
         server.sendmail(from_addr, to_addrs, msg.as_string())
     except Exception as err:
-        logger.error("FAIL to send email: %s", subject)
+        logger.error("Fail to send email: %s", subject)
         try:
-            logger.info("FAIL reason: %s", err.args[-1].decode('utf8'))
+            logger.info("Fail reason: %s", err.args[-1].decode('utf8'))
         except:
             try:
-                logger.info("FAIL reason: %s", err.args[-1].decode('gbk'))
+                logger.info("Fail reason: %s", err.args[-1].decode('gbk'))
             except:
-                logger.info("FAIL reason: %s", err)
+                logger.info("Fail reason: %s", err)
         if to_retry:
             kwargs.update(to_retry=False, need_debug=True)
             logger.debug("Retrying...")
