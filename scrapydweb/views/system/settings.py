@@ -82,7 +82,7 @@ class SettingsView(MyView):
         # LogParser
         self.kwargs['ENABLE_LOGPARSER'] = self.ENABLE_LOGPARSER
         self.kwargs['logparser_version'] = self.LOGPARSER_VERSION
-        self.kwargs['logparser_settings_py_path'] = LOGPARSER_SETTINGS_PY_PATH
+        self.kwargs['logparser_settings_py_path'] = self.handle_slash(LOGPARSER_SETTINGS_PY_PATH)
         self.kwargs['BACKUP_STATS_JSON_FILE'] = self.BACKUP_STATS_JSON_FILE
 
         # Timer Tasks

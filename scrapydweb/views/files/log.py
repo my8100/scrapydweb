@@ -5,7 +5,6 @@ import io
 import json
 import os
 import re
-# from socket import gethostname
 from subprocess import Popen
 import sys
 import tarfile
@@ -335,6 +334,7 @@ class LogView(MyView):
                                                       job_finished=self.job_finished, with_ext=self.with_ext,
                                                       ui=self.UI)
 
+    # TODO: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support
     def email_notice(self):
         job_data_default = ([0] * 8, [False] * 6, False, time.time())
         job_data = self.job_data_dict.setdefault(self.job_key, job_data_default)
@@ -353,7 +353,6 @@ class LogView(MyView):
         # For compatibility with Python 2, use OrderedDict() to keep insertion order
         self.email_content_kwargs = OrderedDict()
         self.email_content_kwargs['SCRAPYD_SERVER'] = self.SCRAPYD_SERVER
-        # self.email_content_kwargs['hostname'] = gethostname()
         self.email_content_kwargs['project'] = self.kwargs['project']
         self.email_content_kwargs['spider'] = self.kwargs['spider']
         self.email_content_kwargs['job'] = self.kwargs['job']

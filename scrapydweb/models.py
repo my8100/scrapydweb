@@ -11,6 +11,7 @@ from .vars import STATE_RUNNING
 db = SQLAlchemy(session_options=dict(autocommit=False, autoflush=True))
 
 
+# TODO: Database Migrations https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-iv-database
 # http://flask-sqlalchemy.pocoo.org/2.3/binds/#binds
 class Metadata(db.Model):
     __tablename__ = 'metadata'
@@ -38,6 +39,7 @@ class Metadata(db.Model):
         return pformat(vars(self))
 
 
+# TODO: Timezone Conversions https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-xii-dates-and-times
 def create_jobs_table(server):
     class Job(db.Model):
         __tablename__ = server

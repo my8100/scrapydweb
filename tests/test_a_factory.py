@@ -40,7 +40,11 @@ def test_check_app_config(app, client):
 
     # In conftest.py: ENABLE_LOGPARSER=False
     assert not os.path.exists(app.config['STATS_JSON_PATH'])
+
+    # ['username:password@127.0.0.1:6800', ]
+    app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']
     check_app_config(app.config)
+
     strings = []
 
     assert app.config['LOGPARSER_PID'] is None
@@ -59,7 +63,11 @@ def test_check_app_config(app, client):
     # Test ENABLE_EMAIL = False
     if app.config.get('ENABLE_EMAIL', False):
         app.config['ENABLE_EMAIL'] = False
+
+        # ['username:password@127.0.0.1:6800', ]
+        app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']
         check_app_config(app.config)
+
         assert app.config['LOGPARSER_PID'] is None
         assert app.config['POLL_PID'] is None
         req(app, client, view='settings', kws=dict(node=1), ins='poll_pid: None')
