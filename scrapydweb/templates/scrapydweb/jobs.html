@@ -90,7 +90,7 @@
         <el-table-column prop="action" label="Action" sortable align="center" width="170" :sort-method="sortByIndex">
             <template slot-scope="scope">
                 <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}} manually</span>
-                <a class="state warning" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">multinode</a>
+                <a class="state multinode" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">multinode</a>
                 <a :class="scope.row.action_class" :style="{ display: scope.row.display_action }" @click="handleActionClick(scope.row.url_action)">{{scope.row.action}}</a>
             </template>
         </el-table-column>

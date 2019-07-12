@@ -50,12 +50,12 @@
         :default-sort="{prop: 'execute_time', order: 'descending'}"
         style="width: 100%;"
         :size="size"
-        
+
         highlight-current-row
         @current-change="handleSelectRow"
     >
         <!-- :fit=false -->
-        
+
         <el-table-column prop="index" label="Index" sortable align="center" width="100"></el-table-column>
         <!-- <el-table-column prop="id" label="#" sortable align="center" width="80"></el-table-column> -->
         <el-table-column prop="execute_time" label="Execute time" sortable align="center" width="155"></el-table-column>
@@ -66,13 +66,18 @@
             <template slot-scope="scope"><span :class="scope.row.pass_count_class">{{scope.row.pass_count}}</span></template>
         </el-table-column>
         <el-table-column prop="task_job_results" label="Job results" sortable :sort-method="sortJobResults" :sort-orders="sortOrders" align="center" width="115">
-           <template slot-scope="scope"><a :class="scope.row.task_job_results_class" :href="scope.row.url_task_job_results">Details</a></template>
+           <template slot-scope="scope">
+            <a :class="scope.row.task_job_results_class" :href="scope.row.url_task_job_results">
+                <i class="el-icon-loading" :style="{ display: scope.row.task_job_results_display_loading }"></i>
+                Details
+            </a>
+            </template>
         </el-table-column>
         <el-table-column prop="action" label="Action" sortable :sort-method="sortJobResults" :sort-orders="sortOrders" align="left" min-width="90">
             <template slot-scope="scope"><a class="state delete" @click="deleteRow(scope.$index, tableData)">Delete</a></template>
         </el-table-column>
     </el-table>
-    
+
     <el-pagination
         background
         :total='{{ task_results.total }}'
@@ -80,14 +85,14 @@
         :page-size='{{ task_results.per_page }}'
         :page-count='{{ task_results.pages }}'
         :current-page.sync="currentPage"
-        
+
         :pager-count="11"
         layout="total, sizes, prev, pager, next"
-        
+
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
     >
-    </el-pagination>    
+    </el-pagination>
 </template>
 </div>
 
@@ -110,12 +115,12 @@ var Main = {
                 pass_count: {{ task_result.pass_count }},
                 fail_count_class: {% if task_result.fail_count > 0 %}'count_warn'{% else %}''{% endif %},
                 pass_count_class: {% if task_result.pass_count > 0 %}''{% else %}'count_warn'{% endif %},
-                  
+
                 url_action: '{{ task_result.url_action }}',
-                
+
                 url_task_job_results: '{{ task_result.url_task_job_results }}',
                 task_job_results_class:  {% if task_result.fail_count %}'state danger'{% elif task_result.pass_count %}'state safe'{% else %}'state warning'{% endif %},
-
+                task_job_results_display_loading: {% if task_result.fail_count or task_result.pass_count %}'none'{% else %}''{% endif %},
             },
         {% endfor %}
             ],
