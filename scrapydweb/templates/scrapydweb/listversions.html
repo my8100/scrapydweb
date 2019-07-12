@@ -1,7 +1,7 @@
 <div class="table wrap">
     <div style="margin-bottom: 15px;">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="button danger"
+        <a class="button multinode"
             href="{{ url_multinode_delproject }}">
             multinode
         </a>
@@ -35,7 +35,7 @@
                 </td>
                 <td id="delversion{{ project + version }}">
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state delete" href="{{ url_multinode_delversion }}">multinode</a>
+                    <a class="state multinode" href="{{ url_multinode_delversion }}">multinode</a>
                     {% endif %}
 
                     <a class="state delete" href="javascript:;"

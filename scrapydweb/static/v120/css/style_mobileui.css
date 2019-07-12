@@ -134,6 +134,10 @@ nav {
     background: #feb324;
 }
 
+.state.multinode, .button.multinode{
+    background: #7E57C2;
+}
+
 
 
 

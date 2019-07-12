@@ -57,7 +57,7 @@
                 <td>{{ job['job'] }}</td>
                 <td id="pending_cancel_{{ loop.index }}">
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state warning" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
+                    <a class="state multinode" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
                     {% endif %}
                     <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='pending_cancel_{{ loop.index }}');">Cancel</a>
                 </td>
@@ -114,7 +114,7 @@
                 {% endif %}
                 <td id="running_stop_{{ loop.index }}">
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state warning" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
+                    <a class="state multinode" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
                     {% endif %}
                     <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='running_stop_{{ loop.index }}');">Stop</a>
                 </td>
@@ -174,9 +174,8 @@
                 {% endif %}
                 <td>
                     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-                    <a class="state safe" style="margin-right: 5px;" href="{{ job['url_multinode_run'] }}">multinode</a>
+                    <a class="state multinode" style="margin-right: 5px;" href="{{ job['url_multinode_run'] }}">multinode</a>
                     {% endif %}
-
                     <a class="state safe" href="{{ job['url_schedule'] }}">Start</a>
                 </td>
             </tr>

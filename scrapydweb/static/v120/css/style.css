@@ -489,46 +489,30 @@ table>tbody tr:last-child {
     padding-right: 10px;
 }
 
-.state.normal{
+.state.normal, .button.normal{
     background: #409EFF;
 }
 
-.state.safe {
+.state.safe, .button.safe {
     background: #67c23a;
 }
 
-.state.delete {
+.state.delete, .button.delete {
     background: #909399;
 }
 
-.state.warning {
+.state.warning, .button.warning {
     background: #feb324;
 }
 
-.state.danger {
+.state.danger, .button.danger {
     background: #fd6b6e;
 }
 
-
-.button.normal{
-    background: #409EFF;
+.state.multinode, .button.multinode {
+    background: #7E57C2;
 }
 
-.button.safe {
-    background: #67c23a;
-}
-
-.button.delete {
-    background: #909399;
-}
-
-.button.warning {
-    background: #feb324;
-}
-
-.button.danger {
-    background: #fd6b6e;
-}
 
 
 

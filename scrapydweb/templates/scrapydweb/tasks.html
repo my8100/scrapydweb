@@ -21,7 +21,7 @@
         .demo-table-expand .el-form-item label{text-align: right;}
         .demo-table-expand .el-form-item .el-form-item__content{
             margin-left: 30px;
-            text-align: left; 
+            text-align: left;
             width: 200px;
         }
     </style>
@@ -67,7 +67,7 @@ window.onload = function(){
         :max-height="maxHeight"
         :size="size"
         @cell-click="handleCellClick"
-        
+
         highlight-current-row
         @current-change="handleSelectRow"
     >
@@ -81,35 +81,35 @@ window.onload = function(){
                     <el-form-item label="create_time"><span>{{props.row.create_time}}</span></el-form-item>
                     <el-form-item label="year"><span>{{props.row.year}}</span></el-form-item>
                     <el-form-item label="start_date"><span>{{props.row.start_date}}</span></el-form-item>
-                    
+
                     <el-form-item label="update_time"><span>{{props.row.update_time}}</span></el-form-item>
                     <el-form-item label="month"><span>{{props.row.month}}</span></el-form-item>
                     <el-form-item label="end_date"><span>{{props.row.end_date}}</span></el-form-item>
-                    
+
                     <el-form-item label="version"><span>{{props.row.version}}</span></el-form-item>
                     <el-form-item label="day"><span>{{props.row.day}}</span></el-form-item>
                     <el-form-item label="timezone"><span>{{props.row.timezone}}</span></el-form-item>
-                    
+
                     <el-form-item label="jobid"><span>{{props.row.jobid}}</span></el-form-item>
                     <el-form-item label="week"><span>{{props.row.week}}</span></el-form-item>
                     <el-form-item label="jitter"><span>{{props.row.jitter}}</span></el-form-item>
-                    
+
                     <el-form-item></el-form-item>
                     <el-form-item label="day_of_week"><span>{{props.row.day_of_week}}</span></el-form-item>
                     <el-form-item label="misfire_grace_time"><span>{{props.row.misfire_grace_time}}</span></el-form-item>
-                    
+
                     <el-form-item></el-form-item>
                     <el-form-item label="hour"><span>{{props.row.hour}}</span></el-form-item>
                     <el-form-item label="coalesce"><span>{{props.row.coalesce}}</span></el-form-item>
-                    
+
                     <el-form-item></el-form-item>
                     <el-form-item label="minute"><span>{{props.row.minute}}</span></el-form-item>
                     <el-form-item label="max_instances"><span>{{props.row.max_instances}}</span></el-form-item>
-                    
+
                     <el-form-item></el-form-item>
                     <el-form-item label="second"><span>{{props.row.second}}</span></el-form-item>
                     <el-form-item></el-form-item>
-                    
+
                     <el-form-item label="settings_arguments"><span>{{props.row.settings_arguments}}</span></el-form-item>
                     <el-form-item></el-form-item>
                     <el-form-item label="selected_nodes"><span>{{props.row.selected_nodes}}</span></el-form-item>
@@ -145,7 +145,10 @@ window.onload = function(){
         <el-table-column prop="prev_run_result" label="Prev run result" sortable align="center" :sort-method="sortPrevRunResult" :sort-orders="sortOrders" width="190">
             <template slot-scope="scope">
                 <label :title="scope.row.prev_run_result_label">
-                    <a :class="scope.row.prev_run_result_class" :href="scope.row.url_prev_run_result" :target="scope.row.prev_run_result_target">{{scope.row.prev_run_result}}</a>
+                    <a :class="scope.row.prev_run_result_class" :href="scope.row.url_prev_run_result" :target="scope.row.prev_run_result_target">
+                        <i class="el-icon-loading" :style="{ display: scope.row.prev_run_display_loading }"></i>
+                        {{scope.row.prev_run_result}}
+                    </a>
                 </label>
             </template>
         </el-table-column>
@@ -216,17 +219,18 @@ var Main = {
 
                 prev_run_result: '{{ task.prev_run_result }}',
                 prev_run_result_label: {% if task.prev_run_result == 'FAIL 0, PASS 0' %}'the task is being executed'{% else %}''{% endif %},
+                prev_run_display_loading: {% if task.prev_run_result == 'FAIL 0, PASS 0' %}''{% else %}'none'{% endif %},
                 url_prev_run_result: '{{ task.url_prev_run_result }}',
                 prev_run_result_class: 'state ' + {% if task.prev_run_result == 'N/A' %}'normal forbid'{% elif task.prev_run_result == 'FAIL 0, PASS 0' %}'warning'{% elif task.prev_run_result[:5] != 'FAIL ' or task.prev_run_result[:7] == 'FAIL 0,' %}'normal'{% else %}'danger'{% endif %},
                 prev_run_result_target: {% if task.prev_run_result == 'N/A' or task.prev_run_result[:5] == 'FAIL ' %}'_self'{% else %}'_blank'{% endif %},
-                
+
                 next_run_time: '{{ task.next_run_time }}',
                 next_run_time_color: {% if 'DISABLED' in task.next_run_time %}'red'{% else %}'unset'{% endif %},
                 fail_times: {{ task.fail_times }},
                 run_times: {% if task.fail_times %}'FAIL {{ task.fail_times }} / {{ task.run_times }}'{% else %}{{ task.run_times }}{% endif %},
                 url_task_results: '{{ task.url_task_results }}',
                 task_results_class: {% if task.fail_times %}'state danger'{% else %}'state normal'{% endif %},
-                
+
                 create_time: '{{ task.create_time }}',
                 update_time: '{{ task.update_time }}',
                 project: '{{ task.project }}',
@@ -235,7 +239,7 @@ var Main = {
                 jobid: '{{ task.jobid }}',
                 settings_arguments: '{{ task.settings_arguments|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
                 selected_nodes: '{{ task.selected_nodes }}',
-                
+
                 year: '{{ task.year }}',
                 month: '{{ task.month }}',
                 day: '{{ task.day }}',
@@ -252,7 +256,7 @@ var Main = {
                 misfire_grace_time: '{{ task.misfire_grace_time }}',
                 coalesce: '{{ task.coalesce }}',
                 max_instances: {{ task.max_instances }},
-                
+
                 url_edit: '{{ task.url_edit }}',
                 url_fire: '{{ task.url_fire }}',
                 display_fire: {% if task.url_fire %}''{% else %}'none'{% endif %},
