@@ -5,17 +5,18 @@ import os
 import re
 
 from ..common import handle_metadata, handle_slash, json_dumps, session
+from ..models import create_jobs_table, db
 from ..utils.scheduler import scheduler
 from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, EMAIL_TRIGGER_KEYS,
                     SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING,
-                    SCHEDULE_ADDITIONAL, UA_DICT)
+                    SCHEDULE_ADDITIONAL, STRICT_NAME_PATTERN, UA_DICT,
+                    jobs_table_map)
 from .send_email import send_email
 from .sub_process import init_logparser, init_poll
 
 
 logger = logging.getLogger(__name__)
 
-jobs_table_dict = {}
 REPLACE_URL_NODE_PATTERN = re.compile(r'(:\d+/)\d+/')
 EMAIL_PATTERN = re.compile(r'^[^@]+@[^@]+\.[^@]+$')
 HASH = '#' * 100
@@ -103,6 +104,13 @@ def check_app_config(config):
 
     # Scrapyd
     check_scrapyd_servers(config)
+    # For JobsView
+    for node, scrapyd_server in enumerate(config['SCRAPYD_SERVERS'], 1):
+        # Note that check_app_config() is executed multiple times in test
+        if node not in jobs_table_map:
+            jobs_table_map[node] = create_jobs_table(re.sub(STRICT_NAME_PATTERN, '_', scrapyd_server))
+    db.create_all(bind='jobs')
+    logger.debug("Created %s tables for JobsView", len(jobs_table_map))
 
     check_assert('SCRAPYD_LOGS_DIR', '', str)
     check_assert('LOCAL_SCRAPYD_SERVER', '', str)

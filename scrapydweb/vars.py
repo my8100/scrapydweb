@@ -33,7 +33,7 @@ RUN_SPIDER_HISTORY_LOG = os.path.join(HISTORY_LOG, 'run_spider_history.log')
 TIMER_TASKS_HISTORY_LOG = os.path.join(HISTORY_LOG, 'timer_tasks_history.log')
 
 
-# For check_app_config.py and MyView
+# For check_app_config() and MyView
 ALLOWED_SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt', '.gz', '']
 EMAIL_TRIGGER_KEYS = ['CRITICAL', 'ERROR', 'WARNING', 'REDIRECT', 'RETRY', 'IGNORE']
 
@@ -41,7 +41,7 @@ EMAIL_TRIGGER_KEYS = ['CRITICAL', 'ERROR', 'WARNING', 'REDIRECT', 'RETRY', 'IGNO
 STRICT_NAME_PATTERN = re.compile(r'[^0-9A-Za-z_]')
 LEGAL_NAME_PATTERN = re.compile(r'[^0-9A-Za-z_-]')
 
-# For schedule.py
+# For ScheduleView
 SCHEDULE_ADDITIONAL = "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1"
 UA_DICT = {
     'custom': "Mozilla/5.0",
@@ -56,7 +56,7 @@ UA_DICT = {
 }
 
 
-# For logs.py and items.py
+# For LogsView and ItemsView
 DIRECTORY_PATTERN = re.compile(r"""
                                     <tr\sclass="(?P<odd_even>odd|even)">\n
                                         \s+<td>(?P<filename>.*?)</td>\n
@@ -69,7 +69,11 @@ DIRECTORY_KEYS = ['odd_even', 'filename', 'size', 'content_type', 'content_encod
 HREF_NAME_PATTERN = re.compile(r'href="(.+?)">(.+?)<')
 
 
-# For timer task
+# For JobsView
+jobs_table_map = {}
+
+
+# For Timer Tasks
 APSCHEDULER_DATABASE_URI = 'sqlite:///' + os.path.join(DATABASE_PATH, 'apscheduler.db')
 # http://flask-sqlalchemy.pocoo.org/2.3/binds/#binds
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATABASE_PATH, 'timer_tasks.db')

@@ -9,6 +9,7 @@ from six.moves.urllib.parse import urljoin
 
 from ...common import handle_metadata
 from ...models import create_jobs_table, db
+from ...vars import STRICT_NAME_PATTERN, jobs_table_map
 from ..myview import MyView
 
 
@@ -83,6 +84,7 @@ class JobsView(MyView):
         self.pending_jobs = []
         self.running_jobs = []
         self.finished_jobs = []
+        self.jobs_pagination = None
 
         self.Job = None  # database class Job
 
@@ -162,14 +164,15 @@ class JobsView(MyView):
                                 js['status_code'], js['status'], js.get('tip', ''))
 
     def create_table(self):
-        self.Job = self.metadata.get(self.node)
-        if self.Job:
+        self.Job = jobs_table_map.get(self.node, None)
+        if self.Job is not None:
             self.logger.debug("Got table: %s", self.Job.__tablename__)
         else:
-            self.Job = create_jobs_table(re.sub(r'[^A-Za-z0-9_]', '_', self.SCRAPYD_SERVER))
+            self.Job = create_jobs_table(re.sub(STRICT_NAME_PATTERN, '_', self.SCRAPYD_SERVER))
             # sqlite3.OperationalError: table "127_0_0_1_6800" already exists
             db.create_all(bind='jobs')
             self.metadata[self.node] = self.Job
+            jobs_table_map[self.node] = self.Job
             self.logger.debug("Created table: %s", self.Job.__tablename__)
 
     def handle_jobs_with_db(self):
@@ -297,11 +300,12 @@ class JobsView(MyView):
     def query_jobs(self):
         current_running_job_pids = [int(job['pid']) for job in self.jobs_backup if job['pid']]
         self.logger.debug("current_running_job_pids: %s", current_running_job_pids)
-        self.jobs = self.Job.query.filter_by(deleted=NOT_DELETED).order_by(
+        self.jobs_pagination = self.Job.query.filter_by(deleted=NOT_DELETED).order_by(
             self.Job.status.asc(), self.Job.finish.desc(), self.Job.start.asc(), self.Job.id.asc()).paginate(
             page=self.page, per_page=self.per_page, error_out=False)
         with db.session.no_autoflush:
-            for index, job in enumerate(self.jobs.items, (self.jobs.page - 1) * self.jobs.per_page + 1):
+            for index, job in enumerate(self.jobs_pagination.items,
+                                        (self.jobs_pagination.page - 1) * self.jobs_pagination.per_page + 1):
                 # print(vars(job))
                 job.index = index
                 job.pid = job.pid or ''
@@ -341,7 +345,7 @@ class JobsView(MyView):
                 job.url_delete = url_for('jobs.xhr', node=self.node, action='delete', id=job.id)
 
     def set_jobs_dict(self):
-        for job in self.jobs.items:  # paginate obj in query_jobs()
+        for job in self.jobs_pagination.items:  # Pagination obj in handle_jobs_with_db() > query_jobs()
             key = '%s/%s/%s' % (job.project, job.spider, job.job)
             value = dict((k, v) for (k, v) in job.__dict__.items() if not k.startswith('_'))
             for k, v in value.items():
@@ -402,7 +406,7 @@ class JobsView(MyView):
         if self.style == 'database':
             self.kwargs.update(dict(
                 url_jobs_classic=url_for('jobs', node=self.node, style='classic'),
-                jobs=self.jobs
+                jobs=self.jobs_pagination
             ))
             return
 
@@ -430,7 +434,7 @@ class JobsXhrView(MyView):
         self.id = self.view_args['id']  # <int:id>
 
         self.js = {}
-        self.Job = self.metadata[self.node]  # database class Job
+        self.Job = jobs_table_map[self.node]  # database class Job
 
     def dispatch_request(self, **kwargs):
         job = self.Job.query.get(self.id)
