@@ -188,7 +188,6 @@ class TasksView(MyView):
         with_job = all([task_result.fail_count + task_result.pass_count == 1 for task_result in task_results.items])
 
         with db.session.no_autoflush:
-            # for task_result in task_results.items:
             for index, task_result in enumerate(task_results.items,
                                                 (task_results.page - 1) * task_results.per_page + 1):
                 task_result.index = index
@@ -229,7 +228,6 @@ class TasksView(MyView):
         task_job_results = TaskJobResult.query.filter_by(task_result_id=self.task_result_id).order_by(
             TaskJobResult.node.asc()).paginate(page=self.page, per_page=self.per_page, error_out=False)
         with db.session.no_autoflush:
-            # for task_job_result in task_job_results.items:
             for index, task_job_result in enumerate(task_job_results.items,
                                                     (task_job_results.page - 1) * task_job_results.per_page + 1):
                 task_job_result.index = index
