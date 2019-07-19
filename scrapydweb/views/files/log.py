@@ -13,7 +13,7 @@ import time
 from flask import flash, render_template, request, url_for
 from logparser import parse
 
-from ...vars import CWD as root_dir
+from ...vars import ROOT_DIR
 from ..myview import MyView
 
 
@@ -446,7 +446,7 @@ class LogView(MyView):
 
                 args = [
                     sys.executable,
-                    os.path.join(root_dir, 'utils', 'send_email.py'),
+                    os.path.join(ROOT_DIR, 'utils', 'send_email.py'),
                     self.json_dumps(self.EMAIL_KWARGS, ensure_ascii=True)
                 ]
                 self.logger.info("Sending email: %s", self.EMAIL_KWARGS['subject'])

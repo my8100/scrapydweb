@@ -13,7 +13,7 @@ from ..common import json_dumps
 
 logger = logging.getLogger(__name__)
 
-CWD = os.path.dirname(os.path.abspath(__file__))
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 # https://stackoverflow.com/a/13256908/10517783
@@ -93,7 +93,7 @@ def init_poll(config):
 def start_poll(config):
     args = [
         sys.executable,
-        os.path.join(CWD, 'poll.py'),
+        os.path.join(CURRENT_DIR, 'poll.py'),
 
         config['URL_SCRAPYDWEB'],
         config.get('USERNAME', '') if config.get('ENABLE_AUTH', False) else '',

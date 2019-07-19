@@ -181,7 +181,7 @@ def test_parse_upload(app, client):
         location='/parse/uploaded/')
 
     req(app, client, view='parse.upload', kws=dict(node=1),
-        data={'file': (os.path.join(cst.CWD, 'data/%s' % cst.DEMO_LOG), cst.DEMO_LOG)},
+        data={'file': (os.path.join(cst.ROOT_DIR, 'data/%s' % cst.DEMO_LOG), cst.DEMO_LOG)},
         location='/parse/uploaded/')
 
 

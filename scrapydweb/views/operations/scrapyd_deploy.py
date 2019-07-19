@@ -49,7 +49,7 @@ def retry_on_eintr(func, *args, **kw):
 def _build_egg(scrapy_cfg_path):
     cwd = os.getcwd()
    # If get_config() raise an error without executing os.chdir(cwd), would cause subsequent test cases
-   # to raise TemplateNotFound when testing with Python 2 in Debian or macOS.
+   # to raise TemplateNotFound when testing in Python 2 on Debian or macOS.
    # Debug: add print(environment.list_templates()) in flask/templating.py _get_source_fast() would show []
     try:
         os.chdir(os.path.dirname(scrapy_cfg_path))
