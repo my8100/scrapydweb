@@ -6,10 +6,10 @@ import re
 from setuptools import find_packages, setup
 
 
-CWD = os.path.dirname(os.path.abspath(__file__))
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 about = {}
-with open(os.path.join(CWD, 'scrapydweb', '__version__.py')) as f:
+with open(os.path.join(CURRENT_DIR, 'scrapydweb', '__version__.py')) as f:
     exec(f.read(), about)
 
 with io.open("README.md", 'r', encoding='utf-8') as f:

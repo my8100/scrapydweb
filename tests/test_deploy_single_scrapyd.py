@@ -24,20 +24,20 @@ def test_auto_packaging_select_option(app, client):
     req_single_scrapyd(app, client, view='deploy', kws=dict(node=1), ins=ins, nos=nos)
 
     for project in [cst.PROJECT, 'demo']:
-        with io.open(os.path.join(cst.CWD, 'data/%s/test' % project), 'w', encoding='utf-8') as f:
+        with io.open(os.path.join(cst.ROOT_DIR, 'data/%s/test' % project), 'w', encoding='utf-8') as f:
             f.write(u'')
         ins = ['id="folder_selected" value="%s"' % project, 'id="folder_selected_statement">%s<' % project]
         req_single_scrapyd(app, client, view='deploy', kws=dict(node=1), ins=ins)
 
-    with io.open(os.path.join(cst.CWD, 'data/demo/test'), 'w', encoding='utf-8') as f:
+    with io.open(os.path.join(cst.ROOT_DIR, 'data/demo/test'), 'w', encoding='utf-8') as f:
         f.write(u'')
 
-    # SCRAPY_PROJECTS_DIR=os.path.join(cst.CWD, 'data'),
-    app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.CWD, 'not-exist')
+    # SCRAPY_PROJECTS_DIR=os.path.join(cst.ROOT_DIR, 'data'),
+    app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.ROOT_DIR, 'not-exist')
     req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
                        ins=['(0 projects)', '<h3>No projects found'])
 
-    app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.CWD, 'data', 'one_project_inside')
+    app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.ROOT_DIR, 'data', 'one_project_inside')
     req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
                        ins='(1 project)', nos='<h3>NO projects found')
 
