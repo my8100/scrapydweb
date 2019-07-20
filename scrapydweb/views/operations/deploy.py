@@ -464,4 +464,4 @@ class DeployXhrView(MyView):
             'egg': content
         }
         status_code, js = self.make_request(self.url, data=data, auth=self.AUTH)
-        return self.json_dumps(js)
+        return self.json_dumps(js, as_response=True)

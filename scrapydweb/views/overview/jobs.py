@@ -119,7 +119,7 @@ class JobsView(MyView):
                 raise
             finally:
                 get_flashed_messages()
-            return self.json_dumps(self.jobs_dict)
+            return self.json_dumps(self.jobs_dict, as_response=True)
         if self.style != 'database':
             self.jobs = self.jobs_backup
             self.handle_jobs_without_db()
@@ -454,4 +454,4 @@ class JobsXhrView(MyView):
             self.js['status'] = self.ERROR
             self.js['message'] = "job #%s not found in the database" % self.id
 
-        return self.json_dumps(self.js)
+        return self.json_dumps(self.js, as_response=True)
