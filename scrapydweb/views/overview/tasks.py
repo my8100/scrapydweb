@@ -275,7 +275,7 @@ class TasksXhrView(MyView):
             self.js.setdefault('status', self.OK)
         finally:
             self.logger.debug(self.js)
-            return self.json_dumps(self.js)
+            return self.json_dumps(self.js, as_response=True)
 
     def generate_response(self):
         if self.action in ['disable', 'enable']:  # ENABLE|DISABLE the scheduler

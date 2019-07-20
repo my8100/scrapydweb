@@ -27,7 +27,7 @@ class ApiView(MyView):
         self.update_data()
         self.get_result()
         self.handle_result()
-        return self.json_dumps(self.js, sort_keys=False)
+        return self.json_dumps(self.js, sort_keys=False, as_response=True)
 
     def update_url(self):
         if self.opt in ['listversions', 'listjobs']:

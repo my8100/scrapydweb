@@ -231,7 +231,7 @@ class ScheduleCheckView(MyView):
         cmd = re.sub(r'(curl -u\s+.*?:.*?)\s+(http://)', r'\1 \\\r\n\2', cmd)
         cmd = re.sub(r'\s+-d\s+', ' \\\r\n-d ', cmd)
         cmd = re.sub(r'\s+--data-urlencode\s+', ' \\\r\n--data-urlencode ', cmd)
-        return self.json_dumps({'filename': self.filename, 'cmd': cmd})
+        return self.json_dumps({'filename': self.filename, 'cmd': cmd}, as_response=True)
 
     def prepare_data(self):
         for k, d in [('project', 'projectname'), ('_version', self.DEFAULT_LATEST_VERSION),
@@ -611,7 +611,7 @@ class ScheduleXhrView(MyView):
                 self.data = pickle.loads(f.read())
 
         status_code, js = self.make_request(self.url, data=self.data, auth=self.AUTH)
-        return self.json_dumps(js)
+        return self.json_dumps(js, as_response=True)
 
 
 class ScheduleTaskView(MyView):
@@ -639,4 +639,4 @@ class ScheduleTaskView(MyView):
             self.data.update(json.loads(task.settings_arguments))
             status_code, js = self.make_request(self.url, data=self.data, auth=self.AUTH)
 
-        return self.json_dumps(js)
+        return self.json_dumps(js, as_response=True)

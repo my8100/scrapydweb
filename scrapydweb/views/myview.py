@@ -4,7 +4,7 @@ import os
 import re
 
 from flask import current_app as app
-from flask import flash, g, request, url_for
+from flask import Response, flash, g, request, url_for
 from flask.views import View
 from logparser import __version__ as LOGPARSER_VERSION
 from six import text_type
@@ -225,8 +225,17 @@ class MyView(View):
         return handle_slash(string)
 
     @staticmethod
-    def json_dumps(obj, sort_keys=True, indent=4, ensure_ascii=False):
-        return json_dumps(obj, sort_keys=sort_keys, indent=indent, ensure_ascii=ensure_ascii)
+    def json_dumps(obj, sort_keys=True, indent=4, ensure_ascii=False, as_response=False):
+        # flask.jsonify
+        # https://flask.palletsprojects.com/en/1.1.x/config/#JSONIFY_MIMETYPE
+        # https://stackoverflow.com/questions/11773348/python-flask-how-to-set-content-type
+        # https://stackoverflow.com/questions/9254891/what-does-content-type-application-json-charset-utf-8-really-mean
+        js = json_dumps(obj, sort_keys=sort_keys, indent=indent, ensure_ascii=ensure_ascii)
+        if as_response:
+            # Content-Type: application/json
+            return Response(js, mimetype='application/json')
+        else:
+            return js
 
     @staticmethod
     def remove_microsecond(dt):
@@ -378,4 +387,4 @@ class MetadataView(MyView):
         super(MetadataView, self).__init__()
 
     def dispatch_request(self, **kwargs):
-        return self.json_dumps(handle_metadata())
+        return self.json_dumps(handle_metadata(), as_response=True)
