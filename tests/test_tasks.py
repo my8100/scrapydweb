@@ -303,7 +303,7 @@ def test_execute_task_exception(app, client):
     # in the task results page: url_action: '/1/tasks/xhr/delete/5/10/',
     task_result_id = int(re.search(r'%s(\d+)/' % url_delete, text).group(1))
     print("task_result_id: %s" % task_result_id)
-    # In myview.py: assert 0 < self.node <= self.SCRAPYD_SERVERS_AMOUNT
+    # In baseview.py: assert 0 < self.node <= self.SCRAPYD_SERVERS_AMOUNT
     # Note that AssertionError would be raise directly in test, whereas internal_server_error() would return 500.html
     # instead when the app is actually running, getting '500 error node index error: 2, which should be between 1 and 1'
     req(app, client, view='tasks', kws=dict(node=1, task_id=task_id, task_result_id=task_result_id),

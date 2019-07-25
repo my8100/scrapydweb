@@ -9,7 +9,7 @@ from flask import Blueprint, flash, render_template, request, send_file, url_for
 from ...common import handle_metadata
 from ...models import Task, TaskResult, TaskJobResult, db
 from ...vars import SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING, TIMER_TASKS_HISTORY_LOG
-from ..myview import MyView
+from ..baseview import BaseView
 
 
 apscheduler_logger = logging.getLogger('apscheduler')
@@ -26,7 +26,7 @@ def history():
 # https://apscheduler.readthedocs.io/en/latest/userguide.html
 # https://apscheduler.readthedocs.io/en/latest/modules/schedulers/base.html#module-apscheduler.schedulers.base
 # https://apscheduler.readthedocs.io/en/latest/modules/job.html#apscheduler.job.Job
-class TasksView(MyView):
+class TasksView(BaseView):
     metadata = metadata
 
     def __init__(self):
@@ -250,7 +250,7 @@ class TasksView(MyView):
         )
 
 
-class TasksXhrView(MyView):
+class TasksXhrView(BaseView):
 
     def __init__(self):
         super(TasksXhrView, self).__init__()

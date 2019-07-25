@@ -1,10 +1,10 @@
 # coding: utf-8
 from flask import redirect, url_for
 
-from .myview import MyView
+from .baseview import BaseView
 
 
-class IndexView(MyView):
+class IndexView(BaseView):
 
     def __init__(self):
         super(IndexView, self).__init__()
