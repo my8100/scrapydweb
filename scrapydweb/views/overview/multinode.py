@@ -1,10 +1,10 @@
 # coding: utf-8
 from flask import render_template, url_for
 
-from ..myview import MyView
+from ..baseview import BaseView
 
 
-class MultinodeView(MyView):
+class MultinodeView(BaseView):
     methods = ['POST']
 
     def __init__(self):

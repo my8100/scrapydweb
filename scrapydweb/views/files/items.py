@@ -5,10 +5,10 @@ import re
 from flask import render_template, url_for
 
 from ...vars import DIRECTORY_KEYS, DIRECTORY_PATTERN, HREF_NAME_PATTERN
-from ..myview import MyView
+from ..baseview import BaseView
 
 
-class ItemsView(MyView):
+class ItemsView(BaseView):
     methods = ['GET']
 
     def __init__(self):

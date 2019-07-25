@@ -8,7 +8,7 @@ from logparser import parse
 from werkzeug.utils import secure_filename
 
 from ...vars import PARSE_PATH
-from ..myview import MyView
+from ..baseview import BaseView
 
 
 ALLOWED_EXTENSIONS = {'log', 'txt'}
@@ -20,7 +20,7 @@ def source(filename):
     return send_from_directory(PARSE_PATH, filename, mimetype='text/plain', cache_timeout=0)
 
 
-class UploadLogView(MyView):
+class UploadLogView(BaseView):
 
     def __init__(self):
         super(UploadLogView, self).__init__()
@@ -54,7 +54,7 @@ class UploadLogView(MyView):
             return render_template(self.template, node=self.node, url_parse_demo=url_parse_demo)
 
 
-class UploadedLogView(MyView):
+class UploadedLogView(BaseView):
 
     def __init__(self):
         super(UploadedLogView, self).__init__()

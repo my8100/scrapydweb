@@ -14,7 +14,7 @@ from flask import flash, render_template, request, url_for
 from logparser import parse
 
 from ...vars import ROOT_DIR
-from ..myview import MyView
+from ..baseview import BaseView
 
 
 EMAIL_CONTENT_KEYS = [
@@ -35,7 +35,7 @@ job_finished_set = set()
 
 # http://flask.pocoo.org/docs/1.0/api/#flask.views.View
 # http://flask.pocoo.org/docs/1.0/views/
-class LogView(MyView):
+class LogView(BaseView):
     job_data_dict = job_data_dict
     job_finished_set = job_finished_set
 

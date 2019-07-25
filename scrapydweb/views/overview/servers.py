@@ -2,13 +2,13 @@
 from flask import flash, render_template, url_for
 
 from ...common import handle_metadata
-from ..myview import MyView
+from ..baseview import BaseView
 
 
 metadata = dict(pageview=handle_metadata().get('pageview', 1))
 
 
-class ServersView(MyView):
+class ServersView(BaseView):
     metadata = metadata
 
     def __init__(self):

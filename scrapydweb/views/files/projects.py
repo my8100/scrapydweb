@@ -4,10 +4,10 @@ import json
 
 from flask import render_template, request, url_for
 
-from ..myview import MyView
+from ..baseview import BaseView
 
 
-class ProjectsView(MyView):
+class ProjectsView(BaseView):
 
     def __init__(self):
         super(ProjectsView, self).__init__()

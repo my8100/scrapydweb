@@ -18,7 +18,7 @@ from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, DEPLOY_P
 from ..utils.scheduler import scheduler
 
 
-class MyView(View):
+class BaseView(View):
     SCRAPYDWEB_VERSION = SCRAPYDWEB_VERSION
     LOGPARSER_VERSION = LOGPARSER_VERSION
 
@@ -381,7 +381,7 @@ class MyView(View):
             yield top, dirs, nondirs
 
 
-class MetadataView(MyView):
+class MetadataView(BaseView):
 
     def __init__(self):
         super(MetadataView, self).__init__()

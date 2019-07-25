@@ -10,7 +10,7 @@ from six.moves.urllib.parse import urljoin
 from ...common import handle_metadata
 from ...models import create_jobs_table, db
 from ...vars import STRICT_NAME_PATTERN, jobs_table_map
-from ..myview import MyView
+from ..baseview import BaseView
 
 
 _metadata = handle_metadata()
@@ -44,7 +44,7 @@ JOB_PATTERN = re.compile(r"""
 JOB_KEYS = ['project', 'spider', 'job', 'pid', 'start', 'runtime', 'finish', 'href_log', 'href_items']
 
 
-class JobsView(MyView):
+class JobsView(BaseView):
     # methods = ['GET']
     metadata = metadata
 
@@ -424,7 +424,7 @@ class JobsView(MyView):
         ))
 
 
-class JobsXhrView(MyView):
+class JobsXhrView(BaseView):
     metadata = metadata
 
     def __init__(self):

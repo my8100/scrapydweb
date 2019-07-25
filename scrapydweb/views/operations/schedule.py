@@ -14,7 +14,7 @@ from flask import Blueprint, redirect, render_template, request, send_file, url_
 
 from ...models import Task, db
 from ...vars import RUN_SPIDER_HISTORY_LOG, UA_DICT
-from ..myview import MyView
+from ..baseview import BaseView
 from .execute_task import execute_task
 from .utils import slot
 
@@ -50,7 +50,7 @@ def history():
     return send_file(RUN_SPIDER_HISTORY_LOG, mimetype='text/plain', cache_timeout=0)
 
 
-class ScheduleView(MyView):
+class ScheduleView(BaseView):
 
     def __init__(self):
         super(ScheduleView, self).__init__()
@@ -209,7 +209,7 @@ class ScheduleView(MyView):
         self.kwargs.setdefault('max_instances', 1)
 
 
-class ScheduleCheckView(MyView):
+class ScheduleCheckView(BaseView):
 
     def __init__(self):
         super(ScheduleCheckView, self).__init__()
@@ -328,7 +328,7 @@ class ScheduleCheckView(MyView):
         )
 
 
-class ScheduleRunView(MyView):
+class ScheduleRunView(BaseView):
 
     def __init__(self):
         super(ScheduleRunView, self).__init__()
@@ -592,7 +592,7 @@ class ScheduleRunView(MyView):
                                    alert=alert, text=self.json_dumps(self.js), message=message)
 
 
-class ScheduleXhrView(MyView):
+class ScheduleXhrView(BaseView):
 
     def __init__(self):
         super(ScheduleXhrView, self).__init__()
@@ -614,7 +614,7 @@ class ScheduleXhrView(MyView):
         return self.json_dumps(js, as_response=True)
 
 
-class ScheduleTaskView(MyView):
+class ScheduleTaskView(BaseView):
 
     def __init__(self):
         super(ScheduleTaskView, self).__init__()

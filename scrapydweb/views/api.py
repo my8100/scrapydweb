@@ -2,13 +2,13 @@
 import re
 import time
 
-from .myview import MyView
+from .baseview import BaseView
 
 
 API_MAP = dict(start='schedule', stop='cancel', forcestop='cancel', liststats='logs/stats')
 
 
-class ApiView(MyView):
+class ApiView(BaseView):
 
     def __init__(self):
         super(ApiView, self).__init__()

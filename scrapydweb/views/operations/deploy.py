@@ -18,7 +18,7 @@ from six.moves.configparser import Error as ScrapyCfgParseError
 from werkzeug.utils import secure_filename
 
 from ...vars import PY2
-from ..myview import MyView
+from ..baseview import BaseView
 from .scrapyd_deploy import _build_egg, get_config
 from .utils import mkdir_p, slot
 
@@ -35,7 +35,7 @@ project = projectname
 folder_project_dict = {}
 
 
-class DeployView(MyView):
+class DeployView(BaseView):
 
     def __init__(self):
         super(DeployView, self).__init__()
@@ -175,7 +175,7 @@ class DeployView(MyView):
         self.logger.info('folder_project_dict length: %s', len(folder_project_dict))
 
 
-class DeployUploadView(MyView):
+class DeployUploadView(BaseView):
     methods = ['POST']
 
     def __init__(self):
@@ -437,7 +437,7 @@ class DeployUploadView(MyView):
         self.slot.add_egg(self.eggname, content)
 
 
-class DeployXhrView(MyView):
+class DeployXhrView(BaseView):
 
     def __init__(self):
         super(DeployXhrView, self).__init__()

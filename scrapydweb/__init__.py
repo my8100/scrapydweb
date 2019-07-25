@@ -159,7 +159,7 @@ def handle_route(app):
         ('api/<opt>', dict(project=None, version_spider_job=None))
     ])
 
-    from .views.myview import MetadataView
+    from .views.baseview import MetadataView
     register_view(MetadataView, 'metadata', [('metadata', None)])
 
     # Overview

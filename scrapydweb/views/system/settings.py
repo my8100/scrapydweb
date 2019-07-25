@@ -7,10 +7,10 @@ from logparser import SETTINGS_PY_PATH as LOGPARSER_SETTINGS_PY_PATH
 
 from ...common import json_dumps
 from ...vars import SCHEDULER_STATE_DICT
-from ..myview import MyView
+from ..baseview import BaseView
 
 
-class SettingsView(MyView):
+class SettingsView(BaseView):
     methods = ['GET']
 
     def __init__(self):
