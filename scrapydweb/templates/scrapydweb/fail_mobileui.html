@@ -9,21 +9,21 @@
 
 {% block body %}
 <div style="margin: 0 12px;">
-    {% if url %}
-    <h3 style="word-break: break-all;"><a class="link" target="_blank" href="{{ url }}">{{ url }}</a></h3>
-    {% endif %}
+  {% if url %}
+  <h3 style="word-break: break-all;"><a class="link" target="_blank" href="{{ url }}">{{ url }}</a></h3>
+  {% endif %}
 
-    {% if status_code %}
-    <h3>status_code: {{ status_code }}</h3>
-    {% endif %}
+  {% if status_code %}
+  <h3>status_code: {{ status_code }}</h3>
+  {% endif %}
 
-    <pre>
-    {{ text }}
-    {{ message }}
-    </pre>
+  <pre>
+  {{ text }}
+  {{ message }}
+  </pre>
 
-    {% if url %}
-    <!-- <iframe src="{{ url }}" style="width: 100%; height: 100%;">{{ url }}</iframe> -->
-    {% endif %}
+  {% if url %}
+  <!-- <iframe src="{{ url }}" style="width: 100%; height: 100%;">{{ url }}</iframe> -->
+  {% endif %}
 </div>
 {% endblock %}

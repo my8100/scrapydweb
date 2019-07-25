@@ -3,10 +3,10 @@
 {% block title %}log{% endblock %}
 
 {% block head %}
-    <link rel="stylesheet" type="text/css" href="{{ static_css_utf8_mobileui }}">
-    <style>
-        h3 {word-break: break-all;}
-    </style>
+  <link rel="stylesheet" type="text/css" href="{{ static_css_utf8_mobileui }}">
+  <style>
+    h3 {word-break: break-all;}
+  </style>
 {% endblock %}
 
 {% block loader %}
@@ -22,12 +22,12 @@
 
 {% block body %}
 <div class="go-top">
-    <div class="arrow"></div>
-    <div class="stick"></div>
+  <div class="arrow"></div>
+  <div class="stick"></div>
 </div>
 <div class="go-bottom">
-    <div class="arrow"></div>
-    <div class="stick"></div>
+  <div class="arrow"></div>
+  <div class="stick"></div>
 </div>
 
 
@@ -48,21 +48,21 @@ Press to refresh
 
 <script>
 $(function() {
-    //$(window).scroll(function() {
-    $(document).ready(function() {
-        hideLoader();
+  //$(window).scroll(function() {
+  $(document).ready(function() {
+    hideLoader();
 
-        $('div.go-top').show();
-        $('div.go-bottom').show();
-        goLogBottom();
-    });
+    $('div.go-top').show();
+    $('div.go-bottom').show();
+    goLogBottom();
+  });
 
-    $('div.go-top').click(function() {
-        goContentTop();
-    });
-    $('div.go-bottom').click(function() {
-        goLogBottom();
-    });
+  $('div.go-top').click(function() {
+    goContentTop();
+  });
+  $('div.go-bottom').click(function() {
+    goLogBottom();
+  });
 });
 </script>
 
@@ -72,9 +72,9 @@ const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
 
 {% if url_refresh %}
 setInterval(function() {
-    var now_timestamp = Date.now() / 1000;
-    var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
-    my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> secs ago, press to reload (SLOW)";
+  var now_timestamp = Date.now() / 1000;
+  var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+  my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> secs ago, press to reload (SLOW)";
 }, 1000);
 {% endif %}
 </script>
