@@ -54,9 +54,11 @@
     <el-table-column prop="size" label="Size" sortable align="center" width="100" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
 
     {% if project and spider %}
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="160">
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}160{% else %}80{% endif %}">
       <template slot-scope="scope">
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="state multinode" :href="scope.row.url_clusterreports" target="_blank">multinode</a>
+        {% endif %}
         <a class="state normal" :href="scope.row.url_stats" target="_blank">Stats</a>
       </template>
     </el-table-column>
