@@ -289,7 +289,7 @@ def test_check_task_job_results(app, client):
 def test_check_task_not_exist(app, client):
     # edit_task
     req_single_scrapyd(app, client, view='schedule', kws=dict(node=NODE, task_id=cst.BIGINT),
-                       ins=["fail - ScrapydWeb", "Task #%s not found" % cst.BIGINT])
+                       ins=["fail · ScrapydWeb", "Task #%s not found" % cst.BIGINT])
 
     # dump
     req_single_scrapyd(app, client, view='tasks.xhr', kws=dict(node=NODE, action='dump', task_id=cst.BIGINT),
@@ -302,11 +302,11 @@ def test_check_task_not_exist(app, client):
 
     # task_results
     req_single_scrapyd(app, client, view='tasks', kws=dict(node=NODE, task_id=cst.BIGINT),
-                       ins=["fail - ScrapydWeb", "Task #%s not found" % cst.BIGINT])
+                       ins=["fail · ScrapydWeb", "Task #%s not found" % cst.BIGINT])
 
     # task_job_results
     req_single_scrapyd(app, client, view='tasks', kws=dict(node=NODE, task_id=cst.BIGINT, task_result_id=1),
-                       ins=["fail - ScrapydWeb", "Task #%s not found" % cst.BIGINT])
+                       ins=["fail · ScrapydWeb", "Task #%s not found" % cst.BIGINT])
 
 
 # TasksXhrView fire|pause|resume|remove|delete
@@ -516,7 +516,7 @@ def test_edit_to_update_a_task_fail(app, client):
                        jskws=dict(cmd="-d _version=%s" % cst.VERSION, filename=FILENAME))
     text, __ = req_single_scrapyd(app, client, view='schedule.run', kws=dict(node=NODE),
                                   data=dict(filename=FILENAME),
-                                  ins=[second, "re-edit task #%s" % task_id, "fail - ScrapydWeb"])
+                                  ins=[second, "re-edit task #%s" % task_id, "fail · ScrapydWeb"])
     # re-edit task #1
     task_id_ = re.search(r're-edit task #(\d+)', text).group(1)
     assert int(task_id_) == task_id
@@ -582,7 +582,7 @@ def test_edit_to_new_a_task_fail(app, client):
                        jskws=dict(cmd="-d _version=%s" % cst.VERSION, filename=FILENAME))
     text, __ = req_single_scrapyd(app, client, view='schedule.run', kws=dict(node=NODE),
                                   data=dict(filename=FILENAME),
-                                  ins=[day_of_week, second, "re-edit task #", "fail - ScrapydWeb"])
+                                  ins=[day_of_week, second, "re-edit task #", "fail · ScrapydWeb"])
     # re-edit task #2
     new_task_id = int(re.search(r're-edit task #(\d+)', text).group(1))
     print("new_task_id: %s" % new_task_id)
@@ -624,7 +624,7 @@ def test_task_xhr_delete_a_task(app, client):
 
     req_single_scrapyd(app, client, view='tasks', kws=dict(node=NODE), nos=metadata['url_task_results'])
     req_single_scrapyd(app, client, view='tasks', kws=dict(node=NODE, task_id=task_id),
-                       ins=["fail - ScrapydWeb", "Task #%s not found" % task_id])
+                       ins=["fail · ScrapydWeb", "Task #%s not found" % task_id])
     # delete a task which is not exist
     req_single_scrapyd(app, client, view='tasks.xhr', kws=dict(node=NODE, action='delete', task_id=task_id),
                        jskws=dict(status=cst.ERROR, message="Task #%s not found" % task_id))
@@ -636,7 +636,7 @@ def test_add_task_fail(app, client):
     data_dv.update(second='10/*')
     req_single_scrapyd(app, client, view='schedule.check', kws=dict(node=NODE), data=data_dv,
                        jskws=dict(filename=FILENAME_DV))
-    ins = ["Unrecognized expression", "10/*", "re-edit task #", "kwargs for", "task_data for", "fail - ScrapydWeb"]
+    ins = ["Unrecognized expression", "10/*", "re-edit task #", "kwargs for", "task_data for", "fail · ScrapydWeb"]
     text, __ = req_single_scrapyd(app, client, view='schedule.run', kws=dict(node=NODE),
                                   data=dict(filename=FILENAME_DV),
                                   ins=ins)

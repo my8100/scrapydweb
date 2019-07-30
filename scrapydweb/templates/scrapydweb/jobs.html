@@ -66,14 +66,14 @@
 
     <el-table-column prop="index" label="Index" fixed sortable align="center" width="100"></el-table-column>
     <!-- 'abcdefghi0abcdefghi0' -->
-    <el-table-column prop="project" label="Project" fixed sortable align="center" width="160">
+    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="160">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.project}}</span></template>
     </el-table-column>
-    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="160">
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="160">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
     </el-table-column>
     <!-- 'task_123456_2019-01-01T00_00_01' -->
-    <el-table-column prop="job" label="Job" fixed sortable :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="250">
+    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="250">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.job}}</span></template>
     </el-table-column>
     <el-table-column prop="pages" label="Pages" fixed sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="100">
@@ -83,14 +83,21 @@
       <template slot-scope="scope"><span :class="scope.row.items_class">{{scope.row.items}}</span></template>
     </el-table-column>
 
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="80" :sort-method="sortByIndex">
-      <template slot-scope="scope"><a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_stats" target="_blank">Stats</a></template>
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}160{% else %}80{% endif %}" :sort-method="sortByIndex">
+      <template slot-scope="scope">
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        <a class="state multinode" :style="{ display: scope.row.pending_display }" :href="scope.row.url_clusterreports">multinode</a>
+        {% endif %}
+        <a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_stats" target="_blank">Stats</a>
+      </template>
     </el-table-column>
 
-    <el-table-column prop="action" label="Action" sortable align="center" width="170" :sort-method="sortByIndex">
+    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}170{% else %}150{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
         <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}} manually</span>
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="state multinode" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">multinode</a>
+        {% endif %}
         <a :class="scope.row.action_class" :style="{ display: scope.row.display_action }" @click="handleActionClick(scope.row.url_action)">{{scope.row.action}}</a>
       </template>
     </el-table-column>
@@ -180,6 +187,7 @@ var Main = {
 
         stats_class: {% if job.finish %}'state normal'{% else %}'state safe'{% endif %},
         url_stats: '{{ job.url_stats }}',
+        url_clusterreports: '{{ job.url_clusterreports }}',
         url_utf8: '{{ job.url_utf8 }}',
         url_source: '{{ job.url_source }}',
         url_items: '{{ job.url_items }}',
@@ -265,29 +273,9 @@ var Main = {
         return a.start > b.start ? 1 : -1;
       }
     },
-    calcRuntime(runtime) {
-      // 1 day, 0:25:11    0:01:08
-      if (!runtime) {
-        return 0;
-      }
-      var day_re = runtime.match(/(\d+) day/);
-      if (day_re) {
-        var day_s = day_re[1];
-      } else {
-        var day_s = '';
-      }
-      var time_re = runtime.match(/(\d+):(\d+):(\d+)/);
-      var hour_s = time_re[1];
-      var minute_s = time_re[2];
-      var second_s = time_re[3];
-      if (hour_s.length == 1) {
-        hour_s = '0' + hour_s;
-      }
-      return parseInt(day_s + hour_s + minute_s + second_s);
-    },
-    sortRuntime(a, b) {
-      return this.calcRuntime(a.runtime) > this.calcRuntime(b.runtime) ? 1 : -1;
-    },
+
+{% include 'scrapydweb/include_methods_sortruntime.html' %}
+
     sortPID(a, b) {
       return (parseInt(a.pid) || 0) > (parseInt(b.pid) || 0) ? 1 : -1;
     },
@@ -328,7 +316,7 @@ var Main = {
                     vm.tableData[idx]['items_class'] = items == 0 ? 'count_warn' : 'count_info';
                   }
 
-                  console.log(vm.tableData[idx]['job'], vm.tableData[idx]['pages'], vm.tableData[idx]['items'])
+                  // console.log(vm.tableData[idx]['job'], vm.tableData[idx]['pages'], vm.tableData[idx]['items'])
                 } catch(err) {
                   // console.log(err);
                   console.log("stats for jobid " + vm.tableData[idx]['job'] + " not found" );

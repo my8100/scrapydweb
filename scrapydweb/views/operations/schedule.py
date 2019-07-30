@@ -573,8 +573,8 @@ class ScheduleRunView(BaseView):
                                         spider=self.data['spider'], job=self.data['jobid'])
                                 for node in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)],
                 url_xhr=url_for('schedule.xhr', node=self.node, filename=self.filename),
-                url_servers=url_for('servers', node=self.node, opt='liststats', project=self.data['project'],
-                                    version_job=self.js['jobid'])
+                url_servers=url_for('servers', node=self.node, opt='getreports', project=self.data['project'],
+                                    spider=self.data['spider'], version_job=self.data['jobid'])
             )
             return render_template(self.template, **kwargs)
         else:

@@ -6,6 +6,7 @@ import os
 from flask import url_for
 
 from scrapydweb.utils.check_app_config import check_app_config
+from scrapydweb.views.files.log import REPORT_KEYS_SET
 from tests.utils import cst, req, replace_file_content, sleep
 
 
@@ -112,6 +113,15 @@ def test_stats_with_file_deleted(app, client):
     # LogParser v0.8.1, last updated at xxx, http://127.0.0.1:6800/logs/ScrapydWeb_demo/test/ScrapydWeb_demo.json
     req(app, client, view='log', kws=kws, ins=["LogParser v%s, last updated at" % cst.LOGPARSER_VERSION, tab],
         nos="Using local stats:")
+    # Get report
+    kws_ = dict(kws)
+    kws_['opt'] = 'report'
+    jskeys = list(REPORT_KEYS_SET)
+    req(app, client, view='log', kws=kws_, jskws=dict(status=cst.OK, from_memory=False), jskeys=jskeys)
+    req(app, client, view='log', kws=kws_, jskws=dict(status=cst.OK, from_memory=True), jskeys=jskeys)
+    kws_['project'] = cst.FAKE_PROJECT
+    req(app, client, view='log', kws=kws_, jskws=dict(status=cst.ERROR))
+
     app.config['LOCAL_SCRAPYD_SERVER'] = app.config['SCRAPYD_SERVERS'][0]
 
     # Mismatching logparser_version in ScrapydWeb_demo.json in logs
@@ -137,7 +147,7 @@ def test_stats_with_file_deleted(app, client):
     rename(app.config['DEMO_LOG_PATH'])
     kws = dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=cst.DEMO_JOBID)
     req(app, client, view='log', kws=kws,
-        ins=["fail - ScrapydWeb", "404 - No Such Resource", "Fail to request logfile", "with extensions"])
+        ins=["fail · ScrapydWeb", "404 - No Such Resource", "Fail to request logfile", "with extensions"])
 
     kws = dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.DEMO_JOBID)
     req(app, client, view='log', kws=kws, ins=["Using backup stats: LogParser v%s" % cst.LOGPARSER_VERSION, tab])
@@ -145,7 +155,7 @@ def test_stats_with_file_deleted(app, client):
     # Mismatching logparser_version in ScrapydWeb_demo.json in data/stats
     replace_file_content(app.config['BACKUP_DEMO_JSON_PATH'], old, new)
     req(app, client, view='log', kws=kws,
-        ins=["fail - ScrapydWeb", "404 - No Such Resource", "Fail to request logfile", "with extensions",
+        ins=["fail · ScrapydWeb", "404 - No Such Resource", "Fail to request logfile", "with extensions",
              "Mismatching logparser_version 0.0.0 in backup stats"])
     replace_file_content(app.config['BACKUP_DEMO_JSON_PATH'], new, old)
 
@@ -153,7 +163,7 @@ def test_stats_with_file_deleted(app, client):
     rename(app.config['BACKUP_DEMO_JSON_PATH'])
     kws = dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.DEMO_JOBID)
     req(app, client, view='log', kws=kws,
-        ins=["fail - ScrapydWeb", "404 - No Such Resource", "Fail to request logfile", "with extensions"])
+        ins=["fail · ScrapydWeb", "404 - No Such Resource", "Fail to request logfile", "with extensions"])
 
     for filepath in ['DEMO_JSON_PATH', 'DEMO_LOG_PATH', 'BACKUP_DEMO_JSON_PATH']:
         rename(app.config[filepath], restore=True)

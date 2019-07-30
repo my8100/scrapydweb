@@ -56,6 +56,8 @@ class ServersView(BaseView):
             FEATURES=self.FEATURES,
             DEFAULT_LATEST_VERSION=self.DEFAULT_LATEST_VERSION,
             url_daemonstatus=url_for('api', node=self.node, opt='daemonstatus'),
+            url_getreports=url_for('clusterreports', node=self.node, project='PROJECT_PLACEHOLDER',
+                                   spider='SPIDER_PLACEHOLDER', job='JOB_PLACEHOLDER'),
             url_liststats=url_for('api', node=self.node, opt='liststats', project='PROJECT_PLACEHOLDER',
                                   version_spider_job='JOB_PLACEHOLDER'),
             url_listprojects=url_for('api', node=self.node, opt='listprojects'),

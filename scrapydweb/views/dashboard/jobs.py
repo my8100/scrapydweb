@@ -76,6 +76,8 @@ class JobsView(BaseView):
         else:  # 'database'
             self.template = 'scrapydweb/jobs.html'
 
+        self.listjobs = request.args.get('listjobs', None)
+
         self.liststats_datas = {}
         self.jobs_dict = {}
 
@@ -103,6 +105,9 @@ class JobsView(BaseView):
         self.text = re.sub(r'<thead>.*?</thead>', '', self.text, flags=re.S)
         self.jobs = [dict(zip(JOB_KEYS, job)) for job in re.findall(JOB_PATTERN, self.text)]
         self.jobs_backup = list(self.jobs)
+
+        if self.listjobs:
+            return self.json_dumps(self.jobs, as_response=True)
 
         if self.POST:  # To update self.liststats_datas
             self.get_liststats_datas()
@@ -336,6 +341,8 @@ class JobsView(BaseView):
                                        spider=job.spider, job=job.job, job_finished=job_finished)
                 job.url_stats = url_for('log', node=self.node, opt='stats', project=job.project, ui=self.UI,
                                         spider=job.spider, job=job.job, job_finished=job_finished)
+                job.url_clusterreports = url_for('clusterreports', node=self.node, project=job.project,
+                                                 spider=job.spider, job=job.job)
                 # '/items/demo/test/2018-10-12_205507.log'
                 job.url_source = urljoin(self.url, job.href_log)
                 if job.href_items:
@@ -376,6 +383,8 @@ class JobsView(BaseView):
                                           spider=job['spider'], job=job['job'], job_finished=job_finished)
                 job['url_stats'] = url_for('log', node=self.node, opt='stats', project=job['project'], ui=self.UI,
                                            spider=job['spider'], job=job['job'], job_finished=job_finished)
+                job['url_clusterreports'] = url_for('clusterreports', node=self.node, project=job['project'],
+                                             spider=job['spider'], job=job['job'])
                 # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
                 m = re.search(HREF_PATTERN, job['href_items'])
                 if m:

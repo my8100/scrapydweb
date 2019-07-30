@@ -49,12 +49,12 @@ def test_run(app, client):
     node = 1
 
     req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data,
-        ins=['run results - ScrapydWeb', 'id="checkbox_1"', 'id="checkbox_2"', 'onclick="passToServers();"'])
+        ins=['run results · ScrapydWeb', 'id="checkbox_1"', 'id="checkbox_2"', 'onclick="passToServers();"'])
 
     # test handle_unique_constraint() in jobs.py
     sleep()
     req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data_single_scrapyd,
-        ins=['run results - ScrapydWeb', 'id="checkbox_1"', 'onclick="passToServers();"'], nos='id="checkbox_2"')
+        ins=['run results · ScrapydWeb', 'id="checkbox_1"', 'onclick="passToServers();"'], nos='id="checkbox_2"')
     keep_text = ''
     for times in [1, 2]:
         __, js = req(app, client, view='api', kws=dict(node=node, opt='listjobs', project=cst.PROJECT))
@@ -140,7 +140,7 @@ def test_telnet_in_stats(app, client):
     telnet_ins = [">Crawler.stats</li>", "<td>datetime.datetime(",
                   ">Crawler.engine</li>", "<th>engine.has_capacity()</th>", "<td>telnet</td>"]
     telnet_nos = ["CRITICAL: Unhandled Error", "telnet.OptionRefused"]
-    req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results - ScrapydWeb")
+    req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results · ScrapydWeb")
 
     kws = dict(node=node, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.JOBID)
     for i in range(1, 10):
@@ -171,12 +171,12 @@ def test_telnet_in_stats(app, client):
 def test_pending_jobs(app, client):
     node = 1
     for i in range(2):
-        req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results - ScrapydWeb")
+        req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results · ScrapydWeb")
     req(app, client, view='jobs', kws=dict(node=node, style='database'),
         ins="Vue.extend(Main)", nos='class="table wrap"')
     sleep()
     for i in range(2):
-        req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results - ScrapydWeb")
+        req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results · ScrapydWeb")
     req(app, client, view='jobs', kws=dict(node=node, style='database'),
         ins="Vue.extend(Main)", nos='class="table wrap"')
     sleep()

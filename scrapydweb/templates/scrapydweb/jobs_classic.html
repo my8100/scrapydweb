@@ -57,7 +57,7 @@
         <td>{{ job['job'] }}</td>
         <td id="pending_cancel_{{ loop.index }}">
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_multinode_stop'] }}">multinode</a>
           {% endif %}
           <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='pending_cancel_{{ loop.index }}');">Cancel</a>
         </td>
@@ -107,14 +107,19 @@
         <td>{{ job['runtime'] }}</td>
         <td id="running{{ loop.index }}pages">N/A</td>
         <td id="running{{ loop.index }}items">N/A</td>
-        <td><a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a></td>
+        <td>
+          {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+          <a class="state multinode" href="{{ job['url_clusterreports'] }}">multinode</a>
+          {% endif %}
+          <a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a>
+        </td>
         <td><a class="state normal" target="_blank" href="{{ job['url_utf8'] }}">Log</a></td>
         {% if SHOW_SCRAPYD_ITEMS and job['url_items'] %}
         <td><a class="state normal" target="_blank" href="{{ job['url_items'] }}">Items</a></td>
         {% endif %}
         <td id="running_stop_{{ loop.index }}">
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" style="margin-right: 5px;" href="{{ job['url_multinode_stop'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_multinode_stop'] }}">multinode</a>
           {% endif %}
           <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='running_stop_{{ loop.index }}');">Stop</a>
         </td>
@@ -167,14 +172,19 @@
         <td>{{ job['finish'] }}</td>
         <td id="finished{{ loop.index }}pages">N/A</td>
         <td id="finished{{ loop.index }}items">N/A</td>
-        <td><a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a></td>
+        <td>
+          {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+          <a class="state multinode" href="{{ job['url_clusterreports'] }}">multinode</a>
+          {% endif %}
+          <a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a>
+        </td>
         <td><a class="state normal" target="_blank" href="{{ job['url_utf8'] }}">Log</a></td>
         {% if SHOW_SCRAPYD_ITEMS and job['url_items'] %}
         <td><a class="state normal" target="_blank" href="{{ job['url_items'] }}">Items</a></td>
         {% endif %}
         <td>
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" style="margin-right: 5px;" href="{{ job['url_multinode_run'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_multinode_run'] }}">multinode</a>
           {% endif %}
           <a class="state safe" href="{{ job['url_schedule'] }}">Start</a>
         </td>

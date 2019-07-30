@@ -80,3 +80,10 @@ def test_switch_node_skip(app, client):
         ins=['1 / 2', 'onclick="switchNode(1);', 'id="skip_nodes_checkbox"'])
     req(app, client, view='servers', kws=dict(node=2),
         ins=['2 / 2', 'onclick="switchNode(-1);', 'id="skip_nodes_checkbox"'])
+
+
+# <span>Cluster Reports</span>
+# <el-tab-pane label="Get Reports" name="getreports">
+def test_cluster_reports_exists(app, client):
+    ins = ['<span>Cluster Reports</span>', '<el-tab-pane label="Get Reports"']
+    req(app, client, view='servers', kws=dict(node=1), ins=ins)
