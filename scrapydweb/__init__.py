@@ -163,12 +163,9 @@ def handle_route(app):
     register_view(MetadataView, 'metadata', [('metadata', None)])
 
     # Overview
-    from .views.overview.jobs import JobsView, JobsXhrView
-    register_view(JobsView, 'jobs', [('jobs', None)])
-    register_view(JobsXhrView, 'jobs.xhr', [('jobs/xhr/<action>/<int:id>', None)])
-
     from .views.overview.servers import ServersView
     register_view(ServersView, 'servers', [
+        ('servers/getreports/<project>/<spider>/<version_job>', dict(opt='getreports')),
         ('servers/<opt>/<project>/<version_job>/<spider>', None),
         ('servers/<opt>/<project>/<version_job>', dict(spider=None)),
         ('servers/<opt>/<project>', dict(version_job=None, spider=None)),
@@ -196,6 +193,20 @@ def handle_route(app):
 
     from .views.overview.tasks import bp as bp_tasks_history
     app.register_blueprint(bp_tasks_history)
+
+    # Dashboard
+    from .views.dashboard.jobs import JobsView, JobsXhrView
+    register_view(JobsView, 'jobs', [('jobs', None)])
+    register_view(JobsXhrView, 'jobs.xhr', [('jobs/xhr/<action>/<int:id>', None)])
+
+    from .views.dashboard.node_reports import NodeReportsView
+    register_view(NodeReportsView, 'nodereports', [('nodereports', None)])
+
+    from .views.dashboard.cluster_reports import ClusterReportsView
+    register_view(ClusterReportsView, 'clusterreports', [
+        ('clusterreports/<project>/<spider>/<job>', None),
+        ('clusterreports', dict(project=None, spider=None, job=None))
+    ])
 
     # Operations
     from .views.operations.deploy import DeployView, DeployUploadView, DeployXhrView
@@ -259,7 +270,7 @@ def handle_template_context(app):
     STATIC = 'static'
     VERSION = 'v' + __version__.replace('.', '')
     # MUST be commented out for released version
-    # VERSION = 'v120'
+    VERSION = 'v121dev'
 
     @app.context_processor
     def inject_variable():

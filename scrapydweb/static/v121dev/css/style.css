@@ -883,3 +883,25 @@ span.slider.round:before {
     opacity: 1;
 }
 /* two-div-blocks-on-same-line END */
+
+
+
+
+/* reports START */
+.count_font {
+    font-size: 20px;
+    font-weight: bold;
+}
+.count_normal {
+    color: #409EFF;
+}
+.count_safe {
+    color: #67c23a;
+}
+.count_warning {
+    color: orange;
+}
+.count_danger {
+    color: red;
+}
+/* reports END */

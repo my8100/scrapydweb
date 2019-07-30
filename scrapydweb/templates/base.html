@@ -7,7 +7,7 @@
     <title>{% block title %}{% endblock %} - ScrapydWeb</title>
 
     <link rel="stylesheet" type="text/css" href="{{ static_css_style }}">
-    <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_ofli8v3mxqq.js"></script>  -->
+    <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_l99noezu13o.js"></script>  -->
     <script type="text/javascript" src="{{ static_js_icons_menu }}"></script>
     <!-- upload icon in deploy/parse page, right arrow icon in stats | projects page-->
     <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
@@ -134,6 +134,18 @@
                 </a>
             </li>
             <li>
+                <a id="menu_tasks" href="{{ g.url_menu_tasks }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-timer"></use>
+                    </svg>
+                    <span>Timer Tasks</span>
+                </a>
+            </li>
+        </ul>
+
+        <h3>Dashboard</h3>
+        <ul>
+            <li>
                 <a id="menu_jobs" href="{{ g.url_menu_jobs }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
                         <use xlink:href="#icon-jobs"></use>
@@ -142,13 +154,23 @@
                 </a>
             </li>
             <li>
-                <a id="menu_tasks" href="{{ g.url_menu_tasks }}" onclick="showLoader();">
+                <a id="menu_nodereports" href="{{ g.url_menu_nodereports }}" onclick="showLoader();">
                     <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-timer"></use>
+                        <use xlink:href="#icon-report"></use>
                     </svg>
-                    <span>Timer Tasks</span>
+                    <span>Node Reports</span>
                 </a>
             </li>
+            {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+            <li>
+                <a id="menu_clusterreports" href="{{ g.url_menu_clusterreports }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-reports"></use>
+                    </svg>
+                    <span>Cluster Reports</span>
+                </a>
+            </li>
+            {% endif %}
         </ul>
 
         <h3>Operations</h3>

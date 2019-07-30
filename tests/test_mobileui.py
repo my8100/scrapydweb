@@ -15,7 +15,7 @@ def test_index(app, client):
 
 def test_jobs(app, client):
     req(app, client, view='jobs', kws=dict(node=1, ui='mobile'),
-        ins='jobs - mobileui - ScrapydWeb', mobileui=True)
+        ins='jobs - ScrapydWeb - mobileui', mobileui=True)
 
 
 def test_api_start(app, client):

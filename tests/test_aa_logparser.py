@@ -6,6 +6,7 @@ import os
 from flask import url_for
 
 from scrapydweb.utils.check_app_config import check_app_config
+from scrapydweb.views.files.log import REPORT_KEYS_SET
 from tests.utils import cst, req, replace_file_content, sleep
 
 
@@ -112,6 +113,15 @@ def test_stats_with_file_deleted(app, client):
     # LogParser v0.8.1, last updated at xxx, http://127.0.0.1:6800/logs/ScrapydWeb_demo/test/ScrapydWeb_demo.json
     req(app, client, view='log', kws=kws, ins=["LogParser v%s, last updated at" % cst.LOGPARSER_VERSION, tab],
         nos="Using local stats:")
+    # Get report
+    kws_ = dict(kws)
+    kws_['opt'] = 'report'
+    jskeys = list(REPORT_KEYS_SET)
+    req(app, client, view='log', kws=kws_, jskws=dict(status=cst.OK, from_memory=False), jskeys=jskeys)
+    req(app, client, view='log', kws=kws_, jskws=dict(status=cst.OK, from_memory=True), jskeys=jskeys)
+    kws_['project'] = cst.FAKE_PROJECT
+    req(app, client, view='log', kws=kws_, jskws=dict(status=cst.ERROR))
+
     app.config['LOCAL_SCRAPYD_SERVER'] = app.config['SCRAPYD_SERVERS'][0]
 
     # Mismatching logparser_version in ScrapydWeb_demo.json in logs

@@ -91,6 +91,23 @@
       </el-col>
     </el-tab-pane>
 
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    <el-tab-pane label="Get Reports" name="getreports">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.spider" placeholder="the spider name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.jobid" placeholder="the job id" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="primary" @click="getReports">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Get Reports</el-button>
+      </el-col>
+    </el-tab-pane>
+    {% endif %}
+
     <el-tab-pane label="List Stats" name="liststats">
       <el-col :span="5">
         <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
@@ -136,7 +153,6 @@
         <el-button type="primary" @click="listJobs" plain>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Running Jobs</el-button>
       </el-col>
     </el-tab-pane>
-
 
     <el-tab-pane label="Delete Version" name="delversion">
       <el-col :span="5">
@@ -191,7 +207,6 @@
   </el-badge></span>
 
 
-
   <el-table
     ref="multipleTable"
     :data="tableDataComputed"
@@ -202,10 +217,10 @@
     @selection-change="handleSelectionChange"
     @cell-click="handleCellClick"
     :max-height="maxHeight"
-    
+
     highlight-current-row
     @current-change="handleSelectRow"
-    
+
     {% if SCRAPYD_SERVERS_AMOUNT > 10 %}
     :size=`mini`
     {% else %}
@@ -223,7 +238,7 @@
     <el-table-column prop="index" label="Index" sortable align="center" width="80"></el-table-column>
     <el-table-column prop="selected" label="Selected" sortable align="center" width="100"></el-table-column>
     <el-table-column prop="group" label="Group" sortable align="center"></el-table-column>
-    <el-table-column prop="jobs" label="Scrapyd server" sortable width="200"
+    <el-table-column prop="jobs" label="Scrapyd server" sortable show-overflow-tooltip width="200"
       align="left" header-align="center" :sort-method="sortScrapydServer">
       <template slot-scope="scope">
         <a :class="scope.row.cls"
@@ -237,7 +252,7 @@
         </a>
       </template>
     </el-table-column>
-    <el-table-column prop="node_name" label="Hostname" sortable :formatter="formatter" align="center" min-width="100"></el-table-column>
+    <el-table-column prop="node_name" label="Hostname" sortable show-overflow-tooltip :formatter="formatter" align="center" min-width="100"></el-table-column>
 
     <el-table-column prop="listinfo" label="Status / List info" sortable min-width="190" align="center" :sort-method="sortListinfo" show-overflow-tooltip>
       <template slot-scope="scope">
@@ -317,25 +332,25 @@ var Main = {
       input: {
         project: '{{ project or "" }}',
 
-        {% if opt != 'stop' %}
+        {% if opt not in ['stop', 'getreports'] %}
         version: '{{ version_job or DEFAULT_LATEST_VERSION }}',
         {% else %}
         version: '{{ DEFAULT_LATEST_VERSION }}',
         {% endif %}
 
-        {% if opt != 'stop' and version_job != DEFAULT_LATEST_VERSION %}
+        {% if opt not in ['stop', 'getreports'] and version_job != DEFAULT_LATEST_VERSION %}
         version_delversion: '{{ version_job or "" }}',
         {% else %}
         version_delversion: '',
         {% endif %}
 
-        {% if opt == 'schedule' %}
+        {% if opt in ['schedule', 'getreports'] %}
         spider: '{{ spider or "" }}',
         {% else %}
         spider: '',
         {% endif %}
 
-        {% if opt in ['stop', 'liststats'] %}
+        {% if opt in ['stop', 'liststats', 'getreports'] %}
         jobid: '{{ version_job }}',
         {% else %}
         jobid: '',
@@ -653,7 +668,7 @@ var Main = {
                 vm.tableData[idx]['runningStyleObject'] = {color: '#67c23a', fontSize: '30px', fontWeight: 'bold'};
               }
               vm.tableData[idx]['finished'] = obj.finished;
-              
+
               // Update Jobs database
               var r = new XMLHttpRequest();
               r.open('post', url.replace('/api/daemonstatus', '/jobs'), Async = true);
@@ -770,6 +785,18 @@ var Main = {
           this.tableData[idx]['emClass'] = "normal";
         }
       }
+    },
+
+    getReports() {
+      if (this.checkNodesSelected()) {
+        return;
+      } else {
+        this.storeInput('project');
+        this.storeInput('spider');
+        this.storeInput('jobid');
+      }
+      var url_schedule = '{{ url_getreports }}';
+      this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/SPIDER_PLACEHOLDER/, this.input.spider).replace(/JOB_PLACEHOLDER/, this.input.jobid));
     },
 
     listStats() {

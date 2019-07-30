@@ -56,6 +56,8 @@ class ItemsView(BaseView):
                                            spider=self.spider, job=filename_without_ext)
                 row['url_utf8'] = url_for('log', node=self.node, opt='utf8', project=self.project,
                                           spider=self.spider, job=filename_without_ext)
+                row['url_clusterreports'] = url_for('clusterreports', node=self.node, project=self.project,
+                                                    spider=self.spider, job=self.get_job_without_ext(row['filename']))
         if self.project and self.spider:
             url_schedule = url_for('schedule', node=self.node, project=self.project,
                                    version=self.DEFAULT_LATEST_VERSION, spider=self.spider)

@@ -77,3 +77,10 @@ def test_items(app, client):
 def test_switch_node_skip(app, client):
     req_single_scrapyd(app, client, view='jobs', kws=dict(node=1),
                        nos=['onclick="switchNode', 'id="skip_nodes_checkbox"'])
+
+
+# <span>Cluster Reports</span>
+# <el-tab-pane label="Get Reports" name="getreports">
+def test_cluster_reports_not_exists(app, client):
+    nos = ['<span>Cluster Reports</span>', '<el-tab-pane label="Get Reports"']
+    req_single_scrapyd(app, client, view='servers', kws=dict(node=1), nos=nos)

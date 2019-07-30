@@ -1,5 +1,5 @@
 # coding: utf-8
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from datetime import date, datetime
 import io
 import json
@@ -10,7 +10,7 @@ import sys
 import tarfile
 import time
 
-from flask import flash, render_template, request, url_for
+from flask import flash, get_flashed_messages, render_template, request, url_for
 from logparser import parse
 
 from ...vars import ROOT_DIR
@@ -28,16 +28,18 @@ EMAIL_CONTENT_KEYS = [
     'scraped_items'
 ]
 job_data_dict = {}
-# job_finished_set would only be updated by poll POST with ?job_finished=True > email_notice(),
+# job_finished_key_dict would only be updated by poll POST with ?job_finished=True > email_notice(),
 # used for determining whether to show 'click to refresh' button in the Log and Stats page.
-job_finished_set = set()
+job_finished_key_dict = defaultdict(OrderedDict)
+# For /log/report/
+job_finished_report_dict = defaultdict(OrderedDict)
+REPORT_KEYS_SET = set(['from_memory', 'status', 'pages', 'items', 'shutdown_reason', 'finish_reason',
+                       'runtime', 'first_log_time', 'latest_log_time', 'log_categories', 'latest_matches'])
 
 
 # http://flask.pocoo.org/docs/1.0/api/#flask.views.View
 # http://flask.pocoo.org/docs/1.0/views/
 class LogView(BaseView):
-    job_data_dict = job_data_dict
-    job_finished_set = job_finished_set
 
     def __init__(self):
         super(LogView, self).__init__()  # super().__init__()
@@ -58,10 +60,7 @@ class LogView(BaseView):
         self.with_ext = request.args.get('with_ext', None)
         if self.with_ext:
             self.SCRAPYD_LOG_EXTENSIONS = ['']
-            if self.job.endswith('.tar.gz'):
-                job_without_ext = self.job[:-len('.tar.gz')]
-            else:
-                job_without_ext = os.path.splitext(self.job)[0]  # '1.1.log' => ('1.1', '.log')
+            job_without_ext = self.get_job_without_ext(self.job)
         else:
             job_without_ext = self.job
 
@@ -72,7 +71,10 @@ class LogView(BaseView):
 
         self.status_code = 0
         self.text = ''
-        self.template = 'scrapydweb/%s%s.html' % (self.opt, '_mobileui' if self.USE_MOBILEUI else '')
+        if self.opt == 'report':
+            self.template = None
+        else:
+            self.template = 'scrapydweb/%s%s.html' % (self.opt, '_mobileui' if self.USE_MOBILEUI else '')
         self.kwargs = dict(node=self.node, project=self.project, spider=self.spider,
                            job=job_without_ext, url_refresh='', url_jump='')
 
@@ -80,15 +82,18 @@ class LogView(BaseView):
         # would be attached with the query string '?job_finished=True'
         self.job_finished = request.args.get('job_finished', None)
 
+        self.utf8_realtime = False
+        self.stats_realtime = False
+        self.stats_logparser = False
+        self.report_logparser = False
         if self.opt == 'utf8':
             flash("It's recommended to check out the latest log via: the Stats page >> View log >> Tail", self.WARN)
             self.utf8_realtime = True
-            self.stats_realtime = False
-            self.stats_logparser = False
-        else:
-            self.utf8_realtime = False
+        elif self.opt == 'stats':
             self.stats_realtime = True if request.args.get('realtime', None) else False
             self.stats_logparser = not self.stats_realtime
+        else:
+            self.report_logparser = True
         self.logparser_valid = False
         self.backup_stats_valid = False
         spider_path = self.mkdir_spider_path()
@@ -105,9 +110,13 @@ class LogView(BaseView):
         self.email_content_kwargs = {}
         self.flag = ''
 
+        self.jobs_to_keep = self.JOBS_FINISHED_JOBS_LIMIT or 1000
+
     def dispatch_request(self, **kwargs):
+        if self.report_logparser:
+            self.read_stats_for_report()
         # Try to request stats by LogParser to avoid reading/requesting the whole log
-        if self.stats_logparser:
+        if not self.logparser_valid and (self.stats_logparser or self.report_logparser):
             if self.IS_LOCAL_SCRAPYD_SERVER and self.SCRAPYD_LOGS_DIR:
                 self.read_local_stats_by_logparser()
             if not self.logparser_valid:
@@ -121,22 +130,45 @@ class LogView(BaseView):
             if not self.text:
                 self.request_scrapy_log()
                 if self.status_code != 200:
-                    if self.stats_logparser:
+                    if self.stats_logparser or self.report_logparser:
                         self.load_backup_stats()
                     if not self.backup_stats_valid:
-                        kwargs = dict(node=self.node, url=self.url, status_code=self.status_code, text=self.text)
-                        return render_template(self.template_fail, **kwargs)
+                        if not self.report_logparser:
+                            kwargs = dict(node=self.node, url=self.url, status_code=self.status_code, text=self.text)
+                            return render_template(self.template_fail, **kwargs)
             else:
                 self.url += self.SCRAPYD_LOG_EXTENSIONS[0]
         else:
             self.url += self.SCRAPYD_LOG_EXTENSIONS[0]
 
-        self.update_kwargs()
+        if (not self.utf8_realtime
+            and not self.logparser_valid
+            and self.text
+            and self.status_code in [0, 200]):
+            self.logger.warning('Parse the whole log')
+            self.stats = parse(self.text)
+            # Note that the crawler_engine is not available when using parse()
+            self.stats.setdefault('crawler_engine', {})
+            self.stats.setdefault('status', self.OK)
 
-        if self.ENABLE_EMAIL and self.POST:  # Only poll.py would make POST request
-            self.email_notice()
+        if self.report_logparser:
+            if self.stats and not self.stats.setdefault('from_memory', False):
+                self.simplify_stats_for_report()
+                self.keep_stats_for_report()
+            get_flashed_messages()
+            # 0, -1, 404 load backup
+            if self.status_code < 100 or self.stats:
+                status_code = 200
+            else:
+                status_code = self.status_code
+            return self.json_dumps(self.stats or dict(status='error'), as_response=True), status_code
+        else:
+            self.update_kwargs()
 
-        return render_template(self.template, **self.kwargs)
+            if self.ENABLE_EMAIL and self.POST:  # Only poll.py would make POST request
+                self.email_notice()
+
+            return render_template(self.template, **self.kwargs)
 
     def read_local_stats_by_logparser(self):
         self.logger.debug("Try to read local stats by LogParser: %s", self.json_path)
@@ -216,6 +248,43 @@ class LogView(BaseView):
             flash(msg, self.WARN)
             self.url += self.SCRAPYD_LOG_EXTENSIONS[0]
 
+    def simplify_stats_for_report(self):
+        for key in list(self.stats.keys()):
+            if key not in REPORT_KEYS_SET:
+                self.stats.pop(key)
+        try:
+            for key in self.stats['log_categories']:
+                self.stats['log_categories'][key] = dict(count=self.stats['log_categories'][key]['count'])
+        except KeyError:
+            pass
+        try:
+            self.stats['latest_matches'] = dict(latest_item=self.stats['latest_matches']['latest_item'])
+        except KeyError:
+            pass
+
+    def keep_stats_for_report(self):
+        od = job_finished_report_dict[self.node]
+        if self.job_key in od:
+            return
+        if (self.stats.get('shutdown_reason', self.NA) == self.NA
+            and self.stats.get('finish_reason', self.NA) == self.NA):
+            return
+        if set(self.stats.keys()) == REPORT_KEYS_SET:
+            od[self.job_key] = self.stats
+            if len(od) > self.jobs_to_keep:
+                od.popitem(last=False)
+            self.logger.debug("%s keys in job_finished_report_dict[%s]", len(od), self.node)
+
+    def read_stats_for_report(self):
+        try:
+            self.stats = job_finished_report_dict[self.node][self.job_key]
+        except KeyError:
+            self.logger.debug("%s not found in job_finished_report_dict[%s]", self.job_key, self.node)
+        else:
+            self.logger.debug("%s found in job_finished_report_dict[%s]", self.job_key, self.node)
+            self.logparser_valid = True
+            self.stats['from_memory'] = True
+
     def mkdir_spider_path(self):
         node_path = os.path.join(self.STATS_PATH,
                                  re.sub(self.LEGAL_NAME_PATTERN, '-', re.sub(r'[.:]', '_', self.SCRAPYD_SERVER)))
@@ -281,21 +350,15 @@ class LogView(BaseView):
         if self.utf8_realtime:
             self.kwargs['text'] = self.text
             self.kwargs['last_update_timestamp'] = time.time()
-            if self.job_finished or self.job_key in self.job_finished_set:
+            if self.job_finished or self.job_key in job_finished_key_dict[self.node]:
                 self.kwargs['url_refresh'] = ''
             else:
                 self.kwargs['url_refresh'] = 'javascript:location.reload(true);'
         else:
             # Parsed data comes from json.loads, for compatibility with Python 2,
             # use str(time_) to avoid [u'2019-01-01 00:00:01', 0, 0, 0, 0] in JavaScript.
-            if self.logparser_valid:
-                for d in self.stats['datas']:
-                    d[0] = str(d[0])
-            else:
-                self.logger.warning('Parse the whole log')
-                self.stats = parse(self.text)
-                # Note that the crawler_engine is not available when using parse()
-                self.stats['crawler_engine'] = {}
+            for d in self.stats['datas']:
+                d[0] = str(d[0])
             # For sorted orders in stats.html with Python 2
             for k in ['crawler_stats', 'crawler_engine']:
                 if self.stats[k]:
@@ -307,7 +370,7 @@ class LogView(BaseView):
 
             if (self.kwargs['finish_reason'] == self.NA
                and not self.job_finished
-               and self.job_key not in self.job_finished_set):
+               and self.job_key not in job_finished_key_dict[self.node]):
                 # http://flask.pocoo.org/docs/1.0/api/#flask.Request.url_root
                 # _query_string = '?ui=mobile'
                 # self.url_refresh = request.script_root + request.path + _query_string
@@ -337,9 +400,9 @@ class LogView(BaseView):
     # TODO: https://blog.miguelgrinberg.com/post/the-flask-mega-tutorial-part-x-email-support
     def email_notice(self):
         job_data_default = ([0] * 8, [False] * 6, False, time.time())
-        job_data = self.job_data_dict.setdefault(self.job_key, job_data_default)
+        job_data = job_data_dict.setdefault(self.job_key, job_data_default)
         (self.job_stats_previous, self.triggered_list, self.has_been_stopped, self.last_send_timestamp) = job_data
-        self.logger.info(self.job_data_dict)
+        self.logger.info(job_data_dict)
         self.job_stats = [self.kwargs['log_categories'][k.lower() + '_logs']['count']
                           for k in self.EMAIL_TRIGGER_KEYS]
         self.job_stats.extend([self.kwargs['pages'] or 0, self.kwargs['items'] or 0])  # May be None by LogParser
@@ -452,14 +515,15 @@ class LogView(BaseView):
                 self.logger.info("Sending email: %s", self.EMAIL_KWARGS['subject'])
                 Popen(args)
 
-            # Update self.job_data_dict (last_send_timestamp would be updated only when flag is non-empty)
-            self.logger.info("Previous job_data['%s'] %s", self.job_key, self.job_data_dict[self.job_key])
-            self.job_data_dict[self.job_key] = (self.job_stats, self.triggered_list, self.has_been_stopped, time.time())
-            self.logger.info("Updated  job_data['%s'] %s", self.job_key, self.job_data_dict[self.job_key])
+            # Update job_data_dict (last_send_timestamp would be updated only when flag is non-empty)
+            self.logger.info("Previous job_data['%s'] %s", self.job_key, job_data_dict[self.job_key])
+            job_data_dict[self.job_key] = (self.job_stats, self.triggered_list, self.has_been_stopped, time.time())
+            self.logger.info("Updated  job_data['%s'] %s", self.job_key, job_data_dict[self.job_key])
 
         if self.job_finished:
-            self.job_data_dict.pop(self.job_key)
-            if len(self.job_finished_set) > 1000:
-                self.job_finished_set.clear()
-            self.job_finished_set.add(self.job_key)
+            job_data_dict.pop(self.job_key)
+            od = job_finished_key_dict[self.node]
+            od[self.job_key] = None
+            if len(od) > self.jobs_to_keep:
+                od.popitem(last=False)
             self.logger.info('job_finished: %s', self.job_key)

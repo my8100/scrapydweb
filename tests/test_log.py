@@ -14,7 +14,8 @@ from tests.utils import cst, req, sleep, upload_file_deploy
 
 def test_log_utf8_stats(app, client):
     # In ScrapydWeb_demo.egg: CONCURRENT_REQUESTS=1, DOWNLOAD_DELAY=10
-    upload_file_deploy(app, client, filename='ScrapydWeb_demo.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
+    upload_file_deploy(app, client, filename='ScrapydWeb_demo.egg',
+                       project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     with app.test_request_context():
         kws = dict(node=1, opt='start', project=cst.PROJECT, version_spider_job=cst.SPIDER)
@@ -250,6 +251,10 @@ def test_poll_py(app):
 
 
 def test_email(app, client):
+    # In ScrapydWeb_demo_no_delay.egg: unset CONCURRENT_REQUESTS, unset DOWNLOAD_DELAY
+    upload_file_deploy(app, client, filename='ScrapydWeb_demo_no_delay.egg',
+                       project=cst.PROJECT, redirect_project=cst.PROJECT)
+
     # with app.test_request_context():
     if not app.config.get('ENABLE_EMAIL', False):
         return

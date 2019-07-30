@@ -27,7 +27,7 @@
       <el-button type="primary" onclick="window.history.forward();" size="medium">Forward<i class="el-icon-arrow-right el-icon--right"></i></el-button>
     </el-button-group>
   </el-col>
-  
+
 {% if project and spider and rows %}
   <el-button-group>
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
@@ -36,7 +36,7 @@
     <el-button type="success" onclick="window.location='{{ url_schedule }}';" size="medium">Run Spider ({{ spider }})</el-button>
   </el-button-group>
 {% endif %}
-  
+
   <el-table
     ref="multipleTable"
     :data="tableData"
@@ -54,8 +54,11 @@
     <el-table-column prop="size" label="Size" sortable align="center" width="100" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
 
     {% if project and spider %}
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="80">
-      <template slot-scope="scope"><a :class="scope.row.stats_class" :href="scope.row.url_stats" target="_blank">Stats</a></template>
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="160">
+      <template slot-scope="scope">
+        <a class="state multinode" :href="scope.row.url_clusterreports" target="_blank">multinode</a>
+        <a :class="scope.row.stats_class" :href="scope.row.url_stats" target="_blank">Stats</a>
+      </template>
     </el-table-column>
     <el-table-column prop="log" label="Log" sortable align="center" width="70">
       <template slot-scope="scope"><a class="state normal" :style="{ display: scope.row.display }" :href="scope.row.url_utf8" target="_blank">{{scope.row.log}}</a></template>
@@ -87,13 +90,14 @@ var Main = {
         size: '{{ row["size"] }}',
 
         {% if project and spider %}
+        url_clusterreports: '{{ row["url_clusterreports"] }}',
         url_stats: '{{ row["url_stats"] }}',
         stats_class: {% if row['url_utf8'] %}'state normal'{% else %}'state warning'{% endif %},
         url_utf8: '{{ row["url_utf8"] }}',
         log: {% if row['url_utf8'] %}'Log'{% else %}''{% endif %},
         display: {% if row['url_utf8'] %}''{% else %}'none'{% endif %},
         {% endif %}
-        
+
         href: '{{ row["href"] }}',
         filename: '{{ row["filename"] }}',
         target: {% if project and spider %}'_blank'{% else %}'_self'{% endif %},

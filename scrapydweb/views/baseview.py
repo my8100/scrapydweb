@@ -206,6 +206,13 @@ class BaseView(View):
         self.update_g()
 
     @staticmethod
+    def get_job_without_ext(job):
+        if job.endswith('.tar.gz'):
+            return job[:-len('.tar.gz')]
+        else:
+            return os.path.splitext(job)[0]  # '1.1.log' => ('1.1', '.log')
+
+    @staticmethod
     def get_now_string(allow_space=False):
         return get_now_string(allow_space=allow_space)
 
@@ -322,6 +329,8 @@ class BaseView(View):
             g.url_daemonstatus = url_for('api', node=self.node, opt='daemonstatus')
             g.url_menu_servers = url_for('servers', node=self.node)
             g.url_menu_jobs = url_for('jobs', node=self.node)
+            g.url_menu_nodereports = url_for('nodereports', node=self.node)
+            g.url_menu_clusterreports = url_for('clusterreports', node=self.node)
             g.url_menu_tasks = url_for('tasks', node=self.node)
             g.url_menu_deploy = url_for('deploy', node=self.node)
             g.url_menu_schedule = url_for('schedule', node=self.node)
