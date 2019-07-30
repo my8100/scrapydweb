@@ -1,5 +1,5 @@
 # coding: utf-8
-from flask import flash, redirect, render_template, url_for
+from flask import redirect, render_template, url_for
 
 from ..baseview import BaseView
 
@@ -8,7 +8,7 @@ metadata = dict(
     project='',
     spider='',
     job='',
-    selected_nodes = []
+    selected_nodes=[]
 )
 
 

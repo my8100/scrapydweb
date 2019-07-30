@@ -1,7 +1,7 @@
 # coding: utf-8
 import json
 
-from flask import flash, redirect, render_template, url_for
+from flask import render_template, url_for
 
 from ..baseview import BaseView
 

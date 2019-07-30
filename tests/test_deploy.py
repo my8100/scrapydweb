@@ -53,12 +53,12 @@ def test_auto_packaging(app, client):
         'version': cst.VERSION
     }
     req(app, client, view='deploy.upload', kws=dict(node=2), data=data,
-        ins=['deploy results · ScrapydWeb', 'onclick="multinodeRunSpider();"', 'id="checkbox_1"'],
+        ins=['deploy results - ScrapydWeb', 'onclick="multinodeRunSpider();"', 'id="checkbox_1"'],
         nos='id="checkbox_2"')
 
     data.update({'2': 'on', 'checked_amount': '2'})
     req(app, client, view='deploy.upload', kws=dict(node=2), data=data,
-        ins=['deploy results · ScrapydWeb', 'onclick="multinodeRunSpider();"', 'id="checkbox_1"', 'id="checkbox_2"'])
+        ins=['deploy results - ScrapydWeb', 'onclick="multinodeRunSpider();"', 'id="checkbox_1"', 'id="checkbox_2"'])
 
 
 def test_auto_packaging_unicode(app, client):
@@ -84,7 +84,7 @@ def test_scrapy_cfg(app, client):
             'project': cst.PROJECT,
             'version': cst.VERSION,
         }
-        ins = ['fail · ScrapydWeb', result] if result else 'deploy results · ScrapydWeb'
+        ins = ['fail - ScrapydWeb', result] if result else 'deploy results - ScrapydWeb'
         req(app, client, view='deploy.upload', kws=dict(node=2), data=data, ins=ins)
 
 
@@ -101,9 +101,9 @@ def test_scrapy_cfg_first_node_not_exist(app, client):
         }
         nos = []
         if folder == 'demo_only_scrapy_cfg' or not result:
-            ins = ['fail · ScrapydWeb', 'the first selected node returned status']
+            ins = ['fail - ScrapydWeb', 'the first selected node returned status']
         else:
-            ins = ['fail · ScrapydWeb', result]
+            ins = ['fail - ScrapydWeb', result]
             nos = 'the first selected node returned status'
         req(app, client, view='deploy.upload', kws=dict(node=2), data=data, ins=ins, nos=nos)
 

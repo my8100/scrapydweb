@@ -14,8 +14,8 @@ from tests.utils import cst, req, sleep, upload_file_deploy
 
 def test_log_utf8_stats(app, client):
     # In ScrapydWeb_demo.egg: CONCURRENT_REQUESTS=1, DOWNLOAD_DELAY=10
-    # In ScrapydWeb_demo_no_delay.egg: unset CONCURRENT_REQUESTS, unset DOWNLOAD_DELAY
-    upload_file_deploy(app, client, filename='ScrapydWeb_demo_no_delay.egg', project=cst.PROJECT, redirect_project=cst.PROJECT)
+    upload_file_deploy(app, client, filename='ScrapydWeb_demo.egg',
+                       project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     with app.test_request_context():
         kws = dict(node=1, opt='start', project=cst.PROJECT, version_spider_job=cst.SPIDER)
@@ -28,12 +28,12 @@ def test_log_utf8_stats(app, client):
             ins='Log analysis')
         # the Log page
         req(app, client, view='log', kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=jobid),
-            ins='log · ScrapydWeb')
+            ins='log - ScrapydWeb')
 
         # For testing request_scrapy_log() of LogView in log.py
         app.config['SCRAPYD_LOGS_DIR'] = 'dir-not-exist'
         req(app, client, view='log', kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=jobid),
-            ins='log · ScrapydWeb')
+            ins='log - ScrapydWeb')
 
         # the Jobs page GET
         url_stop = url_for('api', node=1, opt='stop', project=cst.PROJECT, version_spider_job=jobid)
@@ -102,11 +102,11 @@ def test_log_utf8_stats(app, client):
 def test_log_not_exist(app, client):
     # the Stats page
     kws = dict(node=1, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.FAKE_JOBID)
-    ins = ['fail · ScrapydWeb', 'status_code: 404']
+    ins = ['fail - ScrapydWeb', 'status_code: 404']
     req(app, client, view='log', kws=kws, ins=ins)
     # the Log page
     kws['opt'] = 'utf8'
-    ins = ['fail · ScrapydWeb', 'status_code: 404']
+    ins = ['fail - ScrapydWeb', 'status_code: 404']
     req(app, client, view='log', kws=kws, ins=ins)
 
 
@@ -251,6 +251,10 @@ def test_poll_py(app):
 
 
 def test_email(app, client):
+    # In ScrapydWeb_demo_no_delay.egg: unset CONCURRENT_REQUESTS, unset DOWNLOAD_DELAY
+    upload_file_deploy(app, client, filename='ScrapydWeb_demo_no_delay.egg',
+                       project=cst.PROJECT, redirect_project=cst.PROJECT)
+
     # with app.test_request_context():
     if not app.config.get('ENABLE_EMAIL', False):
         return

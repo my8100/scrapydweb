@@ -293,11 +293,11 @@ def upload_file_deploy(app, client, filename, project, multinode=False,
         response = client.post(url, content_type='multipart/form-data', data=data)
         text = get_text(response)
         if fail:
-            assert response.status_code == 200 and "fail · ScrapydWeb" in text
+            assert response.status_code == 200 and "fail - ScrapydWeb" in text
         else:
             url_redirect = url_for('schedule', node=1, project=redirect_project, version=cst.VERSION)
             if multinode:
-                assert response.status_code == 200 and "deploy results · ScrapydWeb" in text and url_redirect in text
+                assert response.status_code == 200 and "deploy results - ScrapydWeb" in text and url_redirect in text
             else:
                 assert response.status_code == 302 and response.headers['Location'].endswith(url_redirect)
 

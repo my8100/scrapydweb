@@ -193,12 +193,12 @@ def handle_route(app):
 
     from .views.overview.tasks import bp as bp_tasks_history
     app.register_blueprint(bp_tasks_history)
-    
+
     # Dashboard
     from .views.dashboard.jobs import JobsView, JobsXhrView
     register_view(JobsView, 'jobs', [('jobs', None)])
-    register_view(JobsXhrView, 'jobs.xhr', [('jobs/xhr/<action>/<int:id>', None)])    
-    
+    register_view(JobsXhrView, 'jobs.xhr', [('jobs/xhr/<action>/<int:id>', None)])
+
     from .views.dashboard.node_reports import NodeReportsView
     register_view(NodeReportsView, 'nodereports', [('nodereports', None)])
 
@@ -206,7 +206,7 @@ def handle_route(app):
     register_view(ClusterReportsView, 'clusterreports', [
         ('clusterreports/<project>/<spider>/<job>', None),
         ('clusterreports', dict(project=None, spider=None, job=None))
-    ])    
+    ])
 
     # Operations
     from .views.operations.deploy import DeployView, DeployUploadView, DeployXhrView

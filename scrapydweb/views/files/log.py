@@ -34,7 +34,7 @@ job_finished_key_dict = defaultdict(OrderedDict)
 # For /log/report/
 job_finished_report_dict = defaultdict(OrderedDict)
 REPORT_KEYS_SET = set(['from_memory', 'status', 'pages', 'items', 'shutdown_reason', 'finish_reason',
-                       'runtime', 'first_log_time', 'latest_log_time','log_categories', 'latest_matches'])
+                       'runtime', 'first_log_time', 'latest_log_time', 'log_categories', 'latest_matches'])
 
 
 # http://flask.pocoo.org/docs/1.0/api/#flask.views.View
