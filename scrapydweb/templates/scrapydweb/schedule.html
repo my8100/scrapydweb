@@ -39,12 +39,12 @@
       border: 1px solid #e3e3e3;
     }
 
-    .line-container .key {
-      width: 188px;
-    }
     #settings_arguments .el-form-item__label {color: #409EFF;}
     #time_task .el-form-item__label {color: #feb324;}
     #time_task .main_settings .el-form-item__label {color: #67c23a;}
+
+    #multinodes .link {margin-left: 200px;}
+    #multinodes .key {width: 188px;}
   </style>
 
 
@@ -348,40 +348,7 @@ print(get_localzone())</pre>
   <form id="form_run_spider" method="post" action="{{ url_schedule_run }}" enctype="multipart/form-data">
     <input type="text" name="filename" hidden />
   {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-    <a class="link" style="margin-left: 200px;" href="{{ url_servers }}" target="_blank">To select nodes in the Servers page &raquo;</a>
-    <div class="line-container">
-      <div class="key"><span>*</span>multinodes</div>
-      <input type="text" name="checked_amount" value="1" hidden />
-      <div class="multiselect">
-        <div class="selectBox" onclick="showCheckboxes();">
-          <div class="value">
-            <span id="selected_nodes_statement">{{ SCRAPYD_SERVERS[node-1] }}</span>
-            <svg class="icon anchor" aria-hidden="true">
-              <use xlink:href="#icon-down"></use>
-            </svg>
-          </div>
-          <div class="overSelect"></div>
-        </div>
-        <div id="checkboxes" style="display: none;">
-          <label for="checkCurrent"><input type="checkbox" id="checkCurrent" />Check current node only</label>
-          <label for="syncFromServersPage"><input type="checkbox" id="syncFromServersPage" />Sync from Servers page</label>
-          <label for="checkAll"><input type="checkbox" id="checkAll" />CheckAll / UncheckAll</label>
-          <div id="nodes_checkboxes">
-          {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-            {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
-            <span> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </span>
-            {% endif %}
-
-            <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}" {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}>
-              <input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}"
-              {% if loop.index in selected_nodes %}checked{% endif %} />{{ SCRAPYD_SERVER }}
-            </label>
-          {% endfor %}
-          </div>
-        </div>
-        <div class="form-item-error">Select at least one node</div>
-      </div>
-    </div>
+{% include 'scrapydweb/include_multinodes_checkboxes.html' %}
   {% endif %}
   </form>
 
