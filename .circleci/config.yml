@@ -1,13 +1,17 @@
 # Python CircleCI 2.1 configuration file
 version: 2.1
 
+
 orbs:
   codecov: codecov/codecov@1.0.2
+
 
 jobs:
   py37: &test-template
     docker:
       - image: circleci/python:3.7
+    environment:
+      SCRAPYDWEB_TESTMODE: True
 
     working_directory: ~/repo
 
@@ -18,7 +22,15 @@ jobs:
       use-git:
         type: boolean
         default: false
-
+      use-mysql:
+        type: boolean
+        default: false
+      use-postgresql:
+        type: boolean
+        default: false
+      use-sqlite:
+        type: boolean
+        default: false
     steps:
       - run:
           name: Install telnet
@@ -32,7 +44,6 @@ jobs:
             ls -l ~
 
       - checkout
-
       - when:
           condition: <<parameters.is-py27>>
           steps:
@@ -40,6 +51,7 @@ jobs:
                 name: Create virtual env in PY2
                 command: |
                   virtualenv ./venv
+
       - unless:
           condition: <<parameters.is-py27>>
           steps:
@@ -48,6 +60,61 @@ jobs:
                 command: |
                   python3 -m venv venv
 
+      - when:
+          condition: <<parameters.use-mysql>>
+          steps:
+            - run:
+                # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_apscheduler"
+                name: Waiting for MySQL to be ready
+                command: |
+                  for i in `seq 1 10`;
+                  do
+                    nc -z 127.0.0.1 3306 && echo Success && exit 0
+                    echo -n .
+                    sleep 1
+                  done
+                  echo Failed waiting for MySQL && exit 1
+            - run:
+                name: Install MySQL CLI; Import dummy data; run an example query
+                command: |
+                  # sudo apt-get install default-mysql-client
+                  # mysql -h 127.0.0.1 -u user -ppassw0rd test_db < sql-data/dummy.sql
+                  # mysql -h 127.0.0.1 -u user -ppassw0rd --execute="SELECT * FROM test_db.Persons"
+                  # https://discuss.circleci.com/t/how-can-i-create-multiple-mysql-databases-in-the-same-docker-image/24762
+                  # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_apscheduler"
+                  # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_timertasks"
+                  # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_metadata"
+                  # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_jobs"
+            - run:
+                name: Set DATABASE_URL to mysql
+                command: |
+                  # mysql://user:passw0rd@127.0.0.1:3306
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+                  cat scrapydweb_settings_v8.py
+      - when:
+          condition: <<parameters.use-postgresql>>
+          steps:
+            - run:
+                name: Setup PSQL Databases
+                command: |
+                  # https://discuss.circleci.com/t/multiple-postgres-databases-in-circleci-2-0/23089
+                  # createdb: could not connect to database template1: FATAL:  role "circleci" does not exist
+                  # sudo apt install -y postgresql-client
+                  # createdb -h localhost scrapydweb_apscheduler -O circleci
+            - run:
+                name: Set DATABASE_URL to postgresql
+                command: |
+                  # postgres://circleci@127.0.0.1:5432
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+                  cat scrapydweb_settings_v8.py
+      - when:
+          condition: <<parameters.use-sqlite>>
+          steps:
+            - run:
+                name: Set DATABASE_URL to sqlite
+                command: |
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+                  cat scrapydweb_settings_v8.py
       - run:
           name: Install dependencies
           command: |
@@ -75,6 +142,7 @@ jobs:
           command: |
             cd ~
             printf "[scrapyd]\nusername = admin\npassword = 12345\n" > scrapyd.conf
+            cat scrapyd.conf
             nohup ~/repo/venv/bin/scrapyd > ~/scrapyd.log 2>&1 &
             sleep 5
             cat ~/scrapyd.log
@@ -83,6 +151,7 @@ jobs:
       - run:
           name: Run tests
           command: |
+            ls -l
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
@@ -91,6 +160,7 @@ jobs:
       - run:
           name: Generate report
           command: |
+            echo $DATABASE_URL
             . venv/bin/activate
             coverage report
             coverage html
@@ -108,29 +178,108 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:2.7
-
-  py35:
+  py27-sqlite:
     <<: *test-template
     docker:
-      - image: circleci/python:3.5
+      - image: circleci/python:2.7
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
+  py27-postgresql:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7
+      # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
+      - image: circleci/postgres:9.6-alpine
+        environment:
+          POSTGRES_USER: circleci
+          # psycopg2.OperationalError: FATAL: database "circleci" does not exist
+          # https://discuss.circleci.com/t/django-postgresql-and-circleci/15032
+          POSTGRES_DB: circleci
+          POSTGRES_PASSWORD: passw0rd
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'postgres://circleci:fakepassword@localhost:5432'
+  py27-mysql:
+    <<: *test-template
+    docker:
+      - image: circleci/python:2.7
+      # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
+      # Plugin caching_sha2_password could not be loaded
+      # - image: circleci/mysql:8.0.4
+      # https://circleci.com/docs/2.0/circleci-images/#mysql
+      - image: circleci/mysql:5.7.25
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: user
+          MYSQL_PASSWORD: passw0rd
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
 
-  py36:
+  py36-sqlite:
     <<: *test-template
     docker:
       - image: circleci/python:3.6
-
-  py37-git:
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
+  py37-git-postgresql:
     <<: *test-template
     docker:
       - image: circleci/python:3.7
+      # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
+      - image: circleci/postgres:9.6-alpine
+        environment:
+          POSTGRES_USER: circleci
+          # psycopg2.OperationalError: FATAL: database "circleci" does not exist
+          # https://discuss.circleci.com/t/django-postgresql-and-circleci/15032
+          POSTGRES_DB: circleci
+          POSTGRES_PASSWORD: passw0rd
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'postgres://circleci:fakepassword@localhost:5432'
+  py37-git-mysql:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.7
+      # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
+      # Plugin caching_sha2_password could not be loaded
+      # - image: circleci/mysql:8.0.4
+      # https://circleci.com/docs/2.0/circleci-images/#mysql
+      - image: circleci/mysql:5.7.25
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: user
+          MYSQL_PASSWORD: passw0rd
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
+
 
 workflows:
   test:
     jobs:
       - py27:
           is-py27: true
-      # - py35
-      - py36
+      - py27-sqlite:
+          is-py27: true
+          use-sqlite: true
+      - py27-postgresql:
+          is-py27: true
+          use-postgresql: true
+      - py27-mysql:
+          is-py27: true
+          use-mysql: true
+
+      - py36-sqlite:
+          use-postgresql: true
       - py37
-      - py37-git:
+      - py37-git-postgresql:
           use-git: true
+          use-postgresql: true
+      - py37-git-mysql:
+          use-git: true
+          use-mysql: true

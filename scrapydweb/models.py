@@ -24,7 +24,7 @@ class Metadata(db.Model):
     logparser_pid = db.Column(db.Integer, unique=False, nullable=True)
     poll_pid = db.Column(db.Integer, unique=False, nullable=True)
     pageview = db.Column(db.Integer, unique=False, nullable=False, default=0)
-    url_scrapydweb = db.Column(db.String(1000), unique=False, nullable=False, default='http://127.0.0.1:5000')
+    url_scrapydweb = db.Column(db.Text(), unique=False, nullable=False, default='http://127.0.0.1:5000')
     url_jobs = db.Column(db.String(255), unique=False, nullable=False, default='/1/jobs/')
     url_schedule_task = db.Column(db.String(255), unique=False, nullable=False, default='/1/schedule/task/')
     url_delete_task_result = db.Column(db.String(255), unique=False, nullable=False, default='/1/tasks/xhr/delete/1/1/')
@@ -63,8 +63,8 @@ def create_jobs_table(server):
         start = db.Column(db.DateTime, unique=False, nullable=True, index=True)
         runtime = db.Column(db.String(20), unique=False, nullable=True)
         finish = db.Column(db.DateTime, unique=False, nullable=True, index=True)  # Finished
-        href_log = db.Column(db.String(1000), unique=False, nullable=True)
-        href_items = db.Column(db.String(1000), unique=False, nullable=True)
+        href_log = db.Column(db.Text(), unique=False, nullable=True)
+        href_items = db.Column(db.Text(), unique=False, nullable=True)
 
         def __repr__(self):
             return "<Job #%s in table %s, %s/%s/%s start: %s>" % (
@@ -99,8 +99,8 @@ class Task(db.Model):
     version = db.Column(db.String(255), unique=False, nullable=False)
     spider = db.Column(db.String(255), unique=False, nullable=False)
     jobid = db.Column(db.String(255), unique=False, nullable=False)
-    settings_arguments = db.Column(db.String(2000), unique=False, nullable=False)
-    selected_nodes = db.Column(db.String(1000), unique=False, nullable=False)
+    settings_arguments = db.Column(db.Text(), unique=False, nullable=False)
+    selected_nodes = db.Column(db.Text(), unique=False, nullable=False)
 
     year = db.Column(db.String(255), unique=False, nullable=False)
     month = db.Column(db.String(255), unique=False, nullable=False)
@@ -154,7 +154,10 @@ class TaskJobResult(db.Model):
     server = db.Column(db.String(255), unique=False, nullable=False)  # '127.0.0.1:6800'
     status_code = db.Column(db.Integer, unique=False, nullable=False)  # -1, 200
     status = db.Column(db.String(9), unique=False, nullable=False)  # ok|error|exception
-    result = db.Column(db.String(1000), unique=False, nullable=False)  # jobid|message|exception
+    # psycopg2.DataError) value too long for type character varying(1000)
+    # https://docs.sqlalchemy.org/en/latest/core/type_basics.html#sqlalchemy.types.Text
+    # In general, TEXT objects do not have a length
+    result = db.Column(db.Text(), unique=False, nullable=False)  # jobid|message|exception
 
     def __repr__(self):
         kwargs = dict(

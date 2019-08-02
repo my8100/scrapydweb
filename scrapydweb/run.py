@@ -11,7 +11,7 @@ from flask import request
 from scrapydweb import create_app
 from scrapydweb.__version__ import __description__, __version__
 from scrapydweb.common import authenticate, find_scrapydweb_settings_py, handle_metadata, handle_slash
-from scrapydweb.vars import ROOT_DIR, SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING
+from scrapydweb.vars import ROOT_DIR, SCRAPYDWEB_SETTINGS_PY, SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING
 from scrapydweb.utils.check_app_config import check_app_config
 
 
@@ -20,7 +20,6 @@ apscheduler_logger = logging.getLogger('apscheduler')
 
 STAR = '\n%s\n' % ('*' * 100)
 DEFAULT_SETTINGS_PY_PATH = os.path.join(ROOT_DIR, 'default_settings.py')
-SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v8.py'
 
 
 def main():
