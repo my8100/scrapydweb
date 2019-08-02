@@ -3,7 +3,7 @@ import os
 
 from scrapydweb import create_app
 from scrapydweb.common import find_scrapydweb_settings_py
-from scrapydweb.run import SCRAPYDWEB_SETTINGS_PY
+from scrapydweb.vars import SCRAPYDWEB_SETTINGS_PY
 from scrapydweb.utils.check_app_config import check_app_config, check_email
 from tests.utils import get_text, req
 from tests.test_z_cleantest import test_cleantest as cleantest

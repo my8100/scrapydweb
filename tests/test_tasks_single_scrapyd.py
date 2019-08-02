@@ -551,7 +551,10 @@ def test_edit_to_new_a_task(app, client):
                                   location=metadata['location'])
     new_task_id = int(re.search(cst.TASK_NEXT_RUN_TIME_PATTERN, unquote_plus(text)).group(1))
     print("new_task_id: %s" % new_task_id)
-    assert new_task_id == task_id + 1
+    # assert new_task_id == task_id + 1
+    # For compatibility with postgresql, though test_task_xhr_delete_a_task_with_job is executed before
+    # https://stackoverflow.com/questions/9984196/postgresql-gapless-sequences
+    assert new_task_id > task_id
     __, js = req_single_scrapyd(app, client, view='tasks.xhr', kws=dict(node=NODE, action='list'))
     assert task_id in js['ids'] and new_task_id in js['ids']
 
@@ -586,7 +589,8 @@ def test_edit_to_new_a_task_fail(app, client):
     # re-edit task #2
     new_task_id = int(re.search(r're-edit task #(\d+)', text).group(1))
     print("new_task_id: %s" % new_task_id)
-    assert new_task_id == task_id + 1
+    # For compatibility with postgresql
+    assert new_task_id > task_id
     __, js = req_single_scrapyd(app, client, view='tasks.xhr', kws=dict(node=NODE, action='list'))
     assert task_id in js['ids'] and new_task_id in js['ids']
 
@@ -820,6 +824,8 @@ def test_execute_task_fail(app, client):
                                   location=metadata['location'])
     task_id = int(re.search(cst.TASK_NEXT_RUN_TIME_PATTERN, unquote_plus(text)).group(1))
     print("task_id: %s" % task_id)
+    # For compatibility with postgresql
+    metadata['task_id'] = task_id
     sleep(2)
     # The first execution has not finished yet
     req_single_scrapyd(app, client, view='tasks', kws=dict(node=NODE),

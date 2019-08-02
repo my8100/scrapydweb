@@ -153,7 +153,13 @@ class TasksView(BaseView):
                     task.url_prev_run_result = task.url_task_results
                 # Columns: Status | Actions | Next run time
                 task.url_edit = url_for('schedule', node=self.node, task_id=task.id)
-                apscheduler_job = self.scheduler.get_job(task.id)  # Return type: Job or None
+                # PostgreSQL 8.3 removes implicit casts
+                # sqlalchemy.exc.ProgrammingError: (psycopg2.ProgrammingError) operator does not exist: character varying = integer
+                # LINE 3: WHERE apscheduler_jobs.id = 2
+                # HINT:  No operator matches the given name and argument types. You might need to add explicit type casts.
+                # [SQL: 'SELECT apscheduler_jobs.job_state \nFROM apscheduler_jobs \nWHERE apscheduler_jobs.id = %(id_1)s'] [parameters: {'id_1': 2}]
+                # (Background on this error at: http://sqlalche.me/e/f405)
+                apscheduler_job = self.scheduler.get_job(str(task.id))  # Return type: Job or None
                 if apscheduler_job:
                     self.logger.debug("apscheduler_job %s: %s", apscheduler_job.name, apscheduler_job)
                     if apscheduler_job.next_run_time:
@@ -260,7 +266,7 @@ class TasksXhrView(BaseView):
         self.task_result_id = self.view_args['task_result_id']  # <int:task_result_id>
 
         self.task = Task.query.get(self.task_id) if self.task_id else None
-        self.apscheduler_job = self.scheduler.get_job(self.task_id) if self.task_id else None  # Return type: Job|None
+        self.apscheduler_job = self.scheduler.get_job(str(self.task_id)) if self.task_id else None  # Return type: Job|None
         self.js = dict(action=self.action, task_id=self.task_id, task_result_id=self.task_result_id, url=request.url)
 
     def dispatch_request(self, **kwargs):
@@ -361,7 +367,7 @@ class TasksXhrView(BaseView):
         else:  # 'Stop' button to 'remove'
             self.apscheduler_job.remove()
         self.js['tip'] = u"apscheduler_job #{task_id} after '{action}': {apscheduler_job}".format(
-            task_id=self.task_id, action=self.action, apscheduler_job=self.scheduler.get_job(self.task_id))
+            task_id=self.task_id, action=self.action, apscheduler_job=self.scheduler.get_job(str(self.task_id)))
 
     def dump_task_data(self):
         if not self.task:

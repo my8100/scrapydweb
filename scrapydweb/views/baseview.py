@@ -12,7 +12,7 @@ from six import text_type
 from ..__version__ import __version__ as SCRAPYDWEB_VERSION
 from ..common import (get_now_string, get_response_from_view, handle_metadata,
                       handle_slash, json_dumps, session)
-from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, DEMO_PROJECTS_PATH, DEPLOY_PATH,
+from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, APSCHEDULER_DATABASE_URI, DEMO_PROJECTS_PATH, DEPLOY_PATH,
                     EMAIL_TRIGGER_KEYS, PARSE_PATH, LEGAL_NAME_PATTERN, SCHEDULE_ADDITIONAL,
                     SCHEDULE_PATH, STATE_PAUSED, STATE_RUNNING, STATS_PATH, STRICT_NAME_PATTERN)
 from ..utils.scheduler import scheduler
@@ -52,6 +52,9 @@ class BaseView(View):
         # System
         self.DEBUG = app.config.get('DEBUG', False)
         self.VERBOSE = app.config.get('VERBOSE', False)
+        self.APSCHEDULER_DATABASE_URI = APSCHEDULER_DATABASE_URI
+        self.SQLALCHEMY_DATABASE_URI = app.config['SQLALCHEMY_DATABASE_URI']
+        self.SQLALCHEMY_BINDS = app.config['SQLALCHEMY_BINDS']
 
         _level = logging.DEBUG if self.VERBOSE else logging.WARNING
         self.logger.setLevel(_level)
@@ -201,6 +204,7 @@ class BaseView(View):
             self.FEATURES += 'T'
         else:
             self.FEATURES += 't'
+        self.FEATURES += self.SQLALCHEMY_DATABASE_URI[:3]
 
         self.template_fail = 'scrapydweb/fail_mobileui.html' if self.USE_MOBILEUI else 'scrapydweb/fail.html'
         self.update_g()

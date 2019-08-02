@@ -7,3 +7,6 @@ coveralls
 
 scrapy
 scrapyd
+
+pymysql>=0.9.3
+psycopg2>=2.7.7

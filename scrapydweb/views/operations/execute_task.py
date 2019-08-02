@@ -150,7 +150,7 @@ class TaskExecuter(object):
 def execute_task(task_id):
     with db.app.app_context():
         task = Task.query.get(task_id)
-        apscheduler_job = scheduler.get_job(task_id)
+        apscheduler_job = scheduler.get_job(str(task_id))
         if not task:
             apscheduler_job.remove()
             apscheduler_logger.error("apscheduler_job #{id} removed since task #{id} not exist. ".format(id=task_id))

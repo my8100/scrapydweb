@@ -1,5 +1,6 @@
 # coding: utf-8
 import glob
+import importlib
 import io
 import os
 import re
@@ -7,9 +8,22 @@ import sys
 
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
+from .default_settings import DATABASE_URL as default_database_url
+from .utils.setup_database import setup_database
+
+
 PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
 PY2 = sys.version_info.major < 3
+SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v8.py'
+try:
+    custom_settings_module = importlib.import_module(os.path.splitext(SCRAPYDWEB_SETTINGS_PY)[0])
+except ImportError:
+    custom_database_url = ''
+else:
+    custom_database_url = getattr(custom_settings_module, 'DATABASE_URL', '')
+    custom_database_url = custom_database_url if isinstance(custom_database_url, str) else ''
 
+# For data path
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(ROOT_DIR, 'data')
 DATABASE_PATH = os.path.join(DATA_PATH, 'database')
@@ -32,6 +46,10 @@ for path in [DATA_PATH, DATABASE_PATH, DEMO_PROJECTS_PATH, DEPLOY_PATH,
 RUN_SPIDER_HISTORY_LOG = os.path.join(HISTORY_LOG, 'run_spider_history.log')
 TIMER_TASKS_HISTORY_LOG = os.path.join(HISTORY_LOG, 'timer_tasks_history.log')
 
+# For database
+DATABASE_URL = custom_database_url or default_database_url or 'sqlite:///' + DATA_PATH
+results = setup_database(DATABASE_URL, DATABASE_PATH)
+APSCHEDULER_DATABASE_URI, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_BINDS, DATABASE_PATH = results
 
 # For check_app_config() and BaseView
 ALLOWED_SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt', '.gz', '']
@@ -55,7 +73,6 @@ UA_DICT = {
                 "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Mobile Safari/537.36")
 }
 
-
 # For LogsView and ItemsView
 DIRECTORY_PATTERN = re.compile(r"""
                                     <tr\sclass="(?P<odd_even>odd|even)">\n
@@ -68,19 +85,10 @@ DIRECTORY_PATTERN = re.compile(r"""
 DIRECTORY_KEYS = ['odd_even', 'filename', 'size', 'content_type', 'content_encoding']
 HREF_NAME_PATTERN = re.compile(r'href="(.+?)">(.+?)<')
 
-
 # For JobsView
 jobs_table_map = {}
 
-
 # For Timer Tasks
-APSCHEDULER_DATABASE_URI = 'sqlite:///' + os.path.join(DATABASE_PATH, 'apscheduler.db')
-# http://flask-sqlalchemy.pocoo.org/2.3/binds/#binds
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(DATABASE_PATH, 'timer_tasks.db')
-SQLALCHEMY_BINDS = {
-    'metadata': 'sqlite:///' + os.path.join(DATABASE_PATH, 'metadata.db'),
-    'jobs': 'sqlite:///' + os.path.join(DATABASE_PATH, 'jobs.db')
-}
 # STATE_STOPPED = 0, STATE_RUNNING = 1, STATE_PAUSED = 2
 SCHEDULER_STATE_DICT = {
     STATE_STOPPED: 'STATE_STOPPED',

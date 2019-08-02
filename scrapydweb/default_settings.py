@@ -308,3 +308,14 @@ DEBUG = False
 # The default is False, set it to True to change the logging level from WARNING to DEBUG
 # for getting more information about how ScrapydWeb works, especially while debugging.
 VERBOSE = False
+
+# The default is '', which means saving data of Jobs and Timer Tasks in the Python directory using SQLite.
+# The data could be also saved in MySQL or PostgreSQL backend in order to improve concurrency.
+# To use MySQL backend, run command: pip install --upgrade pymysql
+# To use PostgreSQL backend, run command: pip install --upgrade psycopg2
+# e.g.
+# 'mysql://username:password@127.0.0.1:3306'
+# 'postgres://username:password@127.0.0.1:5432'
+# 'sqlite:///c:/Users/username'
+# 'sqlite:////home/username'
+DATABASE_URL = ''

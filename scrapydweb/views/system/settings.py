@@ -42,6 +42,10 @@ class SettingsView(BaseView):
         else:
             return re.sub(r'^..(.*?)..$', r'**\1**', string)
 
+    @staticmethod
+    def hide_account(string):
+        return re.sub(r'//.+@', '//', string)
+
     def update_kwargs(self):
         # User settings
         self.kwargs['DEFAULT_SETTINGS_PY_PATH'] = self.handle_slash(self.DEFAULT_SETTINGS_PY_PATH)
@@ -159,3 +163,9 @@ class SettingsView(BaseView):
         # System
         self.kwargs['DEBUG'] = self.DEBUG
         self.kwargs['VERBOSE'] = self.VERBOSE
+        self.kwargs['database_details'] = self.json_dumps(dict(
+            APSCHEDULER_DATABASE_URI=self.hide_account(self.APSCHEDULER_DATABASE_URI),
+            SQLALCHEMY_DATABASE_URI=self.hide_account(self.SQLALCHEMY_DATABASE_URI),
+            SQLALCHEMY_BINDS_METADATA=self.hide_account(self.SQLALCHEMY_BINDS['metadata']),
+            SQLALCHEMY_BINDS_JOBS=self.hide_account(self.SQLALCHEMY_BINDS['jobs'])
+        ))
