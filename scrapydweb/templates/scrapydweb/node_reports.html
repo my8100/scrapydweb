@@ -44,7 +44,12 @@
     {% endif %}
   >
 
-    <el-table-column prop="index" label="Index" fixed sortable :sort-method="sortIndexFinish" :sort-orders="sortOrders" align="center" width="80"></el-table-column>
+    <el-table-column prop="index" label="Index" fixed sortable :sort-method="sortIndexFinish" :sort-orders="sortOrders" align="center" width="80">
+      <template slot-scope="scope">
+        <p style="display: none;">{{scope.row.index0}} </p>
+        <p>{{scope.row.index}}</p>
+      </template>
+    </el-table-column>
     <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}160{% else %}100{% endif %}">
       <template slot-scope="scope">
         <em :class="scope.row.loading_class"  v-bind:style="{display: scope.row.stats_loading_display}">{{scope.row.loading}}</em>
@@ -82,11 +87,13 @@ var Main = {
       url_report: '{{ url_report }}',
       fetch_min: 0,
       fetch_step: 20,
-      scrollTopRecord: -1,
+      scrollLeftRecord: 0,
       tableData: [
   {% for jobs in [running_jobs, finished_jobs] %}
     {% for job in jobs %}
       {
+        index0: -1,
+
         {% if job.finish %}
         index: {{ loop.revindex }},
         {% else %}
@@ -120,18 +127,25 @@ var Main = {
 
   mounted() {
     var _this = this;
+
+    for (var idx in _this.tableData) {
+      _this.tableData[idx].index0 = parseInt(idx);
+    }
+
     var bodyWrapper = _this.$refs.multipleTable.bodyWrapper;
     bodyWrapper.onscroll = _this.debounce(function () {
-      var scrollTopNow = $(bodyWrapper).scrollTop();
-      if (scrollTopNow != _this.scrollTopRecord) {
-        _this.scrollTopRecord = scrollTopNow;
-      } else {
+      var scrollLeftNow = $(bodyWrapper).scrollLeft();
+      if (scrollLeftNow != _this.scrollLeftRecord) {
+        _this.scrollLeftRecord = scrollLeftNow;
         console.log('scroll horizontally');
         return;
       }
       var tBody = bodyWrapper.children[0].children[1];
-      var trs = tBody.children;
-      $(trs).each(function (index) {
+      var tRows = tBody.children;
+      $(tRows).each(function (index) {
+        // console.log($(this));
+        var index0 = $(this)[0].textContent.match(/(\d+)/)[1];
+        index = parseInt(index0);
         if(_this.isVisible($(this), $(bodyWrapper))) {
           var job = _this.tableData[index];
           console.log(index + 1, 'visible', job.loaded);
@@ -147,7 +161,6 @@ var Main = {
   methods: {
     isVisible:function ($node, $parent) {
       var scrollTop = $parent.scrollTop();
-      this.scrollTopRecord = scrollTop;
       var top = $node[0].offsetTop;
       var halfHeight = $node[0].offsetHeight / 2;
       var pareHeight = $parent.height();
