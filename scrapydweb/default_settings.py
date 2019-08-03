@@ -309,13 +309,17 @@ DEBUG = False
 # for getting more information about how ScrapydWeb works, especially while debugging.
 VERBOSE = False
 
-# The default is '', which means saving data of Jobs and Timer Tasks in the Python directory using SQLite.
+# The default is '', which means saving all program data in the Python directory.
+# e.g. 'C:/Users/username/scrapydweb_data' or '/home/username/scrapydweb_data'
+DATA_PATH = ''
+
+# The default is '', which means saving data of Jobs and Timer Tasks in DATA_PATH using SQLite.
 # The data could be also saved in MySQL or PostgreSQL backend in order to improve concurrency.
 # To use MySQL backend, run command: pip install --upgrade pymysql
 # To use PostgreSQL backend, run command: pip install --upgrade psycopg2
 # e.g.
 # 'mysql://username:password@127.0.0.1:3306'
 # 'postgres://username:password@127.0.0.1:5432'
-# 'sqlite:///c:/Users/username'
+# 'sqlite:///C:/Users/username'
 # 'sqlite:////home/username'
 DATABASE_URL = ''

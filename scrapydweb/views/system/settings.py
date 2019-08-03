@@ -163,6 +163,7 @@ class SettingsView(BaseView):
         # System
         self.kwargs['DEBUG'] = self.DEBUG
         self.kwargs['VERBOSE'] = self.VERBOSE
+        self.kwargs['DATA_PATH'] = self.DATA_PATH
         self.kwargs['database_details'] = self.json_dumps(dict(
             APSCHEDULER_DATABASE_URI=self.hide_account(self.APSCHEDULER_DATABASE_URI),
             SQLALCHEMY_DATABASE_URI=self.hide_account(self.SQLALCHEMY_DATABASE_URI),

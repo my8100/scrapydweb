@@ -40,7 +40,7 @@ def setup_database(database_url, database_path):
         database_path = os.path.abspath(database_path)
         database_path = re.sub(r'\\', '/', database_path)
         database_path = re.sub(r'/$', '', database_path)
-        if not os.path.exists(database_path):
+        if not os.path.isdir(database_path):
             os.mkdir(database_path)
 
     if m_mysql or m_postgres:

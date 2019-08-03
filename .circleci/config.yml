@@ -22,13 +22,16 @@ jobs:
       use-git:
         type: boolean
         default: false
-      use-mysql:
+      set-data-path:
+        type: boolean
+        default: false
+      use-sqlite:
         type: boolean
         default: false
       use-postgresql:
         type: boolean
         default: false
-      use-sqlite:
+      use-mysql:
         type: boolean
         default: false
     steps:
@@ -61,6 +64,35 @@ jobs:
                   python3 -m venv venv
 
       - when:
+          condition: <<parameters.set-data-path>>
+          steps:
+            - run:
+                name: Set DATABASE_URL to sqlite
+                command: |
+                  printf "\nDATA_PATH = '"$DATA_PATH"'\n" >> scrapydweb_settings_v8.py
+      - when:
+          condition: <<parameters.use-sqlite>>
+          steps:
+            - run:
+                name: Set DATABASE_URL to sqlite
+                command: |
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+      - when:
+          condition: <<parameters.use-postgresql>>
+          steps:
+            - run:
+                name: Setup PSQL Databases
+                command: |
+                  # https://discuss.circleci.com/t/multiple-postgres-databases-in-circleci-2-0/23089
+                  # createdb: could not connect to database template1: FATAL:  role "circleci" does not exist
+                  # sudo apt install -y postgresql-client
+                  # createdb -h localhost scrapydweb_apscheduler -O circleci
+            - run:
+                name: Set DATABASE_URL to postgresql
+                command: |
+                  # postgres://circleci@127.0.0.1:5432
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+      - when:
           condition: <<parameters.use-mysql>>
           steps:
             - run:
@@ -90,31 +122,7 @@ jobs:
                 command: |
                   # mysql://user:passw0rd@127.0.0.1:3306
                   printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
-                  cat scrapydweb_settings_v8.py
-      - when:
-          condition: <<parameters.use-postgresql>>
-          steps:
-            - run:
-                name: Setup PSQL Databases
-                command: |
-                  # https://discuss.circleci.com/t/multiple-postgres-databases-in-circleci-2-0/23089
-                  # createdb: could not connect to database template1: FATAL:  role "circleci" does not exist
-                  # sudo apt install -y postgresql-client
-                  # createdb -h localhost scrapydweb_apscheduler -O circleci
-            - run:
-                name: Set DATABASE_URL to postgresql
-                command: |
-                  # postgres://circleci@127.0.0.1:5432
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
-                  cat scrapydweb_settings_v8.py
-      - when:
-          condition: <<parameters.use-sqlite>>
-          steps:
-            - run:
-                name: Set DATABASE_URL to sqlite
-                command: |
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
-                  cat scrapydweb_settings_v8.py
+
       - run:
           name: Install dependencies
           command: |
@@ -160,13 +168,16 @@ jobs:
       - run:
           name: Generate report
           command: |
+            touch scrapydweb_settings_v8.py
+            cat scrapydweb_settings_v8.py
+            echo $DATA_PATH
             echo $DATABASE_URL
             . venv/bin/activate
             coverage report
             coverage html
             coverage xml
-            coveralls
             ls -la
+            coveralls
       - store_artifacts:
           path: htmlcov
       - store_artifacts:
@@ -184,6 +195,7 @@ jobs:
       - image: circleci/python:2.7
     environment:
       SCRAPYDWEB_TESTMODE: True
+      DATA_PATH: '/home/circleci/repo/scrapydweb_data'
       DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
   py27-postgresql:
     <<: *test-template
@@ -224,6 +236,7 @@ jobs:
       - image: circleci/python:3.6
     environment:
       SCRAPYDWEB_TESTMODE: True
+      DATA_PATH: '/home/circleci/repo/scrapydweb_data'
       DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
   py37-git-postgresql:
     <<: *test-template
@@ -266,6 +279,7 @@ workflows:
           is-py27: true
       - py27-sqlite:
           is-py27: true
+          set-data-path: true
           use-sqlite: true
       - py27-postgresql:
           is-py27: true
@@ -274,9 +288,10 @@ workflows:
           is-py27: true
           use-mysql: true
 
-      - py36-sqlite:
-          use-postgresql: true
       - py37
+      - py36-sqlite:
+          set-data-path: true
+          use-sqlite: true
       - py37-git-postgresql:
           use-git: true
           use-postgresql: true
