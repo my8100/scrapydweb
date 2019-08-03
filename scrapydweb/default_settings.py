@@ -1,26 +1,16 @@
 # coding: utf-8
 """
 How ScrapydWeb works:
-BROWSER_HOST <<<>>> SCRAPYDWEB_BIND:SCRAPYDWEB_PORT <<<>>> your SCRAPYD_SERVERS
+BROWSER <<<>>> SCRAPYDWEB_BIND:SCRAPYDWEB_PORT <<<>>> your SCRAPYD_SERVERS
 
 GitHub: https://github.com/my8100/scrapydweb
+DOCS: https://github.com/my8100/files/blob/master/scrapydweb/README.md
+文档：https://github.com/my8100/files/blob/master/scrapydweb/README_CN.md
 """
 
 
-###############################################################################
-###############################################################################
-## QUICK SETUP: Simply search and update the SCRAPYD_SERVERS option, leave the rest as default.
-## Recommended Reading: [How to efficiently manage your distributed web scraping projects]
-## (https://github.com/my8100/files/blob/master/scrapydweb/README.md)
-## ------------------------------ Chinese -------------------------------------
-## 快速设置：搜索并更新 SCRAPYD_SERVERS 配置项即可，其余配置项保留默认值。
-## 推荐阅读：[如何简单高效地部署和监控分布式爬虫项目]
-## (https://github.com/my8100/files/blob/master/scrapydweb/README_CN.md)
-###############################################################################
-###############################################################################
-
-
-############################## ScrapydWeb #####################################
+############################## QUICK SETUP start ##############################
+############################## 快速设置 开始 ###################################
 # Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-THE-CURRENT-HOST would make
 # ScrapydWeb server visible externally; Otherwise, set it to '127.0.0.1'.
 # The default is '0.0.0.0'.
@@ -28,31 +18,13 @@ SCRAPYDWEB_BIND = '0.0.0.0'
 # Accept connections on the specified port, the default is 5000.
 SCRAPYDWEB_PORT = 5000
 
-# The default is False, set it to True to enable basic auth for web UI.
+# The default is False, set it to True to enable basic auth for the web UI.
 ENABLE_AUTH = False
 # In order to enable basic auth, both USERNAME and PASSWORD should be non-empty strings.
 USERNAME = ''
 PASSWORD = ''
 
-# The default is False, set it to True and add both CERTIFICATE_FILEPATH and PRIVATEKEY_FILEPATH
-# to run ScrapydWeb in HTTPS mode.
-# Note that this feature is not fully tested, please leave your comment here if ScrapydWeb
-# raises any excepion at startup: https://github.com/my8100/scrapydweb/issues/18
-ENABLE_HTTPS = False
-# e.g. '/home/username/cert.pem'
-CERTIFICATE_FILEPATH = ''
-# e.g. '/home/username/cert.key'
-PRIVATEKEY_FILEPATH = ''
 
-
-############################## Scrapy #########################################
-# ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
-# so that you can simply select a project to deploy, instead of packaging it in advance.
-# e.g. 'C:/Users/username/myprojects/' or '/home/username/myprojects/'
-SCRAPY_PROJECTS_DIR = ''
-
-
-############################## Scrapyd ########################################
 # Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed
 # and started on all of your hosts.
 # Note that for remote access, you have to manually set 'bind_address = 0.0.0.0'
@@ -78,30 +50,57 @@ SCRAPYD_SERVERS = [
     ('username', 'password', 'localhost', '6801', 'group'),
 ]
 
+
+# It's recommended to update the three options below
+# if both ScrapydWeb and one of your Scrapyd servers run on the same machine.
+# ------------------------------ Chinese --------------------------------------
+# 假如 ScrapydWeb 和某个 Scrapyd 运行于同一台主机，建议更新如下三个设置项。
+
 # If both ScrapydWeb and one of your Scrapyd servers run on the same machine,
 # ScrapydWeb would try to directly read Scrapy logfiles from disk, instead of making a request
 # to the Scrapyd server.
 # e.g. '127.0.0.1:6800' or 'localhost:6801', do not forget the port number.
 LOCAL_SCRAPYD_SERVER = ''
-# Check out this link to find out where the Scrapy logs are stored:
-# https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir
-# e.g. 'C:/Users/username/logs/' or '/home/username/logs/'
-SCRAPYD_LOGS_DIR = ''
+# Enter the directory when you run Scrapyd, run the command below
+# to find out where the Scrapy logs are stored:
+# python -c "from os.path import abspath, isdir; from scrapyd.config import Config; path = abspath(Config().get('logs_dir')); print(path); print(isdir(path))"
+# e.g. 'C:/Users/username/logs' or '/home/username/logs'
+LOCAL_SCRAPYD_LOGS_DIR = ''
+# The default is False, set it to True to automatically run LogParser as a subprocess at startup.
+# Note that you can run the LogParser service separately via command 'logparser' as you like.
+# Run 'logparser -h' to find out the config file of LogParser for more advanced settings.
+# Visit https://github.com/my8100/logparser for more info.
+ENABLE_LOGPARSER = False
+############################## QUICK SETUP end ################################
+############################## 快速设置 结束 ###################################
 
+
+############################## ScrapydWeb #####################################
+# The default is False, set it to True and add both CERTIFICATE_FILEPATH and PRIVATEKEY_FILEPATH
+# to run ScrapydWeb in HTTPS mode.
+# Note that this feature is not fully tested, please leave your comment here if ScrapydWeb
+# raises any excepion at startup: https://github.com/my8100/scrapydweb/issues/18
+ENABLE_HTTPS = False
+# e.g. '/home/username/cert.pem'
+CERTIFICATE_FILEPATH = ''
+# e.g. '/home/username/cert.key'
+PRIVATEKEY_FILEPATH = ''
+
+
+############################## Scrapy #########################################
+# ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
+# so that you can simply select a project to deploy, instead of packaging it in advance.
+# e.g. 'C:/Users/username/myprojects' or '/home/username/myprojects'
+SCRAPY_PROJECTS_DIR = ''
+
+
+############################## Scrapyd ########################################
 # ScrapydWeb would try every extension in sequence to locate the Scrapy logfile.
 # The default is ['.log', '.log.gz', '.txt'].
 SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt']
 
 
 ############################## LogParser ######################################
-# By default ScrapydWeb would automatically run LogParser as a subprocess at startup,
-# so that the stats of crawled_pages and scraped_items can be shown in the Jobs page.
-# The default is True, set it to False to disable this behaviour.
-# Note that you can run the LogParser service separately via command 'logparser' as you like.
-# Run 'logparser -h' to find out the config file of LogParser for more advanced settings.
-# Visit https://github.com/my8100/logparser for more info.
-ENABLE_LOGPARSER = True
-
 # Whether to backup the stats json files locally after you visit the Stats page of a job
 # so that it is still accessible even if the original logfile has been deleted.
 # The default is True, set it to False to disable this behaviour.

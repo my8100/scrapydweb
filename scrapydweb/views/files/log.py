@@ -51,10 +51,10 @@ class LogView(BaseView):
 
         self.job_key = '/%s/%s/%s/%s' % (self.node, self.project, self.spider, self.job)
 
-        # Note that self.SCRAPYD_LOGS_DIR may be an empty string
+        # Note that self.LOCAL_SCRAPYD_LOGS_DIR may be an empty string
         # Extension like '.log' is excluded here.
         self.url = u'http://{}/logs/{}/{}/{}'.format(self.SCRAPYD_SERVER, self.project, self.spider, self.job)
-        self.log_path = os.path.join(self.SCRAPYD_LOGS_DIR, self.project, self.spider, self.job)
+        self.log_path = os.path.join(self.LOCAL_SCRAPYD_LOGS_DIR, self.project, self.spider, self.job)
 
         # For Log and Stats buttons in the Logs page: /a.log/?with_ext=True
         self.with_ext = request.args.get('with_ext', None)
@@ -65,7 +65,7 @@ class LogView(BaseView):
             job_without_ext = self.job
 
         # json file by LogParser
-        self.json_path = os.path.join(self.SCRAPYD_LOGS_DIR, self.project, self.spider, job_without_ext + '.json')
+        self.json_path = os.path.join(self.LOCAL_SCRAPYD_LOGS_DIR, self.project, self.spider, job_without_ext+'.json')
         self.json_url = u'http://{}/logs/{}/{}/{}.json'.format(self.SCRAPYD_SERVER, self.project, self.spider,
                                                                job_without_ext)
 
@@ -117,14 +117,14 @@ class LogView(BaseView):
             self.read_stats_for_report()
         # Try to request stats by LogParser to avoid reading/requesting the whole log
         if not self.logparser_valid and (self.stats_logparser or self.report_logparser):
-            if self.IS_LOCAL_SCRAPYD_SERVER and self.SCRAPYD_LOGS_DIR:
+            if self.IS_LOCAL_SCRAPYD_SERVER and self.LOCAL_SCRAPYD_LOGS_DIR:
                 self.read_local_stats_by_logparser()
             if not self.logparser_valid:
                 self.request_stats_by_logparser()
 
         if not self.logparser_valid and not self.text:
             # Try to read local logfile
-            if self.IS_LOCAL_SCRAPYD_SERVER and self.SCRAPYD_LOGS_DIR:
+            if self.IS_LOCAL_SCRAPYD_SERVER and self.LOCAL_SCRAPYD_LOGS_DIR:
                 self.read_local_scrapy_log()
             # Has to request scrapy logfile
             if not self.text:

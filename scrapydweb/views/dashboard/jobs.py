@@ -137,8 +137,8 @@ class JobsView(BaseView):
         if not self.ENABLE_AUTH and self.SCRAPYD_SERVERS_AMOUNT == 1:
             flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", self.INFO)
         if self.IS_LOCAL_SCRAPYD_SERVER:
-            if not self.SCRAPYD_LOGS_DIR:
-                flash(("Set up the SCRAPYD_LOGS_DIR option to speed up the loading of scrapy logfiles "
+            if not self.LOCAL_SCRAPYD_LOGS_DIR:
+                flash(("Set up the LOCAL_SCRAPYD_LOGS_DIR option to speed up the loading of scrapy logfiles "
                       "for the LOCAL_SCRAPYD_SERVER %s" % self.SCRAPYD_SERVER), self.WARN)
             if not self.ENABLE_LOGPARSER:
                 flash("Set 'ENABLE_LOGPARSER = True' to run LogParser as a subprocess at startup", self.WARN)

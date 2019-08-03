@@ -64,7 +64,7 @@ def start_logparser(config):
         '-m',
         'logparser.run',
         '-dir',
-        config['SCRAPYD_LOGS_DIR'],
+        config['LOCAL_SCRAPYD_LOGS_DIR'],
         '--main_pid',
         str(config['MAIN_PID']),
     ]

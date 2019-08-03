@@ -233,17 +233,17 @@ def setup_env(custom_settings):
     setup_logfile(delete=True)
     print("setup_logfile(delete=True)")
 
-    if not custom_settings.get('SCRAPYD_LOGS_DIR', ''):
-        custom_settings['SCRAPYD_LOGS_DIR'] = os.path.join(os.path.expanduser('~'), 'logs')
-        print("Setting SCRAPYD_LOGS_DIR to: %s" % custom_settings['SCRAPYD_LOGS_DIR'])
-    scrapyd_logs_dir = custom_settings['SCRAPYD_LOGS_DIR']
-    if not os.path.isdir(scrapyd_logs_dir):
-        sys.exit("custom_settings['SCRAPYD_LOGS_DIR'] not found: %s" % repr(scrapyd_logs_dir))
+    if not custom_settings.get('LOCAL_SCRAPYD_LOGS_DIR', ''):
+        custom_settings['LOCAL_SCRAPYD_LOGS_DIR'] = os.path.join(os.path.expanduser('~'), 'logs')
+        print("Setting LOCAL_SCRAPYD_LOGS_DIR to: %s" % custom_settings['LOCAL_SCRAPYD_LOGS_DIR'])
+    local_scrapyd_logs_dir = custom_settings['LOCAL_SCRAPYD_LOGS_DIR']
+    if not os.path.isdir(local_scrapyd_logs_dir):
+        sys.exit("custom_settings['LOCAL_SCRAPYD_LOGS_DIR'] not found: %s" % repr(local_scrapyd_logs_dir))
     else:
-        logs_ScrapydWeb_demo = os.path.join(scrapyd_logs_dir, cst.PROJECT)
-        if os.path.isdir(logs_ScrapydWeb_demo):
-            rmtree(logs_ScrapydWeb_demo, ignore_errors=True)
-            print("rmtree %s" % logs_ScrapydWeb_demo)
+        logs_scrapydweb_demo = os.path.join(local_scrapyd_logs_dir, cst.PROJECT)
+        if os.path.isdir(logs_scrapydweb_demo):
+            rmtree(logs_scrapydweb_demo, ignore_errors=True)
+            print("rmtree %s" % logs_scrapydweb_demo)
 
     data_folder = os.path.join(cst.ROOT_DIR, 'data')
     if os.path.isdir(data_folder):
@@ -252,7 +252,7 @@ def setup_env(custom_settings):
     with zipfile.ZipFile(os.path.join(cst.ROOT_DIR, 'data.zip'), 'r') as f:
         f.extractall(cst.ROOT_DIR)
 
-    project_path = os.path.join(scrapyd_logs_dir, cst.PROJECT)
+    project_path = os.path.join(local_scrapyd_logs_dir, cst.PROJECT)
     spider_path = os.path.join(project_path, cst.SPIDER)
     for path in [project_path, spider_path]:
         if not os.path.isdir(path):
@@ -265,7 +265,7 @@ def setup_env(custom_settings):
         # 'finish_reason': 'finished',
         if filename == cst.DEMO_UNFINISHED_LOG:
             replace_file_content(dst, "'finish_reason'", "'finish_reason_removed'")
-    stats_json_path = os.path.join(scrapyd_logs_dir, 'stats.json')
+    stats_json_path = os.path.join(local_scrapyd_logs_dir, 'stats.json')
     demo_json_path = os.path.join(spider_path, cst.DEMO_JSON)
     demo_unfinished_json_path = os.path.join(spider_path, cst.DEMO_UNFINISHED_JSON)
     custom_settings['STATS_JSON_PATH'] = stats_json_path
