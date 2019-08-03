@@ -8,6 +8,7 @@ import sys
 
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 
+from .default_settings import DATA_PATH as default_data_path
 from .default_settings import DATABASE_URL as default_database_url
 from .utils.setup_database import setup_database
 
@@ -18,14 +19,23 @@ SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v8.py'
 try:
     custom_settings_module = importlib.import_module(os.path.splitext(SCRAPYDWEB_SETTINGS_PY)[0])
 except ImportError:
+    custom_data_path = ''
     custom_database_url = ''
 else:
+    custom_data_path = getattr(custom_settings_module, 'DATA_PATH', '')
+    custom_data_path = custom_data_path if isinstance(custom_data_path, str) else ''
     custom_database_url = getattr(custom_settings_module, 'DATABASE_URL', '')
     custom_database_url = custom_database_url if isinstance(custom_database_url, str) else ''
 
-# For data path
+# For data storage
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(ROOT_DIR, 'data')
+
+DATA_PATH = default_data_path or custom_data_path
+if DATA_PATH:
+    DATA_PATH = os.path.abspath(DATA_PATH)
+else:
+    DATA_PATH = os.path.join(ROOT_DIR, 'data')
+
 DATABASE_PATH = os.path.join(DATA_PATH, 'database')
 DEMO_PROJECTS_PATH = os.path.join(DATA_PATH, 'demo_projects')
 DEPLOY_PATH = os.path.join(DATA_PATH, 'deploy')
@@ -47,7 +57,7 @@ RUN_SPIDER_HISTORY_LOG = os.path.join(HISTORY_LOG, 'run_spider_history.log')
 TIMER_TASKS_HISTORY_LOG = os.path.join(HISTORY_LOG, 'timer_tasks_history.log')
 
 # For database
-DATABASE_URL = custom_database_url or default_database_url or 'sqlite:///' + DATA_PATH
+DATABASE_URL = custom_database_url or default_database_url or 'sqlite:///' + DATABASE_PATH
 results = setup_database(DATABASE_URL, DATABASE_PATH)
 APSCHEDULER_DATABASE_URI, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_BINDS, DATABASE_PATH = results
 

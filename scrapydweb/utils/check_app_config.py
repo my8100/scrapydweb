@@ -250,6 +250,7 @@ def check_app_config(config):
         # logging.getLogger('apscheduler').setLevel(logging.DEBUG)
     # else:
         # logging.getLogger('apscheduler').setLevel(logging.WARNING)
+    check_assert('DATA_PATH', '', str)
     check_assert('DATABASE_URL', '', str)
     database_url = config.get('DATABASE_URL', '')
     if database_url:
