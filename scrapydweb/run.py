@@ -171,7 +171,7 @@ def parse_args(config):
         help="current: ENABLE_AUTH = %s, append '--disable_auth' to disable basic auth for web UI" % ENABLE_AUTH
     )
 
-    ENABLE_LOGPARSER = config.get('ENABLE_LOGPARSER', True)
+    ENABLE_LOGPARSER = config.get('ENABLE_LOGPARSER', False)
     parser.add_argument(
         '-dlp', '--disable_logparser',
         action='store_true',

@@ -31,7 +31,7 @@ def test_log_utf8_stats(app, client):
             ins='log - ScrapydWeb')
 
         # For testing request_scrapy_log() of LogView in log.py
-        app.config['SCRAPYD_LOGS_DIR'] = 'dir-not-exist'
+        app.config['LOCAL_SCRAPYD_LOGS_DIR'] = 'non-exist-dir'
         req(app, client, view='log', kws=dict(node=1, opt='utf8', project=cst.PROJECT, spider=cst.SPIDER, job=jobid),
             ins='log - ScrapydWeb')
 

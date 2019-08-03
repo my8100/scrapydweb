@@ -16,7 +16,7 @@ custom_settings = dict(
     _SCRAPYD_SERVER='127.0.0.1:6800',
     _SCRAPYD_SERVER_AUTH=('admin', '12345'),  # Or None
 
-    SCRAPYD_LOGS_DIR='',  # For LogParser, defaults to the 'logs' directory that resides in current user directory
+    LOCAL_SCRAPYD_LOGS_DIR='',  # For LogParser, defaults to the 'logs' directory that resides in current user directory
 
     ENABLE_EMAIL=os.environ.get('ENABLE_EMAIL', 'False') == 'True',  # Whether to execute testcases related to "Email Notice"
 

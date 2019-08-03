@@ -67,7 +67,7 @@ jobs:
           condition: <<parameters.set-data-path>>
           steps:
             - run:
-                name: Set DATABASE_URL to sqlite
+                name: Setup DATA_PATH
                 command: |
                   printf "\nDATA_PATH = '"$DATA_PATH"'\n" >> scrapydweb_settings_v8.py
       - when:

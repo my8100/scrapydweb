@@ -113,12 +113,12 @@ def check_app_config(config):
     db.create_all(bind='jobs')
     logger.debug("Created %s tables for JobsView", len(jobs_table_map))
 
-    check_assert('SCRAPYD_LOGS_DIR', '', str)
+    check_assert('LOCAL_SCRAPYD_LOGS_DIR', '', str)
     check_assert('LOCAL_SCRAPYD_SERVER', '', str)
-    SCRAPYD_LOGS_DIR = config.get('SCRAPYD_LOGS_DIR', '')
-    if SCRAPYD_LOGS_DIR:
-        assert os.path.isdir(SCRAPYD_LOGS_DIR), "SCRAPYD_LOGS_DIR not found: %s" % SCRAPYD_LOGS_DIR
-        logger.info("Setting up SCRAPYD_LOGS_DIR: %s", handle_slash(SCRAPYD_LOGS_DIR))
+    LOCAL_SCRAPYD_LOGS_DIR = config.get('LOCAL_SCRAPYD_LOGS_DIR', '')
+    if LOCAL_SCRAPYD_LOGS_DIR:
+        assert os.path.isdir(LOCAL_SCRAPYD_LOGS_DIR), "LOCAL_SCRAPYD_LOGS_DIR not found: %s" % LOCAL_SCRAPYD_LOGS_DIR
+        logger.info("Setting up LOCAL_SCRAPYD_LOGS_DIR: %s", handle_slash(LOCAL_SCRAPYD_LOGS_DIR))
         LOCAL_SCRAPYD_SERVER = config.get('LOCAL_SCRAPYD_SERVER', '')
         if LOCAL_SCRAPYD_SERVER and not re.search(r':\d+$', LOCAL_SCRAPYD_SERVER):
             LOCAL_SCRAPYD_SERVER += ':6800'
@@ -126,7 +126,7 @@ def check_app_config(config):
         if len(config['SCRAPYD_SERVERS']) > 1:
             assert LOCAL_SCRAPYD_SERVER, \
                 ("The LOCAL_SCRAPYD_SERVER option must be set up since you have added multiple Scrapyd servers "
-                 "and set up the SCRAPYD_LOGS_DIR option.\nOtherwise, just set SCRAPYD_LOGS_DIR to ''")
+                 "and set up the LOCAL_SCRAPYD_LOGS_DIR option.\nOtherwise, just set LOCAL_SCRAPYD_LOGS_DIR to ''")
         else:
             if not LOCAL_SCRAPYD_SERVER:
                 config['LOCAL_SCRAPYD_SERVER'] = config['SCRAPYD_SERVERS'][0]
@@ -138,8 +138,8 @@ def check_app_config(config):
     # else:
     #     _path = os.path.join(os.path.expanduser('~'), 'logs')
     #     if os.path.isdir(_path):
-    #         config['SCRAPYD_LOGS_DIR'] = _path
-    #         logger.info("Found SCRAPYD_LOGS_DIR: %s", config['SCRAPYD_LOGS_DIR'])
+    #         config['LOCAL_SCRAPYD_LOGS_DIR'] = _path
+    #         logger.info("Found LOCAL_SCRAPYD_LOGS_DIR: %s", config['LOCAL_SCRAPYD_LOGS_DIR'])
 
     check_assert('SCRAPYD_LOG_EXTENSIONS', ALLOWED_SCRAPYD_LOG_EXTENSIONS, list, non_empty=True, containing_type=str)
     SCRAPYD_LOG_EXTENSIONS = config.get('SCRAPYD_LOG_EXTENSIONS', ALLOWED_SCRAPYD_LOG_EXTENSIONS)
@@ -149,10 +149,10 @@ def check_app_config(config):
     logger.info("Locating scrapy logfiles with SCRAPYD_LOG_EXTENSIONS: %s", SCRAPYD_LOG_EXTENSIONS)
 
     # LogParser
-    check_assert('ENABLE_LOGPARSER', True, bool)
-    if config.get('ENABLE_LOGPARSER', True):
-        assert config.get('SCRAPYD_LOGS_DIR', ''), \
-            ("In order to automatically run LogParser at startup, you have to set up the SCRAPYD_LOGS_DIR option "
+    check_assert('ENABLE_LOGPARSER', False, bool)
+    if config.get('ENABLE_LOGPARSER', False):
+        assert config.get('LOCAL_SCRAPYD_LOGS_DIR', ''), \
+            ("In order to automatically run LogParser at startup, you have to set up the LOCAL_SCRAPYD_LOGS_DIR option "
              "first.\nOtherwise, set 'ENABLE_LOGPARSER = False' if you are not running any Scrapyd service "
              "on the current ScrapydWeb host.\nNote that you can run the LogParser service separately "
              "via command 'logparser' as you like. ")
@@ -385,13 +385,13 @@ def check_email(config):
 
 
 def init_subprocess(config):
-    if config.get('ENABLE_LOGPARSER', True):
+    if config.get('ENABLE_LOGPARSER', False):
         config['LOGPARSER_PID'] = init_logparser(config)
     else:
         config['LOGPARSER_PID'] = None
     handle_metadata('logparser_pid', config['LOGPARSER_PID'])
 
-    if config.get('ENABLE_EMAIL', True):
+    if config.get('ENABLE_EMAIL', False):
         config['POLL_PID'] = init_poll(config)
     else:
         config['POLL_PID'] = None

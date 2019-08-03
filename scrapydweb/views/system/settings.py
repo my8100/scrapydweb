@@ -80,7 +80,7 @@ class SettingsView(BaseView):
 
         self.kwargs['servers'] = self.json_dumps(servers)
         self.kwargs['LOCAL_SCRAPYD_SERVER'] = self.LOCAL_SCRAPYD_SERVER or "''"
-        self.kwargs['SCRAPYD_LOGS_DIR'] = self.handle_slash(self.SCRAPYD_LOGS_DIR) or "''"
+        self.kwargs['LOCAL_SCRAPYD_LOGS_DIR'] = self.handle_slash(self.LOCAL_SCRAPYD_LOGS_DIR) or "''"
         self.kwargs['SCRAPYD_LOG_EXTENSIONS'] = self.SCRAPYD_LOG_EXTENSIONS
 
         # LogParser

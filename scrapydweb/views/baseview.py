@@ -96,12 +96,12 @@ class BaseView(View):
         self.SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None]
 
         self.LOCAL_SCRAPYD_SERVER = app.config.get('LOCAL_SCRAPYD_SERVER', '')
-        self.SCRAPYD_LOGS_DIR = app.config.get('SCRAPYD_LOGS_DIR', '')
+        self.LOCAL_SCRAPYD_LOGS_DIR = app.config.get('LOCAL_SCRAPYD_LOGS_DIR', '')
         self.SCRAPYD_LOG_EXTENSIONS = (app.config.get('SCRAPYD_LOG_EXTENSIONS', [])
                                        or ALLOWED_SCRAPYD_LOG_EXTENSIONS)
 
         # LogParser
-        self.ENABLE_LOGPARSER = app.config.get('ENABLE_LOGPARSER', True)
+        self.ENABLE_LOGPARSER = app.config.get('ENABLE_LOGPARSER', False)
         self.BACKUP_STATS_JSON_FILE = app.config.get('BACKUP_STATS_JSON_FILE', True)
 
         # Timer Tasks
@@ -206,7 +206,8 @@ class BaseView(View):
             self.FEATURES += 'T'
         else:
             self.FEATURES += 't'
-        self.FEATURES += self.SQLALCHEMY_DATABASE_URI[:3]
+        if not self.SQLALCHEMY_DATABASE_URI.startswith('sqlite'):
+            self.FEATURES += self.SQLALCHEMY_DATABASE_URI[:3]
 
         self.template_fail = 'scrapydweb/fail_mobileui.html' if self.USE_MOBILEUI else 'scrapydweb/fail.html'
         self.update_g()
