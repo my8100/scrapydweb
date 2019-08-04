@@ -128,7 +128,7 @@ def test_stats_with_file_deleted(app, client):
     replace_file_content(app.config['DEMO_JSON_PATH'], old, new)
     req(app, client, view='log', kws=kws,
         ins=["Mismatching logparser_version 0.0.0 in local stats",
-             "pip install -U logparser", "Using local logfile:", tab])
+             "pip install --upgrade logparser", "Using local logfile:", tab])
     replace_file_content(app.config['DEMO_JSON_PATH'], new, old)
 
     # delete ScrapydWeb_demo.json in logs

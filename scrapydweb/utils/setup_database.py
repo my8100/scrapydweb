@@ -51,6 +51,7 @@ def setup_database(database_url, database_path):
             'jobs': '/'.join([database_url, DB_JOBS])
         }
     else:
+        # db names for backward compatibility
         APSCHEDULER_DATABASE_URI = 'sqlite:///' + '/'.join([database_path, 'apscheduler.db'])
         # http://flask-sqlalchemy.pocoo.org/2.3/binds/#binds
         SQLALCHEMY_DATABASE_URI = 'sqlite:///' + '/'.join([database_path, 'timer_tasks.db'])
@@ -80,7 +81,8 @@ def setup_mysql(username, password, host, port):
     """
     ModuleNotFoundError: No module named 'MySQLdb'
     pip install mysqlclient
-    Python 2: pip install mysqlclient -> MySQLdb/_mysql.c(29) : fatal error C1083: Cannot open include file: 'mysql.h': No such file or directory
+    Python 2: pip install mysqlclient -> MySQLdb/_mysql.c(29) :
+    fatal error C1083: Cannot open include file: 'mysql.h': No such file or directory
     https://stackoverflow.com/questions/51294268/pip-install-mysqlclient-returns-fatal-error-c1083-cannot-open-file-mysql-h
     https://www.lfd.uci.edu/~gohlke/pythonlibs/#mysqlclient
     pip install "path to the downloaded mysqlclient.whl file"
@@ -148,7 +150,8 @@ def setup_postgresql(username, password, host, port):
         # creating-utf-8-database-in-postgresql-on-windows10
 
         # cur.execute("CREATE DATABASE %s ENCODING 'UTF8' LC_COLLATE 'en-US' LC_CTYPE 'en-US'" % dbname)
-        # psycopg2.DataError: new collation (en-US) is incompatible with the collation of the template database (Chinese (Simplified)_People's Republic of China.936)
+        # psycopg2.DataError: new collation (en-US) is incompatible with the collation of the template database
+        # (Chinese (Simplified)_People's Republic of China.936)
         # HINT:  Use the same collation as in the template database, or use template0 as template.
         try:
             cur.execute("CREATE DATABASE %s ENCODING 'UTF8' LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8'" % dbname)

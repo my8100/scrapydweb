@@ -3,7 +3,7 @@ APScheduler>=3.5.3
 flask>=1.0.2
 flask-compress>=1.4.0
 Flask-SQLAlchemy>=2.3.2
-logparser==0.8.1
+logparser==0.8.2
 requests>=2.21.0
 setuptools>=40.6.3
 six>=1.12.0

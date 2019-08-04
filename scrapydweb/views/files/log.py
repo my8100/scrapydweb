@@ -33,8 +33,8 @@ job_data_dict = {}
 job_finished_key_dict = defaultdict(OrderedDict)
 # For /log/report/
 job_finished_report_dict = defaultdict(OrderedDict)
-REPORT_KEYS_SET = set(['from_memory', 'status', 'pages', 'items', 'shutdown_reason', 'finish_reason',
-                       'runtime', 'first_log_time', 'latest_log_time', 'log_categories', 'latest_matches'])
+REPORT_KEYS_SET = {'from_memory', 'status', 'pages', 'items', 'shutdown_reason', 'finish_reason', 'runtime',
+                   'first_log_time', 'latest_log_time', 'log_categories', 'latest_matches'}
 
 
 # http://flask.pocoo.org/docs/1.0/api/#flask.views.View
@@ -110,7 +110,7 @@ class LogView(BaseView):
         self.email_content_kwargs = {}
         self.flag = ''
 
-        self.jobs_to_keep = self.JOBS_FINISHED_JOBS_LIMIT or 1000
+        self.jobs_to_keep = self.JOBS_FINISHED_JOBS_LIMIT or 200
 
     def dispatch_request(self, **kwargs):
         if self.report_logparser:
@@ -205,7 +205,7 @@ class LogView(BaseView):
                        "Or wait until LogParser parses the log. ") % self.SCRAPYD_SERVER, self.WARN)
             return
         elif js.get('logparser_version') != self.LOGPARSER_VERSION:
-            msg = "'pip install -U logparser' on host '%s' to update LogParser to v%s" % (
+            msg = "'pip install --upgrade logparser' on host '%s' to update LogParser to v%s" % (
                 self.SCRAPYD_SERVER, self.LOGPARSER_VERSION)
             self.logger.warning(msg)
             flash(msg, self.WARN)

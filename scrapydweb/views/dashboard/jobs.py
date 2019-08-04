@@ -367,8 +367,9 @@ class JobsView(BaseView):
             else:
                 if job['finish']:
                     self.finished_jobs.append(job)
-                    job['url_multinode_run'] = url_for('servers', node=self.node, opt='schedule', project=job['project'],
-                                                       version_job=self.DEFAULT_LATEST_VERSION, spider=job['spider'])
+                    job['url_multinode_run'] = url_for('servers', node=self.node, opt='schedule',
+                                                       project=job['project'], version_job=self.DEFAULT_LATEST_VERSION,
+                                                       spider=job['spider'])
                     job['url_schedule'] = url_for('schedule', node=self.node, project=job['project'],
                                                   version=self.DEFAULT_LATEST_VERSION, spider=job['spider'])
                     job['url_start'] = url_for('api', node=self.node, opt='start', project=job['project'],
@@ -384,7 +385,7 @@ class JobsView(BaseView):
                 job['url_stats'] = url_for('log', node=self.node, opt='stats', project=job['project'], ui=self.UI,
                                            spider=job['spider'], job=job['job'], job_finished=job_finished)
                 job['url_clusterreports'] = url_for('clusterreports', node=self.node, project=job['project'],
-                                             spider=job['spider'], job=job['job'])
+                                                    spider=job['spider'], job=job['job'])
                 # <a href='/items/demo/test/2018-10-12_205507.jl'>Items</a>
                 m = re.search(HREF_PATTERN, job['href_items'])
                 if m:

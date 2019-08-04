@@ -1,5 +1,20 @@
 Release History
 ===============
+[1.3.0](https://github.com/my8100/scrapydweb/issues?q=is%3Aclosed+milestone%3A1.3.0) (2019-08-04)
+------------------
+- New Features
+  - Add new pages Node Reports and Cluster Reports for aggregating jobs stats [(issue #72)](https://github.com/my8100/scrapydweb/issues/72)
+- Improvements
+  - Adapt to [:link: *LogParser*](https://github.com/my8100/logparser) v0.8.2
+  - Add DATA_PATH option for customizing path to save program data [(issue #40)](https://github.com/my8100/scrapydweb/issues/40)
+  - Add DATABASE_URL option to support MySQL or PostgreSQL backend [(issue #42)](https://github.com/my8100/scrapydweb/issues/42)
+  - Support specify the latest version of Scrapy project in the Run Spider page [(issue #4)](https://github.com/my8100/scrapydweb/issues/4#issuecomment-475145676)
+  - Support specify default values of settings & arguments in the Run Spider page [(issue #55)](https://github.com/my8100/scrapydweb/issues/55)
+- Others
+  - Update config file to scrapydweb_settings_v9.py
+  - Support continuous integration (CI) on [CircleCI](https://circleci.com/)
+
+
 1.2.0 (2019-03-12)
 ------------------
 - New Features

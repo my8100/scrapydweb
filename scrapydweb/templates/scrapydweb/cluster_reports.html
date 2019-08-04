@@ -12,7 +12,11 @@
 {% endblock %}
 
 {% block body %}
-<h2>{{ selected_nodes|length }} Reports of /{{ project }}/{{ spider }}/{{ job }}/</h2>
+<h2>
+  {% if selected_nodes %}<a class="link" target="_blank" href="{{ url_report }}">{% endif %}
+  {{ selected_nodes|length }} Reports of /{{ project }}/{{ spider }}/{{ job }}/
+  {% if selected_nodes %}</a>{% endif %}
+</h2>
 
 <form method="post" enctype="multipart/form-data" hidden></form>
 

@@ -1,4 +1,5 @@
 # coding: utf-8
+import platform
 import re
 
 from scrapy import __version__ as scrapy_version
@@ -129,7 +130,7 @@ def test_run(app, client):
         nos=[flash, 'class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
 
 
-# Note that in LogParser is enabled in test_enable_logparser(), with PARSE_ROUND_INTERVAL defaults to 60.
+# Note that in LogParser is enabled in test_enable_logparser(), with PARSE_ROUND_INTERVAL defaults to 10.
 # And LOGSTATS_INTERVAL is set to 10 in test_check() above.
 # This test would fail if Scrapy >= 1.5.2 since telnet console now requires username and password
 # https://doc.scrapy.org/en/latest/news.html#scrapy-1-5-2-2019-01-22
@@ -143,7 +144,7 @@ def test_telnet_in_stats(app, client):
     req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results - ScrapydWeb")
 
     kws = dict(node=node, opt='stats', project=cst.PROJECT, spider=cst.SPIDER, job=cst.JOBID)
-    for i in range(1, 10):
+    for i in range(1, 4):
         sleep(10)
         print(i * 10)
         text, __ = req(app, client, view='log', kws=kws)
@@ -154,7 +155,8 @@ def test_telnet_in_stats(app, client):
     __, js = req(app, client, view='jobs', kws=dict(node=node), data={})
     assert isinstance(js[KEY]['pages'], int)  # and js[KEY]['pages'] > 0
 
-    if scrapy_version > '1.5.1':
+    # Linux-5.0.9-301.fc30.x86_64-x86_64-with-fedora-30-Thirty'
+    if (platform.system() == 'Windows' or 'fedora' in platform.platform()) and scrapy_version > '1.5.1':
         print("telnet not available for scrapy_version: %s" % scrapy_version)
         telnet_ins = []
 
