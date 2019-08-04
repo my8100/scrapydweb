@@ -156,7 +156,7 @@ def test_telnet_in_stats(app, client):
     assert isinstance(js[KEY]['pages'], int)  # and js[KEY]['pages'] > 0
 
     # Linux-5.0.9-301.fc30.x86_64-x86_64-with-fedora-30-Thirty'
-    if (cst.ON_WINDOWS or 'fedora' in platform.platform()) and scrapy_version > '1.5.1':
+    if (platform.system() == 'Windows' or 'fedora' in platform.platform()) and scrapy_version > '1.5.1':
         print("telnet not available for scrapy_version: %s" % scrapy_version)
         telnet_ins = []
 
