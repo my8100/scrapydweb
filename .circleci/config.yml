@@ -69,14 +69,14 @@ jobs:
             - run:
                 name: Setup DATA_PATH
                 command: |
-                  printf "\nDATA_PATH = '"$DATA_PATH"'\n" >> scrapydweb_settings_v8.py
+                  printf "\nDATA_PATH = '"$DATA_PATH"'\n" >> scrapydweb_settings_v9.py
       - when:
           condition: <<parameters.use-sqlite>>
           steps:
             - run:
                 name: Set DATABASE_URL to sqlite
                 command: |
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v9.py
       - when:
           condition: <<parameters.use-postgresql>>
           steps:
@@ -91,7 +91,7 @@ jobs:
                 name: Set DATABASE_URL to postgresql
                 command: |
                   # postgres://circleci@127.0.0.1:5432
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v9.py
       - when:
           condition: <<parameters.use-mysql>>
           steps:
@@ -121,7 +121,7 @@ jobs:
                 name: Set DATABASE_URL to mysql
                 command: |
                   # mysql://user:passw0rd@127.0.0.1:3306
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v8.py
+                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v9.py
 
       - run:
           name: Install dependencies
@@ -168,8 +168,8 @@ jobs:
       - run:
           name: Generate report
           command: |
-            touch scrapydweb_settings_v8.py
-            cat scrapydweb_settings_v8.py
+            touch scrapydweb_settings_v9.py
+            cat scrapydweb_settings_v9.py
             echo $DATA_PATH
             echo $DATABASE_URL
             . venv/bin/activate
