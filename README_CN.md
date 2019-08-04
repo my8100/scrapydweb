@@ -66,9 +66,13 @@
 ```bash
 pip install scrapydweb
 ```
-:heavy_exclamation_mark: 如果 pip 安装结果不是最新版本的 scrapydweb，请先执行`pip install -U pip`，或者前往 https://pypi.org/project/scrapydweb/#files 下载 tar.gz 文件并执行安装命令 `pip install scrapydweb-x.x.x.tar.gz`
+:heavy_exclamation_mark: 如果 pip 安装结果不是最新版本的 scrapydweb，请先执行`python -m pip install --upgrade pip`，或者前往 https://pypi.org/project/scrapydweb/#files 下载 tar.gz 文件并执行安装命令 `pip install scrapydweb-x.x.x.tar.gz`
 
 - 通过 git:
+```bash
+pip install --upgrade git+https://github.com/my8100/scrapydweb.git
+```
+或:
 ```bash
 git clone https://github.com/my8100/scrapydweb.git
 cd scrapydweb

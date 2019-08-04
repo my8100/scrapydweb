@@ -89,10 +89,10 @@ class ApiView(BaseView):
         elif self.opt == 'liststats':
             if self.js.get('logparser_version') != self.LOGPARSER_VERSION:
                 if self.project and self.version_spider_job:  # 'List Stats' in the Servers page
-                    tip = "'pip install -U logparser' to update LogParser to v%s" % self.LOGPARSER_VERSION
+                    tip = "'pip install --upgrade logparser' to update LogParser to v%s" % self.LOGPARSER_VERSION
                     self.js = dict(status=self.OK, tip=tip)
                 else:  # XMLHttpRequest in the Jobs page; POST in jobs.py
-                    self.js['tip'] = ("'pip install -U logparser' on host '%s' and run command 'logparser' "
+                    self.js['tip'] = ("'pip install --upgrade logparser' on host '%s' and run command 'logparser' "
                                       "to update LogParser to v%s") % (self.SCRAPYD_SERVER, self.LOGPARSER_VERSION)
                     self.js['status'] = self.ERROR
             elif self.project and self.version_spider_job:  # 'List Stats' in the Servers page

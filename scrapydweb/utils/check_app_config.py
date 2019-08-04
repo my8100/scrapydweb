@@ -334,7 +334,7 @@ def check_scrapyd_connectivity(servers):
         (_group, _ip, _port, _auth) = server
         try:
             url = 'http://%s:%s' % (_ip, _port)
-            r = session.get(url, auth=_auth, timeout=30)
+            r = session.get(url, auth=_auth, timeout=10)
             assert r.status_code == 200, "%s got status_code %s" % (url, r.status_code)
         except Exception as err:
             logger.error(err)

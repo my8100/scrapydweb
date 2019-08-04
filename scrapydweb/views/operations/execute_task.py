@@ -16,7 +16,7 @@ REPLACE_URL_NODE_PATTERN = re.compile(r'^/(\d+)/')
 EXTRACT_URL_SERVER_PATTERN = re.compile(r'//(.+?:\d+)')
 
 
-class TaskExecuter(object):
+class TaskExecutor(object):
 
     def __init__(self, task_id, task_name, url_scrapydweb, url_schedule_task, url_delete_task_result,
                  auth, selected_nodes):
@@ -159,7 +159,7 @@ def execute_task(task_id):
             username = metadata.get('username', '')
             password = metadata.get('password', '')
             url_delete_task_result = metadata.get('url_delete_task_result', '/1/tasks/xhr/delete/1/1/')
-            task_executer = TaskExecuter(task_id=task_id,
+            task_executor = TaskExecutor(task_id=task_id,
                                          task_name=task.name,
                                          url_scrapydweb=metadata.get('url_scrapydweb', 'http://127.0.0.1:5000'),
                                          url_schedule_task=metadata.get('url_schedule_task', '/1/schedule/task/'),
@@ -167,6 +167,6 @@ def execute_task(task_id):
                                          auth=(username, password) if username and password else None,
                                          selected_nodes=json.loads(task.selected_nodes))
             try:
-                task_executer.main()
+                task_executor.main()
             except Exception:
                 apscheduler_logger.error(traceback.format_exc())

@@ -13,7 +13,7 @@ with open(os.path.join(CURRENT_DIR, 'scrapydweb', '__version__.py')) as f:
     exec(f.read(), about)
 
 with io.open("README.md", 'r', encoding='utf-8') as f:
-    long_description = re.sub(r':\w+:\s', '', f.read())  # Remove emojis
+    long_description = re.sub(r':\w+:\s', '', f.read())  # Remove emoji
 
 
 setup(
@@ -37,7 +37,7 @@ setup(
         "flask >= 1.0.2",  # May 2, 2018
         "flask-compress >= 1.4.0",  # Jan 5, 2017
         "Flask-SQLAlchemy >= 2.3.2",  # Oct 11, 2017
-        "logparser == 0.8.1",
+        "logparser == 0.8.2",
         "requests >= 2.21.0",  # Dec 10, 2018
         "setuptools >= 40.6.3",  # Dec 11, 2018
         "six >= 1.12.0",  # Dec 10, 2018

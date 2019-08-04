@@ -28,7 +28,7 @@ def test_cluster_reports(app, client):
                              spider=cst.SPIDER, job=cst.JOBID)
         url_redirect_to_clusterreports = url_for('clusterreports', node=1, project=cst.PROJECT,
                                                  spider=cst.SPIDER, job=cst.JOBID)
-    ins = ['<h2>0 Reports of ////</h2>', '>Select a job</el-button>', url_jobs, 'selected_nodes: [],']
+    ins = ['0 Reports of ////', '>Select a job</el-button>', url_jobs, 'selected_nodes: [],']
     nos = ['>Select nodes</el-button>']
     req(app, client, view='clusterreports', kws=dict(node=1), ins=ins)
 
@@ -37,7 +37,7 @@ def test_cluster_reports(app, client):
         '1': 'on',
         '2': 'on',
     }
-    ins[0] = '<h2>%s Reports of /%s/%s/%s/</h2>' % (len(data), cst.PROJECT, cst.SPIDER, cst.JOBID)
+    ins[0] = '%s Reports of /%s/%s/%s/' % (len(data), cst.PROJECT, cst.SPIDER, cst.JOBID)
     ins[-1] = 'selected_nodes: [1, 2],'
     ins.extend(nos)
     ins.append(url_servers)

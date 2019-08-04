@@ -66,9 +66,13 @@ and restart Scrapyd to make it visible externally.
 ```bash
 pip install scrapydweb
 ```
-:heavy_exclamation_mark: Note that you may need to execute `pip install -U pip` first in order to get the latest version of scrapydweb, or download the tar.gz file from https://pypi.org/project/scrapydweb/#files and get it installed via `pip install scrapydweb-x.x.x.tar.gz`
+:heavy_exclamation_mark: Note that you may need to execute `python -m pip install --upgrade pip` first in order to get the latest version of scrapydweb, or download the tar.gz file from https://pypi.org/project/scrapydweb/#files and get it installed via `pip install scrapydweb-x.x.x.tar.gz`
 
 - Use git:
+```bash
+pip install --upgrade git+https://github.com/my8100/scrapydweb.git
+```
+Or:
 ```bash
 git clone https://github.com/my8100/scrapydweb.git
 cd scrapydweb

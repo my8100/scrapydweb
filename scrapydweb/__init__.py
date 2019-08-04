@@ -215,7 +215,8 @@ def handle_route(app):
     register_view(DeployUploadView, 'deploy.upload', [('deploy/upload', None)])
     register_view(DeployXhrView, 'deploy.xhr', [('deploy/xhr/<eggname>/<project>/<version>', None)])
 
-    from .views.operations.schedule import ScheduleView, ScheduleCheckView, ScheduleRunView, ScheduleXhrView, ScheduleTaskView
+    from .views.operations.schedule import (ScheduleView, ScheduleCheckView, ScheduleRunView,
+                                            ScheduleXhrView, ScheduleTaskView)
     register_view(ScheduleView, 'schedule', [
         ('schedule/<project>/<version>/<spider>', None),
         ('schedule/<project>/<version>', dict(spider=None)),
@@ -271,7 +272,7 @@ def handle_template_context(app):
     STATIC = 'static'
     VERSION = 'v' + __version__.replace('.', '')
     # MUST be commented out for released version
-    VERSION = 'v121dev'
+    # VERSION = 'v131dev'
 
     @app.context_processor
     def inject_variable():
