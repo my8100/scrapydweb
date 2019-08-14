@@ -189,11 +189,11 @@ def parse_args(config):
               "for timer tasks") % SCHEDULER_STATE
     )
 
-    ENABLE_EMAIL = config.get('ENABLE_EMAIL', False)
+    ENABLE_MONITOR = config.get('ENABLE_MONITOR', False)
     parser.add_argument(
-        '-de', '--disable_email',
+        '-dm', '--disable_monitor',
         action='store_true',
-        help="current: ENABLE_EMAIL = %s, append '--disable_email' to disable email notice" % ENABLE_EMAIL
+        help="current: ENABLE_MONITOR = %s, append '--disable_monitor' to disable monitor" % ENABLE_MONITOR
     )
 
     DEBUG = config.get('DEBUG', False)
@@ -237,8 +237,8 @@ def update_app_config(config, args):
             handle_metadata('scheduler_state', STATE_PAUSED)
         else:
             handle_metadata('scheduler_state', STATE_RUNNING)
-    if args.disable_email:
-        config['ENABLE_EMAIL'] = False
+    if args.disable_monitor:
+        config['ENABLE_MONITOR'] = False
     if args.debug:
         config['DEBUG'] = True
     if args.verbose:

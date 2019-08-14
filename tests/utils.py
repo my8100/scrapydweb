@@ -99,8 +99,10 @@ def get_text(response):
     return response.get_data(as_text=True)
 
 
-def req(app, client, view='', kws=None, url='', data=None, ins=None, nos=None, jskws=None, jskeys=None,
-        location=None, mobileui=False, headers=None, single_scrapyd=False, set_to_second=False, save=''):
+def req(app, client, view='', kws=None, url='', data=None,
+        headers=None, content_type='multipart/form-data',
+        ins=None, nos=None, jskws=None, jskeys=None, location=None, mobileui=False,
+        single_scrapyd=False, set_to_second=False, save=''):
     if single_scrapyd:
         set_single_scrapyd(app, set_to_second)
 
@@ -108,7 +110,7 @@ def req(app, client, view='', kws=None, url='', data=None, ins=None, nos=None, j
         if not url:
             url = url_for(view, **kws)
         if data is not None:
-            response = client.post(url, headers=headers, data=data, content_type='multipart/form-data')
+            response = client.post(url, headers=headers, data=data, content_type=content_type)
         else:
             response = client.get(url, headers=headers)
         if save:
@@ -122,7 +124,7 @@ def req(app, client, view='', kws=None, url='', data=None, ins=None, nos=None, j
             js = json.loads(text)
         except ValueError:  # issubclass(JSONDecodeError, ValueError)
             pass
-        print("js: %s" % js)
+        print("js: %s" % json.dumps(js, sort_keys=True, indent=4, ensure_ascii=False))
         try:
             if isinstance(ins, string_types):
                 try:

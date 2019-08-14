@@ -20,7 +20,7 @@ def test_auto_packaging_select_option(app, client):
         '<div>demo<',
         '<div>demo_only_scrapy_cfg<'
     ]
-    nos = ['<div>demo_without_scrapy_cfg<', '<h3>NO projects found']
+    nos = ['<div>demo_without_scrapy_cfg<', '<h3>No projects found']
     req_single_scrapyd(app, client, view='deploy', kws=dict(node=1), ins=ins, nos=nos)
 
     for project in [cst.PROJECT, 'demo']:
@@ -39,11 +39,12 @@ def test_auto_packaging_select_option(app, client):
 
     app.config['SCRAPY_PROJECTS_DIR'] = os.path.join(cst.ROOT_DIR, 'data', 'one_project_inside')
     req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
-                       ins='(1 project)', nos='<h3>NO projects found')
+                       ins='(1 project)', nos='<h3>No projects found')
 
-    app.config['SCRAPY_PROJECTS_DIR'] = ''
-    req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
-                       ins=DEMO_PROJECTS_PATH.replace('\\', '/'), nos='<h3>NO projects found')
+    if not os.environ.get('DATA_PATH', ''):
+        app.config['SCRAPY_PROJECTS_DIR'] = ''
+        req_single_scrapyd(app, client, view='deploy', kws=dict(node=1),
+                           ins=DEMO_PROJECTS_PATH.replace('\\', '/'), nos='<h3>No projects found')
 
 
 # {'status': 'error', 'message': 'Traceback

@@ -7,7 +7,7 @@
     <title>{% block title %}{% endblock %} - ScrapydWeb</title>
 
     <link rel="stylesheet" type="text/css" href="{{ static_css_style }}">
-    <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_l99noezu13o.js"></script>  -->
+    <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_vujk670yra.js"></script>  -->
     <script type="text/javascript" src="{{ static_js_icons_menu }}"></script>
     <!-- upload icon in deploy/parse page, right arrow icon in stats | projects page-->
     <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
@@ -211,14 +211,6 @@
                     <span>Logs</span>
                 </a>
             </li>
-            <li>
-                <a id="menu_parse" href="{{ g.url_menu_parse }}" onclick="showLoader();">
-                    <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-parse"></use>
-                    </svg>
-                    <span>Log Parser</span>
-                </a>
-            </li>
         {% if SHOW_SCRAPYD_ITEMS %}
             <li>
                 <a id="menu_items" href="{{ g.url_menu_items }}" onclick="showLoader();">
@@ -229,6 +221,26 @@
                 </a>
             </li>
         {% endif %}
+        </ul>
+
+        <h3>Utilities</h3>
+        <ul>
+            <li>
+                <a id="menu_sendtext" href="{{ g.url_menu_sendtext }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-send"></use>
+                    </svg>
+                    <span>Send Text</span>
+                </a>
+            </li>
+            <li>
+                <a id="menu_parse" href="{{ g.url_menu_parse }}" onclick="showLoader();">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-parse"></use>
+                    </svg>
+                    <span>Parse Log</span>
+                </a>
+            </li>
         </ul>
 
         <h3>System</h3>
@@ -262,20 +274,23 @@
         </ul>
 
         <ul id="links">
-            <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }}</li>
+            <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }} DEV</li>
             <!-- <li id="pypi"> -->
                 <!-- <a target="_blank" href="https://pypi.org/project/scrapydweb/" > -->
                     <!-- <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" /> -->
                 <!-- </a> -->
             <!-- </li> -->
+            <!-- <li class="github"> -->
+                <!-- <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">scrapydweb</a> -->
+            <!-- </li> -->
+            <!-- <li class="github"> -->
+                <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'logparser') }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">logparser</a> -->
+            <!-- </li> -->
+            <!-- <li class="github"> -->
+                <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'scrapyd-cluster-on-heroku') }}" aria-label="@my8100 on GitHub">scrapyd-cluster</a> -->
+            <!-- </li> -->
             <li class="github">
-                <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">scrapydweb</a>
-            </li>
-            <li class="github">
-                <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'logparser') }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">logparser</a>
-            </li>
-            <li class="github">
-                <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'scrapyd-cluster-on-heroku') }}" aria-label="@my8100 on GitHub">scrapyd-cluster</a>
+                <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a>
             </li>
         </ul>
     </aside>

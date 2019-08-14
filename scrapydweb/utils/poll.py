@@ -133,7 +133,7 @@ class Poll(object):
         # http://127.0.0.1:5000/log/stats/proxy/test/55f1f388a7ae11e8b9b114dda9e91c2f/
         url = self.url_stats.format(**kwargs)
         self.logger.debug("[node %s] fetch_stats: %s", node, url)
-        # Make POST request to trigger email notice, see log.py
+        # Make POST request to trigger alert, see log.py
         r = self.make_request(url, auth=self.auth, post=True)
         if r is None:
             self.logger.error("[node %s %s] fetch_stats failed: %s", node, self.scrapyd_servers[node-1], url)
@@ -156,7 +156,7 @@ class Poll(object):
                     self.logger.critical("GoodBye, exit_timeout: %s", self.exit_timeout)
                     break
                 else:
-                    self.logger.warning("Sleep %s seconds", self.poll_round_interval)
+                    self.logger.warning("Sleeping for %ss", self.poll_round_interval)
                     time.sleep(self.poll_round_interval)
             except KeyboardInterrupt:
                 self.logger.warning("Poll subprocess (pid: %s) cancelled by KeyboardInterrupt", self.poll_pid)
@@ -192,7 +192,7 @@ class Poll(object):
                 finished_jobs = self.update_finished_jobs(node, finished_jobs_set)
                 for job_tuple in running_jobs + finished_jobs:
                     self.fetch_stats(node, job_tuple, finished_jobs)
-                    self.logger.debug("Sleep %s seconds", self.poll_request_interval)
+                    self.logger.debug("Sleeping for %ss", self.poll_request_interval)
                     time.sleep(self.poll_request_interval)
             except KeyboardInterrupt:
                 raise

@@ -40,7 +40,7 @@ def test_enable_logparser(app, client):
     assert not os.path.exists(app.config['STATS_JSON_PATH'])
     assert not os.path.exists(app.config['DEMO_JSON_PATH'])
     app.config['ENABLE_LOGPARSER'] = True
-    app.config['ENABLE_EMAIL'] = False
+    app.config['ENABLE_MONITOR'] = False
 
     # ['username:password@127.0.0.1:6800', ]
     app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']

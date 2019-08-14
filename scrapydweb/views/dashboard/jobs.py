@@ -142,8 +142,8 @@ class JobsView(BaseView):
                       "for the LOCAL_SCRAPYD_SERVER %s" % self.SCRAPYD_SERVER), self.WARN)
             if not self.ENABLE_LOGPARSER:
                 flash("Set 'ENABLE_LOGPARSER = True' to run LogParser as a subprocess at startup", self.WARN)
-        if not self.ENABLE_EMAIL and self.SCRAPYD_SERVERS_AMOUNT == 1:
-            flash("Set 'ENABLE_EMAIL = True' to enable email notice", self.INFO)
+        if not self.ENABLE_MONITOR and self.SCRAPYD_SERVERS_AMOUNT == 1:
+            flash("Set 'ENABLE_MONITOR = True' to enable the monitor feature", self.INFO)
 
 # stats.json by LogParser
 # {

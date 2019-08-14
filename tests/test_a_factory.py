@@ -51,7 +51,7 @@ def test_check_app_config(app, client):
     strings.append('logparser_pid: None')
 
     poll_pid = app.config['POLL_PID']
-    if app.config.get('ENABLE_EMAIL', False):
+    if app.config.get('ENABLE_MONITOR', False):
         assert isinstance(poll_pid, int) and poll_pid > 0
     else:
         assert poll_pid is None
@@ -60,9 +60,9 @@ def test_check_app_config(app, client):
     req(app, client, view='settings', kws=dict(node=1), ins=strings)
     assert not os.path.exists(app.config['STATS_JSON_PATH'])
 
-    # Test ENABLE_EMAIL = False
-    if app.config.get('ENABLE_EMAIL', False):
-        app.config['ENABLE_EMAIL'] = False
+    # Test ENABLE_MONITOR = False
+    if app.config.get('ENABLE_MONITOR', False):
+        app.config['ENABLE_MONITOR'] = False
 
         # ['username:password@127.0.0.1:6800', ]
         app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']
@@ -77,13 +77,13 @@ def test_check_app_config(app, client):
 
 def test_check_email_with_fake_account(app):
     with app.test_request_context():
-        if not app.config.get('ENABLE_EMAIL', False):
+        if not app.config.get('EMAIL_PASSWORD', ''):
             return
 
         app.config['EMAIL_USERNAME'] = 'username@qq.com'
         app.config['EMAIL_PASSWORD'] = 'password'
-        app.config['FROM_ADDR'] = 'username@qq.com'
-        app.config['TO_ADDRS'] = ['username@qq.com']
+        app.config['EMAIL_SENDER'] = 'username@qq.com'
+        app.config['EMAIL_RECIPIENTS'] = ['username@qq.com']
         try:
             check_email(app.config)
         except AssertionError:
@@ -92,17 +92,17 @@ def test_check_email_with_fake_account(app):
 
 def test_check_email_with_ssl_false(app):
     with app.test_request_context():
-        if not app.config.get('ENABLE_EMAIL', False) or not app.config.get('SMTP_SERVER_'):
+        if not app.config.get('EMAIL_PASSWORD', '') or not app.config.get('EMAIL_PASSWORD_'):
             return
 
+        app.config['EMAIL_USERNAME'] = app.config['EMAIL_USERNAME_']
+        app.config['EMAIL_PASSWORD'] = app.config['EMAIL_PASSWORD_']
+        app.config['EMAIL_SENDER'] = app.config['EMAIL_SENDER_']
+        app.config['EMAIL_RECIPIENTS'] = app.config['EMAIL_RECIPIENTS_']
         app.config['SMTP_SERVER'] = app.config['SMTP_SERVER_']
         app.config['SMTP_PORT'] = app.config['SMTP_PORT_']
         app.config['SMTP_OVER_SSL'] = app.config['SMTP_OVER_SSL_']
         app.config['SMTP_CONNECTION_TIMEOUT_'] = app.config['SMTP_CONNECTION_TIMEOUT_']
-        app.config['EMAIL_USERNAME'] = app.config['EMAIL_USERNAME_']
-        app.config['EMAIL_PASSWORD'] = app.config['EMAIL_PASSWORD_']
-        app.config['FROM_ADDR'] = app.config['FROM_ADDR_']
-        app.config['TO_ADDRS'] = app.config['TO_ADDRS_']
 
         check_email(app.config)
 
@@ -112,4 +112,4 @@ def test_scrapyd_group(app, client):
 
 
 def test_scrapyd_auth(app, client):
-    req(app, client, view='settings', kws=dict(node=1), ins='**erna**:**sswo**')  # ('username', 'password')
+    req(app, client, view='settings', kws=dict(node=1), ins='u*e*n*m*:p*s*w*r*')  # ('username', 'password')

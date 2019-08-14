@@ -56,6 +56,7 @@ def get_response_from_view(url, auth=None, data=None, as_json=False):
         headers = {}
     if data is not None:
         response = client.post(url, headers=headers, data=data, content_type='multipart/form-data')
+        # response = client.post(url, headers=headers, data=data, content_type='application/json')
     else:
         response = client.get(url, headers=headers)
 

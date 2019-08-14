@@ -53,9 +53,10 @@ def test_page(app, client):
     for view, title in cst.VIEW_TITLE_MAP.items():
         req(app, client, view=view, kws=dict(node=1), ins=title)
 
-    req(app, client, view='jobs', kws=dict(node=2), ins='status_code: -1')
-    req(app, client, view='items', kws=dict(node=2), ins='status_code: -1')
-    req(app, client, view='logs', kws=dict(node=2), ins='status_code: -1')
+    # When v*p*n is globally enabled for testing Telegram, got 500 Internal Privoxy Error
+    ins = ['fail - ScrapydWeb', 'status_code: -1']
+    for view in ['jobs', 'logs', 'items']:
+        req(app, client, view=view, kws=dict(node=2), ins=ins)
 
     switch_scrapyd(app)
 

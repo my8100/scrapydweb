@@ -39,7 +39,7 @@
           <pre>{{ scrapydweb_server }}</pre>
         </li>
         <li>
-          <div class="title"><h4>ENABLE_HTTPS = {{ ENABLE_HTTPS }}</h4>{% if ENABLE_HTTPS %}<i class="iconfont icon-right"></i>{% endif %}</div>
+          <div class="title"><h4>ENABLE_HTTPS = {{ ENABLE_HTTPS }}</h4><i class="iconfont icon-right"></i></div>
           <pre>{{ enable_https_details }}</pre>
         </li>
       </ul>
@@ -119,30 +119,50 @@
     </div>
 
     <div class="wrap collapse-wrap">
-      <h3>Email Notice</h3>
+      <h3>Send Text</h3>
       <ul class="collapse">
         <li>
-          <div class="title"><h4>ENABLE_EMAIL = {{ ENABLE_EMAIL }}</h4></div>
+          <div class="title"><h4>Slack</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ slack_details }}</pre>
         </li>
         <li>
-          <div class="title"><h4>smtp settings</h4><i class="iconfont icon-right"></i></div>
-          <pre>{{ smtp_settings }}</pre>
+          <div class="title"><h4>Telegram</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ telegram_details }}</pre>
         </li>
         <li>
-          <div class="title"><h4>* sender & recipients *</h4><i class="iconfont icon-right"></i></div>
-          <pre>{{ sender_recipients }}</pre>
+          <div class="title"><h4>Email</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ email_details }}</pre>
         </li>
         <li>
-          <div class="title"><h4>email working time</h4><i class="iconfont icon-right"></i></div>
-          <pre>{{ email_working_time }}</pre>
+          <div class="title"><h4>email sender & recipients</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ email_sender_recipients }}</pre>
         </li>
+        <li>
+          <div class="title"><h4>email smtp settings</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ email_smtp_settings }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Monitor & Alert</h3>
+      <ul class="collapse">
+        <li><div class="title"><h4>ENABLE_MONITOR = {{ ENABLE_MONITOR }}</h4></div></li>
         <li>
           <div class="title"><h4>poll interval</h4><i class="iconfont icon-right"></i></div>
           <pre>{{ poll_interval }}</pre>
         </li>
         <li>
-          <div class="title"><h4>email triggers</h4><i class="iconfont icon-right"></i></div>
-          <pre>{{ email_triggers|safe }}</pre>
+          <div class="title"><h4>alert switcher</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ alert_switcher }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>alert working time</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ alert_working_time }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>triggers</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ alert_triggers|safe }}</pre>
         </li>
       </ul>
     </div>
