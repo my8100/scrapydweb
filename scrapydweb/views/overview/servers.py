@@ -32,8 +32,8 @@ class ServersView(BaseView):
                 flash("Set 'ENABLE_AUTH = True' to enable basic auth for web UI", self.INFO)
             if self.IS_LOCAL_SCRAPYD_SERVER and not self.ENABLE_LOGPARSER:
                 flash("Set 'ENABLE_LOGPARSER = True' to run LogParser as a subprocess at startup", self.WARN)
-            if not self.ENABLE_EMAIL:
-                flash("Set 'ENABLE_EMAIL = True' to enable email notice", self.INFO)
+            if not self.ENABLE_MONITOR:
+                flash("Set 'ENABLE_MONITOR = True' to enable the monitor feature", self.INFO)
 
         if self.POST:
             self.selected_nodes = self.get_selected_nodes()

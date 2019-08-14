@@ -1,6 +1,7 @@
 # coding: utf-8
 from functools import partial
 from io import BytesIO
+import os
 import re
 
 from tests.utils import cst, req, switch_scrapyd, upload_file_deploy
@@ -22,7 +23,9 @@ def test_auto_packaging_select_option(app, client):
         '<div>demo<',
         '<div>demo_only_scrapy_cfg<'
     ]
-    nos = ['<div>demo_without_scrapy_cfg<', '<h3>NO projects found']
+    nos = ['<div>demo_without_scrapy_cfg<']
+    if not os.environ.get('DATA_PATH', ''):
+        nos.append('<h3>No projects found')
     req(app, client, view='deploy', kws=dict(node=2), ins=ins, nos=nos)
 
 

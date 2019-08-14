@@ -85,7 +85,7 @@ def start_logparser(config):
 def init_poll(config):
     poll_subprocess = start_poll(config)
     poll_pid = poll_subprocess.pid
-    logger.info("Start polling job stats for email notice in the background with pid: %s", poll_pid)
+    logger.info("Start polling job stats for monitor & alert in the background with pid: %s", poll_pid)
     atexit.register(kill_child, poll_subprocess, 'Poll')
     return poll_pid
 

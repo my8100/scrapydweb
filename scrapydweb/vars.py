@@ -63,7 +63,7 @@ APSCHEDULER_DATABASE_URI, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_BINDS, DATABASE_PA
 
 # For check_app_config() and BaseView
 ALLOWED_SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt', '.gz', '']
-EMAIL_TRIGGER_KEYS = ['CRITICAL', 'ERROR', 'WARNING', 'REDIRECT', 'RETRY', 'IGNORE']
+ALERT_TRIGGER_KEYS = ['CRITICAL', 'ERROR', 'WARNING', 'REDIRECT', 'RETRY', 'IGNORE']
 
 # Error: Project names must begin with a letter and contain only letters, numbers and underscores
 STRICT_NAME_PATTERN = re.compile(r'[^0-9A-Za-z_]')

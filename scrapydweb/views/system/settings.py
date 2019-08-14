@@ -33,14 +33,12 @@ class SettingsView(BaseView):
         if not isinstance(string, str):
             return string
         length = len(string)
-        if length == 0:
-            return string
-        elif length < 3:
-            return re.sub(r'^.', '*', string)
-        elif length < 7:
-            return re.sub(r'^.(.*?).$', r'*\1*', string)
+        if length < 4:
+            return '*' * length
+        elif length < 12:
+            return ''.join([string[i] if not i%2 else '*' for i in range(0, length)])
         else:
-            return re.sub(r'^..(.*?)..$', r'**\1**', string)
+            return re.sub(r'^.{4}(.*?).{4}$', r'****\1****', string)
 
     @staticmethod
     def hide_account(string):
@@ -114,51 +112,65 @@ class SettingsView(BaseView):
             DAEMONSTATUS_REFRESH_INTERVAL=self.DAEMONSTATUS_REFRESH_INTERVAL
         ))
 
-        # Email Notice
-        self.kwargs['ENABLE_EMAIL'] = self.ENABLE_EMAIL
-
-        self.kwargs['smtp_settings'] = self.json_dumps(dict(
+        # Send text
+        self.kwargs['slack_details'] = self.json_dumps(dict(
+            SLACK_TOKEN=self.protect(self.SLACK_TOKEN),
+            SLACK_CHANNEL=self.SLACK_CHANNEL
+        ))
+        self.kwargs['telegram_details'] = self.json_dumps(dict(
+            TELEGRAM_TOKEN=self.protect(self.TELEGRAM_TOKEN),
+            TELEGRAM_CHAT_ID=self.TELEGRAM_CHAT_ID
+        ))
+        self.kwargs['email_details'] = self.json_dumps(dict(
+            EMAIL_SUBJECT=self.EMAIL_SUBJECT,
+        ))
+        self.kwargs['email_sender_recipients'] = self.json_dumps(dict(
+            EMAIL_USERNAME=self.EMAIL_USERNAME,
+            EMAIL_PASSWORD=self.protect(self.EMAIL_PASSWORD),
+            EMAIL_SENDER=self.EMAIL_SENDER,
+            EMAIL_RECIPIENTS=self.EMAIL_RECIPIENTS
+        ))
+        self.kwargs['email_smtp_settings'] = self.json_dumps(dict(
             SMTP_SERVER=self.SMTP_SERVER,
             SMTP_PORT=self.SMTP_PORT,
             SMTP_OVER_SSL=self.SMTP_OVER_SSL,
             SMTP_CONNECTION_TIMEOUT=self.SMTP_CONNECTION_TIMEOUT,
-            EMAIL_USERNAME=self.EMAIL_USERNAME,
-            EMAIL_PASSWORD=self.protect(self.EMAIL_PASSWORD),
         ))
 
-        self.kwargs['sender_recipients'] = self.json_dumps(dict(
-            FROM_ADDR=self.FROM_ADDR,
-            TO_ADDRS=self.TO_ADDRS
-        ))
 
-        self.kwargs['email_working_time'] = self.json_dumps([
-            dict(
-                EMAIL_WORKING_DAYS="%s" % sorted(self.EMAIL_WORKING_DAYS),  # stringify making it displayed in a line
-                remark="Monday is 1 and Sunday is 7"
-            ),
-            dict(
-                EMAIL_WORKING_HOURS="%s" % sorted(self.EMAIL_WORKING_HOURS),
-                remark="From 0 to 23"
-            )
-        ])
-
+        # Monitor & Alert
+        self.kwargs['ENABLE_MONITOR'] = self.ENABLE_MONITOR
         self.kwargs['poll_interval'] = self.json_dumps(dict(
             POLL_ROUND_INTERVAL=self.POLL_ROUND_INTERVAL,
             POLL_REQUEST_INTERVAL=self.POLL_REQUEST_INTERVAL,
         ))
-
-        # email triggers
+        self.kwargs['alert_switcher'] = self.json_dumps(dict(
+            ENABLE_SLACK_ALERT=self.ENABLE_SLACK_ALERT,
+            ENABLE_TELEGRAM_ALERT=self.ENABLE_TELEGRAM_ALERT,
+            ENABLE_EMAIL_ALERT=self.ENABLE_EMAIL_ALERT,
+        ))
+        self.kwargs['alert_working_time'] = self.json_dumps([
+            dict(
+                ALERT_WORKING_DAYS="%s" % sorted(self.ALERT_WORKING_DAYS),  # stringify making it displayed in a line
+                remark="Monday is 1 and Sunday is 7"
+            ),
+            dict(
+                ALERT_WORKING_HOURS="%s" % sorted(self.ALERT_WORKING_HOURS),
+                remark="From 0 to 23"
+            )
+        ])
+        # alert triggers
         d = OrderedDict()
         d['ON_JOB_RUNNING_INTERVAL'] = self.ON_JOB_RUNNING_INTERVAL
         d['ON_JOB_FINISHED'] = self.ON_JOB_FINISHED
 
-        for key in self.EMAIL_TRIGGER_KEYS:
+        for key in self.ALERT_TRIGGER_KEYS:
             keys = ['LOG_%s_THRESHOLD' % key, 'LOG_%s_TRIGGER_STOP' % key, 'LOG_%s_TRIGGER_FORCESTOP' % key]
             d[key] = {k: getattr(self, k) for k in keys}
         value = self.json_dumps(d)
         value = re.sub(r'True', "<b style='color: red'>True</b>", value)
         value = re.sub(r'(\s[1-9]\d*)', r"<b style='color: red'>\1</b>", value)
-        self.kwargs['email_triggers'] = value
+        self.kwargs['alert_triggers'] = value
 
         # System
         self.kwargs['DEBUG'] = self.DEBUG

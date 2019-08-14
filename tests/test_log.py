@@ -250,13 +250,13 @@ def test_poll_py(app):
     assert ignore_finished_bool_list == [False, True]
 
 
-def test_email(app, client):
+def test_monitor_alert(app, client):
     # In ScrapydWeb_demo_no_delay.egg: unset CONCURRENT_REQUESTS, unset DOWNLOAD_DELAY
     upload_file_deploy(app, client, filename='ScrapydWeb_demo_no_delay.egg',
                        project=cst.PROJECT, redirect_project=cst.PROJECT)
 
     # with app.test_request_context():
-    if not app.config.get('ENABLE_EMAIL', False):
+    if not (app.config.get('ENABLE_MONITOR', False) and app.config.get('ENABLE_EMAIL_ALERT', False)):
         return
 
     def start_a_job():

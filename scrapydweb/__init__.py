@@ -143,10 +143,18 @@ def handle_db(app):
 
 
 def handle_route(app):
-    def register_view(view, endpoint, url_defaults_list):
+    def register_view(view, endpoint, url_defaults_list, with_node=True, trailing_slash=True):
         view_func = view.as_view(endpoint)
         for url, defaults in url_defaults_list:
-            app.add_url_rule('/<int:node>/%s/' % url, defaults=defaults, view_func=view_func)
+            rule = '/<int:node>/%s' % url if with_node else '/%s' % url
+            if trailing_slash:
+                rule += '/'
+            if not with_node:
+                if defaults:
+                    defaults['node'] = 1
+                else:
+                    defaults = dict(node=1)
+            app.add_url_rule(rule, defaults=defaults, view_func=view_func)
 
     from .views.index import IndexView
     index_view = IndexView.as_view('index')
@@ -256,12 +264,31 @@ def handle_route(app):
         ('projects', dict(opt='listprojects', project=None, version_spider_job=None))
     ])
 
-    from .views.files.parse import UploadLogView, UploadedLogView
+    # Parse Log
+    from .views.utilities.parse import UploadLogView, UploadedLogView
     register_view(UploadLogView, 'parse.upload', [('parse/upload', None)])
     register_view(UploadedLogView, 'parse.uploaded', [('parse/uploaded/<filename>', None)])
 
-    from .views.files.parse import bp as bp_parse_source
+    from .views.utilities.parse import bp as bp_parse_source
     app.register_blueprint(bp_parse_source)
+
+    # Send text
+    from .views.utilities.send_text import SendTextView, SendTextApiView
+    register_view(SendTextView, 'sendtext', [('sendtext', None)])
+    register_view(SendTextApiView, 'sendtextapi', [
+        ('slack/<channel_chatid_subject>/<text>', dict(opt='slack')),
+        ('slack/<text>', dict(opt='slack', channel_chatid_subject=None)),
+        ('slack', dict(opt='slack', channel_chatid_subject=None, text=None)),
+        ('telegram/<channel_chatid_subject>/<text>', dict(opt='telegram')),
+        ('telegram/<text>', dict(opt='telegram', channel_chatid_subject=None)),
+        ('telegram', dict(opt='telegram', channel_chatid_subject=None, text=None)),
+        ('tg/<channel_chatid_subject>/<text>', dict(opt='tg')),
+        ('tg/<text>', dict(opt='tg', channel_chatid_subject=None)),
+        ('tg', dict(opt='tg', channel_chatid_subject=None, text=None)),
+        ('email/<channel_chatid_subject>/<text>', dict(opt='email')),
+        ('email/<text>', dict(opt='email', channel_chatid_subject=None)),
+        ('email', dict(opt='email', channel_chatid_subject=None, text=None)),
+    ], with_node=False, trailing_slash=False)
 
     # System
     from .views.system.settings import SettingsView

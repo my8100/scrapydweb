@@ -18,25 +18,32 @@ custom_settings = dict(
 
     LOCAL_SCRAPYD_LOGS_DIR='',  # For LogParser, defaults to the 'logs' directory that resides in current user directory
 
-    ENABLE_EMAIL=os.environ.get('ENABLE_EMAIL', 'False') == 'True',  # Whether to execute testcases related to "Email Notice"
+    SLACK_TOKEN=os.environ.get('SLACK_TOKEN', ''),
+    TELEGRAM_TOKEN=os.environ.get('TELEGRAM_TOKEN', ''),
+    TELEGRAM_CHAT_ID=int(os.environ.get('TELEGRAM_CHAT_ID', 0)),
 
+    EMAIL_USERNAME=os.environ.get('EMAIL_USERNAME', 'username@qq.com'),
+    EMAIL_PASSWORD=os.environ.get('EMAIL_PASSWORD', ''),  # Whether to test email
+    EMAIL_SENDER=os.environ.get('EMAIL_SENDER', 'username@qq.com'),
+    EMAIL_RECIPIENTS=[os.environ.get('EMAIL_RECIPIENT', 'username@qq.com')],
     SMTP_SERVER='smtp.qq.com',
     SMTP_PORT=465,
     SMTP_OVER_SSL=True,
-    SMTP_CONNECTION_TIMEOUT=30,
-    EMAIL_USERNAME=os.environ.get('EMAIL_USERNAME', 'username@qq.com'),
-    EMAIL_PASSWORD=os.environ.get('EMAIL_PASSWORD', 'password'),
-    FROM_ADDR=os.environ.get('FROM_ADDR', 'username@qq.com'),
-    TO_ADDRS=[os.environ.get('TO_ADDRS', 'username@qq.com')],
+    SMTP_CONNECTION_TIMEOUT=60,
 
-    SMTP_SERVER_=os.environ.get('SMTP_SERVER_', ''),  # Used in test_check_email_with_ssl_false(), e.g. smtp.139.com
+    EMAIL_USERNAME_=os.environ.get('EMAIL_USERNAME_', 'username@139.com'),
+    EMAIL_PASSWORD_=os.environ.get('EMAIL_PASSWORD_', ''),  # Used in test_check_email_with_ssl_false()
+    EMAIL_SENDER_=os.environ.get('EMAIL_SENDER_', 'username@139.com'),
+    EMAIL_RECIPIENTS_=[os.environ.get('EMAIL_RECIPIENT_', 'username@139.com')],
+    SMTP_SERVER_=os.environ.get('SMTP_SERVER_', 'smtp.139.com'),  
     SMTP_PORT_=25,
     SMTP_OVER_SSL_=False,
-    SMTP_CONNECTION_TIMEOUT_=10,
-    EMAIL_USERNAME_=os.environ.get('EMAIL_USERNAME_', 'username@139.com'),
-    EMAIL_PASSWORD_=os.environ.get('EMAIL_PASSWORD_', 'password'),
-    FROM_ADDR_=os.environ.get('FROM_ADDR_', 'username@139.com'),
-    TO_ADDRS_=[os.environ.get('TO_ADDRS_', 'username@139.com')]
+    SMTP_CONNECTION_TIMEOUT_=60,
+    
+    ENABLE_MONITOR=os.environ.get('ENABLE_MONITOR', 'True') == 'True',
+    ENABLE_SLACK_ALERT=os.environ.get('ENABLE_SLACK_ALERT', 'True') == 'True',
+    ENABLE_TELEGRAM_ALERT=os.environ.get('ENABLE_TELEGRAM_ALERT', 'True') == 'True',
+    ENABLE_EMAIL_ALERT=os.environ.get('ENABLE_EMAIL_ALERT', 'True') == 'True',
 )
 
 
@@ -73,9 +80,10 @@ def app():
 
         ENABLE_LOGPARSER=False,
 
-        EMAIL_WORKING_DAYS=list(range(1, 8)),
-        EMAIL_WORKING_HOURS=list(range(24)),
-        VERBOSE=True
+        ALERT_WORKING_DAYS=list(range(1, 8)),
+        ALERT_WORKING_HOURS=list(range(24)),
+        
+        VERBOSE=True,
     )
 
     config.update(custom_settings)
