@@ -61,18 +61,18 @@
         <div class="dropdown-content-wrap">
             <div class="dropdown-content">
             {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-                {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
-                <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
+                {% if SCRAPYD_SERVERS_GROUPS[loop.index0] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index0]) %}
+                <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index0] }} --- </div>
                 {% endif %}
 
-                <a href="{{ g.url_jobs_list[loop.index-1] }}"
+                <a href="{{ g.url_jobs_list[loop.index0] }}"
 
                 {% if loop.index == node %}
                 style="color: #409EFF; font-weight: 700;"
                 {% endif %}
 
                 onclick="showLoader();">
-                {{ SCRAPYD_SERVER }}
+                [{{ loop.index }}] {{ SCRAPYD_SERVER }}
                 </a>
             {% endfor %}
             </div>
@@ -123,6 +123,7 @@
 
 <main>
     <aside>
+      <div>
         <h3>Overview</h3>
         <ul>
             <li>
@@ -142,7 +143,8 @@
                 </a>
             </li>
         </ul>
-
+      </div>
+      <div>
         <h3>Dashboard</h3>
         <ul>
             <li>
@@ -172,7 +174,8 @@
             </li>
             {% endif %}
         </ul>
-
+      </div>
+      <div>
         <h3>Operations</h3>
         <ul>
             <li>
@@ -192,7 +195,8 @@
                 </a>
             </li>
         </ul>
-
+      </div>
+      <div>
         <h3>Files</h3>
         <ul>
             <li>
@@ -222,7 +226,8 @@
             </li>
         {% endif %}
         </ul>
-
+      </div>
+      <div>
         <h3>Utilities</h3>
         <ul>
             <li>
@@ -242,7 +247,8 @@
                 </a>
             </li>
         </ul>
-
+      </div>
+      <div>
         <h3>System</h3>
         <ul>
             <li>
@@ -272,9 +278,13 @@
             </li>
             {% endif %}
         </ul>
-
-        <ul id="links">
-            <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }} DEV</li>
+      </div>
+      <div class="github">
+        <a id="scrapydweb_version" class="request" href="https://pypi.org/project/scrapydweb/" target="_blank">v{{ SCRAPYDWEB_VERSION }} DEV</a>
+        <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a>
+      <div>
+        <!-- <ul id="links"> -->
+            <!-- <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }} DEV</li> -->
             <!-- <li id="pypi"> -->
                 <!-- <a target="_blank" href="https://pypi.org/project/scrapydweb/" > -->
                     <!-- <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" /> -->
@@ -289,10 +299,10 @@
             <!-- <li class="github"> -->
                 <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'scrapyd-cluster-on-heroku') }}" aria-label="@my8100 on GitHub">scrapyd-cluster</a> -->
             <!-- </li> -->
-            <li class="github">
-                <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a>
-            </li>
-        </ul>
+            <!-- <li class="github"> -->
+                <!-- <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a> -->
+            <!-- </li> -->
+        <!-- </ul> -->
     </aside>
 
     <div class="content-wrap">

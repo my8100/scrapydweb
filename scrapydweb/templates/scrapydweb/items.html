@@ -21,7 +21,7 @@
 
 <div id="app">
 <template>
-  <el-col :span="4">
+  <el-col :span="5">
     <el-button-group>
       <el-button type="primary" onclick="window.history.back();" icon="el-icon-arrow-left" size="medium">Back</el-button>
       <el-button type="primary" onclick="window.history.forward();" size="medium">Forward<i class="el-icon-arrow-right el-icon--right"></i></el-button>
@@ -31,7 +31,7 @@
 {% if project and spider and rows %}
   <el-button-group>
     {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-    <el-button type="success" onclick="window.location='{{ url_multinode_run }}';" size="medium">multinode</el-button>
+    <el-button type="success" onclick="window.location='{{ url_multinode_run }}';" size="small">{{ g.multinode|safe }}</el-button>
     {% endif %}
     <el-button type="success" onclick="window.location='{{ url_schedule }}';" size="medium">Run Spider ({{ spider }})</el-button>
   </el-button-group>
@@ -54,10 +54,10 @@
     <el-table-column prop="size" label="Size" sortable align="center" width="100" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
 
     {% if project and spider %}
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}160{% else %}80{% endif %}">
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}80{% endif %}">
       <template slot-scope="scope">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="state multinode" :href="scope.row.url_clusterreports" target="_blank">multinode</a>
+        <a class="state multinode" :href="scope.row.url_clusterreports" target="_blank">{{ g.multinode|safe }}</a>
         {% endif %}
         <a class="state normal" :href="scope.row.url_stats" target="_blank">Stats</a>
       </template>

@@ -45,7 +45,8 @@ window.onload = function(){
   <h2 style="display: inline-block;">Get the list of timer tasks.</h2>
   <label title="click to {% if scheduler_action_button == 'ENABLED' %}disable{% else %}enable{% endif %} the scheduler for timer tasks">
     <a class="button {% if scheduler_action_button == 'ENABLED' %}safe{% else %}danger{% endif %}" onclick="taskXHR('{{ url_scheduler_action }}');">
-    {{ scheduler_action_button }}</a>
+      {{ scheduler_action_button }}
+    </a>
   </label>
   <label title="add a timer task">
     <a class="button safe narrow" href="{{ url_add_task }}">+</a>

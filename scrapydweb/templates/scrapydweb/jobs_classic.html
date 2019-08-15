@@ -29,7 +29,7 @@
 {% endif %}
 
 <h2>
-  <a class="link" target="_blank" href="{{ url }}">Get the list of pending, running and finished jobs of all projects after Scrapyd server started.</a>
+  <a class="link" target="_blank" href="{{ url }}">Get the list of jobs of all projects after Scrapyd server started.</a>
   <label title="switch to database view">
     <a class="button normal" href="{{ url_jobs_database }}">Database</a>
   </label>
@@ -57,7 +57,9 @@
         <td>{{ job['job'] }}</td>
         <td id="pending_cancel_{{ loop.index }}">
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" href="{{ job['url_multinode_stop'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_multinode_stop'] }}">
+            {{ g.multinode|safe }}
+          </a>
           {% endif %}
           <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='pending_cancel_{{ loop.index }}');">Cancel</a>
         </td>
@@ -109,7 +111,9 @@
         <td id="running{{ loop.index }}items">N/A</td>
         <td>
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" href="{{ job['url_clusterreports'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_clusterreports'] }}">
+            {{ g.multinode|safe }}
+          </a>
           {% endif %}
           <a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a>
         </td>
@@ -119,7 +123,9 @@
         {% endif %}
         <td id="running_stop_{{ loop.index }}">
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" href="{{ job['url_multinode_stop'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_multinode_stop'] }}">
+            {{ g.multinode|safe }}
+          </a>
           {% endif %}
           <a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false, id='running_stop_{{ loop.index }}');">Stop</a>
         </td>
@@ -174,7 +180,9 @@
         <td id="finished{{ loop.index }}items">N/A</td>
         <td>
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" href="{{ job['url_clusterreports'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_clusterreports'] }}">
+            {{ g.multinode|safe }}
+          </a>
           {% endif %}
           <a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a>
         </td>
@@ -184,7 +192,9 @@
         {% endif %}
         <td>
           {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-          <a class="state multinode" href="{{ job['url_multinode_run'] }}">multinode</a>
+          <a class="state multinode" href="{{ job['url_multinode_run'] }}">
+            {{ g.multinode|safe }}
+          </a>
           {% endif %}
           <a class="state safe" href="{{ job['url_schedule'] }}">Start</a>
         </td>

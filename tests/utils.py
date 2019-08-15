@@ -76,7 +76,7 @@ class Constant(object):
 
     VIEW_TITLE_MAP = {
         'servers': 'Monitor and control',
-        'jobs': 'Get the list of pending',
+        'jobs': 'Get the list of jobs',
         'tasks': 'Get the list of timer tasks',
 
         'deploy': 'Add a version to a project',

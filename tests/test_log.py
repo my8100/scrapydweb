@@ -93,7 +93,7 @@ def test_log_utf8_stats(app, client):
             nos=['id: %s,' % jobs_id, jobs_start])
         req(app, client, view='jobs', kws=dict(node=1, style='database'),
             nos=['id: %s,' % jobs_id, jobs_start])
-        req(app, client, view='jobs', kws=dict(node=1, style='classic'), ins=jobs_start)
+        req(app, client, view='jobs', kws=dict(node=1, style='classic'), ins=jobs_start[5:])
         # delete id not exist
         req(app, client, view='jobs.xhr', kws=dict(node=1, action='delete', id=cst.BIGINT),
             jskws=dict(status=cst.ERROR))

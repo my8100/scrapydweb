@@ -35,7 +35,7 @@
 {% endif %}
 
 <h2>
-  <a class="link" target="_blank" href="{{ url }}">Get the list of pending, running and finished jobs of all projects in database.</a>
+  <a class="link" target="_blank" href="{{ url }}">Get the list of jobs of all projects in database.</a>
   <label title="switch to non-database view">
     <a class="button normal" href="{{ url_jobs_classic }}">Classic</a>
   </label>
@@ -83,20 +83,20 @@
       <template slot-scope="scope"><span :class="scope.row.items_class">{{scope.row.items}}</span></template>
     </el-table-column>
 
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}160{% else %}80{% endif %}" :sort-method="sortByIndex">
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}80{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="state multinode" :style="{ display: scope.row.pending_display }" :href="scope.row.url_clusterreports">multinode</a>
+        <a class="state multinode" :style="{ display: scope.row.pending_display }" :href="scope.row.url_clusterreports">{{ g.multinode|safe }}</a>
         {% endif %}
         <a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_stats" target="_blank">Stats</a>
       </template>
     </el-table-column>
 
-    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}170{% else %}150{% endif %}" :sort-method="sortByIndex">
+    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}150{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
-        <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}} manually</span>
+        <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}}</span>
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="state multinode" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">multinode</a>
+        <a class="state multinode" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">{{ g.multinode|safe }}</a>
         {% endif %}
         <a :class="scope.row.action_class" :style="{ display: scope.row.display_action }" @click="handleActionClick(scope.row.url_action)">{{scope.row.action}}</a>
       </template>

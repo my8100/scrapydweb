@@ -50,11 +50,11 @@
         <p>{{scope.row.index}}</p>
       </template>
     </el-table-column>
-    <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}160{% else %}100{% endif %}">
+    <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}100{% endif %}">
       <template slot-scope="scope">
         <em :class="scope.row.loading_class"  v-bind:style="{display: scope.row.stats_loading_display}">{{scope.row.loading}}</em>
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-        <a class="state multinode" :style="{ display: scope.row.stats_display }" :href="scope.row.multinode_url">multinode</a>
+        <a class="state multinode" :style="{ display: scope.row.stats_display }" :href="scope.row.multinode_url">{{ g.multinode|safe }}</a>
         {% endif %}
         <a target="_blank" :class="scope.row.stats_class" v-bind:style="{display: scope.row.stats_display}" :href="scope.row.stats_url">{{scope.row.stats}}</a>
       </template>
