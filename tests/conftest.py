@@ -74,7 +74,7 @@ def app():
         SCRAPYD_SERVERS=SCRAPYD_SERVERS,
         _SCRAPYD_SERVERS=_SCRAPYD_SERVERS,
         LOCAL_SCRAPYD_SERVER=custom_settings['_SCRAPYD_SERVER'],
-        SCRAPYD_SERVERS_AUTHS=[custom_settings['_SCRAPYD_SERVER_AUTH'], ('username', 'password')],
+        SCRAPYD_SERVERS_AUTHS=[custom_settings['_SCRAPYD_SERVER_AUTH'], ('username', '123456abcdef')],
         SCRAPYD_SERVERS_GROUPS=['', 'Scrapyd-group'],
         SCRAPY_PROJECTS_DIR=os.path.join(cst.ROOT_DIR, 'data'),
 

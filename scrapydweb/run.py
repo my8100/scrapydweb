@@ -133,8 +133,8 @@ def load_custom_settings(config):
                      "Then add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n".format(
                       file=SCRAPYDWEB_SETTINGS_PY))
         else:
-            sys.exit("\nATTENTION:\nYou may encounter ERROR if there are any timer tasks added in v1.2.0,\n"
-                     "and you have to restart scrapydweb and manually restart the stopped tasks.\n"
+            sys.exit("\nATTENTION:\nYou may encounter ERROR if there are any running timer tasks added in v1.2.0,\n"
+                     "and you have to restart scrapydweb and manually edit the tasks to resume them.\n"
                      "\nThe config file '{file}' has been copied to current working directory.\n"
                      "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n".format(
                       file=SCRAPYDWEB_SETTINGS_PY))

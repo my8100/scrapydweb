@@ -362,6 +362,8 @@ class JobsView(BaseView):
 
     def handle_jobs_without_db(self):
         for job in self.jobs:
+            job['start'] = job['start'][5:]
+            job['finish'] = job['finish'][5:]
             if not job['start']:
                 self.pending_jobs.append(job)
             else:

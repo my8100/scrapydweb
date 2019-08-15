@@ -61,8 +61,11 @@
     <el-table-column prop="status" label="Status" sortable align="center" width="90">
       <template slot-scope="scope"><span :class="scope.row.status_class">{{scope.row.status}}</span></template>
     </el-table-column>
-    <el-table-column prop="stats" label="Stats" sortable :sort-method="sortStatus" align="center" width="80">
-      <template slot-scope="scope"><a :class="scope.row.stats_class" :href="scope.row.url_stats" target="_blank">{{scope.row.stats_button}}</a></template>
+    <el-table-column prop="stats" label="Stats" sortable :sort-method="sortStatus" align="center" width="120">
+      <template slot-scope="scope">
+        <a class="state multinode" :style="{ display: scope.row.display_clusterreports }" :href="scope.row.url_clusterreports" target="_blank">{{ g.multinode|safe }}</a>
+        <a :class="scope.row.stats_class" :href="scope.row.url_stats" target="_blank">{{scope.row.stats_button}}</a>
+      </template>
     </el-table-column>
     <el-table-column prop="result" label="Result" sortable :sort-method="sortStatus" align="left" min-width="250" show-overflow-tooltip></el-table-column>
   </el-table>
@@ -107,7 +110,10 @@ var Main = {
         status_class: {% if task_job_result.status != 'ok' %}'status_warn'{% else %}''{% endif %},
         
         result: '{{ task_job_result.result|replace("&", "&amp;")|replace("<", "&lt;")|replace(">", "&gt;")|replace("\\", "/")|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
-
+        
+        url_clusterreports: '{{ task_job_result.url_clusterreports }}',
+        display_clusterreports: {% if SCRAPYD_SERVERS_AMOUNT > 1 and task_job_result.status == 'ok' %}''{% else %}'none'{% endif %},
+        
         url_stats: '{{ task_job_result.url_stats or "javascript:;" }}',
         stats_button: {% if task_job_result.url_stats %}'Stats'{% else %}'N/A'{% endif %},
         stats_class:  {% if task_job_result.url_stats %}'state safe'{% else %}'state danger forbid'{% endif %},

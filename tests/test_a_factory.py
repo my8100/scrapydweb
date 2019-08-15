@@ -112,4 +112,4 @@ def test_scrapyd_group(app, client):
 
 
 def test_scrapyd_auth(app, client):
-    req(app, client, view='settings', kws=dict(node=1), ins='u*e*n*m*:p*s*w*r*')  # ('username', 'password')
+    req(app, client, view='settings', kws=dict(node=1), ins='u*e*n*m*:****56ab****')  # ('username', '123456abcdef')

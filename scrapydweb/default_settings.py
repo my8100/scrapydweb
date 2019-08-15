@@ -182,7 +182,7 @@ DAEMONSTATUS_REFRESH_INTERVAL = 10
 ########## slack ##########
 # How to create a slack app:
 # 1. Visit https://api.slack.com/apps and press the "Create New App" button.
-# 2. Enter your App Name (e.g. mybot)and select one of your Slack Workspaces, the press "Create App".
+# 2. Enter your App Name (e.g. myapp)and select one of your Slack Workspaces, the press "Create App".
 # 3. Click the "OAuth & Permissions" menu in the sidebar on the left side of the page.
 # 4. Scroll down the page and find out "Select Permission Scopes" in the "Scopes" section
 # 5. Enter "send" and select "Send messages as <your-app-name>", then press "Save Changes"

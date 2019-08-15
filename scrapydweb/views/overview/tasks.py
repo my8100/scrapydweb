@@ -242,8 +242,12 @@ class TasksView(BaseView):
                     task_job_result.url_stats = url_for('log', node=task_job_result.node, opt='stats',
                                                         project=self.task.project, spider=self.task.spider,
                                                         job=task_job_result.result)
+                    task_job_result.url_clusterreports = url_for('clusterreports', node=self.node,
+                                                                 project=self.task.project, spider=self.task.spider,
+                                                                 job=task_job_result.result)
                 else:
                     task_job_result.url_stats = ''  # 'javascript:;'
+                    task_job_result.url_clusterreports = ''
 
         self.kwargs = dict(
             node=self.node,

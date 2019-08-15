@@ -75,14 +75,18 @@ ol {
     list-style: none;
 }
 
-ul#links{
-    position: absolute;
-    bottom: 0;
-    margin-top: 30px;
-    margin-bottom: 30px;
-}
-@media (max-height: 800px) {
-  ul#links { position: relative; }
+/* ul#links{ */
+    /* position: absolute; */
+    /* bottom: 0; */
+    /* margin-top: 30px; */
+    /* margin-bottom: 30px; */
+/* } */
+/* @media (max-height: 800px) { */
+  /* ul#links { position: relative; } */
+/* } */
+
+.github {
+    margin: 16px 0 16px 20px;
 }
 
 .clear-float {
@@ -206,12 +210,23 @@ main>aside {
     box-sizing: border-box;
     min-width: 160px;
     background-color: #343131;
-    padding: 50px 0;
+    /* padding: 50px 0; */
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    /* overflow-y: hidden; */
+    /* flex-grow: 1; */
+    /* overflow-y: scroll; */
+}
+
+main>aside:hover {
+    /* overflow-y: scroll; */
 }
 
 main>aside h3 {
     color: #fcfcfc;
-    line-height: 40px;
+    line-height: 32px;
     cursor: default;
     font-size: 16px;
     padding: 0 20px;
@@ -222,10 +237,16 @@ main>aside a {
     box-sizing: border-box;
     width: 100%;
     display: inline-block;
-    line-height: 30px;
+    line-height: 24px;
     padding-left: 20px;
     font-size: 14px;
     font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+main>aside ul {
+    transition: height .1s ease-in-out;
+    overflow: hidden;
+    /* height: auto; */
 }
 
 main>aside li a:hover {
@@ -244,10 +265,10 @@ main>aside li a > span {
 }
 
 
-main>aside li#scrapydweb_version{
+main>aside #scrapydweb_version{
     color: #67c23a;
     height: 30px;
-    padding-left: 20px;
+    padding-left: 0px;
 }
 
 main>aside li#pypi{height: 35px;}
@@ -288,7 +309,7 @@ main>.content-wrap {
     overflow-x: hidden;
     overflow-y: scroll;
     margin-right: -15px;
-    padding: 16px 48px;
+    padding: 16px 24px;
     /* font-family: Consolas, 'Lucida Console', 'DejaVu Sans Mono', monospace; */
     font-family: "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 400;
@@ -707,18 +728,24 @@ table>tbody tr:last-child {
 
 /* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp START */
 /* Width */
+main>aside::-webkit-scrollbar,
 .folders-content::-webkit-scrollbar,
 #checkboxes::-webkit-scrollbar {
     width: 10px;
 }
 
 /* Track */
+main>aside::-webkit-scrollbar-track,
 .folders-content::-webkit-scrollbar-track,
 #checkboxes::-webkit-scrollbar-track {
     border-radius: 10px;
 }
 
 /* Handle */
+main>aside::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 10px;
+}
 .folders-content::-webkit-scrollbar-thumb,
 #checkboxes::-webkit-scrollbar-thumb {
     background: #9093994d;
@@ -726,6 +753,10 @@ table>tbody tr:last-child {
 }
 
 /* Handle on hover */
+main>aside::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e;
+    /* opacity: 0.7; */
+}
 .folders-content::-webkit-scrollbar-thumb:hover,
 #checkboxes::-webkit-scrollbar-thumb:hover {
     background: #90939980;

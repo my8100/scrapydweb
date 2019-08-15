@@ -73,6 +73,7 @@ def send_email(**kwargs):
         if to_retry:
             kwargs.update(to_retry=False, need_debug=True)
             logger.debug("Retrying...")
+            time.sleep(3)
             send_email(**kwargs)
     else:
         result = True

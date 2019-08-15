@@ -81,7 +81,7 @@ class SendTextApiView(BaseView):
             return
         self.EMAIL_KWARGS['subject'] = self.channel_chatid_subject
         self.EMAIL_KWARGS['content'] = self.text
-        result, reason = send_email(**self.EMAIL_KWARGS)
+        result, reason = send_email(to_retry=True, **self.EMAIL_KWARGS)
         if result is True:
             self.logger.debug("Sent to %s via Email", self.EMAIL_KWARGS['email_recipients'])
             self.js = dict(status=self.OK,
@@ -96,10 +96,9 @@ class SendTextApiView(BaseView):
         if not self.SLACK_TOKEN:
             self.js = dict(status=self.ERROR, result="The SLACK_TOKEN option is unset")
             return
-        url = 'https://slack.com/api/chat.postMessage?channel=%s' % self.channel_chatid_subject
-        status_code, js = self.make_request(url,
-                                            data=dict(token=self.SLACK_TOKEN, text=self.text),
-                                            check_status=False)
+        url = 'https://slack.com/api/chat.postMessage'
+        data = dict(token=self.SLACK_TOKEN, channel=self.channel_chatid_subject, text=self.text)
+        status_code, js = self.make_request(url, data=data, check_status=False)
         for key in ['auth', 'status', 'status_code', 'url', 'when']:
             js.pop(key, None)
         self.js = dict(url=url, status_code=status_code, result=js)
@@ -121,9 +120,8 @@ class SendTextApiView(BaseView):
             self.js = dict(status=self.ERROR, result="The TELEGRAM_TOKEN option is unset")
             return
         url = 'https://api.telegram.org/bot%s/sendMessage' % self.TELEGRAM_TOKEN
-        status_code, js = self.make_request(url,
-                                            data=dict(text=self.text, chat_id=self.channel_chatid_subject),
-                                            check_status=False)
+        data = dict(text=self.text, chat_id=self.channel_chatid_subject)
+        status_code, js = self.make_request(url, data=data, check_status=False)
 
         for key in ['auth', 'status', 'status_code', 'url', 'when']:
             js.pop(key, None)

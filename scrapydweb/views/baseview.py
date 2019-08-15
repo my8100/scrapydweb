@@ -63,8 +63,8 @@ class BaseView(View):
         logging.getLogger("requests").setLevel(_level)
         logging.getLogger("urllib3").setLevel(_level)
 
-        if app.testing:
-            self.logger.debug('view_args of %s\n%s', request.url, self.json_dumps(request.view_args))
+        # if app.testing:
+        self.logger.debug('view_args of %s\n%s', request.url, self.json_dumps(request.view_args))
         if request.args:
             self.logger.debug('request.args of %s\n%s', request.url, self.json_dumps(request.args))
         if request.form:
@@ -348,6 +348,9 @@ class BaseView(View):
         g.IS_MOBILE = self.IS_MOBILE
         g.url_jobs_list = [url_for('jobs', node=node, ui=self.UI)
                            for node in range(1, self.SCRAPYD_SERVERS_AMOUNT + 1)]
+        g.multinode = ('<label title="multinode">'
+                       '<svg class="icon" aria-hidden="true"><use xlink:href="#icon-servers"></use></svg>'
+                       '</label>')
         # For base.html
         if not self.USE_MOBILEUI:
             g.url_daemonstatus = url_for('api', node=self.node, opt='daemonstatus')

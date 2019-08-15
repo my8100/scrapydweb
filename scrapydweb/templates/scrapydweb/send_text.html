@@ -13,7 +13,7 @@
   Send text via
   <a class="link" target="_blank" href="{{ url_slack }}">Slack</a>,
   <a class="link" target="_blank" href="{{ url_telegram }}">Telegram</a>, or
-  <a class="link" target="_blank" href="{{ url_email }}">Email</a>
+  <a class="link" target="_blank" href="{{ url_email }}">Email</a> (click to test)
 </h2>
 <pre>
 """
@@ -24,10 +24,10 @@ import scrapy
 from w3lib.http import basic_auth_header
 
 
-# Supposing ScrapydWeb is available at http://127.0.0.1:5000
+# Suppose ScrapydWeb is available at http://127.0.0.1:5000
 # Do remember to add '127.0.0.1' to allowed_domains
 base_url = 'http://127.0.0.1:5000'
-headers = dict(Authorization=basic_auth_header('admin', '12345'))
+headers = dict(Authorization=basic_auth_header('username', 'password'))
 callback_none = lambda x: None
 
 # Via Slack:

@@ -114,8 +114,8 @@ def test_slack_pass(app, client):
         print("SLACK_TOKEN unset")
         return
 
-    def check_pass(text=None, channel=app.config['SLACK_CHANNEL']):  # general -> "channel": "CLX124N0Z",
-        assert js['url'] == 'https://slack.com/api/chat.postMessage?channel=%s' % channel
+    def check_pass(text=None):
+        assert js['url'] == 'https://slack.com/api/chat.postMessage'
         assert js['status_code'] == 200
         assert js['status'] == cst.OK
         assert js['result']['ok'] is True
@@ -136,11 +136,11 @@ def test_slack_pass(app, client):
     check_pass(text)
 
     # 'slack/<channel_chatid_subject>/<text>'
-    channel = 'random'  # random -> "channel": "CLRUUNCCT"
+    channel = 'random'  # general -> "channel": "CLX124N0Z", random -> "channel": "CLRUUNCCT"
     text = 'test slack channel %s and text' % channel
     kws = dict(opt='slack', channel_chatid_subject=channel, text=text)
     __, js = req(app, client, view='sendtextapi', kws=kws)
-    check_pass(text, channel)
+    check_pass(text)
     channel_random = js['result']['channel']
     assert channel_random != channel_general
 
@@ -149,7 +149,7 @@ def test_slack_pass(app, client):
     value = "slack post form and channel %s in query string" % channel
     data = dict(a=1, arg=value, Chinese=u'中文')
     __, js = req(app, client, view='sendtextapi', kws=dict(opt='slack', channel=channel), data=data)
-    check_pass(channel=channel)
+    check_pass()
     data['a'] = str(data['a'])
     assert json.loads(js['result']['message']['text']) == data
     assert js['result']['channel'] == channel_random
@@ -160,7 +160,7 @@ def test_slack_pass(app, client):
     data = dict(channel=channel, b=2, arg=value, Chinese=u'中文')
     __, js = req(app, client, view='sendtextapi', kws=dict(opt='slack'),
                  data=json.dumps(data), content_type='application/json')
-    check_pass(channel=channel)
+    check_pass()
     assert json.loads(js['result']['message']['text']) == data
     assert js['result']['channel'] == channel_random
 
@@ -169,10 +169,9 @@ def test_slack_fail(app, client):
     kws = dict(opt='slack')
     jskeys = ['url', 'status_code', 'status', 'result', 'debug', 'when']
 
-    def check_fail(channel=None, status_code=None, result=None):
+    def check_fail(status_code=None, result=None):
         assert js['status'] == 'error'
-        if channel is not None:
-            assert js['url'] == "https://slack.com/api/chat.postMessage?channel=%s" % channel
+        assert js['url'] == 'https://slack.com/api/chat.postMessage'
         if status_code is not None:
             assert js['status_code'] == status_code
         if result is not None:
@@ -194,7 +193,7 @@ def test_slack_fail(app, client):
     fake_token = 'fake_token'
     app.config['SLACK_TOKEN'] = fake_token
     __, js = req(app, client, view='sendtextapi', kws=kws, jskeys=jskeys)
-    check_fail(status_code=200, channel=app.config['SLACK_CHANNEL'], result={'error': 'invalid_auth', 'ok': False})
+    check_fail(status_code=200, result={'error': 'invalid_auth', 'ok': False})
     assert js['debug'] == {'channel': app.config['SLACK_CHANNEL'], 'text': 'test', 'token': fake_token}
 
     app.config['SLACK_TOKEN'] = token
@@ -203,7 +202,7 @@ def test_slack_fail(app, client):
     fake_channel = 'fake_channel'
     app.config['SLACK_CHANNEL'] = fake_channel
     __, js = req(app, client, view='sendtextapi', kws=kws, jskeys=jskeys)
-    check_fail(status_code=200, channel=fake_channel, result={'error': 'channel_not_found', 'ok': False})
+    check_fail(status_code=200, result={'error': 'channel_not_found', 'ok': False})
     assert js['debug'] == {'channel': fake_channel, 'text': 'test', 'token': app.config['SLACK_TOKEN']}
 
 
@@ -266,11 +265,11 @@ def test_telegram_pass(app, client):
 def test_telegram_fail(app, client):
     kws = dict(opt='telegram')
 
-    def check_fail(status_code=None, result=None):
+    def check_fail(status_code=None, result=None, token=app.config['TELEGRAM_TOKEN']):
         assert js['status'] == 'error'
         if status_code is not None:
             assert js['status_code'] == status_code
-            assert js['url']
+            assert js['url'] == 'https://api.telegram.org/bot%s/sendMessage' % token
         if result is not None:
             assert js['result'] == result
         assert js['when']
@@ -290,13 +289,15 @@ def test_telegram_fail(app, client):
     fake_token = 'fake_token'
     app.config['TELEGRAM_TOKEN'] = fake_token
     __, js = req(app, client, view='sendtextapi', kws=kws)
-    check_fail(status_code=404, result=dict(description="Not Found", error_code=404, ok=False))
+    result = dict(description="Not Found", error_code=404, ok=False)
+    check_fail(status_code=404, result=result, token=fake_token)
     assert js['debug'] == dict(token=fake_token, chat_id=app.config['TELEGRAM_CHAT_ID'], text='test')
 
     fake_token_ = token + '_'
     app.config['TELEGRAM_TOKEN'] = fake_token_
     __, js = req(app, client, view='sendtextapi', kws=kws)
-    check_fail(status_code=401, result=dict(description="Unauthorized", error_code=401, ok=False))
+    result = dict(description="Unauthorized", error_code=401, ok=False)
+    check_fail(status_code=401, result=result, token=fake_token_)
     assert js['debug'] == dict(token=fake_token_, chat_id=app.config['TELEGRAM_CHAT_ID'], text='test')
 
     app.config['TELEGRAM_TOKEN'] = token

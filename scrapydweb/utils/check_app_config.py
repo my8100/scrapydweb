@@ -198,10 +198,11 @@ def check_app_config(config):
     check_assert('TELEGRAM_TOKEN', '', str)
     check_assert('TELEGRAM_CHAT_ID', 0, int)
 
+    check_assert('EMAIL_PASSWORD', '', str)
     if config.get('EMAIL_PASSWORD', ''):
         check_assert('EMAIL_SUBJECT', '', str)
-        check_assert('EMAIL_USERNAME', '', str)  # '' to default to config['EMAIL_SENDER']
-        check_assert('EMAIL_PASSWORD', '', str, non_empty=True)
+        check_assert('EMAIL_USERNAME', '', str)  # '' would default to config['EMAIL_SENDER']
+        # check_assert('EMAIL_PASSWORD', '', str, non_empty=True)
         check_assert('EMAIL_SENDER', '', str, non_empty=True)
         EMAIL_SENDER = config['EMAIL_SENDER']
         assert re.search(EMAIL_PATTERN, EMAIL_SENDER), \

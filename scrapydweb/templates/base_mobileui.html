@@ -47,13 +47,13 @@
         <div class="dropdown-content-wrap">
             <div class="dropdown-content">
             {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-                {% if SCRAPYD_SERVERS_GROUPS[loop.index-1] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index-1]) %}
-                <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }} --- </div>
+                {% if SCRAPYD_SERVERS_GROUPS[loop.index0] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index0]) %}
+                <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index0] }} --- </div>
                 {% endif %}
 
                 <a {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}
-                href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[loop.index-1] }}');">
-                {{ SCRAPYD_SERVER }}
+                href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[loop.index0] }}');">
+                [{{ loop.index }}] {{ SCRAPYD_SERVER }}
                 </a>
             {% endfor %}
             </div>
