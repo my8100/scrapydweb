@@ -91,11 +91,11 @@ scheduler.start(paused=True)
 
 
 def shutdown_scheduler():
-    apscheduler_logger.info("Scheduled tasks: %s", scheduler.get_jobs())
+    apscheduler_logger.debug("Scheduled tasks: %s", scheduler.get_jobs())
     apscheduler_logger.warning("Shutting down the scheduler for timer tasks gracefully, "
                                "wait until all currently executing tasks are finished")
-    apscheduler_logger.info("The main pid is %s. Kill it manually if you don't want to wait",
-                            handle_metadata().get('main_pid'))
+    apscheduler_logger.warning("The main pid is %s. Kill it manually if you don't want to wait",
+                               handle_metadata().get('main_pid'))
     scheduler.shutdown()
     # apscheduler_logger.info("Waits until all currently executing jobs are finished. "
     #                         "Press CTRL+C to force unclean shutdown")

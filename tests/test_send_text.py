@@ -25,7 +25,7 @@ def test_email_pass(app, client):
             assert js['result']['text'] == text
         assert 'debug' not in js
         assert js['when']
-        sleep(5)
+        sleep(10)
 
     # 'email'
     nos = ['debug', 'email_password']

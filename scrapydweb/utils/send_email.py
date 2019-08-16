@@ -9,10 +9,6 @@ import time
 
 
 logger = logging.getLogger('scrapydweb.utils.send_email')  # __name__
-_handler = logging.StreamHandler()
-_formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)-8s in %(name)s: %(message)s")
-_handler.setFormatter(_formatter)
-logger.addHandler(_handler)
 logger.setLevel(logging.DEBUG)
 
 
@@ -74,7 +70,7 @@ def send_email(**kwargs):
             kwargs.update(to_retry=False, need_debug=True)
             logger.debug("Retrying...")
             time.sleep(3)
-            send_email(**kwargs)
+            return send_email(**kwargs)
     else:
         result = True
         reason = "Sent"
@@ -90,4 +86,10 @@ def send_email(**kwargs):
 
 
 if __name__ == '__main__':
+    # To avoid logging twice when importing the send_email function to send email.
+    _handler = logging.StreamHandler()
+    _formatter = logging.Formatter(fmt="[%(asctime)s] %(levelname)-8s in %(name)s: %(message)s")
+    _handler.setFormatter(_formatter)
+    logger.addHandler(_handler)
+
     send_email(**json.loads(sys.argv[1]))

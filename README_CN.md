@@ -44,7 +44,7 @@
   - :package: **自动打包项目**
   - :male_detective: **集成 [:link: *LogParser*](https://github.com/my8100/logparser)**
   - :alarm_clock: **定时器任务**
-  - :e-mail: **邮件通知**
+  - :e-mail: **监控和警报**
   - :iphone: 移动端 UI
   - :closed_lock_with_key: web UI 支持基本身份认证
 

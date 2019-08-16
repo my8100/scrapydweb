@@ -58,7 +58,7 @@ class BaseView(View):
         self.SQLALCHEMY_DATABASE_URI = app.config['SQLALCHEMY_DATABASE_URI']
         self.SQLALCHEMY_BINDS = app.config['SQLALCHEMY_BINDS']
 
-        _level = logging.DEBUG if self.VERBOSE else logging.WARNING
+        _level = logging.DEBUG if self.VERBOSE else logging.INFO
         self.logger.setLevel(_level)
         logging.getLogger("requests").setLevel(_level)
         logging.getLogger("urllib3").setLevel(_level)

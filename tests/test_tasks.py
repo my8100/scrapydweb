@@ -97,7 +97,8 @@ def test_edit_task(app, client):
     task_id = metadata['task_id']
     # http://127.0.0.1:5000/1/schedule/?task_id=1
     req(app, client, view='schedule', kws=dict(node=NODE, task_id=task_id),
-        ins=["checked />[1] %s" % app.config['SCRAPYD_SERVERS'][0], "checked />[2] %s" % app.config['SCRAPYD_SERVERS'][-1]])
+        ins=["checked />[1] %s" % app.config['SCRAPYD_SERVERS'][0],
+             "checked />[2] %s" % app.config['SCRAPYD_SERVERS'][-1]])
 
     check_data_ = dict(check_data)
     check_data_.update(task_id=task_id, hour='6')

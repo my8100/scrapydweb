@@ -200,6 +200,7 @@ def check_app_config(config):
 
     check_assert('EMAIL_PASSWORD', '', str)
     if config.get('EMAIL_PASSWORD', ''):
+        logger.debug("Found EMAIL_PASSWORD, checking email settings")
         check_assert('EMAIL_SUBJECT', '', str)
         check_assert('EMAIL_USERNAME', '', str)  # '' would default to config['EMAIL_SENDER']
         # check_assert('EMAIL_PASSWORD', '', str, non_empty=True)
