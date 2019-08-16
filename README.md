@@ -44,7 +44,7 @@
   - :package: **Auto packaging**
   - :male_detective: **Integrated with [:link: *LogParser*](https://github.com/my8100/logparser)**
   - :alarm_clock: **Timer tasks**
-  - :e-mail: **Email notice**
+  - :e-mail: **Monitor & Alert**
   - :iphone: Mobile UI
   - :closed_lock_with_key: Basic auth for web UI
 

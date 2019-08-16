@@ -1,5 +1,15 @@
 Release History
 ===============
+1.4.0 (2019-08-16)
+------------------
+- New Features
+  - Add API for sending text or alert via Slack, Telegram, or Email
+- Improvements
+  - UI improvements on sidebar and multinode buttons
+- Others
+  - Update config file to scrapydweb_settings_v10.py
+
+
 [1.3.0](https://github.com/my8100/scrapydweb/issues?q=is%3Aclosed+milestone%3A1.3.0) (2019-08-04)
 ------------------
 - New Features

@@ -69,14 +69,14 @@ jobs:
             - run:
                 name: Setup DATA_PATH
                 command: |
-                  printf "\nDATA_PATH = '"$DATA_PATH"'\n" >> scrapydweb_settings_v9.py
+                  echo $DATA_PATH
       - when:
           condition: <<parameters.use-sqlite>>
           steps:
             - run:
                 name: Set DATABASE_URL to sqlite
                 command: |
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v9.py
+                  echo $DATABASE_URL
       - when:
           condition: <<parameters.use-postgresql>>
           steps:
@@ -87,11 +87,6 @@ jobs:
                   # createdb: could not connect to database template1: FATAL:  role "circleci" does not exist
                   # sudo apt install -y postgresql-client
                   # createdb -h localhost scrapydweb_apscheduler -O circleci
-            - run:
-                name: Set DATABASE_URL to postgresql
-                command: |
-                  # postgres://circleci@127.0.0.1:5432
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v9.py
       - when:
           condition: <<parameters.use-mysql>>
           steps:
@@ -117,11 +112,6 @@ jobs:
                   # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_timertasks"
                   # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_metadata"
                   # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_jobs"
-            - run:
-                name: Set DATABASE_URL to mysql
-                command: |
-                  # mysql://user:passw0rd@127.0.0.1:3306
-                  printf "\nDATABASE_URL = '"$DATABASE_URL"'\n" >> scrapydweb_settings_v9.py
 
       - run:
           name: Install dependencies
@@ -168,10 +158,8 @@ jobs:
       - run:
           name: Generate report
           command: |
-            touch scrapydweb_settings_v9.py
-            cat scrapydweb_settings_v9.py
-            echo $DATA_PATH
-            echo $DATABASE_URL
+            echo DATA_PATH: $DATA_PATH
+            echo DATABASE_URL: $DATABASE_URL
             . venv/bin/activate
             coverage report
             coverage html
