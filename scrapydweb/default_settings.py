@@ -338,7 +338,7 @@ LOG_IGNORE_TRIGGER_FORCESTOP = False
 # Note that use_reloader is set to False in run.py
 DEBUG = False
 
-# The default is False, set it to True to change the logging level from WARNING to DEBUG
+# The default is False, set it to True to change the logging level from INFO to DEBUG
 # for getting more information about how ScrapydWeb works, especially while debugging.
 VERBOSE = False
 

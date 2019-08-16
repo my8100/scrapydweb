@@ -90,7 +90,7 @@ class SendTextApiView(BaseView):
                                        subject=self.channel_chatid_subject, text=self.text))
         else:
             self.js = dict(status=self.ERROR, result=dict(reason=reason), debug=self.EMAIL_KWARGS)
-            self.logger.error("Fail to send text via Email:\n%s", self.js)
+            self.logger.error("Fail to send text via Email:\n%s", self.json_dumps(self.js))
 
     def send_slack(self):
         if not self.SLACK_TOKEN:
@@ -113,7 +113,7 @@ class SendTextApiView(BaseView):
             if self.SLACK_TOKEN:
                 self.js['debug'] = dict(token=self.SLACK_TOKEN, channel=self.channel_chatid_subject,
                                         text=self.text)
-            self.logger.error("Fail to send text via Slack:\n%s", self.js)
+            self.logger.error("Fail to send text via Slack:\n%s", self.json_dumps(self.js))
 
     def send_telegram(self):
         if not self.TELEGRAM_TOKEN:
@@ -135,4 +135,4 @@ class SendTextApiView(BaseView):
             if self.TELEGRAM_TOKEN:
                 self.js['debug'] = dict(token=self.TELEGRAM_TOKEN, chat_id=self.channel_chatid_subject,
                                         text=self.text)
-            self.logger.error("Fail to send text via Telegram:\n%s", self.js)
+            self.logger.error("Fail to send text via Telegram:\n%s", self.json_dumps(self.js))

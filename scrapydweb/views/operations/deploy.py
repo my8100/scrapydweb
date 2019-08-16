@@ -112,7 +112,7 @@ class DeployView(BaseView):
         if timestamps:
             max_timestamp_index = timestamps.index(max(timestamps))
             self.latest_folder = self.folders[max_timestamp_index]
-            self.logger.info('latest_folder: %s', self.latest_folder)
+            self.logger.debug('latest_folder: %s', self.latest_folder)
 
     def get_modification_time(self, path, func_walk=os.walk, retry=True):
         # https://stackoverflow.com/a/29685234/10517783
@@ -171,8 +171,8 @@ class DeployView(BaseView):
         diff = set(keys_all).difference(set(keys_exist))
         for key in diff:
             self.logger.debug('Pop %s, project %s', key, folder_project_dict.pop(key))
-        self.logger.info(self.json_dumps(folder_project_dict))
-        self.logger.info('folder_project_dict length: %s', len(folder_project_dict))
+        self.logger.debug(self.json_dumps(folder_project_dict))
+        self.logger.debug('folder_project_dict length: %s', len(folder_project_dict))
 
 
 class DeployUploadView(BaseView):

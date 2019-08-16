@@ -46,8 +46,8 @@ class TaskExecutor(object):
                 continue
             if index == 1:
                 # https://apscheduler.readthedocs.io/en/latest/userguide.html#shutting-down-the-scheduler
-                self.logger.info("Retry task #%s (%s) on nodes %s in %s seconds",
-                                 self.task_id, self.task_name, nodes, self.sleep_seconds_before_retry)
+                self.logger.warning("Retry task #%s (%s) on nodes %s in %s seconds",
+                                    self.task_id, self.task_name, nodes, self.sleep_seconds_before_retry)
                 time.sleep(self.sleep_seconds_before_retry)
                 self.logger.warning("Retrying task #%s (%s) on nodes %s", self.task_id, self.task_name, nodes)
             for node in nodes:
@@ -119,7 +119,7 @@ class TaskExecutor(object):
             task_job_result.result = js.get('jobid', '') or js.get('message', '') or js.get('exception', '')
             db.session.add(task_job_result)
             db.session.commit()
-            self.logger.warning("Inserted %s", task_job_result)
+            self.logger.info("Inserted task_job_result: %s", task_job_result)
 
     # https://stackoverflow.com/questions/13895176/sqlalchemy-and-sqlite-database-is-locked
     def db_update_task_result(self):
@@ -133,18 +133,18 @@ class TaskExecutor(object):
                 url_delete_task_result = re.sub(r'/\d+/\d+/$', '/%s/%s/' % (self.task_id, self.task_result_id),
                                                 self.url_delete_task_result)
                 js = get_response_from_view(url_delete_task_result, auth=self.auth, data=self.data, as_json=True)
-                apscheduler_logger.warning("Delete task_result #%s [FAIL %s, PASS %s] of task #%s: %s",
+                apscheduler_logger.warning("Deleted task_result #%s [FAIL %s, PASS %s] of task #%s: %s",
                                            self.task_result_id, self.fail_count, self.pass_count, self.task_id, js)
                 return
             if not task_result:
                 apscheduler_logger.error("task_result #%s of task #%s not found", self.task_result_id, self.task_id)
-                apscheduler_logger.warning("Fail to update task_result #%s [FAIL %s, PASS %s] of task #%s",
+                apscheduler_logger.warning("Failed to update task_result #%s [FAIL %s, PASS %s] of task #%s",
                                            self.task_result_id, self.fail_count, self.pass_count, self.task_id)
                 return
             task_result.fail_count = self.fail_count
             task_result.pass_count = self.pass_count
             db.session.commit()
-            self.logger.warning("Inserted %s", task_result)
+            self.logger.info("Inserted task_result: %s", task_result)
 
 
 def execute_task(task_id):

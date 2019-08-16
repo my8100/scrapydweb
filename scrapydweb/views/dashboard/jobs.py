@@ -203,7 +203,7 @@ class JobsView(BaseView):
                 self.metadata['style'] = self.style
                 handle_metadata('jobs_style', self.style)
                 msg = "Change style to %s" % self.style
-                self.logger.warning(msg)
+                self.logger.info(msg)
                 # flash(msg, self.WARN)
 
     # Note that there may be jobs with the same combination of (project, spider, job) in the fetched Jobs
@@ -256,7 +256,7 @@ class JobsView(BaseView):
                         record.deleted = NOT_DELETED
                         record.pages = None
                         record.items = None
-                        self.logger.warning("Recover deleted job: %s", record)
+                        self.logger.info("Recover deleted job: %s", record)
                         flash("Recover deleted job: %s" % job, self.WARN)
             else:
                 record = self.Job()
@@ -300,7 +300,7 @@ class JobsView(BaseView):
             if (record.project, record.spider, record.job) not in current_pending_jobs:
                 db.session.delete(record)
                 db.session.commit()
-                self.logger.warning("Deleted pending jobs %s", record)
+                self.logger.info("Deleted pending jobs %s", record)
 
     def query_jobs(self):
         current_running_job_pids = [int(job['pid']) for job in self.jobs_backup if job['pid']]
@@ -461,7 +461,7 @@ class JobsXhrView(BaseView):
                 self.js['message'] = str(err)
             else:
                 self.js['status'] = self.OK
-                self.logger.warning(self.js.setdefault('tip', "Deleted %s" % job))
+                self.logger.info(self.js.setdefault('tip', "Deleted %s" % job))
         else:
             self.js['status'] = self.ERROR
             self.js['message'] = "job #%s not found in the database" % self.id

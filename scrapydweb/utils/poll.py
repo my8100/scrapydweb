@@ -73,7 +73,7 @@ class Poll(object):
         if verbose:
             self.logger.setLevel(logging.DEBUG)
         else:
-            self.logger.setLevel(logging.WARNING)
+            self.logger.setLevel(logging.INFO)
         self.exit_timeout = exit_timeout
 
         self.init_time = time.time()
@@ -115,8 +115,8 @@ class Poll(object):
                 running_jobs.append(job_tuple)
             elif job['finish']:
                 finished_jobs_set.add(job_tuple)
-        self.logger.info("[node %s] got running_jobs: %s", node, len(running_jobs))
-        self.logger.info("[node %s] got finished_jobs_set: %s", node, len(finished_jobs_set))
+        self.logger.debug("[node %s] got running_jobs: %s", node, len(running_jobs))
+        self.logger.debug("[node %s] got finished_jobs_set: %s", node, len(finished_jobs_set))
         return running_jobs, finished_jobs_set
 
     def fetch_stats(self, node, job_tuple, finished_jobs):
@@ -139,7 +139,7 @@ class Poll(object):
             self.logger.error("[node %s %s] fetch_stats failed: %s", node, self.scrapyd_servers[node-1], url)
             if job_finished:
                 self.finished_jobs_dict[node].remove(job_tuple)
-                self.logger.warning("[node %s] retry in next round: %s", node, url)
+                self.logger.info("[node %s] retry in next round: %s", node, url)
         else:
             self.logger.debug("[node %s] fetch_stats got (%s) %s bytes from %s",
                               node, r.status_code, len(r.content), url)
@@ -156,7 +156,7 @@ class Poll(object):
                     self.logger.critical("GoodBye, exit_timeout: %s", self.exit_timeout)
                     break
                 else:
-                    self.logger.warning("Sleeping for %ss", self.poll_round_interval)
+                    self.logger.info("Sleeping for %ss", self.poll_round_interval)
                     time.sleep(self.poll_round_interval)
             except KeyboardInterrupt:
                 self.logger.warning("Poll subprocess (pid: %s) cancelled by KeyboardInterrupt", self.poll_pid)
@@ -203,21 +203,21 @@ class Poll(object):
 
     def update_finished_jobs(self, node, finished_jobs_set):
         finished_jobs_set_previous = self.finished_jobs_dict.setdefault(node, set())
-        self.logger.info("[node %s] previous finished_jobs_set: %s", node, len(finished_jobs_set_previous))
+        self.logger.debug("[node %s] previous finished_jobs_set: %s", node, len(finished_jobs_set_previous))
         # set([2,3]).difference(set([1,2])) => {3}
         finished_jobs_set_new_added = finished_jobs_set.difference(finished_jobs_set_previous)
         self.finished_jobs_dict[node] = finished_jobs_set
-        self.logger.info("[node %s] now finished_jobs_set: %s", node, len(self.finished_jobs_dict[node]))
+        self.logger.debug("[node %s] now finished_jobs_set: %s", node, len(self.finished_jobs_dict[node]))
         if finished_jobs_set_new_added:
-            self.logger.warning("[node %s] new added finished_jobs_set: %s", node, finished_jobs_set_new_added)
-        else:
             self.logger.info("[node %s] new added finished_jobs_set: %s", node, finished_jobs_set_new_added)
+        else:
+            self.logger.debug("[node %s] new added finished_jobs_set: %s", node, finished_jobs_set_new_added)
 
         finished_jobs = []
         ignore = self.ignore_finished_bool_list[node-1]
         for job_tuple in finished_jobs_set_new_added:
             if ignore:
-                self.logger.warning("[node %s] ignore finished job: %s", node, job_tuple)
+                self.logger.debug("[node %s] ignore finished job: %s", node, job_tuple)
             else:
                 finished_jobs.append(job_tuple)
         if ignore:

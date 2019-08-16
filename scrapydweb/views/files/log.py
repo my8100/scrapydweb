@@ -401,7 +401,7 @@ class LogView(BaseView):
         job_data_default = ([0] * 8, [False] * 6, False, time.time())
         job_data = job_data_dict.setdefault(self.job_key, job_data_default)
         (self.job_stats_previous, self.triggered_list, self.has_been_stopped, self.last_send_timestamp) = job_data
-        self.logger.info(job_data_dict)
+        self.logger.debug(job_data_dict)
         self.job_stats = [self.kwargs['log_categories'][k.lower() + '_logs']['count']
                           for k in self.ALERT_TRIGGER_KEYS]
         self.job_stats.extend([self.kwargs['pages'] or 0, self.kwargs['items'] or 0])  # May be None by LogParser
@@ -527,9 +527,9 @@ class LogView(BaseView):
     def handle_data(self):
         if self.flag:
             # Update job_data_dict (last_send_timestamp would be updated only when flag is non-empty)
-            self.logger.info("Previous job_data['%s'] %s", self.job_key, job_data_dict[self.job_key])
+            self.logger.debug("Previous job_data['%s'] %s", self.job_key, job_data_dict[self.job_key])
             job_data_dict[self.job_key] = (self.job_stats, self.triggered_list, self.has_been_stopped, time.time())
-            self.logger.info("Updated  job_data['%s'] %s", self.job_key, job_data_dict[self.job_key])
+            self.logger.debug("Updated  job_data['%s'] %s", self.job_key, job_data_dict[self.job_key])
 
         if self.job_finished:
             job_data_dict.pop(self.job_key)

@@ -222,7 +222,7 @@ class ScheduleCheckView(BaseView):
         self.slot = slot
 
     def dispatch_request(self, **kwargs):
-        self.logger.warning('request.form from %s\n%s', request.url, self.json_dumps(request.form))
+        self.logger.debug('request.form from %s\n%s', request.url, self.json_dumps(request.form))
         self.prepare_data()
         self.update_data_for_timer_task()
         # self.logger.warning(self.json_dumps(self.data))  # TypeError: Object of type datetime is not JSON serializable
@@ -381,7 +381,7 @@ class ScheduleRunView(BaseView):
                 self.data = pickle.loads(f.read())
 
     def handle_action(self):
-        self.logger.warning(self.json_dumps(self.data))
+        self.logger.debug(self.json_dumps(self.data))
         self.task_data = self.data.pop('__task_data', {})  # Now self.data is clean
         self.logger.debug("task_data: %s", self.task_data)
         if self.task_data:  # For timer task
@@ -464,7 +464,7 @@ class ScheduleRunView(BaseView):
         if self._action == 'add_fire':
             # In case the task fires before db.session.commit()
             if self.to_update_task:
-                self.logger.warning("Task #%s would be fired right after the apscheduler_job is updated", self.task_id)
+                self.logger.info("Task #%s would be fired right after the apscheduler_job is updated", self.task_id)
             else:
                 self.task_data['next_run_time'] = datetime.now()  # datetime.utcnow()
             postfix = "Reload this page several seconds later to check out the execution result. "
@@ -501,7 +501,7 @@ class ScheduleRunView(BaseView):
                 self.logger.debug("Updated %s", self.task)
                 # In case the task fires before db.session.commit()
                 if self._action == 'add_fire':
-                    self.logger.warning("Modify next_run_time of updated task #%s to fire it right now", self.task_id)
+                    self.logger.info("Modifying next_run_time of updated task #%s to fire it right now", self.task_id)
                     job_instance.modify(next_run_time=datetime.now())
             self.add_task_result = True
             msg = u"{target} task #{task_id} ({task_name}) successfully, next run at {next_run_time}. ".format(
@@ -509,7 +509,7 @@ class ScheduleRunView(BaseView):
                 task_id=self.task_id, task_name=self.task_data['name'],
                 next_run_time=job_instance.next_run_time or self.NA)
             self.add_task_flash = msg + postfix
-            apscheduler_logger.warning(msg)
+            apscheduler_logger.info(msg)
             # TypeError: vars() argument must have __dict__ attribute
             # apscheduler_logger.warning(vars(job_instance))
             # pformat({k: getattr(job_instance, k) for k in job_instance.__slots__}, indent=4)
@@ -522,8 +522,8 @@ class ScheduleRunView(BaseView):
                 trigger=repr(job_instance.trigger),
                 next_run_time=repr(job_instance.next_run_time),
             )
-            apscheduler_logger.warning("%s job_instance: \n%s", "Updated" if self.to_update_task else 'Added',
-                                       self.json_dumps(job_instance_dict))
+            apscheduler_logger.info("%s job_instance: \n%s", "Updated" if self.to_update_task else 'Added',
+                                    self.json_dumps(job_instance_dict))
         finally:
             if 'next_run_time' in self.task_data:  # TypeError: Object of type datetime is not JSON serializable
                 self.task_data['next_run_time'] = str(self.task_data['next_run_time'] or self.NA)
