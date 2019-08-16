@@ -509,7 +509,7 @@ class ScheduleRunView(BaseView):
                 task_id=self.task_id, task_name=self.task_data['name'],
                 next_run_time=job_instance.next_run_time or self.NA)
             self.add_task_flash = msg + postfix
-            apscheduler_logger.info(msg)
+            apscheduler_logger.warning(msg)
             # TypeError: vars() argument must have __dict__ attribute
             # apscheduler_logger.warning(vars(job_instance))
             # pformat({k: getattr(job_instance, k) for k in job_instance.__slots__}, indent=4)
@@ -522,8 +522,8 @@ class ScheduleRunView(BaseView):
                 trigger=repr(job_instance.trigger),
                 next_run_time=repr(job_instance.next_run_time),
             )
-            apscheduler_logger.info("%s job_instance: \n%s", "Updated" if self.to_update_task else 'Added',
-                                    self.json_dumps(job_instance_dict))
+            apscheduler_logger.warning("%s job_instance: \n%s", "Updated" if self.to_update_task else 'Added',
+                                       self.json_dumps(job_instance_dict))
         finally:
             if 'next_run_time' in self.task_data:  # TypeError: Object of type datetime is not JSON serializable
                 self.task_data['next_run_time'] = str(self.task_data['next_run_time'] or self.NA)
