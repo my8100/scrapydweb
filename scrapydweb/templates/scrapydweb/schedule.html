@@ -33,7 +33,11 @@
       padding: 2px 5px;
       white-space: nowrap;
     }
-    .el-select {width: 300px}
+
+    /* .el-icon-question {font-size: large;} */
+    .put-off {display: none;}
+
+    .el-select {width: 300px;}
     .el-switch__core {
       background: #e3e3e3;
       border: 1px solid #e3e3e3;
@@ -91,7 +95,7 @@
           (See <a class="request" target="_blank" href="https://doc.scrapy.org/en/latest/topics/spiders.html#spider-arguments">Scrapy spider-arguments</a>)
         </li>
         <br>
-        <b>Add Timer Task</b><br><br>
+        <b>Timer Task</b><br><br>
         <li>To get the local <span>timezone</span> of your host:
 <pre>$ pip install tzlocal
 from tzlocal import get_localzone
@@ -152,13 +156,13 @@ print(get_localzone())</pre>
       <div id="settings_arguments" v-show="form.expandSettingsArguments">
         <el-form-item label="jobid">
           <el-col :span="9">
-            <el-input v-model="form.jobid" placeholder="the job id used to identify the job" clearable></el-input>
+            <el-input v-model="form.jobid" placeholder="The job id used to identify the job" clearable></el-input>
           </el-col>
         </el-form-item>
 
         <el-form-item label="USER_AGENT">
           <el-col :span="9">
-            <el-select v-model="form.USER_AGENT" placeholder="the default User-Agent for crawling" clearable>
+            <el-select v-model="form.USER_AGENT" placeholder="The default User-Agent for crawling" clearable>
               <el-option :label="form.CUSTOM_USER_AGENT" value="custom"></el-option>
               <el-option label="Mozilla/5.0 Windows NT Chrome..." value="Chrome"></el-option>
               <el-option label="Mozilla/5.0 iPhone Safari..." value="iPhone"></el-option>
@@ -170,7 +174,7 @@ print(get_localzone())</pre>
 
         <el-form-item label="ROBOTSTXT_OBEY">
           <el-col :span="9">
-            <el-select v-model="form.ROBOTSTXT_OBEY" placeholder="whether to respect robots.txt policies" clearable>
+            <el-select v-model="form.ROBOTSTXT_OBEY" placeholder="Whether to respect robots.txt policies" clearable>
               <el-option label="True" value="True"></el-option>
               <el-option label="False" value="False"></el-option>
             </el-select>
@@ -179,7 +183,7 @@ print(get_localzone())</pre>
 
         <el-form-item label="COOKIES_ENABLED">
           <el-col :span="9">
-            <el-select v-model="form.COOKIES_ENABLED" placeholder="whether to enable cookies middleware" clearable>
+            <el-select v-model="form.COOKIES_ENABLED" placeholder="Whether to enable cookies middleware" clearable>
               <el-option label="True" value="True"></el-option>
               <el-option label="False" value="False"></el-option>
             </el-select>
@@ -188,13 +192,13 @@ print(get_localzone())</pre>
 
         <el-form-item label="CONCURRENT_REQUESTS">
           <el-col :span="9">
-            <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="defaults to 16 in Scrapy" clearable></el-input>
+            <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="Defaults to 16 in Scrapy" clearable></el-input>
           </el-col>
         </el-form-item>
 
         <el-form-item label="DOWNLOAD_DELAY">
           <el-col :span="9">
-            <el-input v-model="form.DOWNLOAD_DELAY" placeholder="defaults to 0 in Scrapy" clearable></el-input>
+            <el-input v-model="form.DOWNLOAD_DELAY" placeholder="Defaults to 0 in Scrapy" clearable></el-input>
           </el-col>
         </el-form-item>
 
@@ -233,36 +237,52 @@ print(get_localzone())</pre>
         </el-form-item>
         <el-form-item  class="main_settings" label="name">
           <el-col :span="9">
-            <el-input v-model="form.name" placeholder="textual description of the task (optional)" clearable></el-input>
+            <el-input v-model="form.name" placeholder="Textual description of the task (optional)" clearable></el-input>
           </el-col>
         </el-form-item>
 
-        <el-form-item label="year (*)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="year" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.year" placeholder="4-digit year, e.g. 2019, defaults to * for any year" clearable></el-input>
+            <el-input v-model="form.year" placeholder="4-digit year, e.g. 2019; Defaults to * for any year" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">4-digit year, e.g. 2019;<br/>Defaults to * for any year</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="month (*)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="month" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.month" placeholder="month (1-12); 1,6-8 equals to 1,6,7,8" clearable></el-input>
+            <el-input v-model="form.month" placeholder="1-12; Defaults to * for any month" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">month (1-12);<br/>Defaults to * for any month;<br/>e.g. 1,6-8 equals to 1,6,7,8</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item class="main_settings" label="day (*)">
+        <el-form-item class="main_settings" label="day">
           <el-col :span="9">
-            <el-input v-model="form.day" placeholder="day (1-31); CAN BE 1st mon OR last sun OF THE MONTH" clearable></el-input>
+            <el-input v-model="form.day" placeholder="1-31; Defaults to * for any day" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">day (1-31);<br/>Defaults to * for any day;<br/>Can be `1st mon` or `last sun` of the month</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="week (*)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="week" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.week" placeholder="ISO week (1-53)" clearable></el-input>
+            <el-input v-model="form.week" placeholder="1-53; Defaults to * for any week" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">ISO week (1-53);<br/>Defaults to * for any week;<br/>`import datetime; print(datetime.date(2019, 12, 31).isocalendar()[1])`</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
         <!-- <el-form-item class="main_settings" label="day_of_week (*)"> -->
           <!-- <el-col :span="9"> -->
             <!-- <el-input v-model="form.day_of_week" placeholder="0-6 or mon,tue,wed,thu,fri,sat,sun; Use mon-fri for all workdays" clearable></el-input> -->
           <!-- </el-col> -->
         <!-- </el-form-item> -->
-        <el-form-item class="main_settings" label="day_of_week (*)">
+        <el-form-item class="main_settings" label="day_of_week">
           <el-col :span="9">
             <el-select v-model="form.day_of_week" placeholder="multiple select or leave blank for *" multiple>
               <el-option
@@ -274,20 +294,32 @@ print(get_localzone())</pre>
             </el-select>
           </el-col>
         </el-form-item>
-        <el-form-item class="main_settings" label="hour (*)">
+        <el-form-item class="main_settings" label="hour">
           <el-col :span="9">
-            <el-input v-model="form.hour" placeholder="hour (0-23); 9,17,8-20/4 equals to 8,9,12,16,17,20" clearable></el-input>
+            <el-input v-model="form.hour" placeholder="0-23; Defaults to * for any hour" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">hour (0-23);<br/>Defaults to * for any hour;<br/>e.g. 9,17,8-20/4 equals to 8,9,12,16,17,20</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item class="main_settings" label="minute (0)">
+        <el-form-item class="main_settings" label="minute">
           <el-col :span="9">
-            <el-input v-model="form.minute" placeholder="minute (0-59); defaults to 0, type */10 to fire every 10 minutes" clearable></el-input>
+            <el-input v-model="form.minute" placeholder="0-59; Defaults to 0 instead of *" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">minute (0-59);<br/>Defaults to 0 instead of *;<br/>e.g. */10 to fire every 10 mins</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="second (0)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="second" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.second" placeholder="second (0-59); defaults to 0" clearable></el-input>
+            <el-input v-model="form.second" placeholder="0-59; Defaults to 0 instead of *; Caution with value *" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">second (0-59);<br/>Defaults to 0 instead of *;<br/>Caution with value *</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
 
         <el-form-item label="start_date" v-show="form.expandTimerTaskMoreSettings">
@@ -302,19 +334,31 @@ print(get_localzone())</pre>
         </el-form-item>
         <el-form-item label="timezone" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.timezone" :placeholder="`defaults to ` + form._timezone + `, (via: from tzlocal import get_localzone)`" clearable></el-input>
+            <el-input v-model="form.timezone" :placeholder="`Defaults to ` + form._timezone" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">To get the local timezone of your host,<br/>run command 'pip install tzlocal' first,<br/>then execute `from tzlocal import get_localzone; print(get_localzone())`</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
-        <el-form-item label="jitter (0)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="jitter" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.jitter" placeholder="execute task by random delay of [-N, +N] secs, defaults to 0." clearable></el-input>
+            <el-input v-model="form.jitter" placeholder="Execute task by random delay of [-N, +N] secs; Defaults to 0" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">Execute task by random delay of [-N, +N] secs;<br/>Defaults to 0;<br/>Search 'jitter' in apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
 
-        <el-form-item label="misfire_grace_time (600)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="misfire_grace_time" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.misfire_grace_time" placeholder="max tolerance of delay for misfired task, defaults to 600 secs." clearable></el-input>
+            <el-input v-model="form.misfire_grace_time" placeholder="Max tolerance of delay for misfired task; Defaults to 600 secs" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">Max tolerance of delay for misfired task;<br/>Defaults to 600 secs;<br/>See apscheduler.readthedocs.io/en/latest/userguide.html#missed-job-executions-and-coalescing</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
         <el-form-item label="coalesce" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
@@ -324,10 +368,14 @@ print(get_localzone())</pre>
             </el-select>
           </el-col>
         </el-form-item>
-        <el-form-item label="max_instances (1)" v-show="form.expandTimerTaskMoreSettings">
+        <el-form-item label="max_instances" v-show="form.expandTimerTaskMoreSettings">
           <el-col :span="9">
-            <el-input v-model="form.max_instances" placeholder="max concurrently running instances of this task, defaults to 1." clearable></el-input>
+            <el-input v-model="form.max_instances" placeholder="Max concurrently running instances of this task; Defaults to 1" clearable></el-input>
           </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">Max concurrently running instances of this task;<br/>Defaults to 1;<br/>See apscheduler.readthedocs.io/en/latest/userguide.html#limiting-the-number-of-concurrently-executing-instances-of-a-job</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
         </el-form-item>
 
         <el-form-item class="main_settings" label="show more timer settings">
@@ -345,16 +393,18 @@ print(get_localzone())</pre>
     </el-form>
   </div>
 
-  <form id="form_run_spider" method="post" action="{{ url_schedule_run }}" enctype="multipart/form-data">
-    <input type="text" name="filename" hidden />
-  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-{% include 'scrapydweb/include_multinodes_checkboxes.html' %}
-  {% endif %}
-  </form>
+  <div class="put-off">
+    <form id="form_run_spider" method="post" action="{{ url_schedule_run }}" enctype="multipart/form-data">
+      <input type="text" name="filename" hidden />
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  {% include 'scrapydweb/include_multinodes_checkboxes.html' %}
+    {% endif %}
+    </form>
 
-  <div style="margin: 34px 0 16px 200px;">
-    <a class="button warning big" href="javascript:;" onclick="vm.checkCMD('form');">Check CMD</a>
-    <a id="run_spider" class="button safe big" href="javascript:;" onclick="runSpider('form');">Run Spider</a>
+    <div style="margin: 34px 0 16px 200px;">
+      <a class="button warning big" href="javascript:;" onclick="vm.checkCMD('form');">Check CMD</a>
+      <a id="run_spider" class="button safe big" href="javascript:;" onclick="runSpider('form');">Run Spider</a>
+    </div>
   </div>
 </div>
 
@@ -585,6 +635,10 @@ var Main = {
 {% endif %}
   },
 
+  mounted(){
+    // To avoid flashing help info
+    $('.put-off').removeClass('put-off');
+  },
 
   methods: {
     timerTaskSwitch(callback) {

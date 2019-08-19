@@ -5,8 +5,8 @@
 {% block head %}
   <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
   <style>
-    #app {margin-bottom: 20px;}
-    .el-table {margin-bottom: 20px;}
+    /* #app {margin-bottom: 20px;} */
+    .el-table {margin-bottom: 5px;}
     .count_info {
       color: #67c23a;
       font-weight: bold;
@@ -92,7 +92,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}150{% endif %}" :sort-method="sortByIndex">
+    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}130{% else %}90{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
         <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}}</span>
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
@@ -159,7 +159,7 @@ var Main = {
   data() {
     return {
       size: {% if jobs.per_page > 10 %}'mini'{% else %}'—'{% endif %},
-      maxHeight: window.innerHeight - 220,
+      maxHeight: window.innerHeight - 250,
       currentPage: {{ jobs.page }},
       sortOrders: ['descending','ascending',null],
       url_liststats: '{{ url_liststats }}',
