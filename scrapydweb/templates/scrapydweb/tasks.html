@@ -3,30 +3,24 @@
 {% block title %}timer tasks{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
   <style>
-    #app {margin-bottom: 20px;}
-    .el-table {margin-bottom: 20px;}
-
-    .demo-table-expand {font-size: 0;}
-    .demo-table-expand label {
-      color: #99a9bf;
-      width: 150px;
-    }
-    .demo-table-expand .el-form-item {
-      margin-bottom: 0;
-      margin-right: 0;
-      width: 33%;
-    }
-    .demo-table-expand .el-form-item label{text-align: right;}
-    .demo-table-expand .el-form-item .el-form-item__content{
-      margin-left: 30px;
-      text-align: left;
-      width: 200px;
-    }
+  .demo-table-expand {font-size: 0;}
+  .demo-table-expand label {
+    color: #99a9bf;
+    width: 150px;
+  }
+  .demo-table-expand .el-form-item {
+    margin-bottom: 0;
+    margin-right: 0;
+    width: 33%;
+  }
+  .demo-table-expand .el-form-item label{text-align: right;}
+  .demo-table-expand .el-form-item .el-form-item__content{
+    margin-left: 30px;
+    text-align: left;
+    width: 200px;
+  }
   </style>
-  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
-  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 
@@ -76,7 +70,7 @@ window.onload = function(){
     <!-- default-sort would cause background color of the buttons flash once -->
     <!-- :default-sort="{prop: 'status', order: 'descending'}" -->
 
-    <el-table-column type="expand">
+    <el-table-column type="expand" fixed>
       <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
           <el-form-item label="create_time"><span>{{props.row.create_time}}</span></el-form-item>
@@ -118,19 +112,19 @@ window.onload = function(){
       </template>
     </el-table-column>
 
-    <el-table-column prop="id" label="Task #" sortable align="center" width="85"></el-table-column>
-    <el-table-column prop="name" label="Name" sortable align="center"></el-table-column>
-    <el-table-column prop="project" label="Project" sortable align="center"></el-table-column>
-    <el-table-column prop="spider" label="Spider" sortable align="center"></el-table-column>
+    <el-table-column prop="id" label="Task #" fixed sortable align="center" width="75"></el-table-column>
+    <el-table-column prop="name" label="Name" fixed sortable show-overflow-tooltip align="center" width="100"></el-table-column>
+    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
     <!-- default-sort would cause background color of the buttons flash once -->
-    <el-table-column prop="status" label="Status" sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="95">
+    <el-table-column prop="status" label="Status" fixed sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
       <template slot-scope="scope">
         <label :title="scope.row.status_label">
           <a :class="scope.row.status_class" @click="handleStatusClick(scope.row.url_status)">{{scope.row.status}}</a>
         </label>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="170">
+    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="160">
       <template slot-scope="scope">
         <label title="click to fire the task right now">
           <a class="state safe" :style="{ display: scope.row.display_fire }" @click="handleStatusClick(scope.row.url_fire)">Fire</a>
@@ -143,7 +137,7 @@ window.onload = function(){
         </label>
       </template>
     </el-table-column>
-    <el-table-column prop="prev_run_result" label="Prev run result" sortable align="center" :sort-method="sortPrevRunResult" :sort-orders="sortOrders" width="190">
+    <el-table-column prop="prev_run_result" label="Prev run result" sortable align="center" :sort-method="sortPrevRunResult" :sort-orders="sortOrders" width="175">
       <template slot-scope="scope">
         <label :title="scope.row.prev_run_result_label">
           <a :class="scope.row.prev_run_result_class" :href="scope.row.url_prev_run_result" :target="scope.row.prev_run_result_target">
@@ -155,10 +149,10 @@ window.onload = function(){
     </el-table-column>
     <!-- with jitter: 2019-01-01 00:00:01.123456+08:00 -->
     <!-- Click the DISABLED button first -->
-    <el-table-column prop="next_run_time" label="Next run time" sortable align="center" width="205">
+    <el-table-column prop="next_run_time" label="Next run time" sortable align="center" width="240">
       <template slot-scope="scope"><span :style="{ color: scope.row.next_run_time_color }">{{scope.row.next_run_time}}</span></template>
     </el-table-column>
-    <el-table-column prop="task_results" label="Task results" sortable :sort-method="sortTaskResults" :sort-orders="sortOrders" align="center">
+    <el-table-column prop="task_results" label="Task results" sortable min-width="110" align="left" :sort-method="sortTaskResults" :sort-orders="sortOrders">
       <template slot-scope="scope"><a :class="scope.row.task_results_class" :href="scope.row.url_task_results">{{scope.row.run_times}}</a></template>
     </el-table-column>
   </el-table>
@@ -198,7 +192,7 @@ var Main = {
   data() {
     return {
       size: {% if tasks.per_page > 10 %}'mini'{% else %}'—'{% endif %},  // — | medium | small | mini
-      maxHeight: window.innerHeight - 220,
+      maxHeight: window.innerHeight - 200,
       currentPage: {{ tasks.page }},  // the current page number (1 indexed)
       sortOrders: ['descending','ascending',null],
       tableData: [

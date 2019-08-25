@@ -20,7 +20,7 @@ class ItemsView(BaseView):
         self.url = 'http://{}/items/{}{}'.format(self.SCRAPYD_SERVER,
                                                  '%s/' % self.project if self.project else '',
                                                  '%s/' % self.spider if self.spider else '')
-        self.template = 'scrapydweb/items.html'
+        self.template = 'scrapydweb/logs_items.html'
         self.text = ''
 
     def dispatch_request(self, **kwargs):
@@ -67,6 +67,7 @@ class ItemsView(BaseView):
             url_schedule = url_multinode_run = ''
         kwargs = dict(
             node=self.node,
+            title='items',
             project=self.project,
             spider=self.spider,
             url=self.url,

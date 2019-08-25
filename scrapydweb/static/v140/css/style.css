@@ -731,25 +731,25 @@ table>tbody tr:last-child {
 main>aside::-webkit-scrollbar,
 .folders-content::-webkit-scrollbar,
 #checkboxes::-webkit-scrollbar {
-    width: 10px;
+    width: 6px;
 }
 
 /* Track */
 main>aside::-webkit-scrollbar-track,
 .folders-content::-webkit-scrollbar-track,
 #checkboxes::-webkit-scrollbar-track {
-    border-radius: 10px;
+    border-radius: 6px;
 }
 
 /* Handle */
 main>aside::-webkit-scrollbar-thumb {
     background: #bdbdbd;
-    border-radius: 10px;
+    border-radius: 6px;
 }
 .folders-content::-webkit-scrollbar-thumb,
 #checkboxes::-webkit-scrollbar-thumb {
     background: #9093994d;
-    border-radius: 10px;
+    border-radius: 6px;
 }
 
 /* Handle on hover */
@@ -920,7 +920,7 @@ span.slider.round:before {
 
 /* reports START */
 .count_font {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: bold;
 }
 .count_normal {

@@ -75,18 +75,18 @@
 /* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp START */
 /* Width */
 .dropdown-content::-webkit-scrollbar {
-    width: 10px;
+    width: 6px;
 }
 
 /* Track */
 .dropdown-content::-webkit-scrollbar-track {
-    border-radius: 10px;
+    border-radius: 6px;
 }
 
 /* Handle */
 .dropdown-content::-webkit-scrollbar-thumb {
     background: #9093994d;
-    border-radius: 10px;
+    border-radius: 6px;
 }
 
 /* Handle on hover */

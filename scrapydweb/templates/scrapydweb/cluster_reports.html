@@ -3,12 +3,8 @@
 {% block title %}servers{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
   <style>
   </style>
-
-  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
-  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 {% block body %}
@@ -47,7 +43,7 @@
     :default-sort="{prop: 'node', order: 'ascending'}"
   >
 
-    <el-table-column prop="node" label="Node" fixed sortable align="center" width="80"></el-table-column>
+    <el-table-column prop="node" label="Node" fixed sortable align="center" width="70"></el-table-column>
     <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="100">
       <template slot-scope="scope">
         <a target="_blank" :class="scope.row.stats_class" v-bind:style="{display: scope.row.stats_display}" :href="scope.row.stats_url">
@@ -56,13 +52,12 @@
         <em class="normal"  v-bind:style="{display: scope.row.stats_loading_display}">loading...</em>
       </template>
     </el-table-column>
+    <el-table-column prop="first_log_time" label="first_log_time" sortable align="center" width="145"></el-table-column>
+    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
+    <el-table-column prop="latest_log_time" label="latest_log_time" sortable align="center" width="145"></el-table-column>
 
 {% include 'scrapydweb/include_reports_template_table.html' %}
 
-    <el-table-column prop="latest_item" label="latest_item" sortable align="center" width="200" show-overflow-tooltip></el-table-column>
-    <el-table-column prop="first_log_time" label="first_log_time" sortable align="center" width="155"></el-table-column>
-    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="135"></el-table-column>
-    <el-table-column prop="latest_log_time" label="latest_log_time" sortable align="center" width="155"></el-table-column>
   </el-table>
 </template>
 </div>
@@ -120,6 +115,7 @@ var Main = {
               }
 
               vm.tableData[idx].runtime = obj.runtime;
+              // vm.tableData[idx].runtime = '16 days, 20:09:24';
               vm.tableData[idx].first_log_time = obj.first_log_time;
               vm.tableData[idx].latest_log_time = obj.latest_log_time;
 

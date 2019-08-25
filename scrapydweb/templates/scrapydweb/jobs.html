@@ -3,18 +3,15 @@
 {% block title %}jobs{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
   <style>
-    /* #app {margin-bottom: 20px;} */
-    .el-table {margin-bottom: 5px;}
-    .count_info {
-      color: #67c23a;
-      font-weight: bold;
-    }
-    .count_warn {
-      color: red;
-      font-weight: bold;
-    }
+  .count_info {
+    color: #67c23a;
+    font-weight: bold;
+  }
+  .count_warn {
+    color: red;
+    font-weight: bold;
+  }
   </style>
 
   {% if SCRAPYD_SERVERS_AMOUNT == 1 and (pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0) %}
@@ -23,9 +20,6 @@
   {% else %}
   <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
   {% endif %}
-
-  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
-  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 
@@ -64,26 +58,26 @@
     <!-- / — / medium / small / mini -->
     <!-- :default-sort="{prop: 'runtime', order: 'descending'}" -->
 
-    <el-table-column prop="index" label="Index" fixed sortable align="center" width="100"></el-table-column>
+    <el-table-column prop="index" label="Index" fixed sortable align="center" width="70"></el-table-column>
     <!-- 'abcdefghi0abcdefghi0' -->
-    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="160">
+    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.project}}</span></template>
     </el-table-column>
-    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="160">
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
     </el-table-column>
     <!-- 'task_123456_2019-01-01T00_00_01' -->
-    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="250">
+    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.job}}</span></template>
     </el-table-column>
-    <el-table-column prop="pages" label="Pages" fixed sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="100">
+    <el-table-column prop="pages" label="Pages" fixed sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="80">
       <template slot-scope="scope"><span :class="scope.row.pages_class">{{scope.row.pages}}</span></template>
     </el-table-column>
-    <el-table-column prop="items" label="Items" fixed sortable :sort-method="sortItems" :sort-orders="sortOrders" align="center" width="100">
+    <el-table-column prop="items" label="Items" fixed sortable :sort-method="sortItems" :sort-orders="sortOrders" align="center" width="80">
       <template slot-scope="scope"><span :class="scope.row.items_class">{{scope.row.items}}</span></template>
     </el-table-column>
 
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}80{% endif %}" :sort-method="sortByIndex">
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}105{% else %}65{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="state multinode" :style="{ display: scope.row.pending_display }" :href="scope.row.url_clusterreports">{{ g.multinode|safe }}</a>
@@ -92,7 +86,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}130{% else %}90{% endif %}" :sort-method="sortByIndex">
+    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}115{% else %}90{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
         <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}}</span>
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
@@ -102,12 +96,12 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="start" label="Start" sortable :sort-method="sortStart" :sort-orders="sortOrders" align="center" width="155"></el-table-column>
+    <el-table-column prop="start" label="Start" sortable :sort-method="sortStart" :sort-orders="sortOrders" align="center" width="145"></el-table-column>
     <!-- 16 days, 20:09:24 -->
-    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="135"></el-table-column>
-    <el-table-column prop="finish" label="Finish" sortable :sort-orders="sortOrders" align="center" width="155"></el-table-column>
-    <el-table-column prop="update_time" label="Update time" sortable :sort-orders="sortOrders" align="center" width="155"></el-table-column>
-    <el-table-column prop="pid" label="PID" sortable :sort-method="sortPID" :sort-orders="sortOrders" align="center" width="100">
+    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
+    <el-table-column prop="finish" label="Finish" sortable :sort-orders="sortOrders" align="center" width="145"></el-table-column>
+    <el-table-column prop="update_time" label="Update time" sortable :sort-orders="sortOrders" align="center" width="145"></el-table-column>
+    <el-table-column prop="pid" label="PID" sortable :sort-method="sortPID" :sort-orders="sortOrders" align="center" width="70">
       <template slot-scope="scope"><span :style="{ color: scope.row.pid_color }">{{scope.row.pid}}</span></template>
     </el-table-column>
 

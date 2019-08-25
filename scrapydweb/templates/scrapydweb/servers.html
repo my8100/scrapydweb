@@ -3,37 +3,36 @@
 {% block title %}servers{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
   <style>
-    #app {margin-bottom: 20px;}
-    .el-tabs {margin-bottom: 20px;}
-    .switch {margin-top: 10px;}
-    .item {
-      margin-left: 20px;
-      margin-right: 20px;
-      margin-top: 1px;
-    }
-    #invert_selection {margin-top: 7px;}
-    .el-button--warning.is-plain {color: #feb324;}
-    .el-button--warning.is-plain:active, .el-button--warning.is-plain:focus, .el-button--warning.is-plain:hover {
-      background: #feb324;
-      border-color: #feb324;
-    }
-    #total .el-badge__content {background-color: #67c23a;}
-    #displayed .el-badge__content {background-color: #67c23a;}
-    #selected .el-badge__content {background-color: #fd6b6e;} /* red */
-    .el-button.is-disabled {cursor: default;}
-    .el-button.is-disabled:hover {cursor: default;}
-    .el-button--danger {background-color: #fd6b6e;}
-    .el-button--warning {background-color: #feb324;} /* orange */
-    .el-button {
-      border: 0;
-      font-size: 18px;
-    }
-    .el-switch__core {
-      background: #e3e3e3;
-      border: 1px solid #e3e3e3;
-    }
+  /* #app {margin-bottom: 20px;} */
+  .el-tabs {margin-bottom: 20px;}
+  .switch {margin-top: 10px;}
+  .item {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 1px;
+  }
+  #invert_selection {margin-top: 7px;}
+  .el-button--warning.is-plain {color: #feb324;}
+  .el-button--warning.is-plain:active, .el-button--warning.is-plain:focus, .el-button--warning.is-plain:hover {
+    background: #feb324;
+    border-color: #feb324;
+  }
+  #total .el-badge__content {background-color: #67c23a;}
+  #displayed .el-badge__content {background-color: #67c23a;}
+  #selected .el-badge__content {background-color: #fd6b6e;} /* red */
+  .el-button.is-disabled {cursor: default;}
+  .el-button.is-disabled:hover {cursor: default;}
+  .el-button--danger {background-color: #fd6b6e;}
+  .el-button--warning {background-color: #feb324;} /* orange */
+  .el-button {
+    border: 0;
+    font-size: 18px;
+  }
+  .el-switch__core {
+    background: #e3e3e3;
+    border: 1px solid #e3e3e3;
+  }
   </style>
   {% if SCRAPYD_SERVERS_AMOUNT > 1 and (pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0) %}
   <script type="text/javascript" src="https://my8100.herokuapp.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>
@@ -41,9 +40,6 @@
   {% else %}
   <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
   {% endif %}
-
-  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
-  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 
@@ -235,11 +231,11 @@
   >
 
     <el-table-column type="selection" align="center" :reserve-selection="true" fixed></el-table-column>
-    <el-table-column prop="index" label="Node" sortable align="center" width="80"></el-table-column>
-    <el-table-column prop="selected" label="Selected" sortable align="center" width="100"></el-table-column>
-    <el-table-column prop="group" label="Group" sortable align="center"></el-table-column>
-    <el-table-column prop="jobs" label="Scrapyd server" sortable show-overflow-tooltip width="200"
-      align="left" header-align="center" :sort-method="sortScrapydServer">
+    <el-table-column prop="index" label="Node" sortable width="70" align="center" fixed></el-table-column>
+    <el-table-column prop="selected" label="Selected" sortable width="90" align="center" fixed></el-table-column>
+    <el-table-column prop="group" label="Group" sortable width="120" align="center" show-overflow-tooltip fixed></el-table-column>
+    <el-table-column prop="jobs" label="Scrapyd server" sortable width="200" align="left" show-overflow-tooltip
+      header-align="center" :sort-method="sortScrapydServer" fixed>
       <template slot-scope="scope">
         <a :class="scope.row.cls"
 
@@ -252,30 +248,27 @@
         </a>
       </template>
     </el-table-column>
-    <el-table-column prop="node_name" label="Hostname" sortable show-overflow-tooltip :formatter="formatter" align="center" min-width="100"></el-table-column>
+    <el-table-column prop="node_name" label="Hostname" sortable width="120" align="center" show-overflow-tooltip :formatter="formatter" fixed></el-table-column>
 
-    <el-table-column prop="listinfo" label="Status / List info" sortable min-width="190" align="center" :sort-method="sortListinfo" show-overflow-tooltip>
+    <el-table-column prop="pending" label="Pending" sortable width="85" align="center" :sort-method="sortPending" v-if="showDaemonStatus">
+        <template slot-scope="scope">
+          <div v-bind:class="scope.row.pendingClass">{{scope.row.pending}}</div>
+        </template>
+    </el-table-column>
+    <el-table-column prop="running" label="Running" sortable width="85" align="center" :sort-method="sortRunning" v-if="showDaemonStatus">
+        <template slot-scope="scope">
+          <div v-bind:class="scope.row.runningClass">{{scope.row.running}}</div>
+        </template>
+    </el-table-column>
+    <el-table-column prop="finished" label="Finished" sortable width="90" align="center" :sort-method="sortFinished"  v-if="showDaemonStatus">
+    </el-table-column>
+
+    <el-table-column prop="listinfo" label="Status / List info" sortable min-width="135" align="left" show-overflow-tooltip :sort-method="sortListinfo">
       <template slot-scope="scope">
         <a target="_blank" class="request" v-bind:style="{ display: scope.row.display_listinfo }" :href="scope.row.url_listinfo">REQUEST</a>
         <em v-bind:class="scope.row.emClass">{{scope.row.return_listinfo}}</em>
       </template>
     </el-table-column>
-
-
-    <el-table-column prop="pending" label="Pending" sortable align="center" :sort-method="sortPending" width="100" v-if="showDaemonStatus">
-        <template slot-scope="scope">
-          <div v-bind:style="scope.row.pendingStyleObject">{{scope.row.pending}}</div>
-        </template>
-    </el-table-column>
-    <el-table-column prop="running" label="Running" sortable align="center" :sort-method="sortRunning" width="100" v-if="showDaemonStatus">
-        <template slot-scope="scope">
-          <div v-bind:style="scope.row.runningStyleObject">{{scope.row.running}}</div>
-        </template>
-    </el-table-column>
-
-    <el-table-column prop="finished" label="Finished" sortable align="center" :sort-method="sortFinished" width="100" v-if="showDaemonStatus">
-    </el-table-column>
-
   </el-table>
 </template>
 </div>
@@ -289,7 +282,7 @@ var Main = {
     return {
       showDaemonStatus: true,
       flag_listinfo: 'status',
-      maxHeight: window.innerHeight - 270,
+      maxHeight: window.innerHeight - 350,
       options: [{
         value: '',
         label: 'All Columns'
@@ -380,9 +373,10 @@ var Main = {
         emClass: 'normal',
 
         pending: '',
-        pendingStyleObject: {},
+        // pendingStyleObject: {},
+        pendingClass: 'normal',
         running: '',
-        runningStyleObject: {},
+        runningClass: 'normal',
         finished: '',
 
         //node_name: undefined,  // would trigger updating view?!
@@ -661,11 +655,12 @@ var Main = {
 
               vm.tableData[idx]['pending'] = obj.pending;
               if (obj.pending !== 0) {
-                vm.tableData[idx]['pendingStyleObject'] = {color: 'red', fontSize: '30px', fontWeight: 'bold'};
+                // vm.tableData[idx]['pendingStyleObject'] = {color: 'red', fontSize: '30px', fontWeight: 'bold'};
+                vm.tableData[idx]['pendingClass'] = 'count_font count_danger';
               }
               vm.tableData[idx]['running'] = obj.running;
               if (obj.running !== 0) {
-                vm.tableData[idx]['runningStyleObject'] = {color: '#67c23a', fontSize: '30px', fontWeight: 'bold'};
+                vm.tableData[idx]['runningClass'] = 'count_font count_safe';
               }
               vm.tableData[idx]['finished'] = obj.finished;
 

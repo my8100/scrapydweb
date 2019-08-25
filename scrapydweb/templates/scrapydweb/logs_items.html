@@ -1,21 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}items{% endblock %}
+{% block title %}{{ title }}{% endblock %}
 
 {% block head %}
-  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
   <style>
   </style>
-
-  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
-  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
 {% endblock %}
 
 
 {% block body %}
 <h2>
   <a class="link" target="_blank" href="{{ url }}">
-  Directory listing for /items/{% if project %}{{ project }}/{% endif %}{% if spider %}{{ spider }}/{% endif %}
+  Directory listing for /{{ title }}/{% if project %}{{ project }}/{% endif %}{% if spider %}{{ spider }}/{% endif %}
   </a>
 </h2>
 
@@ -48,26 +44,27 @@
     :default-sort="{prop: 'content_type', order: 'ascending'}"
   >
 
-    <el-table-column prop="index" label="Index" sortable align="center" width="100"></el-table-column>
-    <el-table-column prop="content_type" label="Content type" sortable align="center" width="150"></el-table-column>
-    <el-table-column prop="content_encoding" label="Encoding" sortable align="center" width="110"></el-table-column>
-    <el-table-column prop="size" label="Size" sortable align="center" width="100" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
+    <el-table-column prop="index" label="Index" sortable width="70" align="center"></el-table-column>
+    <!-- stats.json.bak [application/x-trash] -->
+    <el-table-column prop="content_type" label="Content type" sortable width="135" align="center"></el-table-column>
+    <el-table-column prop="content_encoding" label="Encoding" sortable width="95" align="center"></el-table-column>
+    <el-table-column prop="size" label="Size" sortable width="100" align="center" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
 
     {% if project and spider %}
-    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}80{% endif %}">
+    <el-table-column prop="stats" label="Stats" sortable width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}105{% else %}65{% endif %}" align="center">
       <template slot-scope="scope">
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="state multinode" :href="scope.row.url_clusterreports" target="_blank">{{ g.multinode|safe }}</a>
         {% endif %}
-        <a class="state normal" :href="scope.row.url_stats" target="_blank">Stats</a>
+        <a :class="scope.row.stats_class" :href="scope.row.url_stats" target="_blank">Stats</a>
       </template>
     </el-table-column>
-    <el-table-column prop="log" label="Log" sortable align="center" width="70">
-      <template slot-scope="scope"><a class="state normal" :href="scope.row.url_utf8" target="_blank">Log</a></template>
+    <el-table-column prop="log" label="Log" sortable width="60" align="center">
+      <template slot-scope="scope"><a class="state normal" :style="{ display: scope.row.display }" :href="scope.row.url_utf8" target="_blank">{{scope.row.log}}</a></template>
     </el-table-column>
     {% endif %}
 
-    <el-table-column prop="filename" label="Filename" sortable align="left" min-width="200">
+    <el-table-column prop="filename" label="Filename" sortable min-width="90" align="left" show-overflow-tooltip>
       <template slot-scope="scope"><a class="link" :href="scope.row.href" :target="scope.row.target">{{scope.row.filename}}</a></template>
     </el-table-column>
 
@@ -81,7 +78,7 @@ var Main = {
   data() {
     return {
       size: {% if rows|length > 10 %}'mini'{% else %}'—'{% endif %},
-      maxHeight: window.innerHeight - 220,
+      maxHeight: window.innerHeight - 200,
 
       tableData: [
     {% for row in rows %}
@@ -94,7 +91,10 @@ var Main = {
         {% if project and spider %}
         url_clusterreports: '{{ row["url_clusterreports"] }}',
         url_stats: '{{ row["url_stats"] }}',
+        stats_class: {% if row['url_utf8'] %}'state normal'{% else %}'state warning'{% endif %},
         url_utf8: '{{ row["url_utf8"] }}',
+        log: {% if row['url_utf8'] %}'Log'{% else %}''{% endif %},
+        display: {% if row['url_utf8'] %}''{% else %}'none'{% endif %},
         {% endif %}
 
         href: '{{ row["href"] }}',
