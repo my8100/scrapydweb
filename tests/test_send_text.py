@@ -92,7 +92,7 @@ def test_email_pass(app, client):
 def test_email_fail(app, client):
     # EMAIL_RECIPIENTS invalid
     # "reason": "{'1@2': (501, b'Bad address syntax')}"
-    req(app, client, view='sendtextapi', kws=dict(opt='email', recipients='1@2'),
+    req(app, client, view='sendtextapi', kws=dict(opt='email', recipients='1@invalid_recipients'),
         jskws=dict(status=cst.ERROR), jskeys=['status', 'result', 'debug', 'when'],
         ins='email_password', nos='Sent')
 
