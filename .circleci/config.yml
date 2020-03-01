@@ -254,7 +254,7 @@ jobs:
   py38-sqlite:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.8
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATA_PATH: '/home/circleci/repo/scrapydweb_data'
