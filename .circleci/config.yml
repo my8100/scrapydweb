@@ -218,14 +218,6 @@ jobs:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
 
-  py36-sqlite:
-    <<: *test-template
-    docker:
-      - image: circleci/python:3.6
-    environment:
-      SCRAPYDWEB_TESTMODE: True
-      DATA_PATH: '/home/circleci/repo/scrapydweb_data'
-      DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
   py37-git-postgresql:
     <<: *test-template
     docker:
@@ -259,6 +251,15 @@ jobs:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
 
+  py38-sqlite:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATA_PATH: '/home/circleci/repo/scrapydweb_data'
+      DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
+
 
 workflows:
   test:
@@ -277,12 +278,13 @@ workflows:
           use-mysql: true
 
       - py37
-      - py36-sqlite:
-          set-data-path: true
-          use-sqlite: true
       - py37-git-postgresql:
           use-git: true
           use-postgresql: true
       - py37-git-mysql:
           use-git: true
           use-mysql: true
+          
+      - py38-sqlite:
+          set-data-path: true
+          use-sqlite: true
