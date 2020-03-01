@@ -16,6 +16,7 @@ from .utils.setup_database import setup_database
 PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
 PY2 = sys.version_info.major < 3
 SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v10.py'
+sys.path.append(os.getcwd())
 try:
     custom_settings_module = importlib.import_module(os.path.splitext(SCRAPYDWEB_SETTINGS_PY)[0])
 except ImportError:
