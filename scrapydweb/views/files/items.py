@@ -20,6 +20,10 @@ class ItemsView(BaseView):
         self.url = 'http://{}/items/{}{}'.format(self.SCRAPYD_SERVER,
                                                  '%s/' % self.project if self.project else '',
                                                  '%s/' % self.spider if self.spider else '')
+        if self.SCRAPYD_SERVER_PUBLIC_URL:
+            self.public_url = re.sub(r'^http.*?/items/', self.SCRAPYD_SERVER_PUBLIC_URL + '/items/', self.url)
+        else:
+            self.public_url = ''
         self.template = 'scrapydweb/logs_items.html'
         self.text = ''
 
@@ -45,7 +49,7 @@ class ItemsView(BaseView):
             # <a href="a.jl">a.jl</a>       file
             row['href'], row['filename'] = re.search(HREF_NAME_PATTERN, row['filename']).groups()
             if not row['href'].endswith('/'):  # It's a file but not a directory
-                row['href'] = self.url + row['href']
+                row['href'] = (self.public_url or self.url) + row['href']
 
             if self.project and self.spider:
                 if row['filename'].endswith('.tar.gz'):

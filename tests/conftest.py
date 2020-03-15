@@ -35,11 +35,11 @@ custom_settings = dict(
     EMAIL_PASSWORD_=os.environ.get('EMAIL_PASSWORD_', ''),  # Used in test_check_email_with_ssl_false()
     EMAIL_SENDER_=os.environ.get('EMAIL_SENDER_', 'username@139.com'),
     EMAIL_RECIPIENTS_=[os.environ.get('EMAIL_RECIPIENT_', 'username@139.com')],
-    SMTP_SERVER_=os.environ.get('SMTP_SERVER_', 'smtp.139.com'),  
+    SMTP_SERVER_=os.environ.get('SMTP_SERVER_', 'smtp.139.com'),
     SMTP_PORT_=25,
     SMTP_OVER_SSL_=False,
     SMTP_CONNECTION_TIMEOUT_=60,
-    
+
     ENABLE_MONITOR=os.environ.get('ENABLE_MONITOR', 'True') == 'True',
     ENABLE_SLACK_ALERT=os.environ.get('ENABLE_SLACK_ALERT', 'True') == 'True',
     ENABLE_TELEGRAM_ALERT=os.environ.get('ENABLE_TELEGRAM_ALERT', 'True') == 'True',
@@ -82,7 +82,7 @@ def app():
 
         ALERT_WORKING_DAYS=list(range(1, 8)),
         ALERT_WORKING_HOURS=list(range(24)),
-        
+
         VERBOSE=True,
     )
 
@@ -92,11 +92,13 @@ def app():
 
     @app.context_processor
     def inject_variable():
+        SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
         return dict(
-            SCRAPYD_SERVERS=app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800'],
-            SCRAPYD_SERVERS_AMOUNT=len(app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']),
+            SCRAPYD_SERVERS=SCRAPYD_SERVERS,
+            SCRAPYD_SERVERS_AMOUNT=len(SCRAPYD_SERVERS),
             SCRAPYD_SERVERS_GROUPS=app.config.get('SCRAPYD_SERVERS_GROUPS', []) or [''],
             SCRAPYD_SERVERS_AUTHS=app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None],
+            SCRAPYD_SERVERS_PUBLIC_URLS=[''] * len(SCRAPYD_SERVERS),
 
             DAEMONSTATUS_REFRESH_INTERVAL=app.config.get('DAEMONSTATUS_REFRESH_INTERVAL', 10),
             ENABLE_AUTH=app.config.get('ENABLE_AUTH', False),

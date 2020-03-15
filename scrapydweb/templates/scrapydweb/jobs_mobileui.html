@@ -49,7 +49,7 @@
 
 {% block neck %}
 <a id="switch_table_style" class="button normal" href="javascript:;">Restyle table</a>
-<a class="button multinode" target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">Scrapyd server</a>
+<a class="button multinode" target="_blank" href="{{ SCRAPYD_SERVERS_PUBLIC_URLS[node-1] or 'http://' + SCRAPYD_SERVERS[node-1] }}">Scrapyd server</a>
 {% endblock %}
 
 

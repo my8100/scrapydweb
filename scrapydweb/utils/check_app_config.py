@@ -325,8 +325,13 @@ def create_jobs_snapshot(url_jobs, auth, nodes):
 
 def check_scrapyd_servers(config):
     SCRAPYD_SERVERS = config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
+    SCRAPYD_SERVERS_PUBLIC_URLS = config.get('SCRAPYD_SERVERS_PUBLIC_URLS', None) or [''] * len(SCRAPYD_SERVERS)
+    assert len(SCRAPYD_SERVERS_PUBLIC_URLS) == len(SCRAPYD_SERVERS), \
+        "SCRAPYD_SERVERS_PUBLIC_URLS should have same length with SCRAPYD_SERVERS:\n%s\nvs.\n%s" % (
+        SCRAPYD_SERVERS_PUBLIC_URLS, SCRAPYD_SERVERS)
+
     servers = []
-    for idx, server in enumerate(SCRAPYD_SERVERS):
+    for idx, (server, public_url) in enumerate(zip(SCRAPYD_SERVERS, SCRAPYD_SERVERS_PUBLIC_URLS)):
         if isinstance(server, tuple):
             assert len(server) == 5, ("Scrapyd server should be a tuple of 5 elements, "
                                       "current value: %s" % str(server))
@@ -337,10 +342,11 @@ def check_scrapyd_servers(config):
         port = port.strip() if port and port.strip() else '6800'
         group = group.strip() if group and group.strip() else ''
         auth = (usr, psw) if usr and psw else None
-        servers.append((group, ip, port, auth))
+        public_url = public_url.strip(' /')
+        servers.append((group, ip, port, auth, public_url))
 
     def key_func(arg):
-        _group, _ip, _port, _auth = arg
+        _group, _ip, _port, _auth, _public_url = arg
         parts = _ip.split('.')
         parts = [('0' * (3 - len(part)) + part) for part in parts]
         return [_group, '.'.join(parts), int(_port)]
@@ -348,16 +354,17 @@ def check_scrapyd_servers(config):
     servers = sorted(set(servers), key=key_func)
     check_scrapyd_connectivity(servers)
 
-    config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for group, ip, port, auth in servers]
-    config['SCRAPYD_SERVERS_GROUPS'] = [group for group, ip, port, auth in servers]
-    config['SCRAPYD_SERVERS_AUTHS'] = [auth for group, ip, port, auth in servers]
+    config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for (group, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_GROUPS'] = [group for (group, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_AUTHS'] = [auth for (group, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_PUBLIC_URLS'] = [public_url for (group, ip, port, auth, public_url) in servers]
 
 
 def check_scrapyd_connectivity(servers):
     logger.debug("Checking connectivity of SCRAPYD_SERVERS...")
 
     def check_connectivity(server):
-        (_group, _ip, _port, _auth) = server
+        (_group, _ip, _port, _auth, _public_url) = server
         try:
             url = 'http://%s:%s' % (_ip, _port)
             r = session.get(url, auth=_auth, timeout=10)
@@ -378,7 +385,7 @@ def check_scrapyd_connectivity(servers):
     print("\nIndex {group:<20} {server:<21} Connectivity Auth".format(
           group='Group', server='Scrapyd IP:Port'))
     print(HASH)
-    for idx, ((group, ip, port, auth), result) in enumerate(zip(servers, results), 1):
+    for idx, ((group, ip, port, auth, public_url), result) in enumerate(zip(servers, results), 1):
         print("{idx:_<5} {group:_<20} {server:_<22} {result:_<11} {auth}".format(
               idx=idx, group=group or 'None', server='%s:%s' % (ip, port), auth=auth, result=str(result)))
     print(HASH + '\n')

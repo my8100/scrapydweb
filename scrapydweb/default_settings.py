@@ -103,6 +103,16 @@ SCRAPY_PROJECTS_DIR = ''
 # The default is ['.log', '.log.gz', '.txt'].
 SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt']
 
+# The default is None, only set it up when you need to visit Scrapyd servers via reverse proxy.
+# Make sure that SCRAPYD_SERVERS_PUBLIC_URLS has same length with SCRAPYD_SERVERS above.
+# e.g.
+# SCRAPYD_SERVERS_PUBLIC_URLS = [
+    # 'https://a.b.com',  # visit the first Scrapyd server via reverse proxy.
+    # '',  # visit the second Scrapyd server without reverse proxy.
+# ]
+# See https://github.com/my8100/scrapydweb/issues/94 for more info.
+SCRAPYD_SERVERS_PUBLIC_URLS = None
+
 
 ############################## LogParser ######################################
 # Whether to backup the stats json files locally after you visit the Stats page of a job

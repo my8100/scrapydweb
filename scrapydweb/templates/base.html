@@ -102,7 +102,7 @@
 {% endif %}
 
   <ul id="nav_daemonstatus">
-    <li><a target="_blank" class="request" href="http://{{ SCRAPYD_SERVERS[node-1] }}">
+    <li><a target="_blank" class="request" href="{{ SCRAPYD_SERVERS_PUBLIC_URLS[node-1] or 'http://' + SCRAPYD_SERVERS[node-1] }}">
         <svg class="icon" aria-hidden="true">
           <use xlink:href="#icon-host"></use>
         </svg>

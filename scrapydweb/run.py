@@ -43,7 +43,7 @@ def main():
         check_app_config(app.config)
     except AssertionError as err:
         logger.error("Check app config fail: ")
-        sys.exit(u"\n{err}\nCheck and update your settings in {path}\n".format(
+        sys.exit(u"\n{err}\n\nCheck and update your settings in {path}\n".format(
                  err=err, path=handle_slash(app.config['SCRAPYDWEB_SETTINGS_PY_PATH'])))
 
     # https://stackoverflow.com/questions/34164464/flask-decorate-every-route-at-once
@@ -67,11 +67,14 @@ def main():
 
     @app.context_processor
     def inject_variable():
+        SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
+        SCRAPYD_SERVERS_PUBLIC_URLS = app.config.get('SCRAPYD_SERVERS_PUBLIC_URLS', None)
         return dict(
-            SCRAPYD_SERVERS=app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800'],
-            SCRAPYD_SERVERS_AMOUNT=len(app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']),
+            SCRAPYD_SERVERS=SCRAPYD_SERVERS,
+            SCRAPYD_SERVERS_AMOUNT=len(SCRAPYD_SERVERS),
             SCRAPYD_SERVERS_GROUPS=app.config.get('SCRAPYD_SERVERS_GROUPS', []) or [''],
             SCRAPYD_SERVERS_AUTHS=app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None],
+            SCRAPYD_SERVERS_PUBLIC_URLS=SCRAPYD_SERVERS_PUBLIC_URLS or [''] * len(SCRAPYD_SERVERS),
 
             DAEMONSTATUS_REFRESH_INTERVAL=app.config.get('DAEMONSTATUS_REFRESH_INTERVAL', 10),
             ENABLE_AUTH=app.config.get('ENABLE_AUTH', False),

@@ -389,7 +389,11 @@ class LogView(BaseView):
             self.kwargs['url_refresh'] = ''
             self.kwargs['url_jump'] = ''
         else:
-            self.kwargs['url_source'] = self.url
+            if self.SCRAPYD_SERVER_PUBLIC_URL:
+                self.kwargs['url_source'] = re.sub(r'^http.*?/logs/', self.SCRAPYD_SERVER_PUBLIC_URL + '/logs/',
+                                                   self.url)
+            else:
+                self.kwargs['url_source'] = self.url
             self.kwargs['url_opt_opposite'] = url_for('log', node=self.node,
                                                       opt='utf8' if self.opt == 'stats' else 'stats',
                                                       project=self.project, spider=self.spider, job=self.job,
