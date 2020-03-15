@@ -96,6 +96,8 @@ class BaseView(View):
         self.SCRAPYD_SERVERS_AMOUNT = len(self.SCRAPYD_SERVERS)
         self.SCRAPYD_SERVERS_GROUPS = app.config.get('SCRAPYD_SERVERS_GROUPS', []) or ['']
         self.SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None]
+        self.SCRAPYD_SERVERS_PUBLIC_URLS = (app.config.get('SCRAPYD_SERVERS_PUBLIC_URLS', None)
+                                            or [''] * self.SCRAPYD_SERVERS_AMOUNT)
 
         self.LOCAL_SCRAPYD_SERVER = app.config.get('LOCAL_SCRAPYD_SERVER', '')
         self.LOCAL_SCRAPYD_LOGS_DIR = app.config.get('LOCAL_SCRAPYD_LOGS_DIR', '')
@@ -184,6 +186,7 @@ class BaseView(View):
         self.IS_LOCAL_SCRAPYD_SERVER = self.SCRAPYD_SERVER == self.LOCAL_SCRAPYD_SERVER
         self.GROUP = self.SCRAPYD_SERVERS_GROUPS[self.node - 1]
         self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.node - 1]
+        self.SCRAPYD_SERVER_PUBLIC_URL = self.SCRAPYD_SERVERS_PUBLIC_URLS[self.node - 1]
 
         ua = request.headers.get('User-Agent', '')
         m_mobile = re.search(r'Android|webOS|iPad|iPhone|iPod|BlackBerry|IEMobile|Opera Mini', ua, re.I)

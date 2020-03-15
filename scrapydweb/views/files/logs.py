@@ -19,6 +19,10 @@ class LogsView(BaseView):
         self.url = 'http://{}/logs/{}{}'.format(self.SCRAPYD_SERVER,
                                                 '%s/' % self.project if self.project else '',
                                                 '%s/' % self.spider if self.spider else '')
+        if self.SCRAPYD_SERVER_PUBLIC_URL:
+            self.public_url = re.sub(r'^http.*?/logs/', self.SCRAPYD_SERVER_PUBLIC_URL + '/logs/', self.url)
+        else:
+            self.public_url = ''
         self.template = 'scrapydweb/logs_items.html'
         self.text = ''
 
@@ -44,7 +48,7 @@ class LogsView(BaseView):
             # <a href="a.log">a.log</a>     file
             row['href'], row['filename'] = re.search(HREF_NAME_PATTERN, row['filename']).groups()
             if not row['href'].endswith('/'):  # It's a file but not a directory
-                row['href'] = self.url + row['href']
+                row['href'] = (self.public_url or self.url) + row['href']
 
             if self.project and self.spider:
                 row['url_stats'] = url_for('log', node=self.node, opt='stats', project=self.project,
