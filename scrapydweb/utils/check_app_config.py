@@ -329,7 +329,7 @@ def check_scrapyd_servers(config):
     assert len(SCRAPYD_SERVERS_PUBLIC_URLS) == len(SCRAPYD_SERVERS), \
         "SCRAPYD_SERVERS_PUBLIC_URLS should have same length with SCRAPYD_SERVERS:\n%s\nvs.\n%s" % (
         SCRAPYD_SERVERS_PUBLIC_URLS, SCRAPYD_SERVERS)
-        
+
     servers = []
     for idx, (server, public_url) in enumerate(zip(SCRAPYD_SERVERS, SCRAPYD_SERVERS_PUBLIC_URLS)):
         if isinstance(server, tuple):
