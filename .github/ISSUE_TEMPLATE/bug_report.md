@@ -19,10 +19,6 @@ Steps to reproduce the behavior:
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Logs**
-Add logs of ScrapydWeb and Scrapyd (optional) when reproducing the bug.
-(It's recommended to run ScrapydWeb with argument '--verbose' if its version >= 1.0.0)
-
 **Screenshots**
 If applicable, add screenshots to help explain your problem.
 
@@ -35,6 +31,10 @@ If applicable, add screenshots to help explain your problem.
  - Scrapyd amount: [e.g. 1 or 5]
  - Scrapy version: [e.g. 1.8.0, 2.0.0 or latest code on GitHub]
  - Browser: [e.g. Chrome 71, Firefox 64 or Safari 12]
+ 
+**Logs**
+Add logs of ScrapydWeb and Scrapyd (optional) when reproducing the bug.
+(It's recommended to run ScrapydWeb with argument '--verbose' if its version >= 1.0.0)
 
 **Additional context**
 Add any other context about the problem here.
