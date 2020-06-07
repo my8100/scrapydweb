@@ -1,0 +1,141 @@
+/* dropdown start */
+/* https://www.w3schools.com/css/css_dropdowns.asp */
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+    position: relative;
+    margin-left: 15px;
+    /* width: 220px; */
+    /* width: -moz-fit-content; */
+    /* width: fit-content; */
+    min-width: 220px;
+    width: max-content;
+    width: -moz-max-content;  /* Firefox on Ubuntu */
+    height: 32px;
+    align-self: center;
+    border: 1px solid #67c23a;
+    border-radius: 2px;
+}
+
+.dropdown:hover{
+    /* background: #9DC8C8; */
+    /* border: 1px solid #03a87c; */
+}
+
+.dropdown:hover .icon.anchor {
+    transform: rotate(-180deg);
+}
+
+/* Style The Dropdown Button */
+.dropbtn {
+    color: #67c23a;
+    line-height: 32px;
+    padding: 0 16px;
+    font-size: 16px;
+
+    cursor: pointer;
+    width: 100%;
+    display: flex;
+    box-sizing: border-box;
+    align-items: center;
+}
+
+.dropbtn>span {
+    flex-grow: 1;
+}
+
+.dropbtn>.ip{
+    width: 1.5rem;
+    height: 1.5rem;
+    padding-right: .5rem;
+}
+
+.dropbtn>.icon.anchor{
+    width: 1rem;
+    height: 1rem;
+    transition: all .3s ease-out;
+}
+
+.dropdown-content-wrap {
+    display: none;
+    /* width: 220px; */
+    min-width: 220px;
+    width: max-content;
+    width: -moz-max-content;  /* Firefox on Ubuntu */
+    max-height: 70vh; /* 360px */
+    overflow: hidden;
+    z-index: 9999;
+    position: absolute;
+    top: 100%;
+    transform: translateY(1px);
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    background-color: #fff;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+    min-width: 160px;
+    overflow-y: hidden;
+    flex-grow: 1;
+}
+
+.dropdown-content:hover {
+    overflow-y: scroll;
+}
+
+/* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp */
+/* Width */
+.dropdown-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* Track */
+.dropdown-content::-webkit-scrollbar-track {
+    border-radius: 6px;
+}
+
+/* Handle */
+.dropdown-content::-webkit-scrollbar-thumb {
+    background: #9093994d;
+    border-radius: 6px;
+}
+
+/* Handle on hover */
+.dropdown-content::-webkit-scrollbar-thumb:hover {
+    background: #90939980;
+}
+
+
+/* Links inside the dropdown */
+.dropdown-content a {
+    color: #777;
+    padding: 4px 16px;
+    text-decoration: none;
+    display: block;
+    line-height: 32px;
+    text-align: left;
+}
+
+.dropdown-content div {
+    color: red;
+    line-height: 16px;
+    padding: 4px 16px;
+}
+
+/* Change color of dropdown links on hover */
+.dropdown-content a:hover {
+    background-color: #f5f7fa;
+    color: #333;
+    font-weight: 500;
+}
+
+/* Show the dropdown menu on hover */
+.dropdown:hover .dropdown-content-wrap {
+    display: flex;
+}
+
+/* Change the background color of the dropdown button when the dropdown content is shown */
+.dropdown:hover .dropbtn {
+    /* color: #fff; */
+}
+
+/* dropdown END */

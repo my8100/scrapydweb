@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block title %}settings{% endblock %}
+
+{% block head %}
+  <style>
+  .collapse h4 {line-height: 55px;}
+  </style>
+{% endblock %}
+
+{% block body %}
+<h2><a class="link" target="_blank" href="{{ GITHUB_URL }}/blob/master/scrapydweb/default_settings.py">Settings</a></h2>
+
+<div class="wrap collapse-wrap">
+  <ul class="collapse">
+    <li>
+      <div class="title"><h4>default_settings.py</h4><i class="iconfont icon-right"></i></div>
+      <p>{{ DEFAULT_SETTINGS_PY_PATH }}</p>
+    </li>
+    <li>
+      <div class="title"><h4>user settings</h4><i class="iconfont icon-right"></i></div>
+      <p>{{ SCRAPYDWEB_SETTINGS_PY_PATH }}</p>
+    </li>
+    <li><div class="title"><h4>main_pid: {{ MAIN_PID }}</h4></div></li>
+    <li><div class="title"><h4>logparser_pid: {{ LOGPARSER_PID }}</h4></div></li>
+    <li><div class="title"><h4>poll_pid: {{ POLL_PID }}</h4></div></li>
+  </ul>
+</div>
+
+<div class="wrap collapse-wrap">
+  <!-- <h3>Settings</h3> -->
+  <ul class="collapse">
+
+    <div class="wrap collapse-wrap">
+      <h3>ScrapydWeb</h3>
+      <ul class="collapse">
+        <li>
+          <div class="title"><h4>* server *</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ scrapydweb_server }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>ENABLE_HTTPS = {{ ENABLE_HTTPS }}</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ enable_https_details }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Scrapy</h3>
+      <ul class="collapse">
+        <li>
+          <div class="title"><h4>SCRAPY_PROJECTS_DIR</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ SCRAPY_PROJECTS_DIR }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Scrapyd</h3>
+      <ul class="collapse">
+        <li>
+          <div class="title"><h4>* servers *</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ servers }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>LOCAL_SCRAPYD_SERVER</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ LOCAL_SCRAPYD_SERVER }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>LOCAL_SCRAPYD_LOGS_DIR</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ LOCAL_SCRAPYD_LOGS_DIR }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>SCRAPYD_LOG_EXTENSIONS</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ SCRAPYD_LOG_EXTENSIONS }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>LogParser</h3>
+      <ul class="collapse">
+        <li><div class="title"><h4>ENABLE_LOGPARSER = {{ ENABLE_LOGPARSER }}</h4></div></li>
+        <li><div class="title"><h4>version: {{ logparser_version }}</h4></div></li>
+        <li>
+          <div class="title"><h4>settings.py</h4><i class="iconfont icon-right"></i></div>
+          <p>{{ logparser_settings_py_path }}</p>
+        </li>
+        <li><div class="title"><h4>BACKUP_STATS_JSON_FILE = {{ BACKUP_STATS_JSON_FILE }}</h4></div></li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Timer tasks</h3>
+      <ul class="collapse">
+        <li><div class="title"><h4>scheduler.state: {{ scheduler_state }}</h4></div></li>
+        <li><div class="title"><h4>JOBS_SNAPSHOT_INTERVAL = {{ JOBS_SNAPSHOT_INTERVAL }}</h4></div></li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Run Spider</h3>
+      <ul class="collapse">
+        <li>
+          <div class="title"><h4>details</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ run_spider_details }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Page Display</h3>
+      <ul class="collapse">
+        <li>
+          <div class="title"><h4>details</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ page_display_details }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Send Text</h3>
+      <ul class="collapse">
+        <li>
+          <div class="title"><h4>Slack</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ slack_details }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>Telegram</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ telegram_details }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>Email</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ email_details }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>email sender & recipients</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ email_sender_recipients }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>email smtp settings</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ email_smtp_settings }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>Monitor & Alert</h3>
+      <ul class="collapse">
+        <li><div class="title"><h4>ENABLE_MONITOR = {{ ENABLE_MONITOR }}</h4></div></li>
+        <li>
+          <div class="title"><h4>poll interval</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ poll_interval }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>alert switcher</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ alert_switcher }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>alert working time</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ alert_working_time }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>triggers</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ alert_triggers|safe }}</pre>
+        </li>
+      </ul>
+    </div>
+
+    <div class="wrap collapse-wrap">
+      <h3>System</h3>
+      <ul class="collapse">
+        <li><div class="title"><h4>DEBUG = {{ DEBUG }}</h4></div></li>
+        <li><div class="title"><h4>VERBOSE = {{ VERBOSE }}</h4></div></li>
+        <li>
+          <div class="title"><h4>DATA_PATH</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ DATA_PATH }}</pre>
+        </li>
+        <li>
+          <div class="title"><h4>DATABASE</h4><i class="iconfont icon-right"></i></div>
+          <pre>{{ database_details }}</pre>
+        </li>
+      </ul>
+    </div>
+
+  </ul>
+</div>
+
+<script>
+// handle collapse components
+(function () {
+  var collapse = my$('.collapse');
+  var titles = my$$('.collapse .title');
+  var lis = my$$('.collapse li');
+  titles.forEach(function(title) {
+    title.addEventListener('click', function(e){
+      var index = [].indexOf.call(titles, this);
+      lis[index].classList.toggle('active');
+    });
+  });
+})();
+</script>
+{% endblock %}

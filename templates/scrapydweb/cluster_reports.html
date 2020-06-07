@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}servers{% endblock %}
+
+{% block head %}
+  <style>
+  </style>
+{% endblock %}
+
+{% block body %}
+<h2>
+  {% if selected_nodes %}<a class="link" target="_blank" href="{{ url_report }}">{% endif %}
+  {{ selected_nodes|length }} Reports of /{{ project }}/{{ spider }}/{{ job }}/
+  {% if selected_nodes %}</a>{% endif %}
+</h2>
+
+<form method="post" enctype="multipart/form-data" hidden></form>
+
+<div id="app">
+<template>
+  <el-button-group>
+    {% if url_servers %}
+    <el-button type="primary" onclick="showLoader(); window.location='{{ url_servers }}';" icon="el-icon-circle-check-outline" size="medium">Select nodes</el-button>
+    {% endif %}
+    <el-button type="success" onclick="showLoader(); window.location='{{ url_jobs }}';" icon="el-icon-tickets" size="medium">Select a job</el-button>
+  </el-button-group>
+
+  <el-table
+    ref="multipleTable"
+    :data="tableData"
+    style="width: 100%;"
+    tooltip-effect="dark"
+    empty-text="There is nothing to display."
+    :max-height="maxHeight"
+    highlight-current-row
+
+    {% if selected_nodes|length > 10 %}
+    :size=`mini`
+    {% else %}
+    :size=`--`
+    {% endif %}
+
+    :default-sort="{prop: 'node', order: 'ascending'}"
+  >
+
+    <el-table-column prop="node" label="Node" fixed sortable align="center" width="70"></el-table-column>
+    <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="100">
+      <template slot-scope="scope">
+        <a target="_blank" :class="scope.row.stats_class" v-bind:style="{display: scope.row.stats_display}" :href="scope.row.stats_url">
+          {{scope.row.stats}}
+        </a>
+        <em class="normal"  v-bind:style="{display: scope.row.stats_loading_display}">loading...</em>
+      </template>
+    </el-table-column>
+    <el-table-column prop="first_log_time" label="first_log_time" sortable align="center" width="145"></el-table-column>
+    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
+    <el-table-column prop="latest_log_time" label="latest_log_time" sortable align="center" width="145"></el-table-column>
+
+{% include 'scrapydweb/include_reports_template_table.html' %}
+
+  </el-table>
+</template>
+</div>
+
+
+<script>
+var Main = {
+  data() {
+    return {
+      maxHeight: window.innerHeight - 200,
+      sortOrders: ['descending', 'ascending', null],
+      selected_nodes: {{ selected_nodes }},
+      url_report: '{{ url_report }}',
+      tableData: [
+    {% for selected_node in selected_nodes %}
+      {
+        node: {{ selected_node }},
+
+{% include 'scrapydweb/include_reports_tabledata.html' %}
+
+        first_log_time: '',
+        latest_log_time: '',
+        runtime: '',
+      },
+    {% endfor %}
+      ],
+    }
+  },
+
+  created() {
+    for (var idx in this.selected_nodes) {
+      var url = this.url_report.replace(/\/\d+/, '/'+this.selected_nodes[idx]);
+      // console.log(url);
+      this.xhrReport(idx, url);
+    }
+  },
+
+  methods: {
+    xhrReport:function(idx, url) {
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          vm.tableData[idx].stats_loading_display = 'none';
+          vm.tableData[idx].stats_display = '';
+          vm.tableData[idx].stats_url = url.replace(/\/log\/report\//, '/log/stats/');
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if (obj.status == 'ok') {
+              // console.log(idx, obj);
+              vm.tableData[idx].stats = 'Stats';
+              if (obj.shutdown_reason != 'N/A' || obj.finish_reason != 'N/A') {
+                vm.tableData[idx].stats_class = 'state normal';
+              } else {
+                vm.tableData[idx].stats_class = 'state safe';
+              }
+
+              vm.tableData[idx].runtime = obj.runtime;
+              // vm.tableData[idx].runtime = '16 days, 20:09:24';
+              vm.tableData[idx].first_log_time = obj.first_log_time;
+              vm.tableData[idx].latest_log_time = obj.latest_log_time;
+
+{% include 'scrapydweb/include_reports_xhrreport.html' %}
+
+            } else {
+              vm.tableData[idx].stats = obj.status || 'N/A';
+              vm.tableData[idx].stats_class = 'state danger';
+            }
+          } else {
+            vm.tableData[idx].stats = this.status;
+            vm.tableData[idx].stats_class = 'state warning';
+          }
+        }
+      };
+      req.open('post', url, Async=true);
+      req.send();
+    },
+
+    sortStatus(a, b) {
+      return a.stats_display+a.stats_class+a.stats > b.stats_display+b.stats_class+b.stats ? 1 : -1;
+    },
+
+{% include 'scrapydweb/include_methods_sortruntime.html' %}
+
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

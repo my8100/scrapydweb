@@ -1,0 +1,51 @@
+<div class="table wrap">
+  <div style="margin-bottom: 15px;">
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    <a class="button multinode" href="{{ url_multinode_delproject }}">{{ g.multinode|safe }}</a>
+    {% endif %}
+
+    <a class="button danger" href="javascript:;" onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}');">
+      Delete Project
+    </a>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Version</th>
+        <th>List Spiders</th>
+        <th>Run Spider</th>
+        <th>Delete Version</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for version, version_readable, url_listspiders, url_multinode_delversion, url_delversion in results %}
+      <tr>
+        <td>{{ version + version_readable }}</td>
+        <td>
+          <a class="state normal" href="javascript:;"
+          onclick="execXHR('{{ url_listspiders }}', 'listspiders{{ project + version }}');">
+          List Spiders
+          </a>
+        </td>
+        <td id="listspiders{{ project + version }}" class="spiders"></td>
+        <td id="delversion{{ project + version }}">
+          {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+          <a class="state multinode" href="{{ url_multinode_delversion }}">
+            {{ g.multinode|safe }}
+          </a>
+          {% endif %}
+
+          <a class="state delete" href="javascript:;"
+          onclick="execXHR(
+                '{{ url_delversion }}',
+                'delversion{{ project + version }}',
+              );">
+          Delete Version
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>

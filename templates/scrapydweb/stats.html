@@ -1,0 +1,426 @@
+{% extends 'base.html' %}
+
+{% block title %}stats{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_stats }}">
+  <script type="text/javascript" src="{{ static_js_stats }}"></script>
+  <script type="text/javascript" src="{{ static_js_echarts_min }}"></script>
+  <style>
+    .tab-header {margin-left: 8px;}
+    /* div {word-break: break-all;} */
+    th {
+      background-color: #ddd;
+      text-align: left;
+    }
+    #content_charts>div {
+      height: 400px;
+      width: 100%;
+    }
+    #chart_total {margin-bottom: 16px;}
+    #content_categories, #content_logs {padding-top: 8px;}
+  </style>
+{% endblock %}
+
+
+{% block loader %}
+<div class="loader" style="display: block;" onclick="hideLoader();"></div>
+
+<script>
+window.onload = function(){
+  hideLoader();
+};
+</script>
+{% endblock %}
+
+
+{% block body %}
+<h3>PROJECT ({{ project }}), SPIDER ({{ spider }})</h3>
+
+{% if url_refresh %}
+<div style="padding: 5px 0;">
+  {% if not url_jump %}
+    <a id="refresh_button" class="button danger" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
+  {% else %}
+    {% if 'realtime=True' in url_jump %}
+    <a id="refresh_button" class="button safe" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
+    <a class="button danger" href="{{ url_jump }}" onclick="showLoader();">Realtime version</a>
+    {% else %}
+    <a class="button safe" href="{{ url_jump }}" onclick="showLoader();">Cached version</a>
+    <a id="refresh_button" class="button danger" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
+    {% endif %}
+  {% endif %}
+</div>
+{% endif %}
+
+<div class="tab-wrap wrap">
+  <ul class="tab tab-header clear-float">
+    <li id="header_analysis">Log analysis</li>
+    <li id="header_categories">Log categorization</li>
+    {% if datas|length > 1 %}
+    <li id="header_charts">Progress visualization</li>
+    {% endif %}
+    <li id="header_logs">View log</li>
+    {% if crawler_stats %}
+    <li id="header_stats">Crawler.stats</li>
+    {% endif %}
+    {% if crawler_engine %}
+    <li id="header_engine">Crawler.engine</li>
+    {% endif %}
+  </ul>
+  <ul class="tab tab-content">
+    <li id="content_analysis">
+      <div class="table vertical-table">
+        <table>
+          <tr><th>project</th><td>{{ project }}</td></tr>
+          <tr><th>spider</th><td>{{ spider }}</td></tr>
+          <tr><th>job</th><td>{{ job }}</td></tr>
+          <tr><th>first_log_time</th><td>{{ first_log_time }}</td></tr>
+          <tr><th>latest_log_time</th><td>{{ latest_log_time }}</td></tr>
+          <tr><th>runtime</th><td>{{ runtime }}</td></tr>
+          <tr>
+            <th>crawled_pages</th>
+            <td>
+            {% if pages is none %}
+              N/A
+            {% else %}
+              <strong class="{% if pages %}green{% else %}red{% endif %}">{{ pages }}</strong>
+            {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th>scraped_items</th>
+            <td>
+            {% if items is none %}
+              N/A
+            {% else %}
+              <strong class="{% if items %}green{% else %}red{% endif %}">{{ items }}</strong>
+            {% endif %}
+            </td>
+          </tr>
+          <tr><th>shutdown_reason</th><td id="shutdown_reason">{{ shutdown_reason }}</td></tr>
+          <tr><th>finish_reason</th><td id="finish_reason">{{ finish_reason }}</td></tr>
+
+          <tr><th>log_critical_count</th><td id="log_critical_count">{{ log_categories['critical_logs']['count'] }}</td></tr>
+          <tr><th>log_error_count</th><td id="log_error_count">{{ log_categories['error_logs']['count'] }}</td></tr>
+          <tr><th>log_warning_count</th><td id="log_warning_count">{{ log_categories['warning_logs']['count'] }}</td></tr>
+          <tr><th>log_redirect_count</th><td id="log_redirect_count">{{ log_categories['redirect_logs']['count'] }}</td></tr>
+          <tr><th>log_retry_count</th><td id="log_retry_count">{{ log_categories['retry_logs']['count'] }}</td></tr>
+          <tr><th>log_ignore_count</th><td id="log_ignore_count">{{ log_categories['ignore_logs']['count'] }}</td></tr>
+
+          <tr><th>latest_crawl</th><td id="latest_crawl"></td></tr>
+          <tr><th>latest_scrape</th><td id="latest_scrape"></td></tr>
+          <tr><th>latest_log</th><td id="latest_log"></td></tr>
+          <tr><th>current_time</th><td id="current_time"></td></tr>
+          <tr><th>latest_item</th><td style="word-break: break-all;">{{ latest_matches['latest_item'] or 'N/A' }}</td></tr>
+        </table>
+      </div>
+    </li>
+
+    <li id="content_categories">
+      <div class="wrap collapse-wrap">
+        <ul class="collapse">
+          <h3 style="color: red;">WARNING+</h3>
+        {% for title in ['critical_logs', 'error_logs', 'warning_logs'] %}
+          {% if not log_categories[title]['count'] %}
+          {% else %}
+          <li>
+            <div class="title">
+              <h4>
+                <div style="width: 200px; display: inline-block;">{{ title }}</div>
+                {% if log_categories[title]['details']|length < log_categories[title]['count'] %}
+                  last {{ log_categories[title]['details']|length }} of {{ log_categories[title]['count'] }}
+                {% else %}
+                  {{ log_categories[title]['count'] }} in total
+                {% endif %}
+              </h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+
+            {% for detail in log_categories[title]['details'] %}
+            <pre>{{ detail }}</pre>
+            {% endfor %}
+          </li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="wrap collapse-wrap">
+        <ul class="collapse">
+          <h3 style="color: orange;">INFO</h3>
+
+        {% for title in ['redirect_logs', 'retry_logs', 'ignore_logs'] %}
+          {% if not log_categories[title]['count'] %}
+          {% else %}
+          <li>
+            <div class="title">
+              <h4>
+                <div style="width: 200px; display: inline-block;">{{ title }}</div>
+                {% if log_categories[title]['details']|length < log_categories[title]['count'] %}
+                  last {{ log_categories[title]['details']|length }} of {{ log_categories[title]['count'] }}
+                {% else %}
+                  {{ log_categories[title]['count'] }} in total
+                {% endif %}
+              </h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+
+            {% for detail in log_categories[title]['details'] %}
+            <pre>{{ detail }}</pre>
+            {% endfor %}
+          </li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+      </div>
+
+      <div class="wrap collapse-wrap">
+        <ul class="collapse">
+          <h3 style="color: #67c23a;">DEBUG</h3>
+
+        {% for title, log in latest_matches.items() %}
+          {% if not log %}
+          {% else %}
+          <li>
+            <div class="title">
+              <h4>{{ title }}</h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+            <pre>{{ log }}</pre>
+          </li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+      </div>
+    </li>
+
+    {% if datas|length > 1 %}
+    <li id="content_charts">
+      <div id="chart_total"></div>
+      <div id="chart_minute"></div>
+    </li>
+    {% endif %}
+
+    <li id="content_logs">
+      <div class="wrap collapse-wrap">
+        <!-- <h3 style="color: #409EFF;">cat logs</h3> -->
+        <ul class="collapse">
+          <li>
+            <div class="title">
+              <h4>Head</h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+            <pre>{{ head }}</pre>
+          </li>
+           <li>
+            <div class="title">
+              <h4>Tail</h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+            <pre>{{ tail }}</pre>
+          </li>
+          {% if url_opt_opposite %}
+          <li>
+            <div class="title">
+              <h4>Log</h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+            <p><a class="link" target="_blank" href="{{ url_opt_opposite }}">{{ url_opt_opposite }}</a></p>
+          </li>
+          {% endif %}
+          {% if url_source %}
+          <li>
+            <div class="title">
+              <h4>Source</h4>
+              <i class="iconfont icon-right"></i>
+            </div>
+            <p><a class="link" target="_blank" href="{{ url_source }}">{{ url_source }}</a></p>
+          </li>
+          {% endif %}
+        </ul>
+      </div>
+    </li>
+
+    {% if crawler_stats %}
+    <li id="content_stats">
+      <div class="table vertical-table">
+        <table>
+        {% for k, v in crawler_stats.items() %}
+          <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+        {% endfor %}
+        </table>
+      </div>
+    </li>
+    {% endif %}
+
+    {% if crawler_engine %}
+    <li id="content_engine">
+      <div class="table vertical-table">
+        <table>
+        {% for k, v in crawler_engine.items() %}
+          <tr><th>{{ k }}</th><td>{{ v }}</td></tr>
+        {% endfor %}
+        </table>
+      </div>
+    </li>
+    {% endif %}
+  </ul>
+</div>
+
+
+<script>
+var latest_crawl_timestamp = {{ latest_crawl_timestamp }};
+var latest_scrape_timestamp = {{ latest_scrape_timestamp }};
+var latest_log_timestamp = {{ latest_log_timestamp }};
+
+const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
+
+my$('#current_time').innerHTML = new Date();
+setColor();
+</script>
+
+
+<script>
+{% if url_refresh %}
+setInterval(function() {
+  var now_timestamp = Date.now() / 1000;
+  var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+  {% if not url_jump %}
+    var by = 'ScrapydWeb';
+    var click = 'click to hard reparse (SLOW)';
+  {% else %}
+    {% if 'realtime=True' in url_jump %}
+    var by = 'LogParser';
+    var click = 'click to request the latest cached version (FAST)';
+    {% else %}
+    var by = 'ScrapydWeb';
+    var click = 'click to hard reparse (SLOW)';
+    {% endif %}
+  {% endif %}
+  my$('#refresh_button').innerHTML = "Parsed by " + by + " <span style='color: black;'>" + seconds + "</span> secs ago, " + click;
+  // my$('#refresh_button').className = "button danger";
+}, 1000);
+{% endif %}
+</script>
+
+
+{% if datas|length > 1 %}
+<script>
+// If there is only one data point, would raise Uncaught TypeError: Cannot read property 'toFixed' of null
+// var datas = [['2019-01-01 00:00:01', 1, 2, 3, 4]];
+var datas = {{ datas|safe }};
+
+var chartsArr = [{
+  dom: my$('#chart_total'),
+  echart: echarts.init(my$('#chart_total')),
+  data: datas,
+  title: 'count / total',
+  label1: 'pages',
+  index1: 1,
+  label2: 'items',
+  index2: 3
+}, {
+  dom: my$('#chart_minute'),
+  echart: echarts.init(my$('#chart_minute')),
+  data: datas,
+  title: 'count / minute',
+  label1: 'pages / minute',
+  index1: 2,
+  label2: 'items / minute',
+  index2: 4
+}]
+
+chartsArr.forEach(function(chart) {
+  draw(chart.echart, chart.data, chart.title, chart.label1, chart.index1, chart.label2, chart.index2)
+  chart.dom.addEventListener('resize', function() {
+    chart.echart.resize({ width: chart.dom.clientWidth })
+  })
+})
+
+window.addEventListener('optimizedResize', function() {
+  if (chartsArr[0].dom) {
+    chartsArr.forEach(function(chart) {
+      //console.log(chart)
+      chart.dom.dispatchEvent(new Event('resize'))
+    })
+  }
+})
+</script>
+{% endif %}
+
+
+<script>
+// tab switcher
+(function() {
+  var default_tab = 'analysis';
+  if (window.localStorage) {
+    if (document.referrer.search(/\/\d+\/log\/stats\//) == -1) {
+      localStorage.setItem('stats_tab', default_tab);
+    }
+    var active_tab = localStorage.getItem('stats_tab') || default_tab;
+  } else {
+    var active_tab = default_tab;
+  }
+  console.log(active_tab);
+
+  if (!my$('#header_' + active_tab)) {
+    active_tab = default_tab;
+    console.log(active_tab);
+  }
+  my$('#header_' + active_tab).classList.add('active');
+  my$('#content_' + active_tab).classList.add('active');
+
+  if (my$('#chart_total')) {
+    my$('#chart_total').dispatchEvent(new Event('resize'));
+    my$('#chart_minute').dispatchEvent(new Event('resize'));
+  }
+
+
+  var index = -1;
+  var tabHeaders = my$$('.tab-header>li');
+  var tabContents = my$$('.tab-content>li');
+  my$('.tab-header').addEventListener('click', function(e) {
+    var target = e.target;
+    //console.log(target.id);
+    if (target.tagName.toLowerCase() !== 'li') return;
+    index = Array.prototype.indexOf.call(tabHeaders, target);
+    tabHeaders.forEach(function(el) {
+      el.classList.remove('active');
+    });
+    target.classList.add('active');
+    tabContents.forEach(function(el) {
+      el.classList.remove('active');
+    });
+    tabContents[index].classList.add('active');
+
+    // When switch to echarts tab
+    if (my$('#chart_total')) {
+      my$('#chart_total').dispatchEvent(new Event('resize'));
+      my$('#chart_minute').dispatchEvent(new Event('resize'));
+    }
+
+    if (window.localStorage) {
+      localStorage.setItem('stats_tab', target.id.split('_')[1]);
+      console.log(localStorage.getItem('stats_tab'));
+    }
+  });
+})();
+</script>
+
+
+<script>
+// handle collapse components
+(function () {
+  var collapse = my$('.collapse');
+  var titles = my$$('.collapse .title');
+  var lis = my$$('.collapse li');
+  titles.forEach(function(title) {
+    title.addEventListener('click', function(e){
+      var index = [].indexOf.call(titles, this);
+      lis[index].classList.toggle('active');
+    });
+  });
+})();
+</script>
+{% endblock %}

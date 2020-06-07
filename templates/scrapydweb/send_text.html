@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}send text{% endblock %}
+
+{% block head %}
+  <style>
+  </style>
+{% endblock %}
+
+
+{% block body %}
+<h2>
+  Send text via
+  <a class="link" target="_blank" href="{{ url_slack }}">Slack</a>,
+  <a class="link" target="_blank" href="{{ url_telegram }}">Telegram</a>, or
+  <a class="link" target="_blank" href="{{ url_email }}">Email</a> (click to test)
+</h2>
+<pre>
+"""
+How to send text and get alerted in scrapy projects:
+"""
+
+import scrapy
+from w3lib.http import basic_auth_header
+
+
+# Suppose ScrapydWeb is available at http://127.0.0.1:5000
+# Do remember to add '127.0.0.1' to allowed_domains
+base_url = 'http://127.0.0.1:5000'
+headers = dict(Authorization=basic_auth_header('username', 'password'))
+callback_none = lambda x: None
+
+# Via Slack:
+yield scrapy.Request(base_url+'/slack/some-text-to-channel-general', headers=headers, callback=callback_none)
+yield scrapy.Request(base_url+'/slack/random/send-to-channel-random', callback=callback_none)
+yield scrapy.FormRequest(url=base_url+'/slack',
+                         headers=headers,
+                         formdata=dict(channel='random', key='value', a='1'),
+                         callback=callback_none)
+
+# Via Telegram:
+yield scrapy.Request(base_url+'/tg/some-text-to-telegram', callback=callback_none)
+yield scrapy.Request(base_url+'/tg/123/some-text-to-chat-id-123', callback=callback_none)
+# JSONRequest is available in Scrapy>=1.7.1, in which values in the data to post could be int type.
+yield scrapy.http.JSONRequest(url=base_url+'/tg',
+                              data=dict(chat_id=123, key='value', b=2),
+                              callback=callback_none)
+
+# Via Email:
+yield scrapy.Request(base_url+'/email/some-text-to-email', callback=callback_none)
+yield scrapy.Request(base_url+'/email/new-subject/send-with-new-subject', callback=callback_none)
+yield scrapy.FormRequest(url=base_url+'/email',
+                         formdata=dict(recipients='name1@example.com; name2@example.com',
+                                       subject='post to send an email', key='value', c='3'),
+                         callback=callback_none)
+
+</pre>
+<div>
+
+
+<script>
+</script>
+{% endblock %}

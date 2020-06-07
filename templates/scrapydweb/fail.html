@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}fail{% endblock %}
+
+{% block head %}
+  <style>
+    h2 {color: red;}
+    h3 a {word-break: break-all;}
+  </style>
+
+{% if jump_url %}
+<meta http-equiv="refresh" content="3; url='{{ jump_url }}'">
+{% endif %}
+{% endblock %}
+
+
+{% block body %}
+<h2>Oops! Something went wrong.</h2>
+
+<div class="wrap">
+  {% if url %}
+  <h3><a class="link" target="_blank" href="{{ url }}">{{ url }}</a></h3>
+  {% endif %}
+
+  {% if alert %}
+  <h3>{{ alert }}</h3>
+  {% endif %}
+
+  {% if status_code %}
+  <h3>status_code: {{ status_code }}</h3>
+  {% endif %}
+
+  <pre>{{ text }}</pre>
+
+  <div id="tip_wrapper" {% if not tip %}style="display: none;"{% endif %}>
+  <h3>Tip</h3>
+  <div id="tip">{{ tip|safe }}</div>
+  </div>
+
+  {% if message %}
+  <h3>Details</h3>
+  <pre>{{ message }}</pre>
+  {% endif %}
+
+  {% if jump_url %}
+  <h4>Redirecting to <a class="link" href="{{ jump_url }}">{{ jump_url }}</a> in 3 seconds...</h4>
+  {% endif %}
+
+  {% if url %}
+  <br>
+  <iframe src="{{ url }}" style="width: 100%; height: 600px;">{{ url }}</iframe>
+  {% endif %}
+</div>
+
+
+{% if text and not tip %}
+<script>
+window.onload = function(){
+  // https://stackoverflow.com/questions/7381974/which-characters-need-to-be-escaped-in-html
+  try {
+    var text = '{{ text|replace("&", "&amp;")|replace("<", "&lt;")|replace(">", "&gt;")|replace("\\", "/")|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}';
+    var obj = JSON.parse(text);
+    if (obj.tip) {
+      my$('#tip_wrapper').style.display = 'block';
+      my$('#tip').innerHTML = obj.tip;
+    }
+  } catch(err) {console.log(err);}
+};
+</script>
+{% endif %}
+
+{% endblock %}

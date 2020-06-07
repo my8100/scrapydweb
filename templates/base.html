@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %} - ScrapydWeb</title>
+
+  <link rel="stylesheet" type="text/css" href="{{ static_css_style }}">
+  <!-- <script type="text/javascript" src="//at.alicdn.com/t/font_842334_vujk670yra.js"></script>  -->
+  <script type="text/javascript" src="{{ static_js_icons_menu }}"></script>
+  <!-- upload icon in deploy/parse page, right arrow icon in stats | projects page-->
+  <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
+
+  {% if g.IS_MOBILE %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown_mobileui }}">
+  {% else %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown }}">
+  {% endif %}
+
+  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
+
+  <!-- <script async defer src="https://buttons.github.io/buttons.js"></script> -->
+  <script type="text/javascript" src="{{ static_js_github_buttons }}"></script>
+  <link rel="icon" type="image/x-icon" href="{{ static_icon }}" />
+  <link rel="shortcut icon" type="image/x-icon" href="{{ static_icon_shortcut }}" />
+  <link rel="apple-touch-icon" href="{{ static_icon_apple_touch }}" />
+
+  <style type="text/css">
+  .skip-node {
+    margin-top: 0;
+    top: 15px;
+  }
+
+  .collapse li{
+    list-style: circle; /* disc */
+    margin: 0 8px;
+  }
+
+  .el-table .cell {
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+  .el-table {margin-bottom: 5px;}
+  </style>
+
+  <script type="text/javascript" src="{{ static_js_jquery_min }}"></script>
+  <script type="text/javascript" src="{{ static_js_common }}"></script>
+  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
+  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
+  {% block head %}{% endblock %}
+</head>
+
+
+<body>
+<nav>
+  <a class="title" target="_blank" href="{{ GITHUB_URL }}">ScrapydWeb</a>
+
+  <div class="dropdown">
+    {% if g.IS_MOBILE %}
+    <a class="dropbtn" onclick="handleDropdown();">
+    {% else %}
+    <a class="dropbtn">
+    {% endif %}
+      <span>{{ SCRAPYD_SERVERS[node-1] }}</span>
+      <svg class="icon anchor" aria-hidden="true">
+        <use xlink:href="#icon-down"></use>
+      </svg>
+    </a>
+    <div class="dropdown-content-wrap">
+      <div class="dropdown-content">
+      {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+        {% if SCRAPYD_SERVERS_GROUPS[loop.index0] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index0]) %}
+        <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index0] }} --- </div>
+        {% endif %}
+
+        <a href="{{ g.url_jobs_list[loop.index0] }}"
+
+        {% if loop.index == node %}
+        style="color: #409EFF; font-weight: 700;"
+        {% endif %}
+
+        onclick="showLoader();">
+        [{{ loop.index }}] {{ SCRAPYD_SERVER }}
+        </a>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  <div class="switch-node">
+    <a href="javascript:;" onclick="switchNode(-1);">&laquo;</a>
+    <span>{{ node }} / {{ SCRAPYD_SERVERS_AMOUNT }}</span>
+    <a href="javascript:;" onclick="switchNode(1);">&raquo;</a>
+
+    <label class="skip-node" title="skip unselected nodes in the Servers page">
+      <input id="skip_nodes_checkbox" type="checkbox">
+      <span class="slider round"></span>
+    </label>
+  </div>
+{% endif %}
+
+  <ul id="nav_daemonstatus">
+    <li><a target="_blank" class="request" href="{{ SCRAPYD_SERVERS_PUBLIC_URLS[node-1] or 'http://' + SCRAPYD_SERVERS[node-1] }}">
+        <svg class="icon" aria-hidden="true">
+          <use xlink:href="#icon-host"></use>
+        </svg>
+        <span id="nav_node_name"></span>
+      </a>
+    </li>
+    <li>
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-pending"></use>
+      </svg>
+      <span id="nav_pending"></span>
+    </li>
+    <li>
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-running"></use>
+      </svg>
+      <span id="nav_running"></span>
+    </li>
+    <li>
+      <svg class="icon" aria-hidden="true">
+        <use xlink:href="#icon-finished"></use>
+      </svg>
+      <span id="nav_finished"></span>
+    </li>
+  </ul>
+</nav>
+
+<main>
+  <aside>
+    <div>
+    <h3>Overview</h3>
+    <ul>
+      <li>
+        <a id="menu_servers" href="{{ g.url_menu_servers }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-servers"></use>
+          </svg>
+          <span>Servers</span>
+        </a>
+      </li>
+      <li>
+        <a id="menu_tasks" href="{{ g.url_menu_tasks }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-timer"></use>
+          </svg>
+          <span>Timer Tasks</span>
+        </a>
+      </li>
+    </ul>
+    </div>
+    <div>
+    <h3>Dashboard</h3>
+    <ul>
+      <li>
+        <a id="menu_jobs" href="{{ g.url_menu_jobs }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-jobs"></use>
+          </svg>
+          <span>Jobs</span>
+        </a>
+      </li>
+      <li>
+        <a id="menu_nodereports" href="{{ g.url_menu_nodereports }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-report"></use>
+          </svg>
+          <span>Node Reports</span>
+        </a>
+      </li>
+      {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+      <li>
+        <a id="menu_clusterreports" href="{{ g.url_menu_clusterreports }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-reports"></use>
+          </svg>
+          <span>Cluster Reports</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+    </div>
+    <div>
+    <h3>Operations</h3>
+    <ul>
+      <li>
+        <a id="menu_deploy" href="{{ g.url_menu_deploy }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-upload"></use>
+          </svg>
+          <span>Deploy Project</span>
+        </a>
+      </li>
+      <li>
+        <a id="menu_schedule" href="{{ g.url_menu_schedule }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-run"></use>
+          </svg>
+          <span>Run Spider</span>
+        </a>
+      </li>
+    </ul>
+    </div>
+    <div>
+    <h3>Files</h3>
+    <ul>
+      <li>
+        <a id="menu_projects" href="{{ g.url_menu_projects }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-projects"></use>
+          </svg>
+          <span>Projects</span>
+        </a>
+      </li>
+      <li>
+        <a id="menu_logs" href="{{ g.url_menu_logs }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-logs"></use>
+          </svg>
+          <span>Logs</span>
+        </a>
+      </li>
+    {% if SHOW_SCRAPYD_ITEMS %}
+      <li>
+        <a id="menu_items" href="{{ g.url_menu_items }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-items"></use>
+          </svg>
+          <span>Items</span>
+        </a>
+      </li>
+    {% endif %}
+    </ul>
+    </div>
+    <div>
+    <h3>Utilities</h3>
+    <ul>
+      <li>
+        <a id="menu_sendtext" href="{{ g.url_menu_sendtext }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-send"></use>
+          </svg>
+          <span>Send Text</span>
+        </a>
+      </li>
+      <li>
+        <a id="menu_parse" href="{{ g.url_menu_parse }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-parse"></use>
+          </svg>
+          <span>Parse Log</span>
+        </a>
+      </li>
+    </ul>
+    </div>
+    <div>
+    <h3>System</h3>
+    <ul>
+      <li>
+        <a id="menu_settings" href="{{ g.url_menu_settings }}" onclick="showLoader();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-settings"></use>
+          </svg>
+          <span>Settings</span>
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href="{{ g.url_menu_mobileui }}">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-mobile"></use>
+          </svg>
+          <span>Mobile UI</span>
+        </a>
+      </li>
+      {% if ENABLE_AUTH %}
+      <li>
+        <a href="javascript:;" onclick="logout();">
+          <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-logout"></use>
+          </svg>
+          <span>Logout</span>
+        </a>
+      </li>
+      {% endif %}
+    </ul>
+    </div>
+    <div class="github">
+    <a id="scrapydweb_version" class="request" href="https://pypi.org/project/scrapydweb/" target="_blank">v{{ SCRAPYDWEB_VERSION }}</a>
+    <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a>
+    <div>
+    <!-- <ul id="links"> -->
+      <!-- <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }} DEV</li> -->
+      <!-- <li id="pypi"> -->
+        <!-- <a target="_blank" href="https://pypi.org/project/scrapydweb/" > -->
+          <!-- <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" /> -->
+        <!-- </a> -->
+      <!-- </li> -->
+      <!-- <li class="github"> -->
+        <!-- <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">scrapydweb</a> -->
+      <!-- </li> -->
+      <!-- <li class="github"> -->
+        <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'logparser') }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">logparser</a> -->
+      <!-- </li> -->
+      <!-- <li class="github"> -->
+        <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'scrapyd-cluster-on-heroku') }}" aria-label="@my8100 on GitHub">scrapyd-cluster</a> -->
+      <!-- </li> -->
+      <!-- <li class="github"> -->
+        <!-- <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a> -->
+      <!-- </li> -->
+    <!-- </ul> -->
+  </aside>
+
+  <div class="content-wrap">
+    <div id="content">
+      {% block loader %}
+      <div class="loader" style="display: none;" onclick="hideLoader();"></div>
+      {% endblock %}
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        <ul class="flashes">
+        {% if messages %}
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+        {% endif %}
+          <li id="logparser_stats" class="info" style="display: none;"></li>
+        </ul>
+      {% endwith %}
+
+      {% block body %}{% endblock %}
+    </div>
+  </div>
+</main>
+
+<script>
+var loading = false;
+var refresh_daemonstatus = true;  // Used in logout()
+var node = {{ node }};
+var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
+var url_daemonstatus = "{{ g.url_daemonstatus }}";
+
+
+$(function(){
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  if (window.localStorage) {
+    var skipNodesUnselected = localStorage.getItem('skipNodesUnselected') || "false";
+    if (skipNodesUnselected == 'true') {
+      my$('#skip_nodes_checkbox').checked = true;
+    }
+  }
+  {% endif %}
+
+  // Update menu class according to url
+  var re_menu = location.pathname.match(/\/\d+\/(\w+)\//);
+  if (re_menu && my$('#menu_'+re_menu[1])) {
+    my$('#menu_' + re_menu[1]).classList.add('active')
+  } else {
+    re_menu = location.pathname.match(/\/\d+\/(\w+)\/(\w+)\//);
+    if (re_menu && my$('#menu_'+re_menu[1]+'_'+re_menu[2])) {
+      my$('#menu_' + re_menu[1] + '_' + re_menu[2]).classList.add('active')
+    }
+  }
+  {% if g.scheduler_state_paused %}
+    my$('#menu_tasks svg').style.color = 'red';
+  {% elif g.scheduler_state_running %}
+    my$('#menu_tasks svg').style.color = '#67c23a';
+  {% endif %}
+
+  refreshDaemonstatus(url_daemonstatus);
+
+})
+
+
+{% if DAEMONSTATUS_REFRESH_INTERVAL > 0 %}
+setInterval(function() {
+  if (refresh_daemonstatus == true) {
+    refreshDaemonstatus(url_daemonstatus);
+  }
+}, {{ DAEMONSTATUS_REFRESH_INTERVAL * 1000 }});
+{% endif %}
+
+
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+function switchNode(change) {
+  var target = node + change;
+  if (my$('#skip_nodes_checkbox').checked) {
+    if (window.localStorage) {
+      var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+      if (nodesSelected.length == 0) {
+        my$('#skip_nodes_checkbox').checked = false;
+        localStorage.setItem('skipNodesUnselected', 'false');
+        alert("None of the nodes are selected in the Servers page");
+        return;
+      }
+      var minNodeSelected = Math.min.apply(null, nodesSelected);
+      var maxNodeSelected = Math.max.apply(null, nodesSelected);
+      if (target < minNodeSelected) {
+        if (nodesSelected.indexOf(node) == -1) {
+          target = minNodeSelected;
+        } else {
+          alert("Reaching the first selected node");
+          return;
+        }
+      } else if (target > maxNodeSelected) {
+        if (nodesSelected.indexOf(node) == -1) {
+          target = maxNodeSelected;
+        } else {
+          alert("Reaching the final selected node");
+          return;
+        }
+      } else {
+        var nodesSelectedFiltered = nodesSelected.filter(function (n) {
+          return change == 1 ? n >= target : n <= target;
+        });
+        target = change == 1 ? Math.min.apply(null, nodesSelectedFiltered) : Math.max.apply(null, nodesSelectedFiltered);;
+      }
+    } else {
+      alert("Fail to read window.localStorage");
+    }
+  }
+
+  if (target < 1) {
+    alert("Reaching the first node");
+    return;
+  } else if (target > node_total) {
+    alert("Reaching the final node");
+    return;
+  }
+
+  location.href = location.pathname.replace(/\/\d+/, '/'+target) + location.search;
+  showLoader();
+}
+
+
+var skipNodesHandler = function() {
+  if (window.localStorage) {
+    var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+    if (this.checked && nodesSelected.length == 0) {
+      //this.checked = !this.checked;
+      this.checked = false;
+      alert("None of the nodes are selected in the Servers page");
+    }
+    localStorage.setItem('skipNodesUnselected', this.checked ? 'true' : 'false');
+    console.log(localStorage);
+  } else {
+    alert("Fail to read window.localStorage");
+  }
+}
+my$('#skip_nodes_checkbox').onclick = skipNodesHandler;
+{% endif %}
+</script>
+</body>
+</html>
