@@ -107,6 +107,8 @@ SCHEDULER_STATE_DICT = {
     STATE_PAUSED: 'STATE_PAUSED',
 }
 
+# For Setting Max Amount Of Hours A Scraper Can Run 
+MAX_HOURS = 3
 
 def setup_logfile(delete=False):
     if delete:

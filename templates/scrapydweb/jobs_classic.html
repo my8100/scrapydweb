@@ -97,9 +97,15 @@ and pageview == 1) or IS_IE_EDGE %}
     <a
       class="state normal"
       href="javascript:;"
-      onclick="stopLongRunningSpiders({{ running_jobs }});"
+      onclick="stopLongRunningSpiders({{ running_jobs }}, {{ MAX_HOURS }});"
       >Stop long running spiders
     </a>
+    <input
+      type="checkbox"
+      id="checkbox"
+      size="15"
+      onclick="stopLongRunningSpiders({{ running_jobs }}, {{ MAX_HOURS }});"
+    />
   </h3>
   <table>
     <thead>
