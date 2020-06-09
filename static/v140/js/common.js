@@ -229,17 +229,17 @@ function stopLongRunningSpiders(jobs, max_hours) {
 
 console.log( getElementByXpath('//*[@id="content"]/div[3]/table/tbody/tr/td[6]') ); */
 
-  //   var req = new XMLHttpRequest();
-  //   console.log(jobs);
-  //   jobs.map((job) => {
-  //     spider = job["spider"];
-  //     runtime_hours = job["runtime"].split(":")[0];
-  //     if (runtime_hours >= max_hours) {
-  //       url = job["url_stop"];
-  //       req.open("get", url, (Async = true));
-  //       req.send();
-  //     }
-  //   });
+  var req = new XMLHttpRequest();
+  console.log(jobs);
+  jobs.map((job) => {
+    spider = job["spider"];
+    runtime_hours = job["runtime"].split(":")[0];
+    if (runtime_hours >= max_hours) {
+      url = job["url_stop"];
+      req.open("get", url, (Async = true));
+      req.send();
+    }
+  });
 }
 
 function jobsXHR(url, forcestop, id) {
