@@ -216,26 +216,16 @@ function checkBrowser() {
   }
 }
 
-function stopLongRunningSpiders(jobs, max_hours) {
-  console.log(jobs);
+function stopLongRunningSpiders(jobs, max_hours, forcestop = false) {
   var runtime_hours;
   var spider;
-  // use the runtime from the html ?
-  // loop over the table in the html?
-  // use localstorage to set checkbox status
-  /* function getElementByXpath(path) {
-  return document.evaluate(path, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-}
-
-console.log( getElementByXpath('//*[@id="content"]/div[3]/table/tbody/tr/td[6]') ); */
-
+  var url_key = forcestop ? "url_stop" : "url_forcestop";
   var req = new XMLHttpRequest();
-  console.log(jobs);
   jobs.map((job) => {
     spider = job["spider"];
     runtime_hours = job["runtime"].split(":")[0];
     if (runtime_hours >= max_hours) {
-      url = job["url_stop"];
+      url = job[url_key];
       req.open("get", url, (Async = true));
       req.send();
     }
