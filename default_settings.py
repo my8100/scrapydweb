@@ -15,15 +15,15 @@ import os
 # Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-THE-CURRENT-HOST would make
 # ScrapydWeb server visible externally; Otherwise, set it to '127.0.0.1'.
 # The default is '0.0.0.0'.
-SCRAPYDWEB_BIND = '0.0.0.0'
+SCRAPYDWEB_BIND = "0.0.0.0"
 # Accept connections on the specified port, the default is 5000.
 SCRAPYDWEB_PORT = 5000
 
 # The default is False, set it to True to enable basic auth for the web UI.
 ENABLE_AUTH = False
 # In order to enable basic auth, both USERNAME and PASSWORD should be non-empty strings.
-USERNAME = ''
-PASSWORD = ''
+USERNAME = ""
+PASSWORD = ""
 
 
 # Make sure that [Scrapyd](https://github.com/scrapy/scrapyd) has been installed
@@ -46,9 +46,9 @@ PASSWORD = ''
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
 SCRAPYD_SERVERS = [
-    '127.0.0.1:6800',
+    "127.0.0.1:6800",
     # 'username:password@localhost:6801#group',
-    ('username', 'password', 'localhost', '6801', 'group'),
+    ("username", "password", "localhost", "6801", "group"),
 ]
 
 
@@ -61,14 +61,14 @@ SCRAPYD_SERVERS = [
 # ScrapydWeb would try to directly read Scrapy logfiles from disk, instead of making a request
 # to the Scrapyd server.
 # e.g. '127.0.0.1:6800' or 'localhost:6801', do not forget the port number.
-LOCAL_SCRAPYD_SERVER = ''
+LOCAL_SCRAPYD_SERVER = ""
 
 # Enter the directory when you run Scrapyd, run the command below
 # to find out where the Scrapy logs are stored:
 # python -c "from os.path import abspath, isdir; from scrapyd.config import Config; path = abspath(Config().get('logs_dir')); print(path); print(isdir(path))"
 # Check out https://scrapyd.readthedocs.io/en/stable/config.html#logs-dir for more info.
 # e.g. 'C:/Users/username/logs' or '/home/username/logs'
-LOCAL_SCRAPYD_LOGS_DIR = ''
+LOCAL_SCRAPYD_LOGS_DIR = ""
 
 # The default is False, set it to True to automatically run LogParser as a subprocess at startup.
 # Note that you can run the LogParser service separately via command 'logparser' as you like.
@@ -86,29 +86,32 @@ ENABLE_LOGPARSER = False
 # raises any excepion at startup: https://github.com/my8100/scrapydweb/issues/18
 ENABLE_HTTPS = False
 # e.g. '/home/username/cert.pem'
-CERTIFICATE_FILEPATH = ''
+CERTIFICATE_FILEPATH = ""
 # e.g. '/home/username/cert.key'
-PRIVATEKEY_FILEPATH = ''
+PRIVATEKEY_FILEPATH = ""
 
 
 ############################## Scrapy #########################################
 # ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
 # so that you can simply select a project to deploy, instead of packaging it in advance.
 # e.g. 'C:/Users/username/myprojects' or '/home/username/myprojects'
-SCRAPY_PROJECTS_DIR = ''
-
+SCRAPY_PROJECTS_DIR = ""
+# Set the maximum number of hours that a scraper can run for.
+MAX_HOURS = 5
+# Set 0 to disable auto-stopping of long running scrapers
+LONG_RUNNING_SCRAPER_STOP_INTERVAL = 1
 
 ############################## Scrapyd ########################################
 # ScrapydWeb would try every extension in sequence to locate the Scrapy logfile.
 # The default is ['.log', '.log.gz', '.txt'].
-SCRAPYD_LOG_EXTENSIONS = ['.log', '.log.gz', '.txt']
+SCRAPYD_LOG_EXTENSIONS = [".log", ".log.gz", ".txt"]
 
 # The default is None, only set it up when you need to visit Scrapyd servers via reverse proxy.
 # Make sure that SCRAPYD_SERVERS_PUBLIC_URLS has same length with SCRAPYD_SERVERS above.
 # e.g.
 # SCRAPYD_SERVERS_PUBLIC_URLS = [
-    # 'https://a.b.com',  # visit the first Scrapyd server via reverse proxy.
-    # '',  # visit the second Scrapyd server without reverse proxy.
+# 'https://a.b.com',  # visit the first Scrapyd server via reverse proxy.
+# '',  # visit the second Scrapyd server without reverse proxy.
 # ]
 # See https://github.com/my8100/scrapydweb/issues/94 for more info.
 SCRAPYD_SERVERS_PUBLIC_URLS = None
@@ -139,7 +142,7 @@ SCHEDULE_EXPAND_SETTINGS_ARGUMENTS = False
 
 # The default is 'Mozilla/5.0', set it a non-empty string to customize the default value of `custom`
 # in the drop-down list of `USER_AGENT`.
-SCHEDULE_CUSTOM_USER_AGENT = 'Mozilla/5.0'
+SCHEDULE_CUSTOM_USER_AGENT = "Mozilla/5.0"
 
 # The default is None, set it to any value of ['custom', 'Chrome', 'iPhone', 'iPad', 'Android']
 # to customize the default value of `USER_AGENT`.
@@ -201,9 +204,9 @@ DAEMONSTATUS_REFRESH_INTERVAL = 10
 # See https://api.slack.com/apps for more info
 
 # See step 1~7 above, e.g. 'xoxp-123-456-789-abcde'
-SLACK_TOKEN = os.environ.get('SLACK_TOKEN', '')
+SLACK_TOKEN = os.environ.get("SLACK_TOKEN", "")
 # The default channel to use when sending text via slack, e.g. 'general'
-SLACK_CHANNEL = 'general'
+SLACK_CHANNEL = "general"
 
 ########## telegram ##########
 # How to create a telegram bot:
@@ -218,29 +221,29 @@ SLACK_CHANNEL = 'general'
 # See https://core.telegram.org/bots#6-botfather for more info
 
 # See step 1~4 above, e.g. '123:abcde'
-TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN', '')
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "")
 # See step 5~6 above, e.g. 123456789
-TELEGRAM_CHAT_ID = int(os.environ.get('TELEGRAM_CHAT_ID', 0))
+TELEGRAM_CHAT_ID = int(os.environ.get("TELEGRAM_CHAT_ID", 0))
 
 ########## email ##########
 # The default subject to use when sending text via email.
-EMAIL_SUBJECT = 'Email from #scrapydweb'
+EMAIL_SUBJECT = "Email from #scrapydweb"
 
 ########## email sender & recipients ##########
 # Leave this option as '' to default to the EMAIL_SENDER option below; Otherwise, set it up
 # if your email service provider requires an username which is different from the EMAIL_SENDER option below to login.
 # e.g. 'username'
-EMAIL_USERNAME = ''
+EMAIL_USERNAME = ""
 # As for different email service provider, you might have to get an APP password (like Gmail)
 # or an authorization code (like QQ mail) and set it as the EMAIL_PASSWORD.
 # Check out links below to get more help:
 # https://stackoverflow.com/a/27515833/10517783 How to send an email with Gmail as the provider using Python?
 # https://stackoverflow.com/a/26053352/10517783 Python smtplib proxy support
 # e.g. 'password4gmail'
-EMAIL_PASSWORD = os.environ.get('EMAIL_PASSWORD', '')
+EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD", "")
 
 # e.g. 'username@gmail.com'
-EMAIL_SENDER = ''
+EMAIL_SENDER = ""
 # e.g. ['username@gmail.com', ]
 EMAIL_RECIPIENTS = [EMAIL_SENDER]
 
@@ -251,7 +254,7 @@ EMAIL_RECIPIENTS = [EMAIL_SENDER]
 # Config for https://mail.google.com:           ('smtp.gmail.com', 587, False)
 # Config for https://mail.qq.com using SSL:     ('smtp.qq.com', 465, True)
 # Config for http://mail.10086.cn:              ('smtp.139.com', 25, False)
-SMTP_SERVER = ''
+SMTP_SERVER = ""
 SMTP_PORT = 0
 SMTP_OVER_SSL = False
 # The timeout in seconds for the connection attempt, the default is 30.
@@ -354,7 +357,7 @@ VERBOSE = False
 
 # The default is '', which means saving all program data in the Python directory.
 # e.g. 'C:/Users/username/scrapydweb_data' or '/home/username/scrapydweb_data'
-DATA_PATH = os.environ.get('DATA_PATH', '')
+DATA_PATH = os.environ.get("DATA_PATH", "")
 
 # The default is '', which means saving data of Jobs and Timer Tasks in DATA_PATH using SQLite.
 # The data could be also saved in MySQL or PostgreSQL backend in order to improve concurrency.
@@ -365,4 +368,4 @@ DATA_PATH = os.environ.get('DATA_PATH', '')
 # 'postgres://username:password@127.0.0.1:5432'
 # 'sqlite:///C:/Users/username'
 # 'sqlite:////home/username'
-DATABASE_URL = os.environ.get('DATABASE_URL', '')
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
