@@ -95,17 +95,12 @@ and pageview == 1) or IS_IE_EDGE %}
     Running ({{ running_jobs|length }})
     <strong id="logparser_last_update" style="color: #67c23a;"></strong>
     <a
-      class="state normal"
+      class="state danger"
       href="javascript:;"
-      onclick="stopLongRunningSpiders({{ running_jobs }}, {{ MAX_HOURS }});"
-      >Stop long running spiders
+      style="float: right;"
+      onclick="stopLongRunningSpiders({{ running_jobs }}, {{ MAX_HOURS }}, forcestop = true);"
+      >forcestop long running spiders
     </a>
-    <input
-      type="checkbox"
-      id="checkbox"
-      size="15"
-      onclick="stopLongRunningSpiders({{ running_jobs }}, {{ MAX_HOURS }});"
-    />
   </h3>
   <table>
     <thead>
@@ -277,6 +272,9 @@ and pageview == 1) or IS_IE_EDGE %}
 <script>
   {% if JOBS_RELOAD_INTERVAL > 0 %}
   setTimeout("if(loading == false){window.location.reload(true);}else{console.log('loading: ' + loading);}", {{ JOBS_RELOAD_INTERVAL * 1000 }});
+  {% endif %}
+  {% if LONG_RUNNING_SCRAPER_STOP_INTERVAL > 0 %}
+  setTimeout("if(loading == false){stopLongRunningSpiders({{ running_jobs }}, {{ MAX_HOURS }});}else{console.log('loading: ' + loading);}", {{ LONG_RUNNING_SCRAPER_STOP_INTERVAL * 1000 }});
   {% endif %}
 
   // http://pietschsoft.com/post/2015/09/05/JavaScript-Basics-How-to-create-a-Dictionary-with-KeyValue-pairs
