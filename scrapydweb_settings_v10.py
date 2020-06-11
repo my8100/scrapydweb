@@ -98,6 +98,8 @@ PRIVATEKEY_FILEPATH = ""
 SCRAPY_PROJECTS_DIR = ""
 # Set the maximum number of hours that a scraper can run for.
 MAX_HOURS = 5
+# Set 0 to disable auto-stopping of long running scrapers
+LONG_RUNNING_SCRAPER_STOP_INTERVAL = 10
 
 ############################## Scrapyd ########################################
 # ScrapydWeb would try every extension in sequence to locate the Scrapy logfile.
@@ -357,4 +359,3 @@ DATA_PATH = os.environ.get("DATA_PATH", "")
 # 'sqlite:///C:/Users/username'
 # 'sqlite:////home/username'
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
-
