@@ -18,7 +18,6 @@ from ..baseview import BaseView
 from .execute_task import execute_task
 from .utils import slot
 
-
 apscheduler_logger = logging.getLogger('apscheduler')
 
 
@@ -176,10 +175,14 @@ class ScheduleView(BaseView):
         self.kwargs.setdefault('CUSTOM_USER_AGENT', self.SCHEDULE_CUSTOM_USER_AGENT)
         # custom|Chrome|iPhone|iPad|Android
         self.kwargs.setdefault('USER_AGENT', '' if self.SCHEDULE_USER_AGENT is None else self.SCHEDULE_USER_AGENT)
-        self.kwargs.setdefault('ROBOTSTXT_OBEY', '' if self.SCHEDULE_ROBOTSTXT_OBEY is None else self.SCHEDULE_ROBOTSTXT_OBEY)
-        self.kwargs.setdefault('COOKIES_ENABLED', '' if self.SCHEDULE_COOKIES_ENABLED is None else self.SCHEDULE_COOKIES_ENABLED)
-        self.kwargs.setdefault('CONCURRENT_REQUESTS', '' if self.SCHEDULE_CONCURRENT_REQUESTS is None else self.SCHEDULE_CONCURRENT_REQUESTS)
-        self.kwargs.setdefault('DOWNLOAD_DELAY', '' if self.SCHEDULE_DOWNLOAD_DELAY is None else self.SCHEDULE_DOWNLOAD_DELAY)
+        self.kwargs.setdefault('ROBOTSTXT_OBEY',
+                               '' if self.SCHEDULE_ROBOTSTXT_OBEY is None else self.SCHEDULE_ROBOTSTXT_OBEY)
+        self.kwargs.setdefault('COOKIES_ENABLED',
+                               '' if self.SCHEDULE_COOKIES_ENABLED is None else self.SCHEDULE_COOKIES_ENABLED)
+        self.kwargs.setdefault('CONCURRENT_REQUESTS',
+                               '' if self.SCHEDULE_CONCURRENT_REQUESTS is None else self.SCHEDULE_CONCURRENT_REQUESTS)
+        self.kwargs.setdefault('DOWNLOAD_DELAY',
+                               '' if self.SCHEDULE_DOWNLOAD_DELAY is None else self.SCHEDULE_DOWNLOAD_DELAY)
         # additional = "-d setting=CLOSESPIDER_TIMEOUT=60\r\n-d setting=CLOSESPIDER_PAGECOUNT=10\r\n-d arg1=val1"
         self.kwargs.setdefault('additional', self.SCHEDULE_ADDITIONAL)
 
@@ -399,6 +402,9 @@ class ScheduleRunView(BaseView):
     def db_insert_update_task(self):
         if self.to_update_task:
             self.task = Task.query.get(self.task_id)
+            if not self.task:
+                self.to_update_task = False
+                return self.db_insert_update_task()
             self.logger.debug("Selected %s", self.task)
             self.db_process_task()
             self.task.update_time = datetime.now()
