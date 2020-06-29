@@ -54,12 +54,12 @@ def _build_egg(scrapy_cfg_path):
     try:
         os.chdir(os.path.dirname(scrapy_cfg_path))
 
-        if os.path.exists('setup.py'):
-            copyfile('setup.py', 'setup_backup.py')
+        if not os.path.exists("setup.py"):
+            settings = get_config(scrapy_cfg_path).get('settings', 'default')  # demo.settings
+            _create_default_setup_py(settings=settings)
+
         # lib/configparser.py: def get(self, section, option, *, raw=False, vars=None, fallback=_UNSET):
         # projectname/scrapy.cfg: [settings] default = demo.settings
-        settings = get_config(scrapy_cfg_path).get('settings', 'default')  # demo.settings
-        _create_default_setup_py(settings=settings)
 
         d = tempfile.mkdtemp(prefix="scrapydweb-deploy-")
         o = open(os.path.join(d, "stdout"), "wb")
