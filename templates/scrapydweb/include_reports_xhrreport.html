@@ -1,0 +1,50 @@
+              vm.tableData[idx].pages = obj.pages;
+              // vm.tableData[idx].pages = 12345678;
+              vm.tableData[idx].items = obj.items;
+              if (vm.tableData[idx].pages == 0) {
+                vm.tableData[idx].pages_class = 'count_font count_danger';
+              }
+              if (vm.tableData[idx].items == 0) {
+                vm.tableData[idx].items_class = 'count_font count_danger';
+              }
+
+              var shutdown_reason = obj.shutdown_reason.replace(/Received /, ''); // 'Received SIGTERM twice'
+              var finish_reason = obj.finish_reason.replace(/closespider_/, 'close_'); // 'closespider_errorcount' 'finished'
+              // var finish_reason = 'Received SIGTERM twice'.replace(/Received /, '');
+              // var finish_reason = 'closespider_errorcount'.replace(/spider/, '');
+              if (finish_reason != 'N/A') {
+                vm.tableData[idx].reason = finish_reason;
+                if (finish_reason == 'finished') {
+                  vm.tableData[idx].reason_class = 'count_normal';
+                } else {
+                  vm.tableData[idx].reason_class = 'count_warning';
+                }
+              } else if (shutdown_reason != 'N/A') {
+                vm.tableData[idx].reason = shutdown_reason;
+                vm.tableData[idx].reason_class = 'count_warning';
+              } else {
+                vm.tableData[idx].reason = 'N/A';
+              }
+
+              vm.tableData[idx].log_critical_count = obj.log_categories.critical_logs.count;
+              vm.tableData[idx].log_error_count = obj.log_categories.error_logs.count;
+              vm.tableData[idx].log_warning_count = obj.log_categories.warning_logs.count;
+              vm.tableData[idx].log_redirect_count = obj.log_categories.redirect_logs.count;
+              vm.tableData[idx].log_retry_count = obj.log_categories.retry_logs.count;
+              vm.tableData[idx].log_ignore_count = obj.log_categories.ignore_logs.count;
+              // vm.tableData[idx].log_critical_count = 123456;
+
+              var log_types = ['critical', 'error', 'warning', 'redirect', 'retry', 'ignore'];
+              for (var i in log_types) {
+                var log_type_count = 'log_' + log_types[i] + '_count';
+                var log_type_class = 'log_' + log_types[i] + '_class';
+                if (vm.tableData[idx][log_type_count] != 0) {
+                  if (i < 3) {
+                    vm.tableData[idx][log_type_class] = 'count_font count_danger';
+                  } else {
+                    vm.tableData[idx][log_type_class] = 'count_font count_warning';
+                  }
+                }
+              }
+
+              vm.tableData[idx].latest_item = obj.latest_matches.latest_item || 'N/A';
