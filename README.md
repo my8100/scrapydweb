@@ -1,6 +1,6 @@
 :abc: English | [:mahjong: 简体中文](https://github.com/my8100/scrapydweb/blob/master/README_CN.md)
 
-# ScrapydWeb: Web app for Scrapyd cluster management, with support for Scrapy log analysis & visualization.
+# ScrapydWeb: Web app for Scrapyd cluster managements, with support for Scrapy log analysis & visualization.
 
 [![PyPI - scrapydweb Version](https://img.shields.io/pypi/v/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/scrapydweb.svg)](https://pypi.org/project/scrapydweb/)
