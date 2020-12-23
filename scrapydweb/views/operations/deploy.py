@@ -308,8 +308,10 @@ class DeployUploadView(BaseView):
 
         self.search_scrapy_cfg_path(project_path)
         if not self.scrapy_cfg_path:
-            self.scrapy_cfg_not_found = True
-            return
+            self.search_scrapy_cfg_path(self.SCRAPY_PROJECTS_DIR)
+            if not self.scrapy_cfg_path:
+                self.scrapy_cfg_not_found = True
+                return
 
         self.eggname = '%s_%s.egg' % (self.project, self.version)
         self.eggpath = os.path.join(self.DEPLOY_PATH, self.eggname)
