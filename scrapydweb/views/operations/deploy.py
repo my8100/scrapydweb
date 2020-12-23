@@ -76,6 +76,8 @@ class DeployView(BaseView):
         # Python 'ascii' codec can't decode byte
         try:
             self.scrapy_cfg_list = glob.glob(os.path.join(self.SCRAPY_PROJECTS_DIR, '*', u'scrapy.cfg'))
+            if os.path.exists(os.path.join(self.SCRAPY_PROJECTS_DIR, u'scrapy.cfg')):
+                self.scrapy_cfg_list.append(os.path.join(self.SCRAPY_PROJECTS_DIR, u'scrapy.cfg'))
         except UnicodeDecodeError:
             if PY2:
                 for name in os.listdir(os.path.join(self.SCRAPY_PROJECTS_DIR, u'')):
