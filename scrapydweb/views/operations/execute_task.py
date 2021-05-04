@@ -28,7 +28,7 @@ class TaskExecutor(object):
         self.auth = auth
         self.data = dict(
             task_id=task_id,
-            jobid='task_%s_%s' % (task_id, get_now_string(allow_space=False))
+            jobid='task_%s_%s' % (task_name, get_now_string(allow_space=False))
         )
         self.selected_nodes = selected_nodes
         self.task_result_id = None  # Be set in get_task_result_id()
