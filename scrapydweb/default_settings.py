@@ -366,3 +366,8 @@ DATA_PATH = os.environ.get('DATA_PATH', '')
 # 'sqlite:///C:/Users/username'
 # 'sqlite:////home/username'
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
+
+# The default is False, which means ScrapydWeb uses multiple databases internally to save its data.
+# When set to True, ScrapydWeb will use only one database defined by DATABASE_URL.
+# When using with PostgreSQL or MySQL with this mode, it is assumed the database is already created and ready to use.
+DATABASE_USE_SINGLE = os.environ.get('DATABASE_USE_SINGLE', False)

@@ -17,6 +17,11 @@ PATTERN_SQLITE = re.compile(r'sqlite:///(.+)$')
 SCRAPYDWEB_TESTMODE = os.environ.get('SCRAPYDWEB_TESTMODE', 'False').lower() == 'true'
 
 
+def clean_path(path):
+    path = re.sub(r'\\', '/', path)
+    return re.sub(r'/$', '', path)
+
+
 def test_database_url_pattern(database_url):
     m_mysql = PATTERN_MYSQL.match(database_url)
     m_postgres = PATTERN_POSTGRESQL.match(database_url)
@@ -24,11 +29,43 @@ def test_database_url_pattern(database_url):
     return m_mysql, m_postgres, m_sqlite
 
 
-def setup_database(database_url, database_path):
-    database_url = re.sub(r'\\', '/', database_url)
-    database_url = re.sub(r'/$', '', database_url)
-    database_path = re.sub(r'\\', '/', database_path)
-    database_path = re.sub(r'/$', '', database_path)
+def setup_database(database_url, database_path, database_use_single):
+    if database_use_single:
+        databases = setup_single_database(database_url, database_path)
+    else:
+        databases = setup_multi_database(database_url, database_path)
+
+    if SCRAPYDWEB_TESTMODE:
+        print("APSCHEDULER_DATABASE_URI: %s" % databases[0])
+        print("SQLALCHEMY_DATABASE_URI: %s" % databases[1])
+        print("SQLALCHEMY_BINDS: %s" % databases[2])
+        print("DATABASE_PATH: %s" % databases[3])
+
+    return databases
+
+
+def setup_single_database(database_url, database_path):
+    database_url = clean_path(database_url)
+    database_path = clean_path(database_path)
+    m_mysql, m_postgres, m_sqlite = test_database_url_pattern(database_url)
+
+    if m_mysql or m_postgres:
+        database_uri = database_url
+    else:
+        database_uri = 'sqlite:///' + '/'.join([database_path, 'scrapydweb.db'])
+
+    apscheduler_database_uri, sqlalchemy_database_uri, database_path = database_uri, database_uri, database_uri
+    sqlalchemy_binds = {
+        'metadata': database_uri,
+        'jobs': database_uri
+    }
+
+    return apscheduler_database_uri, sqlalchemy_database_uri, sqlalchemy_binds, database_path
+
+
+def setup_multi_database(database_url, database_path):
+    database_url = clean_path(database_url)
+    database_path = clean_path(database_path)
 
     m_mysql, m_postgres, m_sqlite = test_database_url_pattern(database_url)
     if m_mysql:
@@ -60,11 +97,6 @@ def setup_database(database_url, database_path):
             'jobs': 'sqlite:///' + '/'.join([database_path, 'jobs.db'])
         }
 
-    if SCRAPYDWEB_TESTMODE:
-        print("DATABASE_PATH: %s" % database_path)
-        print("APSCHEDULER_DATABASE_URI: %s" % APSCHEDULER_DATABASE_URI)
-        print("SQLALCHEMY_DATABASE_URI: %s" % SQLALCHEMY_DATABASE_URI)
-        print("SQLALCHEMY_BINDS: %s" % SQLALCHEMY_BINDS)
     return APSCHEDULER_DATABASE_URI, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_BINDS, database_path
 
 
