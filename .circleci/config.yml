@@ -260,6 +260,15 @@ jobs:
       DATA_PATH: '/home/circleci/repo/scrapydweb_data'
       DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
 
+  py39-sqlite:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.9
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATA_PATH: '/home/circleci/repo/scrapydweb_data'
+      DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
+      
 
 workflows:
   test:
@@ -286,5 +295,9 @@ workflows:
           use-mysql: true
           
       - py38-sqlite:
+          set-data-path: true
+          use-sqlite: true
+          
+      - py39-sqlite:
           set-data-path: true
           use-sqlite: true
