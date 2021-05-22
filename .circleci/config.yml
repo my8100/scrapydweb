@@ -232,7 +232,7 @@ jobs:
           POSTGRES_PASSWORD: passw0rd
     environment:
       SCRAPYDWEB_TESTMODE: True
-      DATABASE_URL: 'postgres://circleci:fakepassword@localhost:5432'
+      DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
   py37-git-mysql:
     <<: *test-template
     docker:
