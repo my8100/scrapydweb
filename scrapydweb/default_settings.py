@@ -362,7 +362,7 @@ DATA_PATH = os.environ.get('DATA_PATH', '')
 # To use PostgreSQL backend, run command: pip install --upgrade psycopg2
 # e.g.
 # 'mysql://username:password@127.0.0.1:3306'
-# 'postgres://username:password@127.0.0.1:5432'
+# 'postgresql://username:password@127.0.0.1:5432'
 # 'sqlite:///C:/Users/username'
 # 'sqlite:////home/username'
 DATABASE_URL = os.environ.get('DATABASE_URL', '')
