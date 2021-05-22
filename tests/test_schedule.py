@@ -139,7 +139,7 @@ def test_telnet_in_stats(app, client):
     desktop_ins = [">Log analysis</li>", ">Log categorization</li>", ">View log</li>", ">Progress visualization</li>"]
     mobile_ins = [">Analysis</li>", ">Categories</li>", ">Charts</li>", ">Logs</li>"]
     telnet_ins = [">Crawler.stats</li>", "<td>datetime.datetime(",
-                  ">Crawler.engine</li>", "<th>engine.has_capacity()</th>", "<td>telnet</td>"]
+                  ">Crawler.engine</li>", "<th>engine.scraper.is_idle()</th>", "<td>telnet</td>"]
     telnet_nos = ["CRITICAL: Unhandled Error", "telnet.OptionRefused"]
     req(app, client, view='schedule.run', kws=dict(node=NODE), data=run_data, ins="run results - ScrapydWeb")
 
