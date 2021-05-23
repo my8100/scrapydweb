@@ -264,8 +264,8 @@ jobs:
 workflows:
   test:
     jobs:
-      - py27:
-          is-py27: true
+      # - py27:
+      #    is-py27: true
 
       - py37
       - py37-git-postgresql:
