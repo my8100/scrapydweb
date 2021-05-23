@@ -11,7 +11,7 @@ DB_JOBS = 'scrapydweb_jobs'
 DBS = [DB_APSCHEDULER, DB_TIMERTASKS, DB_METADATA, DB_JOBS]
 
 PATTERN_MYSQL = re.compile(r'mysql://(.+?)(?::(.+?))?@(.+?):(\d+)')
-PATTERN_POSTGRESQL = re.compile(r'postgres://(.+?)(?::(.+?))?@(.+?):(\d+)')
+PATTERN_POSTGRESQL = re.compile(r'(?:postgres|postgresql)://(.+?)(?::(.+?))?@(.+?):(\d+)')
 PATTERN_SQLITE = re.compile(r'sqlite:///(.+)$')
 
 SCRAPYDWEB_TESTMODE = os.environ.get('SCRAPYDWEB_TESTMODE', 'False').lower() == 'true'

@@ -9,8 +9,8 @@ def test_send_text_page(app, client):
 
 
 def test_email_pass(app, client):
-    if not app.config.get('EMAIL_PASSWORD', ''):
-        print("EMAIL_PASSWORD empty")
+    if not (app.config.get('ENABLE_EMAIL_ALERT', True) and app.config.get('EMAIL_PASSWORD', '')):
+        print("ENABLE_EMAIL_ALERT False or EMAIL_PASSWORD empty, skip test.")
         return
 
     def check_pass(recipients=None, subject='Email from #scrapydweb', text=None):
