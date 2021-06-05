@@ -255,7 +255,7 @@ def handle_route(app):
         ('items/archive/<project>/<spider>', dict(archive = True)),
         ('items/<project>/<spider>', dict(archive = False)),
         ('items/<project>', dict(spider=None, archive = False)),
-        ('items', dict(project=None, spider=None))
+        ('items', dict(project=None, spider=None, archive = False))
     ])
 
     from .views.files.projects import ProjectsView
