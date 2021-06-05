@@ -16,10 +16,15 @@ class ItemsView(BaseView):
 
         self.project = self.view_args['project']
         self.spider = self.view_args['spider']
-
-        self.url = 'http://{}/items/{}{}'.format(self.SCRAPYD_SERVER,
-                                                 '%s/' % self.project if self.project else '',
-                                                 '%s/' % self.spider if self.spider else '')
+        self.archive = self.view_args['archive']
+        if self.archive:
+            self.url = 'http://{}/items/archive{}{}'.format(self.SCRAPYD_SERVER,
+                                                     '%s/' % self.project if self.project else '',
+                                                     '%s/' % self.spider if self.spider else '')
+        else:
+            self.url = 'http://{}/items/{}{}'.format(self.SCRAPYD_SERVER,
+                                                     '%s/' % self.project if self.project else '',
+                                                     '%s/' % self.spider if self.spider else '')
         if self.SCRAPYD_SERVER_PUBLIC_URL:
             self.public_url = re.sub(r'^http.*?/items/', self.SCRAPYD_SERVER_PUBLIC_URL + '/items/', self.url)
         else:
@@ -56,6 +61,7 @@ class ItemsView(BaseView):
                     filename_without_ext = row['filename'][:-len('.tar.gz')]
                 else:
                     filename_without_ext = os.path.splitext(row['filename'])[0]  # '1.1.jl' => ('1.1', '.jl')
+
                 row['url_stats'] = url_for('log', node=self.node, opt='stats', project=self.project,
                                            spider=self.spider, job=filename_without_ext)
                 row['url_utf8'] = url_for('log', node=self.node, opt='utf8', project=self.project,
