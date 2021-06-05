@@ -18,7 +18,7 @@ class ItemsView(BaseView):
         self.spider = self.view_args['spider']
         self.archive = self.view_args['archive']
         if self.archive:
-            self.url = 'http://{}/items/archive{}{}'.format(self.SCRAPYD_SERVER,
+            self.url = 'http://{}/items/archive/{}{}'.format(self.SCRAPYD_SERVER,
                                                      '%s/' % self.project if self.project else '',
                                                      '%s/' % self.spider if self.spider else '')
         else:
