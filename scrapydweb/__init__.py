@@ -253,6 +253,7 @@ def handle_route(app):
     from .views.files.items import ItemsView
     register_view(ItemsView, 'items', [
         ('items/<project>/<spider>', None),
+        ('items/archive/<project>/<spider>', None),
         ('items/<project>', dict(spider=None)),
         ('items', dict(project=None, spider=None))
     ])
