@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from . import maths as calc
+from . import maths as rsm
 
 
 def sqlite_to_df(
@@ -70,7 +70,7 @@ def select_spider(dataframe, spider_name):
     data = data.fillna(method="ffill").sort_values(by="finish_date")
 
     # automatically compute the floating means
-    data = calc.compute_floating_means(data, "items", 7)
-    data = calc.compute_floating_means(data, "pages", 7)
+    data = rsm.compute_floating_means(data, "items", 7)
+    data = rsm.compute_floating_means(data, "pages", 7)
 
     return data

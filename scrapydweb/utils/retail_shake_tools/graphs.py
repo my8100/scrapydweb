@@ -72,7 +72,7 @@ def scraping_graph(dataframe, days=250):
     return fig
 
 
-def mini_scrap_graph(dataframe, days=30):
+def mini_scrap_graph(dataframe, days=10):
     """
     This function is used to plot the evolution of scraped items and pages with theirs respectives floating means.
 
@@ -83,13 +83,17 @@ def mini_scrap_graph(dataframe, days=30):
     """
     # | import section |
     import plotly.graph_objects as go
+    import numpy as np
     from datetime import timedelta, datetime
 
     # | variable section |
     # data = dataframe.sort_values(by="finish_date")
     data = dataframe[
-        dataframe["finish_date"] > datetime.now().date() - timedelta(days=days)
+        # dataframe["finish_date"] > datetime.now().date() - timedelta(days=days)
+        dataframe["finish_date"]
+        > datetime(2021, 1, 31).date() - timedelta(days=days)  # DEBUG
     ]
+    data = data[data["finish_date"] < datetime(2021, 1, 31).date()]  # DEBUG
 
     # | graph section |
     fig = go.Figure()
@@ -100,6 +104,7 @@ def mini_scrap_graph(dataframe, days=30):
             y=data["items"],
             name="Nb d'items scrapés",
             line={"color": "firebrick"},
+            mode="lines",
         )
     )
     fig.add_trace(
@@ -108,9 +113,15 @@ def mini_scrap_graph(dataframe, days=30):
             y=data["pages"],
             name="Nb de pages scrapées",
             line={"color": "royalblue"},
+            mode="lines",
         )
     )
+    # update y axes
+    y_min = np.min(np.array(data["pages"]))
+    y_max = np.max(np.array(data["items"]))
+    fig.update_yaxes(range=[y_min, y_max])
 
+    # update fig layout to remove axis and background
     fig.update_layout(
         {
             "xaxis": {
@@ -126,6 +137,9 @@ def mini_scrap_graph(dataframe, days=30):
             "showlegend": False,
             "paper_bgcolor": "rgba(0,0,0,0)",
             "plot_bgcolor": "rgba(0,0,0,0)",
+            "width": 250,
+            "height": 200,
         }
     )
+
     return fig
