@@ -2,9 +2,9 @@
 import re
 
 from flask import render_template, url_for
-from ...utils.retail_shake_tools import dataframes as rsdf
-from ...utils.retail_shake_tools import maths as rscalc
-from ...utils.retail_shake_tools import graphs as rsgrph
+from ...utils.retail_shake_tools import dataframes as rsd
+from ...utils.retail_shake_tools import maths as rsm
+from ...utils.retail_shake_tools import graphs as rsg
 from ..baseview import BaseView
 
 
@@ -22,13 +22,19 @@ class MonitorView(BaseView):
 
     def dispatch_request(self, **kwargs):
 
-        df = rsdf.sqlite_to_df(where="spider = 'castorama_pagelist'")
-        df_tot = rscalc.global_data(df)
-        df_tot = rscalc.compute_floating_means(df_tot, "items")
-        df_tot = rscalc.compute_floating_means(df_tot, "pages")
-        fig = rsgrph.scraping_graph(df_tot)
-        # graph_json = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-        html_fig = fig.to_html()
+        df = rsd.sqlite_to_df(where="spider = 'castorama_pagelist'")  # Get data
+        df_tot = rsm.global_data(df)  # Compute global data
+        df_tot = rsm.compute_floating_means(
+            df_tot, "items"
+        )  # Compute floating mean for items
+        df_tot = rsm.compute_floating_means(
+            df_tot, "pages"
+        )  # Compute floating mean for pages
+        # fig = rsg.scraping_graph(df_tot)  # Plot data
+        # html_fig = fig.to_html()  # Convert plot figure to html
+
+        fig = rsg.mini_scrap_graph(df_tot)  # Plot minimalist graph
+        html_fig = fig.to_image("svg").decode("utf-8")
 
         kwargs = dict(
             node=self.node,
