@@ -359,6 +359,7 @@ class BaseView(View):
             g.url_daemonstatus = url_for('api', node=self.node, opt='daemonstatus')
             g.url_menu_servers = url_for('servers', node=self.node)
             g.url_menu_jobs = url_for('jobs', node=self.node)
+            g.url_menu_monitor = url_for('monitor', node=self.node)
             g.url_menu_nodereports = url_for('nodereports', node=self.node)
             g.url_menu_clusterreports = url_for('clusterreports', node=self.node)
             g.url_menu_tasks = url_for('tasks', node=self.node)
