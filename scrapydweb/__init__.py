@@ -336,7 +336,7 @@ def handle_template_context(app):
             static_js_multinode=url_for(STATIC, filename='%s/js/multinode.js' % VERSION),
             static_js_stacktable=url_for(STATIC, filename='%s/js/stacktable.js' % VERSION),
             static_js_stats=url_for(STATIC, filename='%s/js/stats.js' % VERSION),
-            static_js_vue_min=url_for(STATIC, filename='%s/js/vue.js' % VERSION),
+            static_js_vue_min=url_for(STATIC, filename='%s/js/vue.min.js' % VERSION),
 
             static_icon=url_for(STATIC, filename='%s/icon/fav.ico' % VERSION),
             static_icon_shortcut=url_for(STATIC, filename='%s/icon/fav.ico' % VERSION),
