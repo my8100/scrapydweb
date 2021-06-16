@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}jobs{% endblock %}
+{% block title %}monitor{% endblock %}
 
 {% block head %}
   <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
@@ -33,8 +33,8 @@
 {% if (SCRAPYD_SERVERS_AMOUNT == 1 and pageview == 1) or IS_IE_EDGE %}
 <script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
 {% endif %}
-    <h1>Monitoring view</h1>
-    <p>Cette page permet le suivit et le monitoring des spiders.</p>
+    <h1>Monitoring view for the spider '{{ spider }}'</h1>
+    <p>Cette page permet le suivit et le monitoring d'un spider en affichant son historique.</p>
     <br>
     {{ graphHTML | safe }}
 

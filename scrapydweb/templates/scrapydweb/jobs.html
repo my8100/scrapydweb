@@ -64,7 +64,8 @@
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.project}}</span></template>
     </el-table-column>
     <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150">
-      <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
+{#      <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>#}
+      <template slot-scope="scope"><a :class="scope.row.items_class" :style="{ color: scope.row.pending_color }" :href="scope.row.url_monitor" target="_blank">{{scope.row.spider}}</a></template>
     </el-table-column>
     <!-- 'task_123456_2019-01-01T00_00_01' -->
     <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215">
@@ -185,6 +186,7 @@ var Main = {
         url_utf8: '{{ job.url_utf8 }}',
         url_source: '{{ job.url_source }}',
         url_items: '{{ job.url_items }}',
+        url_monitor: '/{{ node }}/monitor/{{ job.spider }}', {# TODO: variabiliser le node #}
         items_display: {% if SHOW_SCRAPYD_ITEMS and job.url_items %}''{% else %}'none'{% endif %},
 
         action: {% if job.finish %}'Start'{% elif job.pid %}'Stop'{% else %}'Cancel'{% endif %},
