@@ -42,6 +42,7 @@
 
 <div id="app">
 <template>
+  <el-button @click="clearFilters">Reset filters</el-button>
   <el-table
     ref="multipleTable"
     :data="tableData"
@@ -63,7 +64,7 @@
     <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.project}}</span></template>
     </el-table-column>
-    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150">
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
     </el-table-column>
     <!-- 'task_123456_2019-01-01T00_00_01' -->
@@ -151,12 +152,18 @@ setTimeout("if(loading == false){window.location.reload(true);}else{console.log(
 // runtime: '16 days, 20:09:24'
 var Main = {
   data() {
+    spiders=[...new Set([
+      {% for job in jobs.items %}
+        '{{ job.spider }}',
+      {% endfor %}
+    ])].sort()
     return {
       size: {% if jobs.per_page > 10 %}'mini'{% else %}'—'{% endif %},
       maxHeight: window.innerHeight - 250,
       currentPage: {{ jobs.page }},
       sortOrders: ['descending','ascending',null],
       url_liststats: '{{ url_liststats }}',
+      spiderFilterOptions: spiders.map(spider => ({text:spider, value: spider})),
       tableData: [
     {% for job in jobs.items %}
       {
@@ -209,6 +216,13 @@ var Main = {
   },
 
   methods: {
+    clearFilters() {
+      this.$refs.multipleTable.clearFilter();
+    },
+    spiderFilter(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
     handleSelectRow(val) {
       this.currentRow = val;
     },
