@@ -12,14 +12,14 @@ def global_data(dataframe):
     import pandas as pd
 
     # | variable section |
-    sum_data = {"finish_date": [], "items": [], "pages": []}
+    sum_data = {"start_date": [], "items": [], "pages": []}
 
     # | code section |
     # loop for compute the sum of scraped pages and items
-    for date in dataframe.finish_date.unique():
-        data = dataframe[dataframe.finish_date == date]
+    for date in dataframe.start_date.unique():
+        data = dataframe[dataframe.start_date == date]
 
-        sum_data["finish_date"].append(date)
+        sum_data["start_date"].append(date)
         sum_data["items"].append(data["items"].sum())
         sum_data["pages"].append(data["pages"].sum())
 
@@ -49,7 +49,7 @@ def compute_floating_means(dataframe, column, n=3):
     for row in dataframe.iterrows():
         # define interval limits
         low_border = row[0]
-        current_index = int(low_border + n)
+        current_index = int(low_border + n)  # TODO (WARNING): index != date
         # get interval data
         interval_data = dataframe.iloc[low_border:current_index]
         # save data to dataframe new column

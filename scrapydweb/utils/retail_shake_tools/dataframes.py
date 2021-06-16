@@ -42,9 +42,9 @@ def sqlite_to_df(
     )
 
     # create date format and sort
-    df.finish = pd.to_datetime(df.finish)
-    df["finish_date"] = df.finish.dt.date
-    df = df.sort_values(by="finish_date")
+    df.start = pd.to_datetime(df.start)
+    df["start_date"] = df.start.dt.date
+    df = df.sort_values(by="start_date")
 
     df["items"] = df["items"].fillna(0)
     df["pages"] = df["pages"].fillna(0)
@@ -63,11 +63,11 @@ def select_spider(dataframe, spider_name):
     """
     # | code section |
     # get specific column of the dataframe for the specific spider name
-    data = dataframe[["spider", "finish_date", "items", "pages"]][
+    data = dataframe[["spider", "start_date", "items", "pages"]][
         dataframe["spider"] == spider_name
     ]
     # TODO : See witch *'fill method'* is the best for dates
-    data = data.fillna(method="ffill").sort_values(by="finish_date")
+    data = data.fillna(method="ffill").sort_values(by="start_date")
 
     # automatically compute the floating means
     data = rsm.compute_floating_means(data, "items", 7)

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-def scraping_graph(dataframe, days=250):
+def scraping_graph(dataframe, days=90):
     """
     This function is used to plot the evolution of scraped items and pages with theirs respectives floating means.
 
@@ -17,7 +17,7 @@ def scraping_graph(dataframe, days=250):
     # | variable section |
     # data = dataframe.sort_values(by="finish_date")
     data = dataframe[
-        dataframe["finish_date"] > datetime.now().date() - timedelta(days=days)
+        dataframe["start_date"] > datetime.now().date() - timedelta(days=days)
     ]
     graph_name = (
         f"Evolutions du nombre d'items et de pages scrapés par jour (sur {days} j)"
@@ -28,7 +28,7 @@ def scraping_graph(dataframe, days=250):
 
     fig.add_trace(
         go.Scatter(
-            x=data["finish_date"],
+            x=data["start_date"],
             y=data["items"],
             name="Nb d'items scrapés",
             line={"color": "firebrick", "width": 3},
@@ -37,7 +37,7 @@ def scraping_graph(dataframe, days=250):
 
     fig.add_trace(
         go.Scatter(
-            x=data["finish_date"],
+            x=data["start_date"],
             y=data["items_favg"],
             name="Nb moyen d'items scrapés (7j)",
             line={
@@ -49,7 +49,7 @@ def scraping_graph(dataframe, days=250):
 
     fig.add_trace(
         go.Scatter(
-            x=data["finish_date"],
+            x=data["start_date"],
             y=data["pages"],
             name="Nb de pages scrapées",
             line={"color": "royalblue", "width": 3},
@@ -58,7 +58,7 @@ def scraping_graph(dataframe, days=250):
 
     fig.add_trace(
         go.Scatter(
-            x=data["finish_date"],
+            x=data["start_date"],
             y=data["pages_favg"],
             name="Nb moyen de pages scrapées (7j)",
             line={"color": "royalblue", "dash": "dot"},
@@ -72,7 +72,7 @@ def scraping_graph(dataframe, days=250):
     return fig
 
 
-def mini_scrap_graph(dataframe, days=10):
+def mini_scrap_graph(dataframe, days=7):
     """
     This function is used to plot the evolution of scraped items and pages with theirs respectives floating means.
 
@@ -90,17 +90,17 @@ def mini_scrap_graph(dataframe, days=10):
     # data = dataframe.sort_values(by="finish_date")
     data = dataframe[
         # dataframe["finish_date"] > datetime.now().date() - timedelta(days=days)
-        dataframe["finish_date"]
+        dataframe["start_date"]
         > datetime(2021, 1, 31).date() - timedelta(days=days)  # DEBUG
     ]
-    data = data[data["finish_date"] < datetime(2021, 1, 31).date()]  # DEBUG
+    data = data[data["start_date"] < datetime(2021, 1, 31).date()]  # DEBUG
 
     # | graph section |
     fig = go.Figure()
 
     fig.add_trace(
         go.Scatter(
-            x=data["finish_date"],
+            x=data["start_date"],
             y=data["items"],
             name="Nb d'items scrapés",
             line={"color": "firebrick"},
@@ -109,7 +109,7 @@ def mini_scrap_graph(dataframe, days=10):
     )
     fig.add_trace(
         go.Scatter(
-            x=data["finish_date"],
+            x=data["start_date"],
             y=data["pages"],
             name="Nb de pages scrapées",
             line={"color": "royalblue"},
