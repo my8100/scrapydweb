@@ -53,6 +53,7 @@ window.onload = function(){
 
 <div id="app">
 <template>
+  <el-button @click="clearFilters">Reset filters</el-button>
   <el-table
     ref="multipleTable"
     :data="tableData"
@@ -113,9 +114,9 @@ window.onload = function(){
     </el-table-column>
 
     <el-table-column prop="id" label="Task #" fixed sortable align="center" width="75"></el-table-column>
-    <el-table-column prop="name" label="Name" fixed sortable show-overflow-tooltip align="center" width="100"></el-table-column>
+    <el-table-column prop="name" label="Name" fixed sortable show-overflow-tooltip align="center" width="100" column_key="name" :filters="countryFilterOptions" :filter-method="countryFilter"></el-table-column>
     <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
-    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter"></el-table-column>
     <!-- default-sort would cause background color of the buttons flash once -->
     <el-table-column prop="status" label="Status" fixed sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
       <template slot-scope="scope">
@@ -149,7 +150,7 @@ window.onload = function(){
     </el-table-column>
     <!-- with jitter: 2019-01-01 00:00:01.123456+08:00 -->
     <!-- Click the DISABLED button first -->
-    <el-table-column prop="next_run_time" label="Next run time" sortable align="center" width="240">
+    <el-table-column prop="next_run_time" label="Next run time" sortable align="center" width="240"  column_key="next" :filters="hourFilterOptions" :filter-method="hoursFilter">
       <template slot-scope="scope"><span :style="{ color: scope.row.next_run_time_color }">{{scope.row.next_run_time}}</span></template>
     </el-table-column>
     <el-table-column prop="task_results" label="Task results" sortable min-width="110" align="left" :sort-method="sortTaskResults" :sort-orders="sortOrders">
@@ -190,11 +191,26 @@ window.onload = function(){
 // note that settings_arguments comes from json.dumps() repr: \\\\t\\\\r\\\\n
 var Main = {
   data() {
+    spiders=[...new Set([
+      {% for task in tasks.items %}
+        '{{ task.spider }}',
+      {% endfor %}
+    ])].sort()
+    country_codes=[
+      {% for task in tasks.items %}
+        '{{ task.name }}',
+      {% endfor %}
+    ]
+    country_codes = [...new Set(country_codes.map(x => x.split('_')[0]))].sort()
+    hours=[...Array(24)].map((_, i) => i)
     return {
       size: {% if tasks.per_page > 10 %}'mini'{% else %}'—'{% endif %},  // — | medium | small | mini
       maxHeight: window.innerHeight - 200,
       currentPage: {{ tasks.page }},  // the current page number (1 indexed)
       sortOrders: ['descending','ascending',null],
+      spiderFilterOptions: spiders.map(spider => ({text:spider, value: spider})),
+      countryFilterOptions: country_codes.map(country_code => ({text:country_code, value: country_code})),
+      hourFilterOptions: hours.map(hour => ({text:String(hour).padStart(2, '0') + 'h', value: hour})),
       tableData: [
     {% for task in tasks.items %}
       {
@@ -263,6 +279,22 @@ var Main = {
   },
 
   methods: {
+    clearFilters() {
+      this.$refs.multipleTable.clearFilter();
+    },
+    spiderFilter(value, row, column) {
+      const property = column['property'];
+      return row[property] === value;
+    },
+    countryFilter(value, row, column) {
+      const property = column['property'];
+      return row[property].includes(value);
+    },
+    hoursFilter(value, row, column) {
+      const property = column['property'];
+      date = new Date(row[property])
+      return value === date.getHours();
+    },
     handleSelectRow(val) {
       this.currentRow = val;
     },

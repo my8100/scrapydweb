@@ -68,7 +68,7 @@
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
     </el-table-column>
     <!-- 'task_123456_2019-01-01T00_00_01' -->
-    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215">
+    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215" column_key="job" :filters="countryFilterOptions" :filter-method="countryFilter">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.job}}</span></template>
     </el-table-column>
     <el-table-column prop="pages" label="Pages" fixed sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="80">
@@ -157,6 +157,12 @@ var Main = {
         '{{ job.spider }}',
       {% endfor %}
     ])].sort()
+    country_codes=[
+      {% for job in jobs.items %}
+        '{{ job.job }}',
+      {% endfor %}
+    ]
+    country_codes = [...new Set(country_codes.map(x => x.split('_')[1]))].sort()
     return {
       size: {% if jobs.per_page > 10 %}'mini'{% else %}'—'{% endif %},
       maxHeight: window.innerHeight - 250,
@@ -164,6 +170,7 @@ var Main = {
       sortOrders: ['descending','ascending',null],
       url_liststats: '{{ url_liststats }}',
       spiderFilterOptions: spiders.map(spider => ({text:spider, value: spider})),
+      countryFilterOptions: country_codes.map(country_code => ({text:country_code, value: country_code})),
       tableData: [
     {% for job in jobs.items %}
       {
@@ -222,6 +229,10 @@ var Main = {
     spiderFilter(value, row, column) {
       const property = column['property'];
       return row[property] === value;
+    },
+    countryFilter(value, row, column) {
+      const property = column['property'];
+      return row[property].includes(value);
     },
     handleSelectRow(val) {
       this.currentRow = val;
