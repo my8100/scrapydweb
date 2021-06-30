@@ -186,7 +186,7 @@ var Main = {
         url_utf8: '{{ job.url_utf8 }}',
         url_source: '{{ job.url_source }}',
         url_items: '{{ job.url_items }}',
-        url_monitor: '/{{ node }}/monitor/{{ job.spider }}', {# TODO: variabiliser le node #}
+        url_monitor: '/{{ node }}/monitor2/{{ job.spider }}',
         items_display: {% if SHOW_SCRAPYD_ITEMS and job.url_items %}''{% else %}'none'{% endif %},
 
         action: {% if job.finish %}'Start'{% elif job.pid %}'Stop'{% else %}'Cancel'{% endif %},

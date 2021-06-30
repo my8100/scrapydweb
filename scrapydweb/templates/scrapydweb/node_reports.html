@@ -5,6 +5,7 @@
 {% block head %}
   <style>
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -56,7 +57,16 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="150" show-overflow-tooltip></el-table-column>
+    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="150" show-overflow-tooltip>
+        <template slot-scope="scope">
+            <a target="_blank" :href="scope.row.url_monitor">{{scope.row.spider}}</a>
+        </template>
+    </el-table-column>
+    <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="300" show-overflow-tooltip>
+        <template slot-scope="scope">
+            <img :src="scope.row.thumbnail" alt="">
+        </template>
+    </el-table-column>
     <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
     <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
 
@@ -86,7 +96,7 @@ var Main = {
       fetch_step: 20,
       scrollLeftRecord: 0,
       tableData: [
-  {% for jobs in [running_jobs, finished_jobs] %}
+ {% for jobs in [running_jobs, finished_jobs] %}
     {% for job in jobs %}
       {
         index0: -1,
@@ -105,6 +115,8 @@ var Main = {
         loaded: false,
 
         multinode_url: '',
+        url_monitor: '/{{ node }}/monitor/{{ job.spider }}',
+        thumbnail: '/static/images/thumbnails/{{ job.spider }}.png', // Get static image
 
 {% include 'scrapydweb/include_reports_tabledata.html' %}
 
@@ -119,13 +131,13 @@ var Main = {
     }
   },
 
-  created() {
-    this.fetchReports();
+  async created() {
+    await this.fetchReports();
   },
 
   mounted() {
     var _this = this;
-
+    console.log(this.tableData)
     for (var idx in _this.tableData) {
       _this.tableData[idx].index0 = parseInt(idx);
     }
@@ -184,20 +196,20 @@ var Main = {
       };
     },
 
-    fetchOneReport:function(idx) {
+    fetchOneReport:async function(idx) {
       var job = this.tableData[idx];
       var url = this.url_report.replace(/PROJECT_PLACEHOLDER/, job.project).replace(/SPIDER_PLACEHOLDER/, job.spider).replace(/JOB_PLACEHOLDER/, job.job);
-      this.xhrReport(idx, url);
+      await this.xhrReport(idx, url);
       job.loading = 'loading...';
       job.loading_class = 'normal';
     },
 
-    fetchReports:function() {
+    fetchReports:async function() {
       console.log(this.fetch_min, this.fetch_step);
       for (var idx in this.tableData.slice(this.fetch_min, this.fetch_min+this.fetch_step)) {
           idx = parseInt(idx) + this.fetch_min;
           if (!this.tableData[idx].loaded) {
-            this.fetchOneReport(idx);
+            await this.fetchOneReport(idx);
           }
       }
       this.fetch_min = this.fetch_min + this.fetch_step;
@@ -208,9 +220,10 @@ var Main = {
       this.fetchReports();
     },
 
-    xhrReport:function(idx, url) {
+    xhrReport:async function(idx, url) {
       var _this = this;
       _this.tableData[idx].loaded = true;
+      await this.loadThumbnail (this.tableData[idx])
       var req = new XMLHttpRequest();
       req.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -243,6 +256,13 @@ var Main = {
       };
       req.open('post', url, Async=true);
       req.send();
+    },
+
+    async loadThumbnail(row){
+      {#row.thumbnail = `/static/images/thumbnails/${row.spider}.png`#}
+       axios
+           .get(`/1/thumbnail/${row.spider}`)
+           .then(response=>console.log(response))
     },
 
     sortIndexFinish(a, b) {

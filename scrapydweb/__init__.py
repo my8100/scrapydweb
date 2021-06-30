@@ -15,6 +15,8 @@ from .common import handle_metadata
 from .models import Metadata, db
 from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
 
+from .utils.retail_shake_tools import dataframes as rsd
+
 # from .utils.scheduler import scheduler
 
 
@@ -91,6 +93,13 @@ def create_app(test_config=None):
     # return ('Nothing Found', 404)
     # http://flask.pocoo.org/docs/1.0/patterns/errorpages/
     app.register_error_handler(500, internal_server_error)
+
+    @app.context_processor
+    def utility_functions():
+        def print_in_console(message):
+            print(str(message))
+
+        return dict(mdebug=print_in_console)
 
     # https://ansible-docs.readthedocs.io/zh/stable-2.0/rst/playbooks_filters.html#other-useful-filters
     # https://stackoverflow.com/questions/12791216/how-do-i-use-regular-expressions-in-jinja2
@@ -264,6 +273,14 @@ def handle_route(app):
     from .views.dashboard.node_reports import NodeReportsView
 
     register_view(NodeReportsView, "nodereports", [("nodereports", None)])
+
+    from .views.files.thumbnail import ThumbnailView
+
+    register_view(
+        ThumbnailView,
+        "thumbnail",
+        [("thumbnail/<spider>", None), ("thumbnail", dict(spider=None))],
+    )
 
     from .views.dashboard.cluster_reports import ClusterReportsView
 

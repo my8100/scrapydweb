@@ -1,5 +1,8 @@
 # coding: utf-8
-
+import json
+import time
+import pandas as pd
+from os.path import dirname
 from flask import render_template, url_for
 from ...utils.retail_shake_tools import dataframes as rsd
 from ...utils.retail_shake_tools import maths as rsm
@@ -16,29 +19,64 @@ class MonitorView(BaseView):
         self.text = ""
         self.Job = None
 
+        self.log_url = None
+        self.image_path = (
+            dirname(dirname(dirname(__file__))) + "/static/images/thumbnails/"
+        )
         self.template = "scrapydweb/monitoring.html"
 
     def dispatch_request(self, **kwargs):
         spider_filter = f"spider = '{self.spider}'"
 
         df = rsd.sqlite_to_df(where=spider_filter)  # Get data
-        df_tot = rsm.global_data(df)  # Compute global data
-        df_tot = rsm.compute_floating_means(
-            df_tot, "items"
-        )  # Compute floating mean for items
-        df_tot = rsm.compute_floating_means(
-            df_tot, "pages"
-        )  # Compute floating mean for pages
-        fig = rsg.scraping_graph(dataframe=df_tot, days=90)  # Plot data
+        df = rsm.compute_floating_means(df, "items")  # Compute floating mean for items
+        df = rsm.compute_floating_means(df, "pages")  # Compute floating mean for pages
+        fig = rsg.scraping_graph(dataframe=df, days=30)  # Plot data
         html_fig = fig.to_html()  # Convert plot figure to html
 
-        # fig = rsg.mini_scrap_graph(df_tot)  # Plot minimalist graph
-        # html_fig = fig.to_image("svg").decode("utf-8")
+        # fig = rsg.mini_scrap_graph(df)  # Plot minimalist graph
+        # fig.write_image(self.image_path + self.spider + ".png")
+
+        last_job = df[df["start"] == df["start"].max()]
+        self.log_url = (
+            "http://localhost:5000/"
+            + str(self.node)
+            + str(last_job["href_log"].values[0])
+        )
+
+        # png_fig = fig.to_image("png")
+        github_link = self.github_issue_generator()
 
         kwargs = dict(
             node=self.node,
             url=self.url,
             graphHTML=html_fig,
             spider=self.spider,
+            github_link=github_link,
+            log_url=self.log_url,
         )
         return render_template(self.template, **kwargs)
+
+    def github_issue_generator(self):
+        from urllib import parse
+
+        github_repo_url = "https://github.com/Retail-Shake/scraping/issues/new"
+        title = f"[BUG] '{self.spider}' - "
+        body = parse.quote(
+            f"""
+### Describe the defect
+There is a problem on '{self.spider} with ...
+
+### Comments
+*your comments here ...*
+### Logs
+[log link here]({self.log_url})          
+### Picture    
+![image](/static/images/monitor/{self.spider}.png)       
+"""
+        )
+        label = "bug"
+        link = f"body={body}&title={title}&labels={label}"
+        link = github_repo_url + "?" + link
+
+        return link

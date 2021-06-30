@@ -31,7 +31,7 @@ def scraping_graph(dataframe, days=90):
             x=data["start_date"],
             y=data["items"],
             name="Nb d'items scrapés",
-            line={"color": "firebrick", "width": 3},
+            line={"color": "firebrick", "width": 4},
         )
     )
 
@@ -51,8 +51,10 @@ def scraping_graph(dataframe, days=90):
         go.Scatter(
             x=data["start_date"],
             y=data["pages"],
+            yaxis="y2",
             name="Nb de pages scrapées",
-            line={"color": "royalblue", "width": 3},
+            # line={"color": "royalblue", "width": 3},
+            line={"color": "#555555", "width": 3},
         )
     )
 
@@ -60,13 +62,33 @@ def scraping_graph(dataframe, days=90):
         go.Scatter(
             x=data["start_date"],
             y=data["pages_favg"],
+            yaxis="y2",
             name="Nb moyen de pages scrapées (7j)",
-            line={"color": "royalblue", "dash": "dot"},
+            # line={"color": "royalblue", "dash": "dot"},
+            line={"color": "#555555", "dash": "dot"},
         )
     )
 
     fig.update_layout(
-        title=graph_name, xaxis_title="Date", yaxis_title="Nb Items/Pages"
+        title=graph_name,
+        xaxis_title="Date",
+        # yaxis_title="Nb Items/Pages",
+        yaxis=dict(
+            title="Nb Items",
+            titlefont=dict(color="firebrick"),
+            tickfont=dict(color="firebrick"),
+        ),
+        yaxis2=dict(
+            title="Nb pages",
+            # titlefont=dict(color="royalblue"),
+            titlefont=dict(color="#555555"),
+            # tickfont=dict(color="royalblue"),
+            tickfont=dict(color="#555555"),
+            anchor="x",
+            overlaying="y",
+            side="right",
+        ),
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
 
     return fig
@@ -111,8 +133,9 @@ def mini_scrap_graph(dataframe, days=7):
         go.Scatter(
             x=data["start_date"],
             y=data["pages"],
+            yaxis="y2",
             name="Nb de pages scrapées",
-            line={"color": "royalblue"},
+            line={"color": "#555555"},
             mode="lines",
         )
     )
@@ -134,10 +157,15 @@ def mini_scrap_graph(dataframe, days=7):
                 "zeroline": False,
                 "visible": False,
             },
+            "yaxis2": {
+                "showgrid": False,
+                "zeroline": False,
+                "visible": False,
+            },
             "showlegend": False,
             "paper_bgcolor": "rgba(0,0,0,0)",
             "plot_bgcolor": "rgba(0,0,0,0)",
-            "width": 250,
+            "width": 300,
             "height": 200,
         }
     )
