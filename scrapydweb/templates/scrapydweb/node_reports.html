@@ -6,6 +6,8 @@
   <style>
   </style>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
+  <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -64,7 +66,7 @@
     </el-table-column>
     <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="300" show-overflow-tooltip>
         <template slot-scope="scope">
-            <img :src="scope.row.thumbnail" alt="">
+            <line-chart :chartdata="loadThumbnail(scope.row)"></line-chart>
         </template>
     </el-table-column>
     <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
@@ -131,8 +133,8 @@ var Main = {
     }
   },
 
-  async created() {
-    await this.fetchReports();
+  created() {
+    this.fetchReports();
   },
 
   mounted() {
@@ -196,20 +198,20 @@ var Main = {
       };
     },
 
-    fetchOneReport:async function(idx) {
+    fetchOneReport:function(idx) {
       var job = this.tableData[idx];
       var url = this.url_report.replace(/PROJECT_PLACEHOLDER/, job.project).replace(/SPIDER_PLACEHOLDER/, job.spider).replace(/JOB_PLACEHOLDER/, job.job);
-      await this.xhrReport(idx, url);
+      this.xhrReport(idx, url);
       job.loading = 'loading...';
       job.loading_class = 'normal';
     },
 
-    fetchReports:async function() {
+    fetchReports:function() {
       console.log(this.fetch_min, this.fetch_step);
       for (var idx in this.tableData.slice(this.fetch_min, this.fetch_min+this.fetch_step)) {
           idx = parseInt(idx) + this.fetch_min;
           if (!this.tableData[idx].loaded) {
-            await this.fetchOneReport(idx);
+            this.fetchOneReport(idx);
           }
       }
       this.fetch_min = this.fetch_min + this.fetch_step;
@@ -220,10 +222,10 @@ var Main = {
       this.fetchReports();
     },
 
-    xhrReport:async function(idx, url) {
+    xhrReport:function(idx, url) {
       var _this = this;
       _this.tableData[idx].loaded = true;
-      await this.loadThumbnail (this.tableData[idx])
+      this.loadThumbnail (this.tableData[idx])
       var req = new XMLHttpRequest();
       req.onreadystatechange = function() {
         if (this.readyState == 4) {
@@ -258,11 +260,28 @@ var Main = {
       req.send();
     },
 
-    async loadThumbnail(row){
+    loadThumbnail(row){
       {#row.thumbnail = `/static/images/thumbnails/${row.spider}.png`#}
        axios
            .get(`/1/thumbnail/${row.spider}`)
-           .then(response=>console.log(response))
+           .then(response=>{
+               let abscissa = []
+               let ordinate = []
+               response.data.forEach((line)=>{
+                   abscissa.push(line.start_date)
+                   ordinate.push(line.items)
+               })
+               chartData = {
+                   labels: abscissa,
+                   datasets: [
+                       {
+                           data: ordinate
+                       }
+                   ]
+               }
+               console.log(this)
+               this.renderChart(this.chartData)
+           })
     },
 
     sortIndexFinish(a, b) {
@@ -281,6 +300,11 @@ var Main = {
 
   }
 }
+
+Vue.component('line-chart', {
+  extends: VueChartJs.Line,
+})
+
 var Ctor = Vue.extend(Main);
 vm = new Ctor().$mount('#app');
 </script>
