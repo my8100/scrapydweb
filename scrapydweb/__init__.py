@@ -15,7 +15,7 @@ from .common import handle_metadata
 from .models import Metadata, db
 from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
 
-from .utils.retail_shake_tools import dataframes as rsd
+from .utils.monitoring_tools import dataframes as rsd
 
 # from .utils.scheduler import scheduler
 

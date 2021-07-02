@@ -1,12 +1,9 @@
 # coding: utf-8
-import json
-import time
-import pandas as pd
 from os.path import dirname
 from flask import render_template, url_for
-from ...utils.retail_shake_tools import dataframes as rsd
-from ...utils.retail_shake_tools import maths as rsm
-from ...utils.retail_shake_tools import graphs as rsg
+from ...utils.monitoring_tools import dataframes as mtd
+from ...utils.monitoring_tools import maths as mtm
+from ...utils.monitoring_tools import graphs as mtg
 from ..baseview import BaseView
 
 
@@ -28,22 +25,28 @@ class MonitorView(BaseView):
     def dispatch_request(self, **kwargs):
         spider_filter = f"spider = '{self.spider}'"
 
-        df = rsd.sqlite_to_df(where=spider_filter)  # Get data
-        df = rsm.compute_floating_means(df, "items")  # Compute floating mean for items
-        df = rsm.compute_floating_means(df, "pages")  # Compute floating mean for pages
-        fig = rsg.scraping_graph(dataframe=df, days=30)  # Plot data
+        df = mtd.sqlite_to_df(where=spider_filter)  # Get data
+        df = mtm.compute_floating_means(df, "items")  # Compute floating mean for items
+        df = mtm.compute_floating_means(df, "pages")  # Compute floating mean for pages
+        fig = mtg.scraping_graph(dataframe=df, days=30)  # Plot data
         html_fig = fig.to_html()  # Convert plot figure to html
 
-        # fig = rsg.mini_scrap_graph(df)  # Plot minimalist graph
+        # fig = mtg.mini_scrap_graph(df)  # Plot minimalist graph
         # fig.write_image(self.image_path + self.spider + ".png")
 
         last_job = df[df["start"] == df["start"].max()]
         self.log_url = (
-            "http://localhost:5000/"
+            "http://127.0.0.1:5000/"
             + str(self.node)
-            + str(last_job["href_log"].values[0])
+            + "/log/utf8/"
+            + str(last_job.project.values[0])
+            + "/"
+            + str(last_job.spider.values[0])
+            + "/"
+            + str(last_job.job.values[0])
+            + "/?job_finished=True"
         )
-
+        print("\n\n##########\n", self.log_url, "\n##########\n\n")
         # png_fig = fig.to_image("png")
         github_link = self.github_issue_generator()
 

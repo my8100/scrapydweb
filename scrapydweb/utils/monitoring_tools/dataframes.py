@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
-from . import maths as rsm
+from . import maths as mtm
 
 
+# TODO @h4r1c0t: multinode request
+# TODO @h4r1c0t: what about mysql db server?
 def sqlite_to_df(
     path=None,
-    table="127_0_0_1_6800",
+    table="127_0_0_1_6800",  # 'all' argument to JOIN request to all the scrapyd server
     select="*",
     where="project = 'retail_shake'",
 ):
@@ -28,7 +30,7 @@ def sqlite_to_df(
         from scrapydweb_settings_v10 import DATABASE_URL
 
         path = DATABASE_URL + "/jobs.db"
-        path = path.replace("sqlite:///", "")
+        path = path.replace("sqlite:///", "")  # !!! > mysql / postgre option
     con = sqlite3.connect(path)
 
     # import data
@@ -70,7 +72,7 @@ def select_spider(dataframe, spider_name):
     data = data.fillna(method="ffill").sort_values(by="start_date")
 
     # automatically compute the floating means
-    data = rsm.compute_floating_means(data, "items", 7)
-    data = rsm.compute_floating_means(data, "pages", 7)
+    data = mtm.compute_floating_means(data, "items", 7)
+    data = mtm.compute_floating_means(data, "pages", 7)
 
     return data

@@ -64,9 +64,11 @@
             <a target="_blank" :href="scope.row.url_monitor">{{scope.row.spider}}</a>
         </template>
     </el-table-column>
-    <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="300" show-overflow-tooltip>
+    <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="90" show-overflow-tooltip>
         <template slot-scope="scope">
-            <line-chart :chartdata="loadThumbnail(scope.row)"></line-chart>
+            <div>
+                <line-chart :spider="scope.row.spider"></line-chart>
+            </div>
         </template>
     </el-table-column>
     <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
@@ -86,7 +88,6 @@
 
 
 <script>
-
 
 var Main = {
   data() {
@@ -261,7 +262,7 @@ var Main = {
     },
 
     loadThumbnail(row){
-      {#row.thumbnail = `/static/images/thumbnails/${row.spider}.png`#}
+      row.thumbnail = `/static/images/thumbnails/${row.spider}.png`
        axios
            .get(`/1/thumbnail/${row.spider}`)
            .then(response=>{
@@ -271,16 +272,6 @@ var Main = {
                    abscissa.push(line.start_date)
                    ordinate.push(line.items)
                })
-               chartData = {
-                   labels: abscissa,
-                   datasets: [
-                       {
-                           data: ordinate
-                       }
-                   ]
-               }
-               console.log(this)
-               this.renderChart(this.chartData)
            })
     },
 
@@ -303,6 +294,46 @@ var Main = {
 
 Vue.component('line-chart', {
   extends: VueChartJs.Line,
+  props: ['spider'],
+  mounted () {
+        axios.get(`/1/thumbnail/${this.spider}`).then(response => {
+            let abscissa = []
+            let ordinate = []
+            response.data.forEach((line)=>{
+                {#abscissa.push(line.start_date)#}
+                abscissa.push(' ')
+                ordinate.push(line.items)
+            })
+            this.chartData = {
+                labels: abscissa,
+                datasets: [
+                    {
+                        data: ordinate,
+                        label: 'items',
+                        borderColor: '#454545',
+                        borderWidth: 1,
+                        lineTension: 0,
+                        pointBorderWidth: 0,
+                        pointRadius: 0,
+                        fill: false,
+                    }
+                ]
+            }
+            this.options = {
+                legend: {display: false},
+                scales: {
+                    xAxes: [{
+						display: false
+					}],
+                    yAxes: [{
+						display: false
+					}]
+                }
+            }
+            console.log('options:', this.options)
+            this.renderChart(this.chartData, this.options)
+        })
+  }
 })
 
 var Ctor = Vue.extend(Main);
