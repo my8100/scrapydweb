@@ -20,7 +20,7 @@ body {
     flex-direction: column;
     background: rgba(0,0,0,0.05);
     font-size: 16px;
-    font-family: Cambria, Georgia, Times, "Times New Roman", serif;
+    font-family: Quicksand, Cambria, Georgia, Times, "Times New Roman", serif;
     color: #555;
 }
 
@@ -123,8 +123,8 @@ nav>.title {
     font-size: 20px;
     width: 160px;
     min-width: 160px;
-    color: #fff;
-    background: #feb324;
+    color: #3f3f3f;
+    background: #ffffff;
     text-align: center;
     position: relative;
 
@@ -209,7 +209,7 @@ main {
 main>aside {
     box-sizing: border-box;
     min-width: 160px;
-    background-color: #343131;
+    background-color: #FFFFFF;
     /* padding: 50px 0; */
     padding-top: 24px;
     display: flex;
@@ -225,7 +225,7 @@ main>aside:hover {
 }
 
 main>aside h3 {
-    color: #fcfcfc;
+    color: #3f3f3f;
     line-height: 32px;
     cursor: default;
     font-size: 16px;
@@ -240,7 +240,7 @@ main>aside a {
     line-height: 24px;
     padding-left: 20px;
     font-size: 14px;
-    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+    font-family: Quicksand, -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 }
 
 main>aside ul {
@@ -311,7 +311,7 @@ main>.content-wrap {
     margin-right: -15px;
     padding: 16px 24px;
     /* font-family: Consolas, 'Lucida Console', 'DejaVu Sans Mono', monospace; */
-    font-family: "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: Quicksand, "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 400;
 }
 
@@ -494,6 +494,7 @@ table>tbody tr:last-child {
 }
 
 .button {
+    font-family: Quicksand, Arial, sans-serif;
     font-size: 20px;
     font-weight: 400;
     margin-right: 8px;
@@ -731,25 +732,25 @@ table>tbody tr:last-child {
 main>aside::-webkit-scrollbar,
 .folders-content::-webkit-scrollbar,
 #checkboxes::-webkit-scrollbar {
-    width: 6px;
+    width: 10px;
 }
 
 /* Track */
 main>aside::-webkit-scrollbar-track,
 .folders-content::-webkit-scrollbar-track,
 #checkboxes::-webkit-scrollbar-track {
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 /* Handle */
 main>aside::-webkit-scrollbar-thumb {
     background: #bdbdbd;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 .folders-content::-webkit-scrollbar-thumb,
 #checkboxes::-webkit-scrollbar-thumb {
     background: #9093994d;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 /* Handle on hover */
@@ -920,7 +921,7 @@ span.slider.round:before {
 
 /* reports START */
 .count_font {
-    font-size: 16px;
+    font-size: 20px;
     font-weight: bold;
 }
 .count_normal {

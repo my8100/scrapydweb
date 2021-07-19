@@ -111,11 +111,11 @@ def mini_scrap_graph(dataframe, days=7):
     # | variable section |
     # data = dataframe.sort_values(by="finish_date")
     data = dataframe[
-        # dataframe["finish_date"] > datetime.now().date() - timedelta(days=days)
-        dataframe["start_date"]
-        > datetime(2021, 1, 31).date() - timedelta(days=days)  # DEBUG
+        dataframe["start_date"] > datetime.now().date() - timedelta(days=days)
+        # dataframe["start_date"]
+        # > datetime(2021, 1, 31).date() - timedelta(days=days)  # DEBUG
     ]
-    data = data[data["start_date"] < datetime(2021, 1, 31).date()]  # DEBUG
+    # data = data[data["start_date"] < datetime(2021, 1, 31).date()]  # DEBUG
 
     # | graph section |
     fig = go.Figure()

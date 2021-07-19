@@ -6,6 +6,7 @@ from . import maths as mtm
 # TODO @h4r1c0t: what about mysql db server?
 def sqlite_to_df(
     path=None,
+    database="jobs.db",
     table="127_0_0_1_6800",  # 'all' argument to JOIN request to all the scrapyd server
     select="*",
     where="project = 'retail_shake'",
@@ -15,6 +16,7 @@ def sqlite_to_df(
     By default get spyder data from 127.0.0.1:6800 table of the jobs.db
 
     :param path:    (str) path to the *.db file (default: local pathway to jobs.db)
+    :param database: (str) the database to select
     :param table:   (str) table name (default: 127.0.0.1:6800, the default server)
     :param select:  (str) column to select (default: * all the columns)
     :param where:   (str) where condition for the select  (default: spider from 'retail_shake' project)
@@ -29,8 +31,8 @@ def sqlite_to_df(
     if not path:
         from scrapydweb_settings_v10 import DATABASE_URL
 
-        path = DATABASE_URL + "/jobs.db"
-        path = path.replace("sqlite:///", "")  # !!! > mysql / postgre option
+        path = DATABASE_URL + "/" + database
+        path = path.replace("sqlite:///", "")  # !!! > mysql / postgre options
     con = sqlite3.connect(path)
 
     # import data

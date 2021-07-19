@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime, timedelta
 from ...utils.monitoring_tools import dataframes as rsd
 from ..baseview import BaseView
 
@@ -10,5 +11,7 @@ class ThumbnailView(BaseView):
         self.spider = self.view_args["spider"]
 
     def dispatch_request(self, **kwargs):
-        df = rsd.sqlite_to_df(where=f"spider = '{self.spider}' and start - current_date <= 14")
+        df = rsd.sqlite_to_df(
+            where=f"spider = '{self.spider}' AND julianday('now') - julianday(start) <= 14"
+        )
         return df.to_json(orient="records")
