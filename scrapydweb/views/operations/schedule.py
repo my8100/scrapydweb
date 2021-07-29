@@ -13,6 +13,7 @@ import traceback
 from flask import Blueprint, redirect, render_template, request, send_file, url_for
 
 from ...models import Task, db
+from ...servers import names_to_nodes
 from ...vars import RUN_SPIDER_HISTORY_LOG, UA_DICT
 from ..baseview import BaseView
 from .execute_task import execute_task
@@ -96,7 +97,7 @@ class ScheduleView(BaseView):
         self.version = task.version
         self.spider = task.spider
 
-        self.selected_nodes = json.loads(task.selected_nodes)
+        self.selected_nodes = names_to_nodes(self.SCRAPYD_SERVER_OBJECTS, json.loads(task.selected_node_names))
         self.first_selected_node = self.selected_nodes[0]
 
         # 'settings_arguments': {'arg1': '233', 'setting': ['CLOSESPIDER_PAGECOUNT=10',]}
@@ -421,7 +422,8 @@ class ScheduleRunView(BaseView):
         self.task.spider = data.pop('spider')
         self.task.jobid = data.pop('jobid')
         self.task.settings_arguments = self.json_dumps(data, sort_keys=True, indent=None)
-        self.task.selected_nodes = str(self.selected_nodes)
+        selected_servers = [self.SCRAPYD_SERVER_OBJECTS[i-1] for i in self.selected_nodes]
+        self.task.selected_node_names = json.dumps([server.name for server in selected_servers])
 
         self.task.name = self.task_data['name']
         self.task.trigger = self.task_data['trigger']

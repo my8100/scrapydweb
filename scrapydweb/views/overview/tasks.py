@@ -138,7 +138,7 @@ class TasksView(BaseView):
                         task_job_result = TaskJobResult.query.filter_by(task_result_id=latest_task_result.id).order_by(
                             TaskJobResult.id.desc()).first()
                         task.prev_run_result = task_job_result.result[-19:]  # task_N_2019-01-01T00_00_01
-                        task.url_prev_run_result = url_for('log', node=task_job_result.node, opt='stats',
+                        task.url_prev_run_result = url_for('log', node=task_job_result.node_name, opt='stats',
                                                            project=task.project, spider=task.spider,
                                                            job=task_job_result.result)
                     else:
@@ -203,13 +203,13 @@ class TasksView(BaseView):
                         TaskJobResult.id.desc()).first()
                     task_result.task_job_result_id = task_job_result.id
                     task_result.run_time = self.remove_microsecond(task_job_result.run_time)
-                    task_result.node = task_job_result.node
+                    task_result.node_name = task_job_result.node_name
                     task_result.server = task_job_result.server
                     task_result.status_code = task_job_result.status_code
                     task_result.status = task_job_result.status
                     task_result.result = task_job_result.result
                     if task_job_result.status == self.OK:
-                        task_result.url_stats = url_for('log', node=task_job_result.node, opt='stats',
+                        task_result.url_stats = url_for('log', node=task_job_result.node_name, opt='stats',
                                                         project=self.task.project, spider=self.task.spider,
                                                         job=task_job_result.result)
                     else:
@@ -232,14 +232,14 @@ class TasksView(BaseView):
     def query_task_job_results(self):
         # https://docs.sqlalchemy.org/en/latest/core/sqlelement.html#sqlalchemy.sql.expression.asc
         task_job_results = TaskJobResult.query.filter_by(task_result_id=self.task_result_id).order_by(
-            TaskJobResult.node.asc()).paginate(page=self.page, per_page=self.per_page, error_out=False)
+            TaskJobResult.node_name.asc()).paginate(page=self.page, per_page=self.per_page, error_out=False)
         with db.session.no_autoflush:
             for index, task_job_result in enumerate(task_job_results.items,
                                                     (task_job_results.page - 1) * task_job_results.per_page + 1):
                 task_job_result.index = index
                 task_job_result.run_time = self.remove_microsecond(task_job_result.run_time)
                 if task_job_result.status == self.OK:
-                    task_job_result.url_stats = url_for('log', node=task_job_result.node, opt='stats',
+                    task_job_result.url_stats = url_for('log', node=task_job_result.node_name, opt='stats',
                                                         project=self.task.project, spider=self.task.spider,
                                                         job=task_job_result.result)
                     task_job_result.url_clusterreports = url_for('clusterreports', node=self.node,

@@ -8,13 +8,15 @@ DOCS: https://github.com/my8100/files/blob/master/scrapydweb/README.md
 文档：https://github.com/my8100/files/blob/master/scrapydweb/README_CN.md
 """
 import os
-
+from collections import namedtuple
 
 ############################## QUICK SETUP start ##############################
 ############################## 快速设置 开始 ###################################
 # Setting SCRAPYDWEB_BIND to '0.0.0.0' or IP-OF-THE-CURRENT-HOST would make
 # ScrapydWeb server visible externally; Otherwise, set it to '127.0.0.1'.
 # The default is '0.0.0.0'.
+from scrapydweb.servers import ServerConfig, ScrapydServer
+
 SCRAPYDWEB_BIND = '0.0.0.0'
 # Accept connections on the specified port, the default is 5000.
 SCRAPYDWEB_PORT = 5000
@@ -45,10 +47,11 @@ PASSWORD = ''
 #   - or if ScrapydWeb fails to parse the string format passed in,
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
+
+
 SCRAPYD_SERVERS = [
-    '127.0.0.1:6800',
     # 'username:password@localhost:6801#group',
-    ('username', 'password', 'localhost', '6801', 'group'),
+    ScrapydServer("scrapyd-local", "127.0.0.1", 6800, group="Local"),
 ]
 
 
@@ -346,7 +349,7 @@ LOG_IGNORE_TRIGGER_FORCESTOP = False
 # The default is False, set it to True to enable debug mode and the interactive debugger
 # would be shown in the browser instead of the "500 Internal Server Error" page.
 # Note that use_reloader is set to False in run.py
-DEBUG = False
+DEBUG = True
 
 # The default is False, set it to True to change the logging level from INFO to DEBUG
 # for getting more information about how ScrapydWeb works, especially while debugging.

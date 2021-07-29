@@ -71,6 +71,7 @@ def main():
         SCRAPYD_SERVERS_PUBLIC_URLS = app.config.get('SCRAPYD_SERVERS_PUBLIC_URLS', None)
         return dict(
             SCRAPYD_SERVERS=SCRAPYD_SERVERS,
+            SCRAPYD_SERVER_OBJECTS=app.config.get('SCRAPYD_SERVER_OBJECTS', []),
             SCRAPYD_SERVERS_AMOUNT=len(SCRAPYD_SERVERS),
             SCRAPYD_SERVERS_GROUPS=app.config.get('SCRAPYD_SERVERS_GROUPS', []) or [''],
             SCRAPYD_SERVERS_AUTHS=app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None],

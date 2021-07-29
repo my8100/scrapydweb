@@ -18,6 +18,9 @@ from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
 
 
 # https://stackoverflow.com/questions/18820274/how-to-suppress-sqlalchemy-engine-base-engine-logging-to-stdout
+from .views import redirect_name_to_node
+from .views.redirect_name_to_node import RedirectNameToNodeView
+
 logging.getLogger('sqlalchemy.engine.Engine').propagate = False
 logging.getLogger('sqlalchemy.engine.Engine').setLevel(logging.WARNING)
 # http://flask.pocoo.org/docs/1.0/logging/#basic-configuration
@@ -141,6 +144,7 @@ def handle_db(app):
         handle_metadata('pageview', 1)
     # print(Metadata.query.filter_by(version=__version__).first())
 
+redirect_name_node_view = RedirectNameToNodeView.as_view('redirect_name_node')
 
 def handle_route(app):
     def register_view(view, endpoint, url_defaults_list, with_node=True, trailing_slash=True):
@@ -155,6 +159,8 @@ def handle_route(app):
                 else:
                     defaults = dict(node=1)
             app.add_url_rule(rule, defaults=defaults, view_func=view_func)
+            if with_node:
+                app.add_url_rule(rule.replace("int:node", "node_name"), defaults=defaults, view_func=redirect_name_node_view)
 
     from .views.index import IndexView
     index_view = IndexView.as_view('index')

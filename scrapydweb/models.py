@@ -100,7 +100,8 @@ class Task(db.Model):
     spider = db.Column(db.String(255), unique=False, nullable=False)
     jobid = db.Column(db.String(255), unique=False, nullable=False)
     settings_arguments = db.Column(db.Text(), unique=False, nullable=False)
-    selected_nodes = db.Column(db.Text(), unique=False, nullable=False)
+
+    selected_node_names = db.Column(db.Text(), unique=False, nullable=False)
 
     year = db.Column(db.String(255), unique=False, nullable=False)
     month = db.Column(db.String(255), unique=False, nullable=False)
@@ -150,7 +151,7 @@ class TaskJobResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_result_id = db.Column(db.Integer, db.ForeignKey('task_result.id'), nullable=False, index=True)
     run_time = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.now)
-    node = db.Column(db.Integer, unique=False, nullable=False, index=True)
+    node_name = db.Column(db.Integer, unique=False, nullable=False, index=True)
     server = db.Column(db.String(255), unique=False, nullable=False)  # '127.0.0.1:6800'
     status_code = db.Column(db.Integer, unique=False, nullable=False)  # -1, 200
     status = db.Column(db.String(9), unique=False, nullable=False)  # ok|error|exception
@@ -168,7 +169,7 @@ class TaskJobResult(db.Model):
             spider=self.task_result.task.spider,
             jobid=self.task_result.task.jobid,
             run_time=str(self.run_time),  # TypeError: Object of type datetime is not JSON serializable
-            node=self.node,
+            node_name=self.node_name,
             server=self.server,
             status_code=self.status_code,
             status=self.status,
