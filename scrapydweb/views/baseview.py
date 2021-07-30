@@ -181,7 +181,13 @@ class BaseView(View):
 
         # Other attributes not from config
         self.view_args = request.view_args
-        self.node = self.view_args['node']
+
+        try:
+            self.node = int(self.view_args["node"])
+        except ValueError:
+            node_id = find_by_name(self.SCRAPYD_SERVER_OBJECTS, self.view_args["node"])
+            self.node = node_id
+
         assert 0 < self.node <= self.SCRAPYD_SERVERS_AMOUNT, \
             'node index error: %s, which should be between 1 and %s' % (self.node, self.SCRAPYD_SERVERS_AMOUNT)
         self.SCRAPYD_SERVER = self.SCRAPYD_SERVERS[self.node - 1]
