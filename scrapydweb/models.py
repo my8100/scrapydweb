@@ -151,7 +151,7 @@ class TaskJobResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_result_id = db.Column(db.Integer, db.ForeignKey('task_result.id'), nullable=False, index=True)
     run_time = db.Column(db.DateTime, unique=False, nullable=False, default=datetime.now)
-    node_name = db.Column(db.Integer, unique=False, nullable=False, index=True)
+    node_name = db.Column(db.String(255), unique=False, nullable=False, index=True)
     server = db.Column(db.String(255), unique=False, nullable=False)  # '127.0.0.1:6800'
     status_code = db.Column(db.Integer, unique=False, nullable=False)  # -1, 200
     status = db.Column(db.String(9), unique=False, nullable=False)  # ok|error|exception
