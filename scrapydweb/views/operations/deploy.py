@@ -309,6 +309,8 @@ class DeployUploadView(BaseView):
             self.scrapy_cfg_not_found = True
             return
 
+        self.pre_package_hook(project_path)
+
         self.eggname = '%s_%s.egg' % (self.project, self.version)
         self.eggpath = os.path.join(self.DEPLOY_PATH, self.eggname)
         self.build_egg()
@@ -435,6 +437,12 @@ class DeployUploadView(BaseView):
             }
 
         self.slot.add_egg(self.eggname, content)
+
+    def pre_package_hook(self, project_path):
+        project_path = Path(project_path)
+        hook = (project_path / 'pre_deploy_hook')
+        if hook.exists():
+            subprocess.call(str(hook), shell=True, env={"SCRAPY_VERSION": self.version, "SCRAPY_PROJECT": self.project}, cwd=project_path)
 
 
 class DeployXhrView(BaseView):
