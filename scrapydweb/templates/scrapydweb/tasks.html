@@ -71,7 +71,7 @@ window.onload = function(){
     <!-- default-sort would cause background color of the buttons flash once -->
     <!-- :default-sort="{prop: 'status', order: 'descending'}" -->
 
-    <el-table-column type="expand" fixed>
+    <el-table-column type="expand">
       <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
           <el-form-item label="create_time"><span>{{props.row.create_time}}</span></el-form-item>
@@ -113,12 +113,12 @@ window.onload = function(){
       </template>
     </el-table-column>
 
-    <el-table-column prop="id" label="Task #" fixed sortable align="center" width="75"></el-table-column>
-    <el-table-column prop="name" label="Name" fixed sortable show-overflow-tooltip align="center" width="100" column_key="name" :filters="countryFilterOptions" :filter-method="countryFilter"></el-table-column>
-    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
-    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter"></el-table-column>
+    <el-table-column prop="id" label="Task #" sortable align="center" width="75"></el-table-column>
+    <el-table-column prop="name" label="Name" sortable show-overflow-tooltip align="center" width="100" column_key="name" :filters="countryFilterOptions" :filter-method="countryFilter"></el-table-column>
+    <el-table-column prop="project" label="Project" sortable show-overflow-tooltip align="center" width="150"></el-table-column>
+    <el-table-column prop="spider" label="Spider" sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter"></el-table-column>
     <!-- default-sort would cause background color of the buttons flash once -->
-    <el-table-column prop="status" label="Status" fixed sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
+    <el-table-column prop="status" label="Status" sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
       <template slot-scope="scope">
         <label :title="scope.row.status_label">
           <a :class="scope.row.status_class" @click="handleStatusClick(scope.row.url_status)">{{scope.row.status}}</a>

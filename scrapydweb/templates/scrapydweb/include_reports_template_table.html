@@ -1,9 +1,9 @@
-    <el-table-column prop="pages" label="Pages" fixed sortable align="center" width="80">
+    <el-table-column prop="pages" label="Pages" sortable align="center" width="80">
       <template slot-scope="scope">
         <p :class="scope.row.pages_class">{{scope.row.pages}}</p>
       </template>
     </el-table-column>
-    <el-table-column prop="items" label="Items" fixed sortable align="center" width="80">
+    <el-table-column prop="items" label="Items" sortable align="center" width="80">
       <template slot-scope="scope">
         <p :class="scope.row.items_class">{{scope.row.items}}</p>
       </template>

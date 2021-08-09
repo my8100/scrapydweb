@@ -59,22 +59,22 @@
     <!-- / — / medium / small / mini -->
     <!-- :default-sort="{prop: 'runtime', order: 'descending'}" -->
 
-    <el-table-column prop="index" label="Index" fixed sortable align="center" width="70"></el-table-column>
+    <el-table-column prop="index" label="Index" sortable align="center" width="70"></el-table-column>
     <!-- 'abcdefghi0abcdefghi0' -->
-    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150">
+    <el-table-column prop="project" label="Project" sortable show-overflow-tooltip align="center" width="150">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.project}}</span></template>
     </el-table-column>
-    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter">
+    <el-table-column prop="spider" label="Spider" sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
     </el-table-column>
     <!-- 'task_123456_2019-01-01T00_00_01' -->
-    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215" column_key="job" :filters="countryFilterOptions" :filter-method="countryFilter">
+    <el-table-column prop="job" label="Job" sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215" column_key="job" :filters="countryFilterOptions" :filter-method="countryFilter">
       <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.job}}</span></template>
     </el-table-column>
-    <el-table-column prop="pages" label="Pages" fixed sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="80">
+    <el-table-column prop="pages" label="Pages" sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="80">
       <template slot-scope="scope"><span :class="scope.row.pages_class">{{scope.row.pages}}</span></template>
     </el-table-column>
-    <el-table-column prop="items" label="Items" fixed sortable :sort-method="sortItems" :sort-orders="sortOrders" align="center" width="80">
+    <el-table-column prop="items" label="Items" sortable :sort-method="sortItems" :sort-orders="sortOrders" align="center" width="80">
       <template slot-scope="scope"><span :class="scope.row.items_class">{{scope.row.items}}</span></template>
     </el-table-column>
 
