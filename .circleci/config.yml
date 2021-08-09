@@ -177,47 +177,7 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:2.7
-  py27-sqlite:
-    <<: *test-template
-    docker:
-      - image: circleci/python:2.7
-    environment:
-      SCRAPYDWEB_TESTMODE: True
-      DATA_PATH: '/home/circleci/repo/scrapydweb_data'
-      DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
-  py27-postgresql:
-    <<: *test-template
-    docker:
-      - image: circleci/python:2.7
-      # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      - image: circleci/postgres:9.6-alpine
-        environment:
-          POSTGRES_USER: circleci
-          # psycopg2.OperationalError: FATAL: database "circleci" does not exist
-          # https://discuss.circleci.com/t/django-postgresql-and-circleci/15032
-          POSTGRES_DB: circleci
-          POSTGRES_PASSWORD: passw0rd
-    environment:
-      SCRAPYDWEB_TESTMODE: True
-      DATABASE_URL: 'postgres://circleci:fakepassword@localhost:5432'
-  py27-mysql:
-    <<: *test-template
-    docker:
-      - image: circleci/python:2.7
-      # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
-      # Plugin caching_sha2_password could not be loaded
-      # - image: circleci/mysql:8.0.4
-      # https://circleci.com/docs/2.0/circleci-images/#mysql
-      - image: circleci/mysql:5.7.25
-        environment:
-          MYSQL_ROOT_PASSWORD: rootpw
-          MYSQL_DATABASE: test_db
-          MYSQL_USER: user
-          MYSQL_PASSWORD: passw0rd
-    environment:
-      SCRAPYDWEB_TESTMODE: True
-      DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
-
+      
   py37-git-postgresql:
     <<: *test-template
     docker:
@@ -232,7 +192,8 @@ jobs:
           POSTGRES_PASSWORD: passw0rd
     environment:
       SCRAPYDWEB_TESTMODE: True
-      DATABASE_URL: 'postgres://circleci:fakepassword@localhost:5432'
+      DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
+      
   py37-git-mysql:
     <<: *test-template
     docker:
@@ -259,23 +220,52 @@ jobs:
       SCRAPYDWEB_TESTMODE: True
       DATA_PATH: '/home/circleci/repo/scrapydweb_data'
       DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
+      
+  py38-postgresql:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8
+      # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
+      - image: circleci/postgres:9.6-alpine
+        environment:
+          POSTGRES_USER: circleci
+          # psycopg2.OperationalError: FATAL: database "circleci" does not exist
+          # https://discuss.circleci.com/t/django-postgresql-and-circleci/15032
+          POSTGRES_DB: circleci
+          POSTGRES_PASSWORD: passw0rd
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
+      
+  py38-mysql:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8
+      # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
+      # Plugin caching_sha2_password could not be loaded
+      # - image: circleci/mysql:8.0.4
+      # https://circleci.com/docs/2.0/circleci-images/#mysql
+      - image: circleci/mysql:5.7.25
+        environment:
+          MYSQL_ROOT_PASSWORD: rootpw
+          MYSQL_DATABASE: test_db
+          MYSQL_USER: user
+          MYSQL_PASSWORD: passw0rd
+    environment:
+      SCRAPYDWEB_TESTMODE: True
+      DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
+
+  py39:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.9
 
 
 workflows:
   test:
     jobs:
-      - py27:
-          is-py27: true
-      - py27-sqlite:
-          is-py27: true
-          set-data-path: true
-          use-sqlite: true
-      - py27-postgresql:
-          is-py27: true
-          use-postgresql: true
-      - py27-mysql:
-          is-py27: true
-          use-mysql: true
+      # - py27:
+      #    is-py27: true
 
       - py37
       - py37-git-postgresql:
@@ -288,3 +278,10 @@ workflows:
       - py38-sqlite:
           set-data-path: true
           use-sqlite: true
+      - py38-postgresql:
+          use-postgresql: true
+      - py38-mysql:
+          use-mysql: true
+          
+      - py39
+      
