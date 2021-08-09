@@ -12,6 +12,7 @@ from six import text_type
 from ..__version__ import __version__ as SCRAPYDWEB_VERSION
 from ..common import (get_now_string, get_response_from_view, handle_metadata,
                       handle_slash, json_dumps, session)
+from ..servers import find_by_name
 from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, APSCHEDULER_DATABASE_URI,
                     DATA_PATH, DEMO_PROJECTS_PATH, DEPLOY_PATH, PARSE_PATH,
                     ALERT_TRIGGER_KEYS, LEGAL_NAME_PATTERN, SCHEDULE_ADDITIONAL,
@@ -93,6 +94,7 @@ class BaseView(View):
 
         # Scrapyd
         self.SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
+        self.SCRAPYD_SERVER_OBJECTS = app.config.get('SCRAPYD_SERVER_OBJECTS', [])
         self.SCRAPYD_SERVERS_AMOUNT = len(self.SCRAPYD_SERVERS)
         self.SCRAPYD_SERVERS_GROUPS = app.config.get('SCRAPYD_SERVERS_GROUPS', []) or ['']
         self.SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None]
@@ -179,7 +181,13 @@ class BaseView(View):
 
         # Other attributes not from config
         self.view_args = request.view_args
-        self.node = self.view_args['node']
+
+        try:
+            self.node = int(self.view_args["node"])
+        except ValueError:
+            node_id = find_by_name(self.SCRAPYD_SERVER_OBJECTS, self.view_args["node"])
+            self.node = node_id
+
         assert 0 < self.node <= self.SCRAPYD_SERVERS_AMOUNT, \
             'node index error: %s, which should be between 1 and %s' % (self.node, self.SCRAPYD_SERVERS_AMOUNT)
         self.SCRAPYD_SERVER = self.SCRAPYD_SERVERS[self.node - 1]

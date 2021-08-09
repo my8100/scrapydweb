@@ -1,11 +1,14 @@
 # coding: utf-8
+import dataclasses
 import logging
 from multiprocessing.dummy import Pool as ThreadPool
 import os
 import re
+from typing import List
 
 from ..common import handle_metadata, handle_slash, json_dumps, session
 from ..models import create_jobs_table, db
+from ..servers import ScrapydServer, from_tuple, from_str
 from ..utils.scheduler import scheduler
 from ..utils.setup_database import test_database_url_pattern
 from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, ALERT_TRIGGER_KEYS,
@@ -22,17 +25,7 @@ REPLACE_URL_NODE_PATTERN = re.compile(r'(:\d+/)\d+/')
 EMAIL_PATTERN = re.compile(r'^[^@]+@[^@]+\.[^@]+$')
 HASH = '#' * 100
 # r'^(?:(?:(.*?)\:)(?:(.*?)@))?(.*?)(?:\:(.*?))?(?:#(.*?))?$'
-SCRAPYD_SERVER_PATTERN = re.compile(r"""
-                                        ^
-                                        (?:
-                                            (?:(.*?):)      # username:
-                                            (?:(.*?)@)      # password@
-                                        )?
-                                        (.*?)               # ip
-                                        (?::(.*?))?         # :port
-                                        (?:\#(.*?))?        # #group
-                                        $
-                                    """, re.X)
+
 
 
 def check_app_config(config):
@@ -331,46 +324,45 @@ def check_scrapyd_servers(config):
         SCRAPYD_SERVERS_PUBLIC_URLS, SCRAPYD_SERVERS)
 
     servers = []
-    for idx, (server, public_url) in enumerate(zip(SCRAPYD_SERVERS, SCRAPYD_SERVERS_PUBLIC_URLS)):
-        if isinstance(server, tuple):
-            assert len(server) == 5, ("Scrapyd server should be a tuple of 5 elements, "
-                                      "current value: %s" % str(server))
-            usr, psw, ip, port, group = server
+    for idx, (server_def, public_url) in enumerate(zip(SCRAPYD_SERVERS, SCRAPYD_SERVERS_PUBLIC_URLS)):
+        if isinstance(server_def, ScrapydServer):
+            servers.append(server_def)
+        elif isinstance(server_def, tuple):
+            assert len(server_def) == 5, ("Scrapyd server should be a tuple of 5 elements, "
+                                      "current value: %s" % str(server_def))
+            servers.append(from_tuple(server_def))
+        elif isinstance(server_def, str):
+            servers.append(from_str(server_def))
         else:
-            usr, psw, ip, port, group = re.search(SCRAPYD_SERVER_PATTERN, server.strip()).groups()
-        ip = ip.strip() if ip and ip.strip() else '127.0.0.1'
-        port = port.strip() if port and port.strip() else '6800'
-        group = group.strip() if group and group.strip() else ''
-        auth = (usr, psw) if usr and psw else None
-        public_url = public_url.strip(' /')
-        servers.append((group, ip, port, auth, public_url))
+            logger.error(f"Server definition #{idx} is of invalid type {type(server_def)}: {server_def}")
+            continue
 
-    def key_func(arg):
-        _group, _ip, _port, _auth, _public_url = arg
-        parts = _ip.split('.')
-        parts = [('0' * (3 - len(part)) + part) for part in parts]
-        return [_group, '.'.join(parts), int(_port)]
-
-    servers = sorted(set(servers), key=key_func)
+    servers = sorted(set(servers))
     check_scrapyd_connectivity(servers)
 
-    config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for (group, ip, port, auth, public_url) in servers]
-    config['SCRAPYD_SERVERS_GROUPS'] = [group for (group, ip, port, auth, public_url) in servers]
-    config['SCRAPYD_SERVERS_AUTHS'] = [auth for (group, ip, port, auth, public_url) in servers]
-    config['SCRAPYD_SERVERS_PUBLIC_URLS'] = [public_url for (group, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVER_OBJECTS'] = servers
+    config['SCRAPYD_SERVERS'] = ['%s:%s' % (server.ip, server.port) for server in servers]
+    config['SCRAPYD_SERVERS_GROUPS'] = [server.group for server in servers]
+    config['SCRAPYD_SERVERS_AUTHS'] = [server.auth for server in servers]
+    config['SCRAPYD_SERVERS_PUBLIC_URLS'] = [server.public_url for server in servers]
 
 
-def check_scrapyd_connectivity(servers):
+def check_scrapyd_connectivity(servers: List[ScrapydServer]):
     logger.debug("Checking connectivity of SCRAPYD_SERVERS...")
 
     def check_connectivity(server):
-        (_group, _ip, _port, _auth, _public_url) = server
         try:
-            url = 'http://%s:%s' % (_ip, _port)
-            r = session.get(url, auth=_auth, timeout=10)
+            url = server.url() + "/daemonstatus.json"
+            r = session.get(url, auth=server.auth, timeout=10)
             assert r.status_code == 200, "%s got status_code %s" % (url, r.status_code)
+            resp = r.json()
+            assert resp["status"] == "ok", f"status = {resp.status}"
+            if not server.name:
+                server.name = resp["node_name"]
         except Exception as err:
             logger.error(err)
+            if not server.name:
+                server.name = f"{server.name}:{server.port}"
             return False
         else:
             return True
@@ -385,9 +377,9 @@ def check_scrapyd_connectivity(servers):
     print("\nIndex {group:<20} {server:<21} Connectivity Auth".format(
           group='Group', server='Scrapyd IP:Port'))
     print(HASH)
-    for idx, ((group, ip, port, auth, public_url), result) in enumerate(zip(servers, results), 1):
+    for idx, (server, result) in enumerate(zip(servers, results), 1):
         print("{idx:_<5} {group:_<20} {server:_<22} {result:_<11} {auth}".format(
-              idx=idx, group=group or 'None', server='%s:%s' % (ip, port), auth=auth, result=str(result)))
+              idx=idx, group=server.group or 'None', server='%s:%s' % (server.ip, server.port), auth=server.auth, result=str(result)))
     print(HASH + '\n')
 
     assert any(results), "None of your SCRAPYD_SERVERS could be connected. "

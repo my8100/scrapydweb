@@ -40,13 +40,13 @@
     {% endif %}
   >
 
-    <el-table-column prop="index" label="Index" fixed sortable :sort-method="sortIndexFinish" :sort-orders="sortOrders" align="center" width="70">
+    <el-table-column prop="index" label="Index" sortable :sort-method="sortIndexFinish" :sort-orders="sortOrders" align="center" width="70">
       <template slot-scope="scope">
         <p style="display: none;">{{scope.row.index0}} </p>
         <p>{{scope.row.index}}</p>
       </template>
     </el-table-column>
-    <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}100{% endif %}">
+    <el-table-column prop="stats" label="Stats" sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}100{% endif %}">
       <template slot-scope="scope">
         <em :class="scope.row.loading_class"  v-bind:style="{display: scope.row.stats_loading_display}">{{scope.row.loading}}</em>
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
@@ -56,7 +56,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="150" show-overflow-tooltip></el-table-column>
+    <el-table-column prop="spider" label="Spider" sortable align="center" width="150" show-overflow-tooltip></el-table-column>
     <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
     <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
 

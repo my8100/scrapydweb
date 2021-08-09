@@ -28,7 +28,7 @@ class TaskExecutor(object):
         self.auth = auth
         self.data = dict(
             task_id=task_id,
-            jobid='task_%s_%s' % (task_id, get_now_string(allow_space=False))
+            jobid='task_%s_%s' % (task_name, get_now_string(allow_space=False))
         )
         self.selected_nodes = selected_nodes
         self.task_result_id = None  # Be set in get_task_result_id()
@@ -112,7 +112,7 @@ class TaskExecutor(object):
                 return
             task_job_result = TaskJobResult()
             task_job_result.task_result_id = self.task_result_id
-            task_job_result.node = js['node']
+            task_job_result.node_name = js['node']
             task_job_result.server = re.search(EXTRACT_URL_SERVER_PATTERN, js['url']).group(1)  # '127.0.0.1:6800'
             task_job_result.status_code = js['status_code']
             task_job_result.status = js['status']
@@ -165,7 +165,7 @@ def execute_task(task_id):
                                          url_schedule_task=metadata.get('url_schedule_task', '/1/schedule/task/'),
                                          url_delete_task_result=url_delete_task_result,
                                          auth=(username, password) if username and password else None,
-                                         selected_nodes=json.loads(task.selected_nodes))
+                                         selected_nodes=json.loads(task.selected_node_names))
             try:
                 task_executor.main()
             except Exception:

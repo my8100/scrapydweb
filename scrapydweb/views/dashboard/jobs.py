@@ -269,9 +269,19 @@ class JobsView(BaseView):
                 v = v or None  # Save NULL in database for empty string
                 if k in ['start', 'finish']:
                     v = datetime.strptime(v, '%Y-%m-%d %H:%M:%S') if v else None  # Avoid empty string
-                elif k in ['href_log', 'href_items']:  # <a href='/logs/demo/test/xxx.log'>Log</a>
+                elif k in ['href_log']:  # <a href='/logs/demo/test/xxx.log'>Log</a>
                     m = re.search(HREF_PATTERN, v) if v else None
                     v = m.group(1) if m else v
+                elif k in ['href_items']:
+                    country_code = re.search("_(\D{2})_",job["job"]) if job["job"] else None
+                    country_code = country_code.group(1) if country_code else ''
+                    start_time = datetime.strptime(job["start"], '%Y-%m-%d %H:%M:%S') if job["start"] else None
+                    start_time = start_time.strftime('%Y%m%d-%H') if start_time else ''
+                    filename = job["spider"] + "_" + country_code + "_" + start_time + ".csv"
+                    if job['finish']:
+                        v ='/items/archive/{}/{}/{}.zip'.format(job["spider"], country_code, filename)
+                    else:
+                        v = '/items/single_sites/{}'.format(filename)
                 setattr(record, k, v)
             if not job['start']:
                 record.status = STATUS_PENDING

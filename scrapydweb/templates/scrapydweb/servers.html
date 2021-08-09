@@ -230,12 +230,12 @@
     {% endif %}
   >
 
-    <el-table-column type="selection" align="center" :reserve-selection="true" fixed></el-table-column>
-    <el-table-column prop="index" label="Node" sortable width="70" align="center" fixed></el-table-column>
-    <el-table-column prop="selected" label="Selected" sortable width="90" align="center" fixed></el-table-column>
-    <el-table-column prop="group" label="Group" sortable width="120" align="center" show-overflow-tooltip fixed></el-table-column>
+    <el-table-column type="selection" align="center" :reserve-selection="true"></el-table-column>
+    <el-table-column prop="index" label="Node" sortable width="70" align="center"></el-table-column>
+    <el-table-column prop="selected" label="Selected" sortable width="90" align="center"></el-table-column>
+    <el-table-column prop="group" label="Group" sortable width="120" align="center" show-overflow-tooltip></el-table-column>
     <el-table-column prop="jobs" label="Scrapyd server" sortable width="200" align="left" show-overflow-tooltip
-      header-align="center" :sort-method="sortScrapydServer" fixed>
+      header-align="center" :sort-method="sortScrapydServer">
       <template slot-scope="scope">
         <a :class="scope.row.cls"
 
@@ -248,7 +248,7 @@
         </a>
       </template>
     </el-table-column>
-    <el-table-column prop="node_name" label="Hostname" sortable width="120" align="center" show-overflow-tooltip :formatter="formatter" fixed></el-table-column>
+    <el-table-column prop="node_name" label="Hostname" sortable width="120" align="center" show-overflow-tooltip :formatter="formatter"></el-table-column>
 
     <el-table-column prop="pending" label="Pending" sortable width="85" align="center" :sort-method="sortPending" v-if="showDaemonStatus">
         <template slot-scope="scope">

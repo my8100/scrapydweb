@@ -69,9 +69,9 @@
     </a>
     <div class="dropdown-content-wrap">
       <div class="dropdown-content">
-      {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-        {% if SCRAPYD_SERVERS_GROUPS[loop.index0] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index0]) %}
-        <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index0] }} --- </div>
+      {% for server in SCRAPYD_SERVER_OBJECTS %}
+        {% if server.group and loop.changed(server.group) %}
+        <div> --- {{ server.group }} --- </div>
         {% endif %}
 
         <a href="{{ g.url_jobs_list[loop.index0] }}"
@@ -81,7 +81,7 @@
         {% endif %}
 
         onclick="showLoader();">
-        [{{ loop.index }}] {{ SCRAPYD_SERVER }}
+        [{{ loop.index }}] {{ server }}
         </a>
       {% endfor %}
       </div>

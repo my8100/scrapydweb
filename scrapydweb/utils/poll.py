@@ -51,6 +51,7 @@ class Poll(object):
         self.url_scrapydweb = url_scrapydweb
         self.auth = (username, password) if username and password else None
 
+        #self.scrapyd_server_objects = scrapyd_server_objects
         self.scrapyd_servers = scrapyd_servers
         self.scrapyd_servers_auths = scrapyd_servers_auths
 

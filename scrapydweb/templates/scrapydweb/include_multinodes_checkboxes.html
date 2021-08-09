@@ -18,14 +18,14 @@
           <label for="syncFromServersPage"><input type="checkbox" id="syncFromServersPage" />Sync from Servers page</label>
           <label for="checkAll"><input type="checkbox" id="checkAll" />CheckAll / UncheckAll</label>
           <div id="nodes_checkboxes">
-          {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
-            {% if SCRAPYD_SERVERS_GROUPS[loop.index0] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index0]) %}
-            <span> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index0] }} --- </span>
+          {% for server in SCRAPYD_SERVER_OBJECTS %}
+            {% if server.group and loop.changed(server.group) %}
+            <span> --- {{ server.group }} --- </span>
             {% endif %}
 
             <label id="label_{{ loop.index }}" for="checkbox_{{ loop.index }}" {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}>
               <input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}"
-              {% if loop.index in selected_nodes %}checked{% endif %} />[{{ loop.index }}] {{ SCRAPYD_SERVER }}
+              {% if loop.index in selected_nodes %}checked{% endif %} />[{{ loop.index }}] {{ server }}
             </label>
           {% endfor %}
           </div>

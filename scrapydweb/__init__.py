@@ -1,5 +1,6 @@
 # coding: utf-8
 import logging
+from functools import partial
 from logging.config import dictConfig
 import platform
 import re
@@ -18,8 +19,9 @@ from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
 
 
 # https://stackoverflow.com/questions/18820274/how-to-suppress-sqlalchemy-engine-base-engine-logging-to-stdout
-# logging.getLogger('sqlalchemy.engine.base.Engine').propagate = False
-logging.getLogger('sqlalchemy.engine.base.Engine').setLevel(logging.WARNING)
+
+logging.getLogger('sqlalchemy.engine.Engine').propagate = False
+logging.getLogger('sqlalchemy.engine.Engine').setLevel(logging.WARNING)
 # http://flask.pocoo.org/docs/1.0/logging/#basic-configuration
 dictConfig({
     'version': 1,
@@ -146,7 +148,7 @@ def handle_route(app):
     def register_view(view, endpoint, url_defaults_list, with_node=True, trailing_slash=True):
         view_func = view.as_view(endpoint)
         for url, defaults in url_defaults_list:
-            rule = '/<int:node>/%s' % url if with_node else '/%s' % url
+            rule = '/<node>/%s' % url if with_node else '/%s' % url
             if trailing_slash:
                 rule += '/'
             if not with_node:
@@ -252,9 +254,10 @@ def handle_route(app):
 
     from .views.files.items import ItemsView
     register_view(ItemsView, 'items', [
-        ('items/<project>/<spider>', None),
-        ('items/<project>', dict(spider=None)),
-        ('items', dict(project=None, spider=None))
+        ('items/archive/<project>/<spider>', dict(archive = True)),
+        ('items/<project>/<spider>', dict(archive = False)),
+        ('items/<project>', dict(spider=None, archive = False)),
+        ('items', dict(project=None, spider=None, archive = False))
     ])
 
     from .views.files.projects import ProjectsView
