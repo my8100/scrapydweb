@@ -415,6 +415,7 @@ class ScheduleRunView(BaseView):
             self.task_id = self.task.id
 
     def db_process_task(self):
+        # NOTE: when changing this, make sure to update TasksXhrView.recreate_task
         data = dict(self.data)  # Used in update_history() and generate_response()
 
         self.task.project = data.pop('project')

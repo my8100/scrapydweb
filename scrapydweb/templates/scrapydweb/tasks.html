@@ -129,8 +129,11 @@ window.onload = function(){
         </label>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="160">
+    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="180">
       <template slot-scope="scope">
+        <label title="">
+          <a class="state warning" :style="{ display: scope.row.display_recreate }" @click="handleStatusClick(scope.row.url_recreate)">Start</a>
+        </label>
         <label title="click to fire the task right now">
           <a class="state safe" :style="{ display: scope.row.display_fire }" @click="handleStatusClick(scope.row.url_fire)">Fire</a>
         </label>
@@ -284,6 +287,8 @@ var Main = {
         url_edit: '{{ task.url_edit }}',
         url_fire: '{{ task.url_fire }}',
         display_fire: {% if task.url_fire %}''{% else %}'none'{% endif %},
+        url_recreate: '{{ task.url_recreate }}',
+        display_recreate: {% if task.status == "Finished" %}''{% else %}'none'{% endif %},
       },
     {% endfor %}
       ],
