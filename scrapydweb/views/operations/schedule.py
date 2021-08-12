@@ -128,8 +128,8 @@ class ScheduleView(BaseView):
         self.kwargs['expand_timer_task'] = True
         self.kwargs['task_id'] = self.task_id
         self.kwargs['name'] = task.name or 'task #%s' % self.task_id
-        if not self.kwargs['name'].endswith(' - edit'):
-            self.kwargs['name'] += ' - edit'
+        #if not self.kwargs['name'].endswith(' - edit'):
+        #    self.kwargs['name'] += ' - edit'
 
         self.kwargs['year'] = task.year or '*'
         self.kwargs['month'] = task.month or '*'
