@@ -54,6 +54,8 @@ window.onload = function(){
 <div id="app">
 <template>
   <el-button @click="clearFilters">Reset filters</el-button>
+  <el-button @click="bulkAction('resume')">RESUME selected</el-button>
+  <el-button @click="bulkAction('pause')">PAUSE selected</el-button>
   <el-table
     ref="multipleTable"
     :data="tableData"
@@ -71,6 +73,7 @@ window.onload = function(){
     <!-- default-sort would cause background color of the buttons flash once -->
     <!-- :default-sort="{prop: 'status', order: 'descending'}" -->
 
+    <el-table-column type="selection" align="center" :reserve-selection="true"></el-table-column>
     <el-table-column type="expand">
       <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
@@ -244,6 +247,7 @@ var Main = {
 
         create_time: '{{ task.create_time }}',
         update_time: '{{ task.update_time }}',
+        selected: 'no',
         project: '{{ task.project }}',
         version: '{{ task.version }}',
         spider: '{{ task.spider }}',
@@ -373,6 +377,13 @@ var Main = {
         return a.run_times > b.run_times ? 1 : -1;
       }
     },
+    bulkAction(action) {
+        let selected_task_urls = vm.$refs.multipleTable.selection.map(row => row.url_status);
+        let to_fetch = selected_task_urls.filter(url => url.indexOf(action) > -1);
+        Promise.all(to_fetch.map(url => fetch(url))).then(response => {
+            window.location.reload()
+        })
+    }
   }
 }
 var Ctor = Vue.extend(Main);
