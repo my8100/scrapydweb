@@ -111,7 +111,7 @@ window.onload = function(){
 
           <el-form-item label="settings_arguments"><span>{{props.row.settings_arguments}}</span></el-form-item>
           <el-form-item></el-form-item>
-          <el-form-item label="selected_nodes"><span>{{props.row.selected_nodes}}</span></el-form-item>
+          <el-form-item label="selected_nodes"><span>{{props.row.selected_nodes_str}}</span></el-form-item>
         </el-form>
       </template>
     </el-table-column>
@@ -120,6 +120,7 @@ window.onload = function(){
     <el-table-column prop="name" label="Name" sortable show-overflow-tooltip align="center" width="100" column_key="name" :filters="countryFilterOptions" :filter-method="countryFilter"></el-table-column>
     <el-table-column prop="project" label="Project" sortable show-overflow-tooltip align="center" width="150"></el-table-column>
     <el-table-column prop="spider" label="Spider" sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter"></el-table-column>
+    <el-table-column prop="selected_nodes_str" label="Nodes" sortable show-overflow-tooltip align="center" width="200" column_key="selected_nodes" :filters="nodesFilterOptions" :filter-method="nodesFilter"></el-table-column>
     <!-- default-sort would cause background color of the buttons flash once -->
     <el-table-column prop="status" label="Status" sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
       <template slot-scope="scope">
@@ -204,6 +205,12 @@ var Main = {
         '{{ task.name }}',
       {% endfor %}
     ]
+    nodes=[...new Set([
+      {% for task in tasks.items %}
+        {{ task.selected_node_names|safe }},
+      {% endfor %}
+    ].flat())].sort()
+
     country_codes = [...new Set(country_codes.map(x => x.split('_')[0]))].sort()
     hours=[...Array(24)].map((_, i) => i)
     return {
@@ -212,6 +219,7 @@ var Main = {
       currentPage: {{ tasks.page }},  // the current page number (1 indexed)
       sortOrders: ['descending','ascending',null],
       spiderFilterOptions: spiders.map(spider => ({text:spider, value: spider})),
+      nodesFilterOptions: nodes.map(node => ({text:node, value: node})),
       countryFilterOptions: country_codes.map(country_code => ({text:country_code, value: country_code})),
       hourFilterOptions: hours.map(hour => ({text:String(hour).padStart(2, '0') + 'h', value: hour})),
       tableData: [
@@ -253,7 +261,8 @@ var Main = {
         spider: '{{ task.spider }}',
         jobid: '{{ task.jobid }}',
         settings_arguments: '{{ task.settings_arguments|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
-        selected_nodes: '{{ task.selected_nodes }}',
+        selected_nodes_str: {{ task.selected_node_names|safe }}.join(", "),
+        selected_nodes: {{ task.selected_node_names|safe }},
 
         year: '{{ task.year }}',
         month: '{{ task.month }}',
@@ -289,6 +298,10 @@ var Main = {
     spiderFilter(value, row, column) {
       const property = column['property'];
       return row[property] === value;
+    },
+    nodesFilter(value, row, column) {
+      const property = column['property'];
+      return row[property].indexOf(value) > -1;
     },
     countryFilter(value, row, column) {
       const property = column['property'];
