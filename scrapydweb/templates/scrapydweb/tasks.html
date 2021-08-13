@@ -56,6 +56,8 @@ window.onload = function(){
   <el-button @click="clearFilters">Reset filters</el-button>
   <el-button @click="bulkAction('resume')">RESUME selected</el-button>
   <el-button @click="bulkAction('pause')">PAUSE selected</el-button>
+  <el-button @click="bulkAction('recreate')">START selected</el-button>
+  <el-button @click="bulkAction('remove')">STOP selected</el-button>
   <el-table
     ref="multipleTable"
     :data="tableData"
@@ -288,7 +290,7 @@ var Main = {
         url_fire: '{{ task.url_fire }}',
         display_fire: {% if task.url_fire %}''{% else %}'none'{% endif %},
         url_recreate: '{{ task.url_recreate }}',
-        display_recreate: {% if task.status == "Finished" %}''{% else %}'none'{% endif %},
+        display_recreate: {% if task.url_recreate %}''{% else %}'none'{% endif %},
       },
     {% endfor %}
       ],
@@ -396,10 +398,11 @@ var Main = {
       }
     },
     bulkAction(action) {
-        let selected_task_urls = vm.$refs.multipleTable.selection.map(row => row.url_status);
+        let selected_task_urls = vm.$refs.multipleTable.selection.map(row => [row.url_status, row.url_recreate, row.url_action, row.url_delete]).flat().filter(str => str && str.length > 0);
         let to_fetch = selected_task_urls.filter(url => url.indexOf(action) > -1);
-        Promise.all(to_fetch.map(url => fetch(url))).then(response => {
-            window.location.reload()
+        Promise.all(to_fetch.map(url => fetch(url))).then(responses => {
+            if (responses.length > 0)
+                window.location.reload();
         })
     }
   }
