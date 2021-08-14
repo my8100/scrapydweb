@@ -140,7 +140,7 @@ window.onload = function(){
           <a class="state safe" :style="{ display: scope.row.display_fire }" @click="handleStatusClick(scope.row.url_fire)">Fire</a>
         </label>
         <label :title="scope.row.action_label">
-          <a :class="scope.row.action_class" @click="deleteRow(scope.$index, tableData)">{{scope.row.action}}</a>
+          <a :class="scope.row.action_class" @click="handleStatusClick(scope.row.url_action)">{{scope.row.action}}</a>
         </label>
         <label title="click to update or copy the task">
           <a class="state normal" @click="handleStatusClick(scope.row.url_edit)">Edit</a>
@@ -322,6 +322,7 @@ var Main = {
     handleSelectRow(val) {
       this.currentRow = val;
     },
+    // TODO: deleteRow is bypassed due to issues with sorted tables. Either fix it or remove it
     deleteRow(index, rows) {
       // Stop task: '/9/tasks/xhr/remove/8/'
       // Delete task: '/9/tasks/xhr/delete/8/'
