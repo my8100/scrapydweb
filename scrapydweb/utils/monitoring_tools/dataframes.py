@@ -23,14 +23,14 @@ def mysql_connector(
 
     # | code section |
     # db connect
+    con = None
+
     if not url:
         user, password = re.findall(r"(?<=//)(.*?)(?=@)", DATABASE_URL)[0].split(":")
         host, port = re.findall(r"(?<=@)(.*?)$", DATABASE_URL)[0].split(":")
     else:
         user, password = re.findall(r"(?<=//)(.*?)(?=@)", url)[0].split(":")
         host, port = re.findall(r"(?<=@)(.*?)$", url)[0].split(":")
-
-    con = None
 
     try:
         con = connect(
