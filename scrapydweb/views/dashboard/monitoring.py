@@ -1,6 +1,8 @@
 # coding: utf-8
+import re
 from os.path import dirname
 from flask import render_template, url_for
+from ...vars import DATABASE_URL
 from ...utils.monitoring_tools import dataframes as mtd
 from ...utils.monitoring_tools import maths as mtm
 from ...utils.monitoring_tools import graphs as mtg
@@ -23,9 +25,30 @@ class MonitorView(BaseView):
         self.template = "scrapydweb/monitoring.html"
 
     def dispatch_request(self, **kwargs):
-        spider_filter = f"spider = '{self.spider}'"
+        from sqlite3 import OperationalError
 
-        df = mtd.sqlite_to_df(where=spider_filter)  # Get data
+        spider_filter = f"spider = '{self.spider}'"
+        df = []
+        table_name = self.SCRAPYD_SERVER.replace(".", "_").replace(":", "_")
+        if re.findall(r"sqlite", DATABASE_URL):
+            try:
+                con = mtd.sqlite_connector()
+
+                df = mtd.sql_to_df(
+                    con=con, table=f"'{table_name}'", where=spider_filter
+                )  # Get data
+            except OperationalError as err:
+                self.logger(err)
+        elif re.findall("mysql", DATABASE_URL):
+            try:
+                con = mtd.mysql_connector()
+                df = mtd.sql_to_df(con=con, table=table_name, where=spider_filter)
+            except ConnectionError or AttributeError as err:
+                self.logger("MySQL server connection failed!\n\t", err)
+        else:
+            self.logger("Connection type not handled yet...")
+            return
+
         df = mtm.compute_floating_means(df, "items")  # Compute floating mean for items
         df = mtm.compute_floating_means(df, "pages")  # Compute floating mean for pages
         fig = mtg.scraping_graph(dataframe=df, days=30)  # Plot data
@@ -46,7 +69,6 @@ class MonitorView(BaseView):
             + str(last_job.job.values[0])
             + "/?job_finished=True"
         )
-        print("\n\n##########\n", self.log_url, "\n##########\n\n")
         # png_fig = fig.to_image("png")
         github_link = self.github_issue_generator()
 
