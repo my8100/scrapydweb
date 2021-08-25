@@ -36,26 +36,16 @@ def compute_floating_means(dataframe, column, n=3):
     :return:            (df)    the input DataFrame with the floating mean column added (*_favg)
     """
     # | import section |
+    import pandas as pd
     import numpy as np
 
-    # | variables section |
-    dataframe.reset_index(drop=True, inplace=True)
-
-    new_column_name = column + "_favg"
-    dataframe[new_column_name] = None
-
     # | code section |
-    # loop for compute the means
-    for row in dataframe.iterrows():
-        # define interval limits
-        low_border = row[0]
-        current_index = int(low_border + n)  # TODO (WARNING): index != date
-        # get interval data
-        interval_data = dataframe.iloc[low_border:current_index]
-        # save data to dataframe new column
-        if current_index < dataframe.shape[0]:
-            row[1][new_column_name] = np.round(interval_data[column].mean())
-            dataframe.iloc[current_index] = row[1]
+
+    data = dataframe[["start_date", column]].copy()
+
+    for i in range(n -1):
+        data[f"n-{i}"] = data.iloc[:, -1].shift(1)
+    dataframe[f"{column}_favg"] = [row[1].mean() for row in data.iloc[:, 1:].iterrows()]
 
     return dataframe
 
@@ -72,7 +62,7 @@ def unique_count(dataframe, column):
     >>> df
     ```
     |       | col1  | col2  |
-    | --- ---   | --- ---   | --- ---   |
+    |  ---  |  ---  |  ---  |
     | 0     | A     | 1     |
     | 1     | B     | 2     |
     | 2     | A     | 1     |

@@ -1,6 +1,43 @@
 # -*- coding: utf-8 -*-
 
+import re
+import logging
+from sqlite3 import OperationalError
 from . import maths as mtm
+
+
+def db_connect(database_url, return_db_type=False):
+    """
+    This function is used to select automatically the correct SQL connector from the DATABASE_URL
+    :param database_url:    (str) DATABASE_URL provided into the scrapydweb settings
+    :param return_db_type:  (bool) if True, it will return a str with the type of db detected. It could be used to
+                            select the query syntax.
+    :return:                (connector) sql connector for request the DB
+    """
+    if re.findall(r"sqlite", database_url):
+        try:
+            con = sqlite_connector()
+            db_type = "sqlite"
+            logging.info("Connected to SQLite DB!")
+            if return_db_type:
+                return con, db_type
+            else:
+                return con
+        except OperationalError as err:
+            logging.error("SQLite DB connection failed!\n\t", err)
+    elif re.findall("mysql", database_url):
+        try:
+            con = mysql_connector(url=database_url)
+            db_type = "mysql"
+            logging.info("Connected to tht MySQL server!")
+            if return_db_type:
+                return con, db_type
+            else:
+                return con
+        except ConnectionError or AttributeError as err:
+            logging.error("MySQL server connection failed!\n\t", err)
+    else:
+        logging.error("Connection type not handled yet...")
 
 
 def mysql_connector(
@@ -70,45 +107,30 @@ def sqlite_connector(
     # | code section |
     # db connect
     if not path:
-        from scrapydweb_settings_v10 import DATABASE_URL
+        from ...vars import DATABASE_URL
 
         path = DATABASE_URL + "/" + database
-        path = path.replace("sqlite:///", "")  # !!! > mysql / postgre options
-
+        path = path.replace("sqlite:///", "")
     con = sqlite3.connect(path)
 
     return con
 
 
-# TODO #2 @h4r1c0t: multinode request -> get the current node and the corresponding server.
-def sql_to_df(con, select="*", table="127_0_0_1_6800", where="project = retail_shake"):
+def jobs_df_format(dataframe):
     """
-    This function is used to automatically get data from scrapyd DB as a Pandas dataframe.
+    This function is used to automatically format jobs query result to a time series pandas dataframe
 
-    :param con:     (sql connector) the connector for the scrapydweb DB
-    :param table:   (str) table name (default: 127_0_0_1_6800, local server as default)
-    :param select:  (str) column to select (default: * all the columns)
-    :param where:   (str) where condition for the select  (default: spider from 'retail_shake' project)
-    :return:        (df)  query output as a pandas DataFrame
+    :dataframe:     (df)  input jobs dataframe
+    :return:        (df)  output formated pandas DataFrame
     """
     # | import section |
     import pandas as pd
 
     # | code section |
-    # import data
-    df = pd.read_sql(
-        f"""
-        SELECT {select}
-        FROM {table}
-        WHERE {where};
-        """,
-        con,
-    )
-
     # create date format and sort
-    df.start = pd.to_datetime(df.start)
-    df["start_date"] = df.start.dt.date
-    df = df.sort_values(by="start_date")
+    dataframe.start = pd.to_datetime(dataframe.start)
+    dataframe["start_date"] = dataframe.start.dt.date
+    df = dataframe.sort_values(by="start_date")
 
     df["items"] = df["items"].fillna(0)
     df["pages"] = df["pages"].fillna(0)
@@ -138,3 +160,16 @@ def select_spider(dataframe, spider_name):
     data = mtm.compute_floating_means(data, "pages", 7)
 
     return data
+
+
+def select_last_date(dataframe, date_column):
+    index = list(
+        {
+            date: j
+            for j, date in zip(
+                range(len(dataframe)),
+                [dataframe.iloc[i, :][date_column] for i in range(len(dataframe))],
+            )
+        }.values()
+    )
+    return dataframe.iloc[index, :]

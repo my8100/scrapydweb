@@ -1,26 +1,28 @@
 # -*- coding: utf-8 -*-
 
 
-def scraping_graph(dataframe, days=90):
+def scraping_graph(dataframe, days=90, n=7):
     """
     This function is used to plot the evolution of scraped items and pages with theirs respectives floating means.
 
     :param dataframe:   (df) spider or global DataFrame obtains from previous functions
     :param days:        (int) number of days to include into the display interval
-                        (sqlite_to_df(), select_spider())
-    :return:            (Graph Object.show) draw the graph object
+                        (sql_to_df(), select_spider())
+    :param n:           (int) number of days taken for the floating mean calculation
+    :return:            (Graph Object) plot build json
     """
     # | import section |
     import plotly.graph_objects as go
     from datetime import timedelta, datetime
 
     # | variable section |
-    # data = dataframe.sort_values(by="finish_date")
     data = dataframe[
-        dataframe["start_date"] > datetime.now().date() - timedelta(days=days)
+        dataframe["start_date"] >= datetime.now().date() - timedelta(days=days)
     ]
+    data = data.sort_values(by="start_date")
+
     graph_name = (
-        f"Evolutions du nombre d'items et de pages scrapés par jour (sur {days} j)"
+        f"Evolution of scraped items and pages scraped each day (on {days} days)"
     )
 
     # | graph section |
@@ -30,7 +32,7 @@ def scraping_graph(dataframe, days=90):
         go.Scatter(
             x=data["start_date"],
             y=data["items"],
-            name="Nb d'items scrapés",
+            name="Number scraped items",
             line={"color": "firebrick", "width": 4},
         )
     )
@@ -39,7 +41,7 @@ def scraping_graph(dataframe, days=90):
         go.Scatter(
             x=data["start_date"],
             y=data["items_favg"],
-            name="Nb moyen d'items scrapés (7j)",
+            name=f"Average scraped items ({n}d)",
             line={
                 "color": "firebrick",
                 "dash": "dot",
@@ -52,7 +54,7 @@ def scraping_graph(dataframe, days=90):
             x=data["start_date"],
             y=data["pages"],
             yaxis="y2",
-            name="Nb de pages scrapées",
+            name="Number scraped pages",
             # line={"color": "royalblue", "width": 3},
             line={"color": "#555555", "width": 3},
         )
@@ -63,7 +65,7 @@ def scraping_graph(dataframe, days=90):
             x=data["start_date"],
             y=data["pages_favg"],
             yaxis="y2",
-            name="Nb moyen de pages scrapées (7j)",
+            name=f"Average scraped pages ({n}d)",
             # line={"color": "royalblue", "dash": "dot"},
             line={"color": "#555555", "dash": "dot"},
         )
@@ -111,7 +113,8 @@ def mini_scrap_graph(dataframe, days=7):
     # | variable section |
     # data = dataframe.sort_values(by="finish_date")
     data = dataframe[
-        dataframe["start_date"] > datetime.now().date() - timedelta(days=days)
+        dataframe["start_date"]
+        > datetime.now().date() - timedelta(days=days)
         # dataframe["start_date"]
         # > datetime(2021, 1, 31).date() - timedelta(days=days)  # DEBUG
     ]
