@@ -1,5 +1,5 @@
 # coding: utf-8
-import re
+import pandas as pd
 from os.path import dirname
 from flask import render_template, url_for
 from ...vars import DATABASE_URL
@@ -25,32 +25,37 @@ class MonitorView(BaseView):
         self.template = "scrapydweb/monitoring.html"
 
     def dispatch_request(self, **kwargs):
-        from sqlite3 import OperationalError
-
         spider_filter = f"spider = '{self.spider}'"
-        df = []
         table_name = self.SCRAPYD_SERVER.replace(".", "_").replace(":", "_")
-        if re.findall(r"sqlite", DATABASE_URL):
-            try:
-                con = mtd.sqlite_connector()
 
-                df = mtd.sql_to_df(
-                    con=con, table=f"'{table_name}'", where=spider_filter
-                )  # Get data
-            except OperationalError as err:
-                self.logger(err)
-        elif re.findall("mysql", DATABASE_URL):
-            try:
-                con = mtd.mysql_connector()
-                df = mtd.sql_to_df(con=con, table=table_name, where=spider_filter)
-            except ConnectionError or AttributeError as err:
-                self.logger("MySQL server connection failed!\n\t", err)
+        con, db_type = mtd.db_connect(DATABASE_URL, return_db_type=True)
+
+        if db_type == "sqlite":
+            query = f"""
+                SELECT * 
+                FROM '{table_name}'
+                WHERE {spider_filter}
+                """
+            df = mtd.jobs_df_format(pd.read_sql(query, con=con))
+        elif db_type == "mysql":
+            query = f"""
+            SELECT *
+            FROM {table_name}
+            WHERE {spider_filter};
+            """
+            df = mtd.jobs_df_format(pd.read_sql(query, con=con))
         else:
-            self.logger("Connection type not handled yet...")
+            self.logger("Database type not handled yet...")
             return
 
-        df = mtm.compute_floating_means(df, "items")  # Compute floating mean for items
-        df = mtm.compute_floating_means(df, "pages")  # Compute floating mean for pages
+        df = mtd.select_last_date(df, "start_date")
+        df = mtm.compute_floating_means(
+            df, "items", 7
+        )  # Compute floating mean for items
+        df = mtm.compute_floating_means(
+            df, "pages", 7
+        )  # Compute floating mean for pages
+
         fig = mtg.scraping_graph(dataframe=df, days=30)  # Plot data
         html_fig = fig.to_html()  # Convert plot figure to html
 
