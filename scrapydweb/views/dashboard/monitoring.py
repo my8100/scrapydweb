@@ -64,7 +64,7 @@ class MonitorView(BaseView):
 
         last_job = df[df["start"] == df["start"].max()]
         self.log_url = (
-            "http://127.0.0.1:5000/"
+            "http://152.228.160.154:5000/"
             + str(self.node)
             + "/log/utf8/"
             + str(last_job.project.values[0])
