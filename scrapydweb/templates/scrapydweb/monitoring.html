@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}monitor{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_element_ui_index }}">
+  <style>
+    #app {margin-bottom: 20px;}
+    .el-table {margin-bottom: 20px;}
+    .count_info {
+      color: #67c23a;
+      font-weight: bold;
+    }
+    .count_warn {
+      color: red;
+      font-weight: bold;
+    }
+  </style>
+
+{#  {% if SCRAPYD_SERVERS_AMOUNT == 1 and (pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0) %}#}
+{#  <script type="text/javascript" src="https://my8100.herokuapp.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>#}
+{#  <script>setTimeout("checkLatestVersion({{ pageview }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 1000);</script>#}
+{#  {% else %}#}
+{#  <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>#}
+{#  {% endif %}#}
+
+  <script type="text/javascript" src="{{ static_js_vue_min }}"></script>
+  <script type="text/javascript" src="{{ static_js_element_ui_index }}"></script>
+{% endblock %}
+
+
+{% block body %}
+{% if (SCRAPYD_SERVERS_AMOUNT == 1 and pageview == 1) or IS_IE_EDGE %}
+<script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
+{% endif %}
+    <div class="el-container is-vertical">
+        <div class="el-row is-justify-center">
+            <div class="el-col el-col-20">
+                <h1>Monitoring view for the spider '{{ spider }}' [<a href="{{ log_url }}">logs</a>]</h1>
+            </div>
+            <div class="el-col el-col-4">
+                <a class="github-button" href="{{ github_link }}">Report an issue</a>
+            </div>
+        </div>
+        <p>This page allow the historical monitoring of a specific spider.</p>
+
+        <h2>Scraping historic</h2>
+        {{ graphHTML | safe }}
+    </div>
+{% endblock %}
