@@ -197,20 +197,6 @@ function checkBrowser() {
     var isFirefox = winNav.userAgent.indexOf("Firefox") > -1;
     var isSafari = winNav.userAgent.indexOf("Safari") > -1 && winNav.userAgent.indexOf("Chrome") == -1;
     var isIOSChrome = winNav.userAgent.match("CriOS");
-
-    //if (isIOSChrome) {
-        // is Google Chrome on IOS
-    if (
-        isChromium !== null &&
-        typeof isChromium !== "undefined" &&
-        vendorName === "Google Inc." &&
-        isOpera === false &&
-        isIEedge === false
-    ) {
-        console.log('Google Chrome');
-    } else {
-        alert("It's recommended to use Google Chrome for a better experience.");
-    }
 }
 
 
