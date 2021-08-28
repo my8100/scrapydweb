@@ -157,6 +157,8 @@ window.onload = function(){
         </label>
       </template>
     </el-table-column>
+    <el-table-column prop="prev_run_items" label="Items" sortable align="right" width="70">
+    </el-table-column>
     <!-- with jitter: 2019-01-01 00:00:01.123456+08:00 -->
     <!-- Click the DISABLED button first -->
     <el-table-column prop="next_run_time" label="Next run time" sortable align="center" width="240"  column_key="next" :filters="hourFilterOptions" :filter-method="hoursFilter">
@@ -297,6 +299,22 @@ var Main = {
 
     }
   },
+
+    created() {
+      for (let row of this.tableData) {
+          fetch(row.url_prev_run_result.replace("/stats/", "/report/")).then(resp => {
+              if (resp.status == 200)
+                return resp.json()
+              return Promise.reject()
+          }).then(stats => {
+              row.prev_run_items = stats.log_categories.critical_logs.count + stats.log_categories.error_logs.count;
+              // TODO: WHYY do I need to do this nonsense to make the table refresh?!?!?!?
+              let spider = row.spider;
+              row.spider = spider + " "
+              row.spider = spider
+          });
+      }
+    },
 
   methods: {
     clearFilters() {
