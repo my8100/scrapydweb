@@ -296,7 +296,7 @@ Vue.component('line-chart', {
   extends: VueChartJs.Line,
   props: ['spider'],
   mounted () {
-        axios.get(`/1/thumbnail/${this.spider}`).then(response => {
+        axios.get(`/{{ node }}/thumbnail/${this.spider}`).then(response => {
             let abscissa = []
             let ordinate = []
             response.data.forEach((line)=>{
