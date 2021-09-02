@@ -38,6 +38,9 @@ setup(
         "flask-compress >= 1.4.0",  # Jan 5, 2017
         "Flask-SQLAlchemy >= 2.3.2",  # Oct 11, 2017
         "logparser == 0.8.2",
+        "numpy >= 1.21.2",  # Sep 1, 2021
+        "pandas >= 1.3.2",  # Sep 1, 2021
+        "plotly >= 5.3.0",  # Sep 1, 2021
         "requests >= 2.21.0",  # Dec 10, 2018
         "setuptools >= 40.6.3",  # Dec 11, 2018
         "six >= 1.12.0",  # Dec 10, 2018
@@ -55,6 +58,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7"
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.9"
     ]
 )
