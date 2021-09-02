@@ -24,7 +24,7 @@ class ThumbnailView(BaseView):
                     f"""
                     SELECT * 
                     FROM '{table}'
-                    WHERE spider = {self.spider} AND julianday('now') - julianday(start) <= 14
+                    WHERE spider = "{self.spider}" AND julianday('now') - julianday(start) <= 14
                     """,
                     con=con,
                 )
