@@ -264,7 +264,7 @@ var Main = {
     loadThumbnail(row){
       row.thumbnail = `/static/images/thumbnails/${row.spider}.png`
        axios
-           .get(`/1/thumbnail/${row.spider}`)
+           .get(`/{{ node }}/thumbnail/${row.spider}`)
            .then(response=>{
                let abscissa = []
                let ordinate = []
