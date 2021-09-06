@@ -112,11 +112,18 @@ print(get_localzone())</pre>
   </ul>
 </div>
 
+<div class="wrap">
+    <div id="graph">
+        <h2>Tasks repartition on nodes</h2>
+        {{ graphHTML | safe }}
+    </div>
+</div>
 
 <div class="wrap" style="padding-bottom: 24px;">
   <div id="message"></div>
 
   <div id="app">
+    <h2>Create new task</h2>
     <el-form id="form" :rules="rules" ref="form" :model="form" label-width="200px">
 
       <el-form-item label="Scrapyd server">

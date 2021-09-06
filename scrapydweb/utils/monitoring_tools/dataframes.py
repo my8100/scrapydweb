@@ -6,17 +6,23 @@ from sqlite3 import OperationalError
 from . import maths as mtm
 
 
-def db_connect(database_url, return_db_type=False):
+def db_connect(database_url, return_db_type=False, database=None):
     """
     This function is used to select automatically the correct SQL connector from the DATABASE_URL
     :param database_url:    (str) DATABASE_URL provided into the scrapydweb settings
     :param return_db_type:  (bool) if True, it will return a str with the type of db detected. It could be used to
                             select the query syntax.
+    :param database:        (str) DATABASE name, if None it will be connected to the connector default db
     :return:                (connector) sql connector for request the DB
     """
     if re.findall(r"sqlite", database_url):
         try:
-            con = sqlite_connector()
+            if database:
+                if not re.search('.db', database):
+                    database = database + '.db'
+                con = sqlite_connector(database=database)
+            else:
+                con = sqlite_connector()
             db_type = "sqlite"
             logging.info("Connected to SQLite DB!")
             if return_db_type:
