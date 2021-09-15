@@ -92,6 +92,7 @@ def scraping_graph(dataframe, days=90, n=7):
         ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
+    fig.update_yaxes(rangemode="tozero")
 
     return fig
 
