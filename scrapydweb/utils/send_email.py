@@ -50,7 +50,7 @@ def send_email(**kwargs):
             server = smtplib.SMTP_SSL(smtp_server, smtp_port, timeout=smtp_connection_timeout)
         else:
             server = smtplib.SMTP(smtp_server, smtp_port, timeout=smtp_connection_timeout)
-            # server.ehlo()
+            # server.ehlo() # removed due to problem with postfix
             server.starttls()
         if need_debug:
             server.set_debuglevel(1)  # For debug
