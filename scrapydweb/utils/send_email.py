@@ -54,7 +54,8 @@ def send_email(**kwargs):
             server.starttls()
         if need_debug:
             server.set_debuglevel(1)  # For debug
-        server.login(email_username, email_password)
+        if email_password:
+            server.login(email_username, email_password)
         server.sendmail(email_sender, email_recipients, msg.as_string())
     except Exception as err:
         logger.error("Fail to send email: %s", subject)

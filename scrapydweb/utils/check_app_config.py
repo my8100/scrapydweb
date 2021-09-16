@@ -259,7 +259,7 @@ def check_app_config(config):
             check_assert('TELEGRAM_CHAT_ID', 0, int, allow_zero=False)
             check_slack_telegram(config, service='telegram')
         if config.get('ENABLE_EMAIL_ALERT', False):
-            check_assert('EMAIL_PASSWORD', '', str, non_empty=True)
+            # check_assert('EMAIL_PASSWORD', '', str, non_empty=True)
             check_email(config)
 
     # System

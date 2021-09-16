@@ -76,9 +76,9 @@ class SendTextApiView(BaseView):
         return self.json_dumps(self.js, as_response=True)
 
     def send_email(self):
-        if not self.EMAIL_PASSWORD:
-            self.js = dict(status=self.ERROR, result="The EMAIL_PASSWORD option is unset")
-            return
+        # if not self.EMAIL_PASSWORD:
+        #     self.js = dict(status=self.ERROR, result="The EMAIL_PASSWORD option is unset")
+        #     return
         self.EMAIL_KWARGS['subject'] = self.channel_chatid_subject
         self.EMAIL_KWARGS['content'] = self.text
         result, reason = send_email(to_retry=True, **self.EMAIL_KWARGS)
