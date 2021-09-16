@@ -128,8 +128,8 @@ class ScheduleView(BaseView):
         self.kwargs['expand_timer_task'] = True
         self.kwargs['task_id'] = self.task_id
         self.kwargs['name'] = task.name or 'task #%s' % self.task_id
-        if not self.kwargs['name'].endswith(' - edit'):
-            self.kwargs['name'] += ' - edit'
+        #if not self.kwargs['name'].endswith(' - edit'):
+        #    self.kwargs['name'] += ' - edit'
 
         self.kwargs['year'] = task.year or '*'
         self.kwargs['month'] = task.month or '*'
@@ -415,6 +415,7 @@ class ScheduleRunView(BaseView):
             self.task_id = self.task.id
 
     def db_process_task(self):
+        # NOTE: when changing this, make sure to update TasksXhrView.recreate_task
         data = dict(self.data)  # Used in update_history() and generate_response()
 
         self.task.project = data.pop('project')

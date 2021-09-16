@@ -54,6 +54,10 @@ window.onload = function(){
 <div id="app">
 <template>
   <el-button @click="clearFilters">Reset filters</el-button>
+  <el-button @click="bulkAction('resume')">RESUME selected</el-button>
+  <el-button @click="bulkAction('pause')">PAUSE selected</el-button>
+  <el-button @click="bulkAction('recreate')">START selected</el-button>
+  <el-button @click="bulkAction('remove')">STOP selected</el-button>
   <el-table
     ref="multipleTable"
     :data="tableData"
@@ -71,6 +75,7 @@ window.onload = function(){
     <!-- default-sort would cause background color of the buttons flash once -->
     <!-- :default-sort="{prop: 'status', order: 'descending'}" -->
 
+    <el-table-column type="selection" align="center" :reserve-selection="true"></el-table-column>
     <el-table-column type="expand">
       <template slot-scope="props">
         <el-form label-position="left" inline class="demo-table-expand">
@@ -108,7 +113,7 @@ window.onload = function(){
 
           <el-form-item label="settings_arguments"><span>{{props.row.settings_arguments}}</span></el-form-item>
           <el-form-item></el-form-item>
-          <el-form-item label="selected_nodes"><span>{{props.row.selected_nodes}}</span></el-form-item>
+          <el-form-item label="selected_nodes"><span>{{props.row.selected_nodes_str}}</span></el-form-item>
         </el-form>
       </template>
     </el-table-column>
@@ -117,6 +122,7 @@ window.onload = function(){
     <el-table-column prop="name" label="Name" sortable show-overflow-tooltip align="center" width="100" column_key="name" :filters="countryFilterOptions" :filter-method="countryFilter"></el-table-column>
     <el-table-column prop="project" label="Project" sortable show-overflow-tooltip align="center" width="150"></el-table-column>
     <el-table-column prop="spider" label="Spider" sortable show-overflow-tooltip align="center" width="150" column_key="spider" :filters="spiderFilterOptions" :filter-method="spiderFilter"></el-table-column>
+    <el-table-column prop="selected_nodes_str" label="Nodes" sortable show-overflow-tooltip align="center" width="200" column_key="selected_nodes" :filters="nodesFilterOptions" :filter-method="nodesFilter"></el-table-column>
     <!-- default-sort would cause background color of the buttons flash once -->
     <el-table-column prop="status" label="Status" sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
       <template slot-scope="scope">
@@ -125,13 +131,16 @@ window.onload = function(){
         </label>
       </template>
     </el-table-column>
-    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="160">
+    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="180">
       <template slot-scope="scope">
+        <label title="">
+          <a class="state warning" :style="{ display: scope.row.display_recreate }" @click="handleStatusClick(scope.row.url_recreate)">Start</a>
+        </label>
         <label title="click to fire the task right now">
           <a class="state safe" :style="{ display: scope.row.display_fire }" @click="handleStatusClick(scope.row.url_fire)">Fire</a>
         </label>
         <label :title="scope.row.action_label">
-          <a :class="scope.row.action_class" @click="deleteRow(scope.$index, tableData)">{{scope.row.action}}</a>
+          <a :class="scope.row.action_class" @click="handleStatusClick(scope.row.url_action)">{{scope.row.action}}</a>
         </label>
         <label title="click to update or copy the task">
           <a class="state normal" @click="handleStatusClick(scope.row.url_edit)">Edit</a>
@@ -147,6 +156,8 @@ window.onload = function(){
           </a>
         </label>
       </template>
+    </el-table-column>
+    <el-table-column prop="prev_run_items" label="Items" sortable align="right" width="70">
     </el-table-column>
     <!-- with jitter: 2019-01-01 00:00:01.123456+08:00 -->
     <!-- Click the DISABLED button first -->
@@ -201,6 +212,12 @@ var Main = {
         '{{ task.name }}',
       {% endfor %}
     ]
+    nodes=[...new Set([
+      {% for task in tasks.items %}
+        {{ task.selected_node_names|safe }},
+      {% endfor %}
+    ].flat())].sort()
+
     country_codes = [...new Set(country_codes.map(x => x.split('_')[0]))].sort()
     hours=[...Array(24)].map((_, i) => i)
     return {
@@ -209,6 +226,7 @@ var Main = {
       currentPage: {{ tasks.page }},  // the current page number (1 indexed)
       sortOrders: ['descending','ascending',null],
       spiderFilterOptions: spiders.map(spider => ({text:spider, value: spider})),
+      nodesFilterOptions: nodes.map(node => ({text:node, value: node})),
       countryFilterOptions: country_codes.map(country_code => ({text:country_code, value: country_code})),
       hourFilterOptions: hours.map(hour => ({text:String(hour).padStart(2, '0') + 'h', value: hour})),
       tableData: [
@@ -244,12 +262,14 @@ var Main = {
 
         create_time: '{{ task.create_time }}',
         update_time: '{{ task.update_time }}',
+        selected: 'no',
         project: '{{ task.project }}',
         version: '{{ task.version }}',
         spider: '{{ task.spider }}',
         jobid: '{{ task.jobid }}',
         settings_arguments: '{{ task.settings_arguments|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
-        selected_nodes: '{{ task.selected_nodes }}',
+        selected_nodes_str: {{ task.selected_node_names|safe }}.join(", "),
+        selected_nodes: {{ task.selected_node_names|safe }},
 
         year: '{{ task.year }}',
         month: '{{ task.month }}',
@@ -271,12 +291,30 @@ var Main = {
         url_edit: '{{ task.url_edit }}',
         url_fire: '{{ task.url_fire }}',
         display_fire: {% if task.url_fire %}''{% else %}'none'{% endif %},
+        url_recreate: '{{ task.url_recreate }}',
+        display_recreate: {% if task.url_recreate %}''{% else %}'none'{% endif %},
       },
     {% endfor %}
       ],
 
     }
   },
+
+    created() {
+      for (let row of this.tableData) {
+          fetch(row.url_prev_run_result.replace("/stats/", "/report/")).then(resp => {
+              if (resp.status == 200)
+                return resp.json()
+              return Promise.reject()
+          }).then(stats => {
+              row.prev_run_items = stats.log_categories.critical_logs.count + stats.log_categories.error_logs.count;
+              // TODO: WHYY do I need to do this nonsense to make the table refresh?!?!?!?
+              let spider = row.spider;
+              row.spider = spider + " "
+              row.spider = spider
+          });
+      }
+    },
 
   methods: {
     clearFilters() {
@@ -285,6 +323,10 @@ var Main = {
     spiderFilter(value, row, column) {
       const property = column['property'];
       return row[property] === value;
+    },
+    nodesFilter(value, row, column) {
+      const property = column['property'];
+      return row[property].indexOf(value) > -1;
     },
     countryFilter(value, row, column) {
       const property = column['property'];
@@ -298,6 +340,7 @@ var Main = {
     handleSelectRow(val) {
       this.currentRow = val;
     },
+    // TODO: deleteRow is bypassed due to issues with sorted tables. Either fix it or remove it
     deleteRow(index, rows) {
       // Stop task: '/9/tasks/xhr/remove/8/'
       // Delete task: '/9/tasks/xhr/delete/8/'
@@ -373,6 +416,14 @@ var Main = {
         return a.run_times > b.run_times ? 1 : -1;
       }
     },
+    bulkAction(action) {
+        let selected_task_urls = vm.$refs.multipleTable.selection.map(row => [row.url_status, row.url_recreate, row.url_action, row.url_delete]).flat().filter(str => str && str.length > 0);
+        let to_fetch = selected_task_urls.filter(url => url.indexOf(action) > -1);
+        Promise.all(to_fetch.map(url => fetch(url))).then(responses => {
+            if (responses.length > 0)
+                window.location.reload();
+        })
+    }
   }
 }
 var Ctor = Vue.extend(Main);

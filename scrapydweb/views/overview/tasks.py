@@ -6,8 +6,10 @@ import traceback
 
 from flask import Blueprint, flash, render_template, request, send_file, url_for
 
+from ..operations.schedule import ScheduleRunView
 from ...common import handle_metadata
 from ...models import Task, TaskResult, TaskJobResult, db
+from ...utils.scheduler import scheduler
 from ...vars import SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING, TIMER_TASKS_HISTORY_LOG
 from ..baseview import BaseView
 
@@ -184,6 +186,7 @@ class TasksView(BaseView):
                     task.url_status = task.url_task_results  # '',  'javascript:;'
                     task.action = 'Delete'
                     task.url_action = url_for('tasks.xhr', node=self.node, action='delete', task_id=task.id)
+                    task.url_recreate = url_for('tasks.xhr', node=self.node, action='recreate', task_id=task.id)
                     task.next_run_time = self.NA
                     task.url_fire = ''
 
@@ -269,7 +272,7 @@ class TasksXhrView(BaseView):
         self.task_id = self.view_args['task_id']  # <int:task_id>
         self.task_result_id = self.view_args['task_result_id']  # <int:task_result_id>
 
-        self.task = Task.query.get(self.task_id) if self.task_id else None
+        self.task: Task = Task.query.get(self.task_id) if self.task_id else None
         self.apscheduler_job = self.scheduler.get_job(str(self.task_id)) if self.task_id else None  # Return type: Job|None
         self.js = dict(action=self.action, task_id=self.task_id, task_result_id=self.task_result_id, url=request.url)
 
@@ -301,6 +304,8 @@ class TasksXhrView(BaseView):
             self.fire_task()
         elif self.action == 'list':  # For test only
             self.list_tasks_or_results()
+        elif self.action == 'recreate':
+            self.recreate_task()
         else:  # pause|resume|remove a apscheduler_job
             self.handle_apscheduler_job()
 
@@ -372,6 +377,26 @@ class TasksXhrView(BaseView):
             self.apscheduler_job.remove()
         self.js['tip'] = u"apscheduler_job #{task_id} after '{action}': {apscheduler_job}".format(
             task_id=self.task_id, action=self.action, apscheduler_job=self.scheduler.get_job(str(self.task_id)))
+
+    def recreate_task(self):
+        # NOTE: this is a horrible hack
+        # We fake-instantiate the class and then fill out as little as possible for it to work
+        # This is needed due to rampant use of global variables and basically no view-logic decoupling
+        run_view = ScheduleRunView.__new__(ScheduleRunView)
+        run_view.logger = self.logger
+        run_view.scheduler = scheduler
+        run_view.task = self.task
+        # This is copied and converted from db_process_task and needs to be kept in sync
+        run_view.task_data = {'name': self.task.name, 'trigger': self.task.trigger, 'year': self.task.year, 'month': self.task.month, 'day': self.task.day, 'week': self.task.week,
+                              'day_of_week': self.task.day_of_week, 'hour': self.task.hour, 'minute': self.task.minute, 'second': self.task.second, 'start_date': self.task.start_date,
+                              'end_date': self.task.end_date, 'timezone': self.task.timezone, 'jitter': self.task.jitter, 'misfire_grace_time': self.task.misfire_grace_time,
+                              'coalesce': self.task.coalesce, 'max_instances': self.task.max_instances}
+
+        run_view._action = 'add'  # add|add_fire|add_pause
+        run_view.task_id = self.task_id
+        run_view.to_update_task = True
+        run_view.task.update_time = datetime.now()
+        run_view.add_update_task()
 
     def dump_task_data(self):
         if not self.task:

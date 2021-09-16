@@ -62,7 +62,7 @@
     {% else %}
     <a class="dropbtn">
     {% endif %}
-      <span>{{ SCRAPYD_SERVERS[node-1] }}</span>
+      <span>{{ SCRAPYD_SERVER_OBJECTS[node-1].name }}</span>
       <svg class="icon anchor" aria-hidden="true">
         <use xlink:href="#icon-down"></use>
       </svg>
