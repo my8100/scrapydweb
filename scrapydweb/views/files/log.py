@@ -460,7 +460,7 @@ class LogView(BaseView):
         elif self.ON_ZERO_SCRAPED and self.job_finished and self.kwargs['items']:
             self.flag = NOTHING_SCRAPED_FLAG
             self.logger.warning('Nothing was scraped - sending mail')
-        elif self.ON_JOB_FINISHED_DIFF and self.job_finished
+        elif self.ON_JOB_FINISHED_DIFF and self.job_finished:
             # try to get previious finished task's items
             _url_stats = url_for('api', node=self.node, opt='liststats')
             self.logger.info('Getting stats from node ' + self.node)
