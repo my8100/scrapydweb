@@ -307,7 +307,7 @@ var Main = {
                 return resp.json()
               return Promise.reject()
           }).then(stats => {
-              row.prev_run_items = stats.log_categories.critical_logs.count + stats.log_categories.error_logs.count;
+              row.prev_run_items = stats.items;
               // TODO: WHYY do I need to do this nonsense to make the table refresh?!?!?!?
               let spider = row.spider;
               row.spider = spider + " "

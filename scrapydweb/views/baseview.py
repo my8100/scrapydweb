@@ -173,6 +173,8 @@ class BaseView(View):
         self.ALERT_WORKING_HOURS = app.config.get('ALERT_WORKING_HOURS', [])
         self.ON_JOB_RUNNING_INTERVAL = app.config.get('ON_JOB_RUNNING_INTERVAL', 0)
         self.ON_JOB_FINISHED = app.config.get('ON_JOB_FINISHED', False)
+        self.ON_ZERO_SCRAPED = app.config.get('ON_ZERO_SCRAPED', False)
+        self.ON_JOB_FINISHED_DIFF = app.config.get('ON_JOB_FINISHED_DIFF', 0)
         # ['CRITICAL', 'ERROR', 'WARNING', 'REDIRECT', 'RETRY', 'IGNORE']
         for key in self.ALERT_TRIGGER_KEYS:
             setattr(self, 'LOG_%s_THRESHOLD' % key, app.config.get('LOG_%s_THRESHOLD' % key, 0))

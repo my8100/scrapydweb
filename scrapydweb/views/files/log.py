@@ -6,6 +6,7 @@ import json
 import os
 import re
 from subprocess import Popen
+from flask import current_app as app
 import sys
 import tarfile
 import time
@@ -23,7 +24,6 @@ EMAIL_CONTENT_KEYS = [
     'log_warning_count',
     'log_redirect_count',
     'log_retry_count',
-    'log_ignore_count',
     'crawled_pages',
     'scraped_items'
 ]
@@ -36,6 +36,8 @@ job_finished_report_dict = defaultdict(OrderedDict)
 REPORT_KEYS_SET = {'from_memory', 'status', 'pages', 'items', 'shutdown_reason', 'finish_reason', 'runtime',
                    'first_log_time', 'latest_log_time', 'log_categories', 'latest_matches'}
 
+NOTHING_SCRAPED_FLAG = 'Nothing scraped!!'
+DIFF_TO_BIG_FLAG = 'Collcted less than previous run!'
 
 # http://flask.pocoo.org/docs/1.0/api/#flask.views.View
 # http://flask.pocoo.org/docs/1.0/views/
@@ -66,8 +68,7 @@ class LogView(BaseView):
 
         # json file by LogParser
         self.json_path = os.path.join(self.LOCAL_SCRAPYD_LOGS_DIR, self.project, self.spider, job_without_ext+'.json')
-        self.json_url = u'http://{}/logs/{}/{}/{}.json'.format(self.SCRAPYD_SERVER, self.project, self.spider,
-                                                               job_without_ext)
+        self.json_url = u'http://{}/logs/{}/{}/{}.json'.format(self.SCRAPYD_SERVER, self.project, self.spider, job_without_ext)
 
         self.status_code = 0
         self.text = ''
@@ -418,7 +419,7 @@ class LogView(BaseView):
 
     def set_email_content_kwargs(self):
         self.email_content_kwargs['SCRAPYD_SERVER'] = self.SCRAPYD_SERVER
-        self.email_content_kwargs['project'] = self.kwargs['project']
+        # self.email_content_kwargs['project'] = self.kwargs['project']
         self.email_content_kwargs['spider'] = self.kwargs['spider']
         self.email_content_kwargs['job'] = self.kwargs['job']
         self.email_content_kwargs['first_log_time'] = self.kwargs['first_log_time']
@@ -426,36 +427,63 @@ class LogView(BaseView):
         self.email_content_kwargs['runtime'] = self.kwargs['runtime']
         self.email_content_kwargs['shutdown_reason'] = self.kwargs['shutdown_reason']
         self.email_content_kwargs['finish_reason'] = self.kwargs['finish_reason']
-        self.email_content_kwargs['url_stats'] = request.url + '%sui=mobile' % '&' if request.args else '?'
+        self.email_content_kwargs['url_stats'] = request.url.replace("127.0.0.1",self.URL_SCRAPYDWEB) + '%sui=mobile' % '&' if request.args else '?'
 
         for idx, key in enumerate(EMAIL_CONTENT_KEYS):
-            if self.job_stats_diff[idx]:
-                self.email_content_kwargs[key] = '%s + %s' % (self.job_stats_previous[idx], self.job_stats_diff[idx])
-            else:
+            # if self.job_stats_diff[idx]:
+            #     self.email_content_kwargs[key] = '%s + %s' % (self.job_stats_previous[idx], self.job_stats_diff[idx])
+            # else:
                 self.email_content_kwargs[key] = self.job_stats[idx]
+            self.email_content_kwargs[key] = self.job_stats[idx]
         # pages and items may be None by LogParser
         if self.kwargs['pages'] is None:
             self.email_content_kwargs['crawled_pages'] = self.NA
         if self.kwargs['items'] is None:
             self.email_content_kwargs['scraped_items'] = self.NA
 
-        _url_stop = url_for('api', node=self.node, opt='stop', project=self.project, version_spider_job=self.job)
-        self.email_content_kwargs['url_stop'] = self.URL_SCRAPYDWEB + _url_stop
+        # _url_stop = url_for('api', node=self.node, opt='stop', project=self.project, version_spider_job=self.job)
+        # self.email_content_kwargs['url_stop'] = self.URL_SCRAPYDWEB + _url_stop
 
-        now_timestamp = time.time()
-        for k in ['latest_crawl', 'latest_scrape', 'latest_log']:
-            ts = self.kwargs['%s_timestamp' % k]
-            self.email_content_kwargs[k] = self.NA if ts == 0 else "%s secs ago" % int(now_timestamp - ts)
+        # now_timestamp = time.time()
+        # for k in ['latest_crawl', 'latest_scrape', 'latest_log']:
+        #     ts = self.kwargs['%s_timestamp' % k]
+        #     self.email_content_kwargs[k] = self.NA if ts == 0 else "%s secs ago" % int(now_timestamp - ts)
 
-        self.email_content_kwargs['current_time'] = self.get_now_string(True)
-        self.email_content_kwargs['logparser_version'] = self.kwargs['logparser_version']
-        self.email_content_kwargs['latest_item'] = self.kwargs['latest_matches']['latest_item'] or self.NA
-        self.email_content_kwargs['Crawler.stats'] = self.kwargs['crawler_stats']
-        self.email_content_kwargs['Crawler.engine'] = self.kwargs['crawler_engine']
+        # self.email_content_kwargs['current_time'] = self.get_now_string(True)
+        # self.email_content_kwargs['logparser_version'] = self.kwargs['logparser_version']
+        # self.email_content_kwargs['latest_item'] = self.kwargs['latest_matches']['latest_item'] or self.NA
+        # self.email_content_kwargs['Crawler.stats'] = self.kwargs['crawler_stats']
+        # self.email_content_kwargs['Crawler.engine'] = self.kwargs['crawler_engine']
 
     def set_monitor_flag(self):
         if self.ON_JOB_FINISHED and self.job_finished:
             self.flag = 'Finished'
+        elif self.ON_ZERO_SCRAPED and self.job_finished and self.kwargs['items']:
+            self.flag = NOTHING_SCRAPED_FLAG
+            self.logger.warning('Nothing was scraped - sending mail')
+        elif self.ON_JOB_FINISHED_DIFF and self.job_finished
+            # try to get previious finished task's items
+            _url_stats = url_for('api', node=self.node, opt='liststats')
+            self.logger.info('Getting stats from node ' + self.node)
+            node_stats_url = self.URL_SCRAPYDWEB + _url_stats
+            status_code, json_data = self.make_request(node_stats_url, auth=self.AUTH, as_json=True)
+            prev_run_items = None
+            if status_code == 200
+                jobs = json_data[datas][self.project][self.spider]
+                current_job_root = "_".join(self.job.split("-")[0].split("_")[:-2])
+                self.logger.info('Checking stats for the job root: ' + current_job_root)
+                for job in sort(jobs.keys(), reverse = True):
+                    job_root = "_".join(job.split("-")[0].split("_")[:-2])
+                    if job_root == current_job_root and jobs[job]["finish_reason"] == "finished":
+                        prev_run_items = jobs[job]["items"]
+                        break
+            self.logger.warning('Previous job not found for: ' + self.job)
+            if prev_run_items:
+                prev_run_diff = (prev_run_items - self.kwargs['items'])/prev_run_items
+                if prev_run_diff > self.ON_JOB_FINISHED_DIFF:
+                    self.flag = DIFF_TO_BIG_FLAG
+                    self.email_content_kwargs["prev_run_items"] = prev_run_items
+                    self.email_content_kwargs["prev_run_diff"] = str(prev_run_diff) + " %"
         elif not all(self.triggered_list):
             to_forcestop = False
             to_stop = False
@@ -493,15 +521,14 @@ class LogView(BaseView):
         if (self.flag
             and date.isoweekday(date.today()) in self.ALERT_WORKING_DAYS  # date.isoweekday(datetime.now())
             and datetime.now().hour in self.ALERT_WORKING_HOURS
-        ):
+        ) or self.flag == NOTHING_SCRAPED_FLAG or self.flag == DIFF_TO_BIG_FLAG:
             kwargs = dict(
                 flag=self.flag,
                 pages=self.NA if self.kwargs['pages'] is None else self.kwargs['pages'],
                 items=self.NA if self.kwargs['items'] is None else self.kwargs['items'],
-                job_key=self.job_key,
-                latest_item=self.kwargs['latest_matches']['latest_item'][:100] or self.NA
+                job_key=self.job_key.split("/")[-1],
             )
-            subject = u"{flag} [{pages}p, {items}i] {job_key} {latest_item} #scrapydweb".format(**kwargs)
+            subject = u"{flag} [{pages}p, {items}i] {job_key}".format(**kwargs)
             self.EMAIL_KWARGS['subject'] = subject
             self.EMAIL_KWARGS['content'] = self.json_dumps(self.email_content_kwargs, sort_keys=False)
 
