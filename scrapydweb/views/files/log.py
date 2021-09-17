@@ -492,7 +492,7 @@ class LogView(BaseView):
                 if (0 < getattr(self, 'LOG_%s_THRESHOLD' % key, 0) <= self.job_stats[idx]
                    and not self.triggered_list[idx]):
                     self.triggered_list[idx] = True
-                    str(self.email_content_kwargs['log_%s_count' % key.lower()]) += ' triggered!!!'
+                    self.email_content_kwargs['log_%s_count' % key.lower()] = str(self.email_content_kwargs['log_%s_count' % key.lower()]) + ' triggered!!!'
                     if getattr(self, 'LOG_%s_TRIGGER_FORCESTOP' % key):
                         self.flag = '%s_ForceStop' % key if '_ForceStop' not in self.flag else self.flag
                         to_forcestop = True
