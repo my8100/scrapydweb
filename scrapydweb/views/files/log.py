@@ -534,7 +534,7 @@ class LogView(BaseView):
             data = dict(
                 subject=subject,
                 url_stats=self.email_content_kwargs['url_stats'],
-                url_stop=self.email_content_kwargs['url_stop'],
+                # url_stop=self.email_content_kwargs['url_stop'],
                 when=self.get_now_string(True),
             )
             if self.ENABLE_SLACK_ALERT:
