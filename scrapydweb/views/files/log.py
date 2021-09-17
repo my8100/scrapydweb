@@ -427,7 +427,7 @@ class LogView(BaseView):
         self.email_content_kwargs['runtime'] = self.kwargs['runtime']
         self.email_content_kwargs['shutdown_reason'] = self.kwargs['shutdown_reason']
         self.email_content_kwargs['finish_reason'] = self.kwargs['finish_reason']
-        self.email_content_kwargs['url_stats'] = request.url.replace("127.0.0.1",self.URL_SCRAPYDWEB) + '%sui=mobile' % '&' if request.args else '?'
+        self.email_content_kwargs['url_stats'] = request.url.replace("127.0.0.1:80",self.URL_SCRAPYDWEB) + '%sui=mobile' % '&' if request.args else '?'
 
         for idx, key in enumerate(EMAIL_CONTENT_KEYS):
             # if self.job_stats_diff[idx]:
@@ -457,7 +457,7 @@ class LogView(BaseView):
     def set_monitor_flag(self):
         if self.ON_JOB_FINISHED and self.job_finished:
             self.flag = 'Finished'
-        elif self.ON_ZERO_SCRAPED and self.job_finished and self.kwargs['items']:
+        elif self.ON_ZERO_SCRAPED and self.job_finished and not self.kwargs['items']:
             self.flag = NOTHING_SCRAPED_FLAG
             self.logger.warning('Nothing was scraped - sending mail')
         elif self.ON_JOB_FINISHED_DIFF and self.job_finished:
