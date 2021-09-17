@@ -467,7 +467,7 @@ class LogView(BaseView):
             node_stats_url = self.URL_SCRAPYDWEB + _url_stats
             status_code, json_data = self.make_request(node_stats_url, auth=self.AUTH, as_json=True)
             prev_run_items = None
-            if status_code == 200
+            if status_code == 200:
                 jobs = json_data[datas][self.project][self.spider]
                 current_job_root = "_".join(self.job.split("-")[0].split("_")[:-2])
                 self.logger.info('Checking stats for the job root: ' + current_job_root)
