@@ -434,7 +434,6 @@ class LogView(BaseView):
             #     self.email_content_kwargs[key] = '%s + %s' % (self.job_stats_previous[idx], self.job_stats_diff[idx])
             # else:
                 self.email_content_kwargs[key] = self.job_stats[idx]
-            self.email_content_kwargs[key] = self.job_stats[idx]
         # pages and items may be None by LogParser
         if self.kwargs['pages'] is None:
             self.email_content_kwargs['crawled_pages'] = self.NA
