@@ -463,7 +463,7 @@ class LogView(BaseView):
         elif self.ON_JOB_FINISHED_DIFF and self.job_finished:
             # try to get previious finished task's items
             _url_stats = url_for('api', node=self.node, opt='liststats')
-            self.logger.info('Getting stats from node ' + self.node)
+            self.logger.info('Getting stats from node ' + str(self.node))
             node_stats_url = self.URL_SCRAPYDWEB + _url_stats
             status_code, json_data = self.make_request(node_stats_url, auth=self.AUTH, as_json=True)
             prev_run_items = None
