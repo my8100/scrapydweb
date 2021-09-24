@@ -6,6 +6,9 @@ from shutil import copyfile
 import sys
 
 from flask import request
+from environs import Env
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 # from . import create_app  # --debug: ImportError: cannot import name 'create_app'
 from scrapydweb import create_app
@@ -16,6 +19,7 @@ from scrapydweb.utils.check_app_config import check_app_config
 
 
 logger = logging.getLogger(__name__)
+env = Env()
 apscheduler_logger = logging.getLogger('apscheduler')
 
 STAR = '\n%s\n' % ('*' * 100)
@@ -116,7 +120,7 @@ def main():
     logger.info("For running Flask in production, check out http://flask.pocoo.org/docs/1.0/deploying/")
     apscheduler_logger.setLevel(logging.DEBUG)
     app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'],
-            ssl_context=context, use_reloader=False)
+            ssl_context=context, use_reloader=env.bool("RELOAD", False))
 
 
 def load_custom_settings(config):

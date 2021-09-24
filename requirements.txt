@@ -1,5 +1,6 @@
 pip>=19.1.1
 APScheduler>=3.5.3
+environs==9.3.3
 flask>=1.0.2
 flask-compress>=1.4.0
 Flask-SQLAlchemy>=2.3.2
