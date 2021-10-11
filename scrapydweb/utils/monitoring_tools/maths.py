@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
 
+from datetime import datetime
+from typing import Sequence
+from . import dataframes
+
+
 def global_data(dataframe):
     """
     This function can be used to compute the total of pages and items scraped each day.
@@ -35,10 +40,6 @@ def compute_floating_means(dataframe, column, n=3):
     :param n:           (int)   the number of days to include into the mean calculation
     :return:            (df)    the input DataFrame with the floating mean column added (*_favg)
     """
-    # | import section |
-    import pandas as pd
-    import numpy as np
-
     # | code section |
 
     data = dataframe[["start_date", column]].copy()
@@ -49,6 +50,108 @@ def compute_floating_means(dataframe, column, n=3):
 
     return dataframe
 
+def compute_floating_deviation(dataframe, column, n=3):
+    """
+    This function is used to compute the floating standard deviation of a specific DataFrame column at a specific interval.
+
+    :param dataframe:   (df)    input DataFrame
+    :param column:      (str)   the column name used for the mean calculation
+    :param n:           (int)   the number of days to include into the mean calculation
+    :return:            (df)    the input DataFrame with the floating mean column added (*_favg)
+    """
+    # | code section |
+
+    data = dataframe[["start_date", column]].copy()
+
+    for i in range(n -1):
+        data[f"n-{i}"] = data.iloc[:, -1].shift(1)
+    dataframe[f"{column}_fstd"] = [row[1].std() for row in data.iloc[:, 1:].iterrows()]
+
+    return dataframe
+
+def set_alert_level(dataframe, column, n=0, log=False):
+    """
+    This function is used to check if the last number of items/pages is lower than the threshold 
+    
+    :param dataframe:   (df)    input DataFrame
+    :param column:      (str)   the column name used for the mean calculation
+    :return:            (int)   the signal alert
+    """
+    # | import section |
+    import numpy as np 
+    from datetime import datetime, timedelta
+    
+    # | code section |
+    date = datetime.now().date() - timedelta(days=n)
+    if log:
+        print(f"selected date:  {date}")
+    data = dataframe[[f'{column}', f'{column}_favg', f'{column}_fstd']][dataframe['start_date'] == date]
+    
+    # Values
+    try:
+        scrap_average = int(np.round(data[f'{column}_favg'].values[0]))
+        scrap_std = int(np.round(data[f'{column}_fstd'].values[0]))
+        scrap_result = int(data[f'{column}'].values[0])
+    except IndexError:
+        print("IndexError in data..")
+    
+    if log:
+        print(
+            f"""
+            Nb items:       {scrap_result}
+            Avg items:      {scrap_average}
+            Std items:      {scrap_std}
+            Low border:     {scrap_average - scrap_std}   
+            Avg items /2:   {int(np.round(scrap_average / 2))}
+            """
+            )
+
+    alert_lvl = 0
+    if scrap_result < np.round(scrap_average / 1.01):
+        alert_lvl += 1
+        if scrap_result < np.round(scrap_average - (scrap_std / 2)):
+            alert_lvl += 1
+            if scrap_result < np.round(scrap_average - scrap_std):
+                alert_lvl += 1
+                if scrap_result < np.round(scrap_average / 2) or scrap_result == 0:
+                    alert_lvl += 1
+
+    return alert_lvl
+
+def check_alert_level(alert_levels, log=False):
+    """
+    This function return a HTML div with a color circle corresponding to the alert indicator
+    Returns:
+        * red circle if sum of alert levels > thresold
+        * orange circle if sum of alert levels > thresold / 2
+        * green circle if sum of alert levels < thresold / 2
+
+    :param alert_levels:    (list)  list of alert levels 
+    :param threshold:       (int)   alert threshold 
+    :return:                (html)  html code of the alert indicator.
+    """
+    # | import section |
+    import numpy as np
+
+    # | code section |
+    current_alert = np.average(alert_levels)
+    
+    if log:
+        print(f"Sum of alert levels:   {current_alert}")
+        [print(f"\t- Alert{i}: {lvl}") for i, lvl in enumerate(alert_levels)]
+
+    if current_alert == 0:
+        msg = '🟢'
+    elif current_alert == 1:
+        msg = '🟡'
+    elif current_alert == 2:
+        msg = '🟠'
+    elif current_alert == 3:
+        msg = '🔴'
+    else:
+        msg = '⚫️'
+
+    return msg
 
 def unique_count(dataframe, column):
     """

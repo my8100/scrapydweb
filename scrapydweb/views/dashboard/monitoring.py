@@ -55,7 +55,13 @@ class MonitorView(BaseView):
         df = mtm.compute_floating_means(
             df, "pages", 7
         )  # Compute floating mean for pages
-
+        df = mtm.compute_floating_deviation(
+            df, "items", 7
+        )
+        df = mtm.compute_floating_deviation(
+            df, "pages", 7
+        )
+        
         fig = mtg.scraping_graph(dataframe=df, days=30)  # Plot data
         html_fig = fig.to_html()  # Convert plot figure to html
 

@@ -49,6 +49,11 @@
         <p>{{scope.row.index}}</p>
       </template>
     </el-table-column>
+    <el-table-column prop="alert" label="Alert" fixed sortable align="center" width="70" show-overflow-tooltip>
+      <template slot-scope="scope">
+          <p>{{scope.row.alert}}</p>
+      </template>
+    </el-table-column>
     <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}100{% endif %}">
       <template slot-scope="scope">
         <em :class="scope.row.loading_class"  v-bind:style="{display: scope.row.stats_loading_display}">{{scope.row.loading}}</em>
@@ -64,7 +69,7 @@
             <a target="_blank" :href="scope.row.url_monitor">{{scope.row.spider}}</a>
         </template>
     </el-table-column>
-    <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="90" show-overflow-tooltip>
+      <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="90" show-overflow-tooltip>
         <template slot-scope="scope">
             <div>
                 <line-chart :spider="scope.row.spider"></line-chart>
@@ -112,6 +117,7 @@ var Main = {
         project: '{{ job.project }}',
         spider: '{{ job.spider }}',
         job: '{{ job.job }}',
+        alert: '{{ job.alert_indicator }}',
 
         loading: 'lazy loading',
         loading_class: '',

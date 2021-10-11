@@ -24,72 +24,105 @@ def scraping_graph(dataframe, days=90, n=7):
     graph_name = (
         f"Evolution of scraped items and pages scraped each day (on {days} days)"
     )
+    
+    data['low_border'] = data["items_favg"] - data["items_fstd"]
+    data['low_border'] = data['low_border'].apply(lambda x: 0 if x < 0 else x)
 
     # | graph section |
     fig = go.Figure()
 
+    # --- Number of items scrapped
+    # #-- add number of items scrapped
     fig.add_trace(
         go.Scatter(
             x=data["start_date"],
             y=data["items"],
             name="Number scraped items",
             line={"color": "firebrick", "width": 4},
+            hovertemplate='Nb Items: %{y}<extra></extra>',
+            marker={"opacity": 0}
         )
     )
 
+    # #-- add lower border of variations for number of items scrapped
+    fig.add_trace(
+        go.Scatter(
+            x=data["start_date"],
+            y=data['low_border'],
+            name="",
+            line={
+                "color": "firebrick",
+                "width": 0
+            },
+            showlegend=False,
+            hoverinfo='skip',
+            marker={"opacity": 0}
+        )
+    )
+
+    # #-- add average number of items scrapped
     fig.add_trace(
         go.Scatter(
             x=data["start_date"],
             y=data["items_favg"],
             name=f"Average scraped items ({n}d)",
-            line={
-                "color": "firebrick",
-                "dash": "dot",
-            },
+            fill='tonexty',
+            line={"color": "firebrick", "dash": "dot"},
+            hoverinfo='skip',
+            marker={"opacity": 0}
         )
     )
 
+    # --- Number of pages scrapped
+    # #-- add number of pages scrapped
     fig.add_trace(
         go.Scatter(
             x=data["start_date"],
             y=data["pages"],
-            yaxis="y2",
+            # yaxis="y2",
             name="Number scraped pages",
             # line={"color": "royalblue", "width": 3},
             line={"color": "#555555", "width": 3},
+            hovertemplate='Nb Pages: %{y}<extra></extra>',
+            marker={"opacity": 0}
         )
     )
 
+    # #-- add lower border of variations for number of pages scrapped
+    fig.add_trace(
+        go.Scatter(
+            x=data["start_date"],
+            y=data['low_border'],
+            # yaxis="y2",
+            name="",
+            # line={"color": "royalblue", "dash": "dot"},
+            line={"color": "#555555", "width": 0},
+            showlegend=False,
+            hoverinfo='skip',
+            marker={"opacity": 0}
+        )
+    )
+
+    # #-- add average number of pages scrapped
     fig.add_trace(
         go.Scatter(
             x=data["start_date"],
             y=data["pages_favg"],
-            yaxis="y2",
-            name=f"Average scraped pages ({n}d)",
+            # yaxis="y2",
+            name="",
+            fill='tonexty',
             # line={"color": "royalblue", "dash": "dot"},
             line={"color": "#555555", "dash": "dot"},
+            hoverinfo='skip',
+            marker={"opacity": 0}
         )
     )
 
     fig.update_layout(
         title=graph_name,
         xaxis_title="Date",
-        # yaxis_title="Nb Items/Pages",
-        yaxis=dict(
-            title="Nb Items",
-            titlefont=dict(color="firebrick"),
-            tickfont=dict(color="firebrick"),
-        ),
-        yaxis2=dict(
-            title="Nb pages",
-            # titlefont=dict(color="royalblue"),
-            titlefont=dict(color="#555555"),
-            # tickfont=dict(color="royalblue"),
-            tickfont=dict(color="#555555"),
-            anchor="x",
-            overlaying="y",
-            side="right",
-        ),
+        yaxis_title="Nb Items / Pages",
+        hovermode="x unified",
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
     )
     fig.update_yaxes(rangemode="tozero")
