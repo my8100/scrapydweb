@@ -14,14 +14,13 @@ html {
 }
 
 body {
-    min-width: 600px;
     height: 100%;
     display: flex;
     flex-direction: column;
     background: rgba(0,0,0,0.05);
     font-size: 16px;
-    font-family: Cambria, Georgia, Times, "Times New Roman", serif;
     color: #555;
+    font-family: "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .icon {
@@ -105,7 +104,7 @@ ol {
 
 
 /* ==for FF/chrome/opera/IE8== */
-nav {
+#top-nav {
     height: 50px;
     min-height: 50px;
     line-height: 50px;
@@ -118,69 +117,32 @@ nav {
     border-bottom: 1px solid #e3e3e3;
 }
 
-nav>.title {
-    display: inline-block;
-    font-size: 20px;
-    width: 160px;
-    min-width: 160px;
-    color: #fff;
-    background: #feb324;
-    text-align: center;
-    position: relative;
-
-    height: 51px;
-}
-
-nav>.title:after {
-    content: '';
-    position: absolute;
-    display: block;
-    width: 0;
-    height: 0;
-    border-left: 80px solid transparent;
-    border-right: 80px solid transparent;
-    border-top: 10px solid #feb324;
-    border-bottom: 10px solid transparent;
-    top: 100%;
-    left: 0;
-}
-
-nav>.title>.version {
-    font-size: 14px;
-    color: #aaa;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 100%;
-    z-index: 1;
-}
-
-nav>.switch-node {
+#top-nav>.switch-node {
     text-align: center;
     min-width: 100px;
     z-index: 2;
 }
-nav>.switch-node>a {
+#top-nav>.switch-node>a {
     color: #909090;
     line-height: 50px;
     font-size: 30px;
     padding: 0 10px;
 }
-nav>.switch-node>a:hover {color: #409EFF;}
-nav>.switch-node span {font-size: 18px;}
+#top-nav>.switch-node>a:hover {color: #409EFF;}
+#top-nav>.switch-node span {font-size: 18px;}
 
 
-nav>#nav_daemonstatus{
+#top-nav>#nav_daemonstatus{
     flex-grow: 1;
     text-align: right;
 }
 
-nav>#nav_daemonstatus>li{
+#top-nav>#nav_daemonstatus>li{
     display: inline-block;
 }
 
 /* https://www.w3schools.com/howto/howto_css_arrows.asp */
-nav i {
+#top-nav i {
   border: solid black;
   border-width: 0 3px 3px 0;
   display: inline-block;
@@ -211,7 +173,6 @@ main>aside {
     min-width: 160px;
     background-color: #343131;
     /* padding: 50px 0; */
-    padding-top: 24px;
     display: flex;
     flex-direction: column;
     overflow-y: auto;
@@ -224,12 +185,52 @@ main>aside:hover {
     /* overflow-y: scroll; */
 }
 
+#sidebar {
+    transition: margin-left .3s ease;
+    width: 160px;
+    margin-left: -160px;
+}
+
+#sidebar.collapsed {
+    margin-left: 0;
+}
+
+
+#main-title {
+    font-family: Cambria, Georgia, Times, "Times New Roman", serif;
+    display: inline-block;
+    font-size: 20px;
+    color: #fff;
+    background: #feb324;
+    text-align: center;
+    position: relative;
+    line-height: 50px;
+    width: 160px;
+}
+
+#main-title:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-top: 10px solid #feb324;
+    border-bottom: 10px solid transparent;
+    top: 100%;
+    left: 0;
+}
+
+#sidebar > nav a, #sidebar > nav h3 {
+    padding: 0 15px;
+}
+
 main>aside h3 {
     color: #fcfcfc;
     line-height: 32px;
     cursor: default;
     font-size: 16px;
-    padding: 0 20px;
     margin: 0;
 }
 
@@ -238,7 +239,6 @@ main>aside a {
     width: 100%;
     display: inline-block;
     line-height: 24px;
-    padding-left: 20px;
     font-size: 14px;
     font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
 }
@@ -265,24 +265,12 @@ main>aside li a > span {
 }
 
 
-main>aside #scrapydweb_version{
+main>aside #scrapydweb_version {
     color: #67c23a;
     height: 30px;
     padding-left: 0px;
 }
 
-main>aside li#pypi{height: 35px;}
-main>aside li#pypi a{
-    padding-left: 0px;
-    margin-left: 20px;
-    margin-top: 5px;
-    width: min-content;
-    height: 20px;
-}
-main>aside li#pypi a:hover{
-    background: none;
-    opacity: 0.7;
-}
 
 main>aside li.github{
     height: 25px;
@@ -311,7 +299,6 @@ main>.content-wrap {
     margin-right: -15px;
     padding: 16px 24px;
     /* font-family: Consolas, 'Lucida Console', 'DejaVu Sans Mono', monospace; */
-    font-family: "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: 400;
 }
 
@@ -485,6 +472,7 @@ table>tbody tr:last-child {
     opacity: 1;
     color: #fff;
     transition: all 0.1s ease-out;
+    word-break: break-word;
 }
 
 .state:hover,
@@ -936,3 +924,32 @@ span.slider.round:before {
     color: red;
 }
 /* reports END */
+
+
+@media (max-width: 920px) {
+    #nav_daemonstatus span {
+        margin: 2px;
+    }
+    .switch-node {
+        display: none;
+    }
+    #sidebar {
+        position: absolute;
+        z-index: 99;
+    }
+    #content {
+        padding: 0;
+        margin-right: 0;
+    }
+}
+
+
+@media (min-width: 920px) {
+    #button-collapse {
+        display: none
+    }
+    #sidebar {
+        margin-left: 0;
+    }
+
+}
