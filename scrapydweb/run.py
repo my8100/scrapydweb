@@ -34,6 +34,8 @@ def main():
     logger.info("Main pid: %s", main_pid)
     logger.debug("Loading default settings from %s", handle_slash(DEFAULT_SETTINGS_PY_PATH))
     app = create_app()
+    print(f"Config after creation: {app.config}")
+    print("----------------------------------")
     handle_metadata('main_pid', main_pid)  # In handle_metadata(): with db.app.app_context():
     app.config['MAIN_PID'] = main_pid
     app.config['DEFAULT_SETTINGS_PY_PATH'] = DEFAULT_SETTINGS_PY_PATH
@@ -42,11 +44,7 @@ def main():
 
     args = parse_args(app.config)
     # "scrapydweb -h" ends up here
-    print(f"Config before update: {app.config}")
-    print("----------------------------------")
     update_app_config(app.config, args)
-    print(f"Config after update: {app.config}")
-    print("----------------------------------")
     try:
         check_app_config(app.config)
     except AssertionError as err:
