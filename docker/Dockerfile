@@ -13,8 +13,8 @@ RUN mkdir /app/scrapyd_server
 RUN mkdir /app/scrapyd_server/projects
 RUN chmod +x /app/scrapydweb_pkg/launcher.sh 
 
-RUN groupadd -r docker && useradd --no-log-init -r -g docker dockeruser
-USER dockeruser
+# RUN groupadd -r docker && useradd --no-log-init -r -g docker dockeruser
+# USER dockeruser
 
 CMD ["sh", "/app/scrapydweb_pkg/launcher.sh"]
 
