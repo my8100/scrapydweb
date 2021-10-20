@@ -42,7 +42,11 @@ def main():
 
     args = parse_args(app.config)
     # "scrapydweb -h" ends up here
+    print(f"Config before update: {app.config}")
+    print("----------------------------------")
     update_app_config(app.config, args)
+    print(f"Config after update: {app.config}")
+    print("----------------------------------")
     try:
         check_app_config(app.config)
     except AssertionError as err:

@@ -99,7 +99,6 @@ def check_app_config(config):
     # Scrapy
     check_assert('SCRAPY_PROJECTS_DIR', '', str)
     SCRAPY_PROJECTS_DIR = config.get('SCRAPY_PROJECTS_DIR', '')
-    print(f"Config: {config}")
     if SCRAPY_PROJECTS_DIR:
         assert os.path.isdir(SCRAPY_PROJECTS_DIR), "SCRAPY_PROJECTS_DIR not found: %s" % SCRAPY_PROJECTS_DIR
         logger.info("Setting up SCRAPY_PROJECTS_DIR: %s", handle_slash(SCRAPY_PROJECTS_DIR))
