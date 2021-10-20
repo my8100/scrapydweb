@@ -38,10 +38,7 @@ def main():
     app.config['MAIN_PID'] = main_pid
     app.config['DEFAULT_SETTINGS_PY_PATH'] = DEFAULT_SETTINGS_PY_PATH
     app.config['SCRAPYDWEB_SETTINGS_PY_PATH'] = os.path.join(os.getcwd(), SCRAPYDWEB_SETTINGS_PY)
-    load_custom_settings(app.config)
-
-    print(f"Config after from_pyfile: {app.config}")
-    print("----------------------------------")
+    # load_custom_settings(app.config)
 
     args = parse_args(app.config)
     # "scrapydweb -h" ends up here

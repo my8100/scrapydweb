@@ -45,9 +45,7 @@ PASSWORD = ''
 #   - or if ScrapydWeb fails to parse the string format passed in,
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
-SCRAPYD_SERVERS = [
-    'doors.retailshake.com:32800'
-]
+SCRAPYD_SERVERS = []
 
 
 # It's recommended to update the three options below
@@ -93,7 +91,7 @@ PRIVATEKEY_FILEPATH = ''
 # ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
 # so that you can simply select a project to deploy, instead of packaging it in advance.
 # e.g. 'C:/Users/username/myprojects' or '/home/username/myprojects'
-SCRAPY_PROJECTS_DIR = '/app/scrapyd_server/projects'
+SCRAPY_PROJECTS_DIR = ''
 
 
 ############################## Scrapyd ########################################
