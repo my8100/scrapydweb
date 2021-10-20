@@ -34,13 +34,14 @@ def main():
     logger.info("Main pid: %s", main_pid)
     logger.debug("Loading default settings from %s", handle_slash(DEFAULT_SETTINGS_PY_PATH))
     app = create_app()
-    print(f"Config after creation: {app.config}")
-    print("----------------------------------")
     handle_metadata('main_pid', main_pid)  # In handle_metadata(): with db.app.app_context():
     app.config['MAIN_PID'] = main_pid
     app.config['DEFAULT_SETTINGS_PY_PATH'] = DEFAULT_SETTINGS_PY_PATH
     app.config['SCRAPYDWEB_SETTINGS_PY_PATH'] = os.path.join(os.getcwd(), SCRAPYDWEB_SETTINGS_PY)
     load_custom_settings(app.config)
+
+    print(f"Config after from_pyfile: {app.config}")
+    print("----------------------------------")
 
     args = parse_args(app.config)
     # "scrapydweb -h" ends up here
