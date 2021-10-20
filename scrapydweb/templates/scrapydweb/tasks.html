@@ -418,7 +418,7 @@ var Main = {
       }
     },
     bulkAction(action) {
-        let selected_task_urls = vm.$refs.multipleTable.selection.map(row => [row.url_status, row.url_recreate, row.url_action, row.url_delete]).flat().filter(str => str && str.length > 0);
+        let selected_task_urls = vm.$refs.multipleTable.selection.map(row => [row.url_status, row.url_recreate, row.url_action, row.url_delete, row.url_fire]).flat().filter(str => str && str.length > 0);
         let to_fetch = selected_task_urls.filter(url => url.indexOf(action) > -1);
         Promise.all(to_fetch.map(url => fetch(url))).then(responses => {
             if (responses.length > 0)
