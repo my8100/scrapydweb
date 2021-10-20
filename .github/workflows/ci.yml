@@ -23,7 +23,6 @@ jobs:
         images: registry.daft-punk.retailshake.com/scrapydweb
         tags: |
             type=ref,event=branch
-            type=pr
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
