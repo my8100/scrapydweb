@@ -26,9 +26,9 @@ jobs:
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
-        context: logstash
+        context: .
         build-args: TARGET=prod
-        file: logstash/Dockerfile
+        file: docker/Dockerfile
         tags: ${{ steps.meta.outputs.tags }}
         push: true
 
