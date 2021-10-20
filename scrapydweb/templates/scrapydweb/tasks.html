@@ -58,6 +58,7 @@ window.onload = function(){
   <el-button @click="bulkAction('pause')">PAUSE selected</el-button>
   <el-button @click="bulkAction('recreate')">START selected</el-button>
   <el-button @click="bulkAction('remove')">STOP selected</el-button>
+  <el-button @click="bulkAction('fire')">FIRE selected</el-button>
   <el-table
     ref="multipleTable"
     :data="tableData"
