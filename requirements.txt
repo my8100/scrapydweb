@@ -13,3 +13,4 @@ setuptools>=40.6.3
 six>=1.12.0
 SQLAlchemy>=1.2.15
 w3lib>=1.17.0
+uwsgi

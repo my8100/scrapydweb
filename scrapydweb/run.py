@@ -119,8 +119,9 @@ def main():
            star=STAR, protocol=protocol, port=app.config['SCRAPYDWEB_PORT']))
     logger.info("For running Flask in production, check out http://flask.pocoo.org/docs/1.0/deploying/")
     apscheduler_logger.setLevel(logging.DEBUG)
-    app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'],
-            ssl_context=context, use_reloader=env.bool("RELOAD", False))
+    # app.run(host=app.config['SCRAPYDWEB_BIND'], port=app.config['SCRAPYDWEB_PORT'],
+    #         ssl_context=context, use_reloader=env.bool("RELOAD", False))
+    return app
 
 
 def load_custom_settings(config):
