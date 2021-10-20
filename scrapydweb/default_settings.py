@@ -45,7 +45,9 @@ PASSWORD = ''
 #   - or if ScrapydWeb fails to parse the string format passed in,
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
-SCRAPYD_SERVERS = []
+SCRAPYD_SERVERS = [
+    'doors.retailshake.com:32800'
+]
 
 
 # It's recommended to update the three options below
