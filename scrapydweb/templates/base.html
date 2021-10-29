@@ -53,8 +53,8 @@
 
 
 <body>
-<nav>
-  <a class="title" target="_blank" href="{{ GITHUB_URL }}">ScrapydWeb</a>
+<nav id="top-nav">
+  <a class="button safe narrow" id="button-collapse" onclick="document.getElementById('sidebar').classList.toggle('collapsed')">≡</a>
 
   <div class="dropdown">
     {% if g.IS_MOBILE %}
@@ -131,187 +131,170 @@
 </nav>
 
 <main>
-  <aside>
-    <div>
-    <h3>Overview</h3>
-    <ul>
-      <li>
-        <a id="menu_servers" href="{{ g.url_menu_servers }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-servers"></use>
-          </svg>
-          <span>Servers</span>
-        </a>
-      </li>
-      <li>
-        <a id="menu_tasks" href="{{ g.url_menu_tasks }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-timer"></use>
-          </svg>
-          <span>Timer Tasks</span>
-        </a>
-      </li>
-    </ul>
-    </div>
-    <div>
-    <h3>Dashboard</h3>
-    <ul>
-      <li>
-        <a id="menu_jobs" href="{{ g.url_menu_jobs }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-jobs"></use>
-          </svg>
-          <span>Jobs</span>
-        </a>
-      </li>
-      <li>
-        <a id="menu_nodereports" href="{{ g.url_menu_nodereports }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-report"></use>
-          </svg>
-          <span>Node Reports</span>
-        </a>
-      </li>
-      {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
-      <li>
-        <a id="menu_clusterreports" href="{{ g.url_menu_clusterreports }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-reports"></use>
-          </svg>
-          <span>Cluster Reports</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-    </div>
-    <div>
-    <h3>Operations</h3>
-    <ul>
-      <li>
-        <a id="menu_deploy" href="{{ g.url_menu_deploy }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-upload"></use>
-          </svg>
-          <span>Deploy Project</span>
-        </a>
-      </li>
-      <li>
-        <a id="menu_schedule" href="{{ g.url_menu_schedule }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-run"></use>
-          </svg>
-          <span>Run Spider</span>
-        </a>
-      </li>
-    </ul>
-    </div>
-    <div>
-    <h3>Files</h3>
-    <ul>
-      <li>
-        <a id="menu_projects" href="{{ g.url_menu_projects }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-projects"></use>
-          </svg>
-          <span>Projects</span>
-        </a>
-      </li>
-      <li>
-        <a id="menu_logs" href="{{ g.url_menu_logs }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-logs"></use>
-          </svg>
-          <span>Logs</span>
-        </a>
-      </li>
-    {% if SHOW_SCRAPYD_ITEMS %}
-      <li>
-        <a id="menu_items" href="{{ g.url_menu_items }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-items"></use>
-          </svg>
-          <span>Items</span>
-        </a>
-      </li>
-    {% endif %}
-    </ul>
-    </div>
-    <div>
-    <h3>Utilities</h3>
-    <ul>
-      <li>
-        <a id="menu_sendtext" href="{{ g.url_menu_sendtext }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-send"></use>
-          </svg>
-          <span>Send Text</span>
-        </a>
-      </li>
-      <li>
-        <a id="menu_parse" href="{{ g.url_menu_parse }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-parse"></use>
-          </svg>
-          <span>Parse Log</span>
-        </a>
-      </li>
-    </ul>
-    </div>
-    <div>
-    <h3>System</h3>
-    <ul>
-      <li>
-        <a id="menu_settings" href="{{ g.url_menu_settings }}" onclick="showLoader();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-settings"></use>
-          </svg>
-          <span>Settings</span>
-        </a>
-      </li>
-      <li>
-        <a target="_blank" href="{{ g.url_menu_mobileui }}">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-mobile"></use>
-          </svg>
-          <span>Mobile UI</span>
-        </a>
-      </li>
-      {% if ENABLE_AUTH %}
-      <li>
-        <a href="javascript:;" onclick="logout();">
-          <svg class="icon" aria-hidden="true">
-            <use xlink:href="#icon-logout"></use>
-          </svg>
-          <span>Logout</span>
-        </a>
-      </li>
-      {% endif %}
-    </ul>
-    </div>
-    <div class="github">
-    <a id="scrapydweb_version" class="request" href="https://pypi.org/project/scrapydweb/" target="_blank">v{{ SCRAPYDWEB_VERSION }}</a>
-    <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a>
-    <div>
-    <!-- <ul id="links"> -->
-      <!-- <li id="scrapydweb_version">v{{ SCRAPYDWEB_VERSION }} DEV</li> -->
-      <!-- <li id="pypi"> -->
-        <!-- <a target="_blank" href="https://pypi.org/project/scrapydweb/" > -->
-          <!-- <img src="https://img.shields.io/pypi/v/scrapydweb.svg" alt="https://pypi.org/project/scrapydweb/" /> -->
-        <!-- </a> -->
-      <!-- </li> -->
-      <!-- <li class="github"> -->
-        <!-- <a class="github-button" href="{{ GITHUB_URL }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">scrapydweb</a> -->
-      <!-- </li> -->
-      <!-- <li class="github"> -->
-        <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'logparser') }}/blob/master/HISTORY.md" aria-label="@my8100 on GitHub">logparser</a> -->
-      <!-- </li> -->
-      <!-- <li class="github"> -->
-        <!-- <a class="github-button" href="{{ GITHUB_URL.replace('scrapydweb', 'scrapyd-cluster-on-heroku') }}" aria-label="@my8100 on GitHub">scrapyd-cluster</a> -->
-      <!-- </li> -->
-      <!-- <li class="github"> -->
-        <!-- <a class="github-button" href="{{ GITHUB_URL.replace('/scrapydweb', '') }}" aria-label="@my8100 on GitHub">GitHub</a> -->
-      <!-- </li> -->
-    <!-- </ul> -->
+  <aside id="sidebar">
+    <a class="title" id="main-title" href="/">ScrapydWeb</a>
+    <nav>
+        <div>
+        <h3>Overview</h3>
+        <ul>
+          <li>
+            <a id="menu_servers" href="{{ g.url_menu_servers }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-servers"></use>
+              </svg>
+              <span>Servers</span>
+            </a>
+          </li>
+          <li>
+            <a id="menu_tasks" href="{{ g.url_menu_tasks }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-timer"></use>
+              </svg>
+              <span>Timer Tasks</span>
+            </a>
+          </li>
+        </ul>
+        </div>
+        <div>
+        <h3>Dashboard</h3>
+        <ul>
+          <li>
+            <a id="menu_jobs" href="{{ g.url_menu_jobs }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-jobs"></use>
+              </svg>
+              <span>Jobs</span>
+            </a>
+          </li>
+          <li>
+            <a id="menu_nodereports" href="{{ g.url_menu_nodereports }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-report"></use>
+              </svg>
+              <span>Node Reports</span>
+            </a>
+          </li>
+          {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+          <li>
+            <a id="menu_clusterreports" href="{{ g.url_menu_clusterreports }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-reports"></use>
+              </svg>
+              <span>Cluster Reports</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+        </div>
+        <div>
+        <h3>Operations</h3>
+        <ul>
+          <li>
+            <a id="menu_deploy" href="{{ g.url_menu_deploy }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-upload"></use>
+              </svg>
+              <span>Deploy Project</span>
+            </a>
+          </li>
+          <li>
+            <a id="menu_schedule" href="{{ g.url_menu_schedule }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-run"></use>
+              </svg>
+              <span>Run Spider</span>
+            </a>
+          </li>
+        </ul>
+        </div>
+        <div>
+        <h3>Files</h3>
+        <ul>
+          <li>
+            <a id="menu_projects" href="{{ g.url_menu_projects }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-projects"></use>
+              </svg>
+              <span>Projects</span>
+            </a>
+          </li>
+          <li>
+            <a id="menu_logs" href="{{ g.url_menu_logs }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-logs"></use>
+              </svg>
+              <span>Logs</span>
+            </a>
+          </li>
+        {% if SHOW_SCRAPYD_ITEMS %}
+          <li>
+            <a id="menu_items" href="{{ g.url_menu_items }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-items"></use>
+              </svg>
+              <span>Items</span>
+            </a>
+          </li>
+        {% endif %}
+        </ul>
+        </div>
+        <div>
+        <h3>Utilities</h3>
+        <ul>
+          <li>
+            <a id="menu_sendtext" href="{{ g.url_menu_sendtext }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-send"></use>
+              </svg>
+              <span>Send Text</span>
+            </a>
+          </li>
+          <li>
+            <a id="menu_parse" href="{{ g.url_menu_parse }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-parse"></use>
+              </svg>
+              <span>Parse Log</span>
+            </a>
+          </li>
+        </ul>
+        </div>
+        <div>
+        <h3>System</h3>
+        <ul>
+          <li>
+            <a id="menu_settings" href="{{ g.url_menu_settings }}" onclick="showLoader();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-settings"></use>
+              </svg>
+              <span>Settings</span>
+            </a>
+          </li>
+          <li>
+            <a target="_blank" href="{{ g.url_menu_mobileui }}">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-mobile"></use>
+              </svg>
+              <span>Mobile UI</span>
+            </a>
+          </li>
+          {% if ENABLE_AUTH %}
+          <li>
+            <a href="javascript:;" onclick="logout();">
+              <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-logout"></use>
+              </svg>
+              <span>Logout</span>
+            </a>
+          </li>
+          {% endif %}
+        </ul>
+        </div>
+        <div class="github">
+          <a id="scrapydweb_version" class="request" href="https://pypi.org/project/scrapydweb/" target="_blank">v{{ SCRAPYDWEB_VERSION }}</a>
+          <a class="github-button" href="{{ GITHUB_URL }}" aria-label="ScrapydWeb on GitHub">GitHub</a>
+        </div>
+    </nav>
   </aside>
 
   <div class="content-wrap">
@@ -342,7 +325,6 @@ var refresh_daemonstatus = true;  // Used in logout()
 var node = {{ node }};
 var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
 var url_daemonstatus = "{{ g.url_daemonstatus }}";
-
 
 $(function(){
   {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
