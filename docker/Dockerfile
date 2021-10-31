@@ -4,14 +4,16 @@ WORKDIR /app
 
 COPY . /app/scrapydweb_pkg
 
-RUN apt-get update && apt-get install -y git gcc && \
+# install the PROD settings 
+RUN rm /app/scrapydweb_pkg/scrapydweb/default_settings.py 
+RUN mv /app/scrapydweb_pkg/prod_settings.py /app/scrapydweb_pkg/scrapydweb/default_settings.py 
+
+RUN apt-get update && apt-get install -y git && \
   pip3 install -r /app/scrapydweb_pkg/requirements.txt && \ 
   pip3 install /app/scrapydweb_pkg
 
 RUN mkdir /app/scrapyd_server
 RUN mkdir /app/scrapyd_server/projects
-
-RUN cp /app/scrapydweb_pkg/doors_settings.py /app/scrapyd_server/scrapydweb_settings_v10.py
 
 RUN chmod +x /app/scrapydweb_pkg/launcher.sh 
 

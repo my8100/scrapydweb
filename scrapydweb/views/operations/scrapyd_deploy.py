@@ -23,7 +23,6 @@ setup(
     name         = 'project',
     version      = '1.0',
     packages     = find_packages(),
-    install_requires = ['mysql-connector-python==8.0.15'], 
     entry_points = {'scrapy': ['settings = %(settings)s']},
 )
 """
