@@ -8,7 +8,7 @@ COPY . /app/scrapydweb_pkg
 RUN rm /app/scrapydweb_pkg/scrapydweb/default_settings.py 
 RUN mv /app/scrapydweb_pkg/prod_settings.py /app/scrapydweb_pkg/scrapydweb/default_settings.py 
 
-RUN apt-get update && apt-get install -y git uwsgi-plugin-python3 && \
+RUN apt-get update && apt-get install -y git gcc && \
   pip3 install --upgrade pip && \
   pip3 install -r /app/scrapydweb_pkg/requirements.txt && \ 
   pip3 install /app/scrapydweb_pkg
