@@ -187,7 +187,7 @@ JOBS_FINISHED_JOBS_LIMIT = 0
 
 # If your browser stays on the Jobs page, it would be reloaded automatically every N seconds.
 # The default is 300, set it to 0 to disable auto-reloading.
-JOBS_RELOAD_INTERVAL = 300
+JOBS_RELOAD_INTERVAL = 60
 
 # The load status of the current Scrapyd server is checked every N seconds,
 # which is displayed in the top right corner of the page.
@@ -364,6 +364,7 @@ VERBOSE = False
 
 # The default is '', which means saving all program data in the Python directory.
 # e.g. 'C:/Users/username/scrapydweb_data' or '/home/username/scrapydweb_data'
+# DATA_PATH = os.environ.get('DATA_PATH', '')
 DATA_PATH = os.environ.get('DATA_PATH', '')
 
 # The default is '', which means saving data of Jobs and Timer Tasks in DATA_PATH using SQLite.
