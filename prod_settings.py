@@ -192,7 +192,7 @@ JOBS_RELOAD_INTERVAL = 300
 # The load status of the current Scrapyd server is checked every N seconds,
 # which is displayed in the top right corner of the page.
 # The default is 10, set it to 0 to disable auto-refreshing.
-DAEMONSTATUS_REFRESH_INTERVAL = None
+DAEMONSTATUS_REFRESH_INTERVAL = 0
 
 
 ############################## Send Text ######################################
