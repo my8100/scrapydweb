@@ -14,7 +14,6 @@ RUN apt-get update && apt-get install -y git gcc && \
   pip3 install /app/scrapydweb_pkg
 
 RUN mkdir /app/scrapyd_server
-RUN mkdir /app/scrapyd_server/projects
 
 RUN chmod +x /app/scrapydweb_pkg/launcher.sh 
 
