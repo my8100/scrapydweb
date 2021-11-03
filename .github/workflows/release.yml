@@ -10,6 +10,11 @@ on:
     branches: [ RELEASE ]
   release:
     types: [ created ]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are your building manually ?'     
+        required: true
 
 jobs:
   build:
