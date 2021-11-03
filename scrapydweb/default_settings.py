@@ -173,12 +173,12 @@ JOBS_FINISHED_JOBS_LIMIT = 0
 
 # If your browser stays on the Jobs page, it would be reloaded automatically every N seconds.
 # The default is 300, set it to 0 to disable auto-reloading.
-JOBS_RELOAD_INTERVAL = 300
+JOBS_RELOAD_INTERVAL = 60
 
 # The load status of the current Scrapyd server is checked every N seconds,
 # which is displayed in the top right corner of the page.
 # The default is 10, set it to 0 to disable auto-refreshing.
-DAEMONSTATUS_REFRESH_INTERVAL = 10
+DAEMONSTATUS_REFRESH_INTERVAL = 0
 
 
 ############################## Send Text ######################################
