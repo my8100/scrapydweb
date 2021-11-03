@@ -1,13 +1,15 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: CI/CD
+name: Release version
 
 on:
   push:
-    branches: [ monitoring ]
+    branches: [ release ]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
-    branches: [ monitoring ]
+    branches: [ release ]
+  release:
+    types: [ created ]
 
 jobs:
   build:
@@ -23,6 +25,7 @@ jobs:
         images: registry.daft-punk.retailshake.com/scrapydweb
         tags: |
             type=ref,event=branch
+            type=semver,pattern={{major}}.{{minor}}.{{patch}}
     - name: Build and push
       uses: docker/build-push-action@v2
       with:
@@ -30,7 +33,3 @@ jobs:
         file: docker/Dockerfile
         tags: ${{ steps.meta.outputs.tags }}
         push: true
-
-
-           
-      
