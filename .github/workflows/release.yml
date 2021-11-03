@@ -2,12 +2,12 @@ name: Release version
 
 on:
   push:
-    branches: [ release ]
+    branches: [ RELEASE ]
     # Sequence of patterns matched against refs/tags
     tags:
       - '[0-9]+.[0-9]+.[0-9]+'
   pull_request:
-    branches: [ release ]
+    branches: [ RELEASE ]
   release:
     types: [ created ]
 
