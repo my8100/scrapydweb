@@ -190,6 +190,11 @@ def handle_route(app):
         ('multinode/<opt>/<project>', dict(version_job=None))
     ])
 
+    from .views.overview.purge_versions import PurgeVersionsView
+    register_view(PurgeVersionsView, 'purge_versions', [
+        ('purge/<project>/<version>', None),
+    ])
+
     from .views.overview.tasks import TasksView, TasksXhrView
     register_view(TasksView, 'tasks', [
         ('tasks/<int:task_id>/<int:task_result_id>', None),

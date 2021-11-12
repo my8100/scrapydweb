@@ -2,6 +2,7 @@
 import logging
 import os
 import re
+from typing import List
 
 from flask import current_app as app
 from flask import Response, flash, g, request, url_for
@@ -12,7 +13,7 @@ from six import text_type
 from ..__version__ import __version__ as SCRAPYDWEB_VERSION
 from ..common import (get_now_string, get_response_from_view, handle_metadata,
                       handle_slash, json_dumps, session)
-from ..servers import find_by_name
+from ..servers import find_by_name, ScrapydServer
 from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, APSCHEDULER_DATABASE_URI,
                     DATA_PATH, DEMO_PROJECTS_PATH, DEPLOY_PATH, PARSE_PATH,
                     ALERT_TRIGGER_KEYS, LEGAL_NAME_PATTERN, SCHEDULE_ADDITIONAL,
@@ -94,7 +95,7 @@ class BaseView(View):
 
         # Scrapyd
         self.SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
-        self.SCRAPYD_SERVER_OBJECTS = app.config.get('SCRAPYD_SERVER_OBJECTS', [])
+        self.SCRAPYD_SERVER_OBJECTS: List[ScrapydServer] = app.config.get('SCRAPYD_SERVER_OBJECTS', [])
         self.SCRAPYD_SERVERS_AMOUNT = len(self.SCRAPYD_SERVERS)
         self.SCRAPYD_SERVERS_GROUPS = app.config.get('SCRAPYD_SERVERS_GROUPS', []) or ['']
         self.SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None]
