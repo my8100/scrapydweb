@@ -157,8 +157,9 @@
       <el-col :span="5">
         <el-input v-model="input.version_delversion" placeholder="the project version" clearable></el-input>
       </el-col>
-      <el-col :span="5">
+      <el-col :span="10">
         <el-button type="info" @click="deleteVersion">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Version</el-button>
+        <el-button type="danger" @click="purgeOldVersions">Purge older versions</el-button>
       </el-col>
     </el-tab-pane>
 
@@ -934,6 +935,18 @@ var Main = {
       var url_delversion = "{{ url_delversion }}";
       this.updateSubmitForm(url_delversion.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_delversion));
     },
+
+      purgeOldVersions() {
+        if (confirm("WARNING:\n This will delete this and all older version on ALL nodes!")) {
+            fetch(`/1/purge/${this.input.project}/${this.input.version_delversion}/`, {
+                method: "POST"
+            })
+            .then(resp => resp.text())
+            .then(resp => {
+                alert(resp)
+            })
+        }
+      },
 
     deleteProject() {
       if (this.checkInput('project', "the project name")) {
