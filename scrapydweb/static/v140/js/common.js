@@ -160,13 +160,6 @@ function checkLatestVersion(pageview, SCRAPYDWEB_VERSION, GITHUB_URL) {
                 window.location = GITHUB_URL + "/blob/master/HISTORY.md";
             }
         }
-        else if (pageview == 1) {
-            if (window.confirm("Would you like to STAR and help improve ScrapydWeb?")) {
-                //var win = window.open(GITHUB_URL, '_blank');
-                //win.focus();
-                window.location = GITHUB_URL;
-            }
-        }
     }
 }
 
