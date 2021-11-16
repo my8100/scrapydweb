@@ -3,9 +3,9 @@ from collections import defaultdict
 from distutils.version import LooseVersion
 
 import requests
-from flask import flash, render_template, url_for, jsonify
+from flask import jsonify
 
-from ...common import handle_metadata
+from ...common import handle_metadata, session
 from ..baseview import BaseView
 
 
@@ -26,8 +26,8 @@ class PurgeVersionsView(BaseView):
             url = server.url() + f'/listversions.json?project={kwargs["project"]}'
             versions = []
             try:
-                versions = requests.get(url).json()['versions']
-            except: pass
+                versions = session.get(url, auth=server.auth).json()['versions']
+            except requests.exceptions.ConnectionError: pass
             to_delete[server] = [ver for ver in versions if LooseVersion(ver) < max_version]
             if len(versions) > 0 and len(to_delete[server]) == len(versions):
                 return f"This would delete all versions on {server.name}! Refusing to do that.", 406
@@ -38,7 +38,7 @@ class PurgeVersionsView(BaseView):
             for server, versions in to_delete.items():
                 for version in versions:
                     count += 1
-                    deleted[server.name][version] = requests.post(server.url() + f'/delversion.json', data={
+                    deleted[server.name][version] = session.post(server.url() + f'/delversion.json', auth=server.auth, data={
                         "project": kwargs["project"],
                         "version": version
                     }).json()
