@@ -5,9 +5,6 @@
 {% block head %}
   <style>
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.1/Chart.min.js"></script>
-  <script src="https://unpkg.com/vue-chartjs/dist/vue-chartjs.min.js"></script>
 {% endblock %}
 
 {% block body %}
@@ -59,18 +56,7 @@
       </template>
     </el-table-column>
 
-    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="150" show-overflow-tooltip>
-        <template slot-scope="scope">
-            <a target="_blank" :href="scope.row.url_monitor">{{scope.row.spider}}</a>
-        </template>
-    </el-table-column>
-    <el-table-column prop="thumbnail" label="Monitor" fixed sortable align="center" width="90" show-overflow-tooltip>
-        <template slot-scope="scope">
-            <div>
-                <line-chart :spider="scope.row.spider"></line-chart>
-            </div>
-        </template>
-    </el-table-column>
+    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="150" show-overflow-tooltip></el-table-column>
     <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
     <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
 
@@ -89,6 +75,7 @@
 
 <script>
 
+
 var Main = {
   data() {
     return {
@@ -99,7 +86,7 @@ var Main = {
       fetch_step: 20,
       scrollLeftRecord: 0,
       tableData: [
- {% for jobs in [running_jobs, finished_jobs] %}
+  {% for jobs in [running_jobs, finished_jobs] %}
     {% for job in jobs %}
       {
         index0: -1,
@@ -118,8 +105,6 @@ var Main = {
         loaded: false,
 
         multinode_url: '',
-        url_monitor: '/{{ node }}/monitor/{{ job.spider }}',
-        thumbnail: '/static/images/thumbnails/{{ job.spider }}.png', // Get static image
 
 {% include 'scrapydweb/include_reports_tabledata.html' %}
 
@@ -140,7 +125,7 @@ var Main = {
 
   mounted() {
     var _this = this;
-    console.log(this.tableData)
+
     for (var idx in _this.tableData) {
       _this.tableData[idx].index0 = parseInt(idx);
     }
@@ -226,7 +211,6 @@ var Main = {
     xhrReport:function(idx, url) {
       var _this = this;
       _this.tableData[idx].loaded = true;
-      this.loadThumbnail (this.tableData[idx])
       var req = new XMLHttpRequest();
       req.onreadystatechange = function() {
         if (this.readyState == 4) {
