@@ -45,11 +45,7 @@ PASSWORD = ''
 #   - or if ScrapydWeb fails to parse the string format passed in,
 #   - it's recommended to pass in a tuple of 5 elements.
 #   - e.g. ('', '', '127.0.0.1', '6800', '') or ('username', 'password', 'localhost', '6801', 'group')
-SCRAPYD_SERVERS = [
-    '127.0.0.1:6800',
-    # 'username:password@localhost:6801#group',
-    ('username', 'password', 'localhost', '6801', 'group'),
-]
+SCRAPYD_SERVERS =  os.environ.get('SCRAPYD_SERVERS', 'localhost:6800').split(',')
 
 
 # It's recommended to update the three options below
@@ -95,7 +91,7 @@ PRIVATEKEY_FILEPATH = ''
 # ScrapydWeb is able to locate projects in the SCRAPY_PROJECTS_DIR,
 # so that you can simply select a project to deploy, instead of packaging it in advance.
 # e.g. 'C:/Users/username/myprojects' or '/home/username/myprojects'
-SCRAPY_PROJECTS_DIR = ''
+SCRAPY_PROJECTS_DIR = '/app/scrapyd_server/projects'
 
 
 ############################## Scrapyd ########################################
@@ -177,12 +173,12 @@ JOBS_FINISHED_JOBS_LIMIT = 0
 
 # If your browser stays on the Jobs page, it would be reloaded automatically every N seconds.
 # The default is 300, set it to 0 to disable auto-reloading.
-JOBS_RELOAD_INTERVAL = 300
+JOBS_RELOAD_INTERVAL = 60
 
 # The load status of the current Scrapyd server is checked every N seconds,
 # which is displayed in the top right corner of the page.
 # The default is 10, set it to 0 to disable auto-refreshing.
-DAEMONSTATUS_REFRESH_INTERVAL = 10
+DAEMONSTATUS_REFRESH_INTERVAL = 0
 
 
 ############################## Send Text ######################################

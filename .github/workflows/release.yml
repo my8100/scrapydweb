@@ -1,0 +1,41 @@
+name: Release version
+
+on:
+  push:
+    branches: [ RELEASE ]
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  pull_request:
+    branches: [ RELEASE ]
+  release:
+    types: [ created ]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are your building manually ?'     
+        required: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v3
+      with:
+        images: registry.daft-punk.retailshake.com/scrapydweb
+        tags: |
+            type=ref,event=branch
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}.{{minor}}.{{patch}}
+    - name: Build and push
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        file: docker/Dockerfile
+        tags: ${{ steps.meta.outputs.tags }}
+        push: true
