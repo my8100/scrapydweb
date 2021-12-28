@@ -5,9 +5,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [ monitoring ]
+    branches: [ master ]
   pull_request:
-    branches: [ monitoring ]
+    branches: [ master ]
 
 jobs:
   build:
