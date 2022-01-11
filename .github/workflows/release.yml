@@ -30,6 +30,8 @@ jobs:
         images: registry.daft-punk.retailshake.com/scrapydweb
         tags: |
             type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{major}}
             type=semver,pattern={{major}}.{{minor}}
             type=semver,pattern={{major}}.{{minor}}.{{patch}}
     - name: Build and push
