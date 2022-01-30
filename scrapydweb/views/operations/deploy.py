@@ -139,7 +139,10 @@ class DeployView(BaseView):
             else:
                 raise
         else:
-            return max([os.path.getmtime(f) for f in filepath_list] or [time.time()])
+            try:
+                return max([os.path.getmtime(f) for f in filepath_list])
+            except:
+                return time.time()
 
     def parse_scrapy_cfg(self):
         for (idx, scrapy_cfg) in enumerate(self.scrapy_cfg_list):
