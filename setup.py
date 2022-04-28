@@ -43,6 +43,7 @@ setup(
         "six >= 1.12.0",  # Dec 10, 2018
         "SQLAlchemy >= 1.2.15",  # Dec 12, 2018
         "w3lib >= 1.17.0",  # Feb 9, 2017
+        "Werkzeug == 2.0.3",
     ],
 
     entry_points={
