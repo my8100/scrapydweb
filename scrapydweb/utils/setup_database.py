@@ -154,15 +154,11 @@ def setup_postgresql(username, password, host, port):
         # (Chinese (Simplified)_People's Republic of China.936)
         # HINT:  Use the same collation as in the template database, or use template0 as template.
         try:
-            cur.execute("CREATE DATABASE %s ENCODING 'UTF8' LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8'" % dbname)
+            cur.execute("CREATE DATABASE IF NOT EXISTS %s ENCODING 'UTF8' LC_COLLATE 'en_US.UTF-8' LC_CTYPE 'en_US.UTF-8'" % dbname)
         except:
             try:
-                cur.execute("CREATE DATABASE %s" % dbname)
+                cur.execute("CREATE DATABASE IF NOT EXISTS %s" % dbname)
             except Exception as err:
-                # psycopg2.ProgrammingError: database "scrapydweb_apscheduler" already exists
-                if 'exists' in str(err):
-                    pass
-                else:
-                    raise
+                raise
     cur.close()
     conn.close()
