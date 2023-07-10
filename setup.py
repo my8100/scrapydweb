@@ -33,6 +33,7 @@ setup(
     zip_safe=False,
     python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*",
     install_requires=[
+        "Werkzeug == 2.0.3",
         "APScheduler >= 3.5.3",  # Aug 15, 2018
         "flask >= 1.0.2",  # May 2, 2018
         "flask-compress >= 1.4.0",  # Jan 5, 2017
@@ -42,8 +43,7 @@ setup(
         "setuptools >= 40.6.3",  # Dec 11, 2018
         "six >= 1.12.0",  # Dec 10, 2018
         "SQLAlchemy >= 1.2.15",  # Dec 12, 2018
-        "w3lib >= 1.17.0",  # Feb 9, 2017
-        "Werkzeug == 2.0.3",
+        "w3lib >= 1.17.0",  # Feb 9, 2017        
     ],
 
     entry_points={
