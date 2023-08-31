@@ -31,18 +31,29 @@ setup(
     packages=find_packages(exclude=("tests", )),
     include_package_data=True,
     zip_safe=False,
-    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*",
+    python_requires=">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, <=3.9",
     install_requires=[
-        "APScheduler >= 3.5.3",  # Aug 15, 2018
-        "flask >= 1.0.2",  # May 2, 2018
-        "flask-compress >= 1.4.0",  # Jan 5, 2017
-        "Flask-SQLAlchemy >= 2.3.2",  # Oct 11, 2017
-        "logparser == 0.8.2",
-        "requests >= 2.21.0",  # Dec 10, 2018
-        "setuptools >= 40.6.3",  # Dec 11, 2018
-        "six >= 1.12.0",  # Dec 10, 2018
-        "SQLAlchemy >= 1.2.15",  # Dec 12, 2018
-        "w3lib >= 1.17.0",  # Feb 9, 2017
+        "APScheduler==3.5.3",  # Aug 15, 2018
+        "click==7.0",  # Sep 26, 2018
+        "colorama==0.4.0",  # Oct 10, 2018
+        "Flask==1.0.2",  # May 2, 2018
+        "Flask-Compress==1.4.0",  # Jan 5, 2017
+        "Flask-SQLAlchemy==2.4.0",  # Apr 25, 2019
+        "idna==2.7",  # Jun 11, 2018    
+        "itsdangerous==1.1.0",  # Oct 27, 2018
+        "Jinja2==2.10",  # Nov 9, 2017
+        "logparser==0.8.2",
+        "MarkupSafe==1.1.1",  # Feb 24, 2019
+        "pexpect==4.7.0",  # Apr 7, 2019
+        "ptyprocess==0.6.0",  # Jun 22, 2018
+        "pytz==2018.9",  # Jan 7, 2019
+        "requests>=2.21.0",  # Dec 10, 2018
+        "setuptools>=40.6.3",  # Dec 11, 2018
+        "six==1.12.0",  # Dec 10, 2018
+        "SQLAlchemy==1.3.24",  # Mar 31, 2021
+        "tzlocal==1.5.1",  # Dec 1, 2017
+        "w3lib==1.19.0",  # Jan 25, 2018
+        "Werkzeug==0.14.1",  # Jan 1, 2018
     ],
 
     entry_points={
@@ -55,6 +66,8 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7"
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ]
 )

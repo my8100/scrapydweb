@@ -121,8 +121,10 @@ jobs:
             . venv/bin/activate
             which python
             python --version
+            pip list
             pip install -r requirements.txt
             pip install -r requirements-tests.txt
+            pip list
 
       - when:
           condition: <<parameters.use-git>>
@@ -131,13 +133,16 @@ jobs:
                 name: Git Scrapy, Scrapyd, and LogParser
                 command: |
                   . venv/bin/activate
+                  pip list
                   pip install -U git+https://github.com/scrapy/scrapy.git
                   pip install -U git+https://github.com/scrapy/scrapyd.git
                   pip install -U git+https://github.com/my8100/logparser.git
+                  pip list
 
       - run:
           name: Launch Scrapyd
           command: |
+            pip list
             cd ~
             printf "[scrapyd]\nusername = admin\npassword = 12345\n" > scrapyd.conf
             cat scrapyd.conf
@@ -149,11 +154,12 @@ jobs:
       - run:
           name: Run tests
           command: |
+            pip list
             ls -l
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
-            coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings -x
+            coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings
 
       - run:
           name: Generate report
@@ -177,11 +183,16 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:2.7
-      
-  py37-git-postgresql:
+
+  py36:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.6
+
+  py38-git-postgresql:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.8
       # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
       - image: circleci/postgres:9.6-alpine
         environment:
@@ -194,10 +205,10 @@ jobs:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
       
-  py37-git-mysql:
+  py38-git-mysql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
       # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
       # Plugin caching_sha2_password could not be loaded
       # - image: circleci/mysql:8.0.4
@@ -260,6 +271,11 @@ jobs:
     docker:
       - image: circleci/python:3.9
 
+  py310:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.10
+
 
 workflows:
   test:
@@ -267,11 +283,14 @@ workflows:
       # - py27:
       #    is-py27: true
 
+      - py36
+
       - py37
-      - py37-git-postgresql:
+
+      - py38-git-postgresql:
           use-git: true
           use-postgresql: true
-      - py37-git-mysql:
+      - py38-git-mysql:
           use-git: true
           use-mysql: true
           
@@ -284,4 +303,5 @@ workflows:
           use-mysql: true
           
       - py39
-      
+
+      - py310
