@@ -121,8 +121,10 @@ jobs:
             . venv/bin/activate
             which python
             python --version
+            pip list
             pip install -r requirements.txt
             pip install -r requirements-tests.txt
+            pip list
 
       - when:
           condition: <<parameters.use-git>>
@@ -131,13 +133,16 @@ jobs:
                 name: Git Scrapy, Scrapyd, and LogParser
                 command: |
                   . venv/bin/activate
+                  pip list
                   pip install -U git+https://github.com/scrapy/scrapy.git
                   pip install -U git+https://github.com/scrapy/scrapyd.git
                   pip install -U git+https://github.com/my8100/logparser.git
+                  pip list
 
       - run:
           name: Launch Scrapyd
           command: |
+            pip list
             cd ~
             printf "[scrapyd]\nusername = admin\npassword = 12345\n" > scrapyd.conf
             cat scrapyd.conf
@@ -149,6 +154,7 @@ jobs:
       - run:
           name: Run tests
           command: |
+            pip list
             ls -l
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
@@ -265,6 +271,11 @@ jobs:
     docker:
       - image: circleci/python:3.9
 
+  py310:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.10
+
 
 workflows:
   test:
@@ -292,4 +303,5 @@ workflows:
           use-mysql: true
           
       - py39
-      
+
+      - py310
