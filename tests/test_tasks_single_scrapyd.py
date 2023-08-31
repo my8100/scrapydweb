@@ -191,7 +191,7 @@ def test_run_with_task(app, client):
     metadata['jobid'] = jobid
 
     ins = [
-        'JOB: %s' % jobid,
+        '%s.log' % jobid,
         'USER_AGENT: Mozilla/5.0 (iPhone',
         'ROBOTSTXT_OBEY: True',
         'COOKIES_ENABLED: False',

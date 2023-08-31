@@ -131,24 +131,24 @@ def req(app, client, view='', kws=None, url='', data=None,
                     print("ins: %s" % ins)
                 except:  # For compatibility with Win10 Python2
                     print("ins: %s" % repr(ins))
-                assert ins in text
+                assert ins in text, "%s is not found in %s" % (ins, text)
             elif isinstance(ins, list):
                 for i in ins:
                     try:
                         print("ins: %s" % i)
                     except:
                         print("ins: %s" % repr(i))
-                    assert i in text
+                    assert i in text, "%s is not found in %s" % (i, text)
             elif ins:
                 raise TypeError("The argument 'ins' should be either a string or a list")
 
             if isinstance(nos, string_types):
                 print("nos: %s" % nos)
-                assert nos not in text
+                assert nos not in text, "%s is found in %s" % (nos, text)
             elif isinstance(nos, list):
                 for n in nos:
                     print("nos: %s" % n)
-                    assert n not in text
+                    assert n not in text, "%s is found in %s" % (n, text)
             elif nos:
                 raise TypeError("The argument 'nos' should be either a string or a list")
 

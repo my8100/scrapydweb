@@ -92,7 +92,7 @@ def test_run(app, client):
     sleep()
 
     ins = [
-        'JOB: %s' % cst.JOBID,
+        '%s.log' % cst.JOBID,
         'USER_AGENT: Mozilla/5.0 (Windows',
         'ROBOTSTXT_OBEY: False',
         'COOKIES_ENABLED: False',
