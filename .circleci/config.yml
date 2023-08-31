@@ -177,7 +177,12 @@ jobs:
     <<: *test-template
     docker:
       - image: circleci/python:2.7
-      
+
+  py36:
+    <<: *test-template
+    docker:
+      - image: circleci/python:3.6
+
   py38-git-postgresql:
     <<: *test-template
     docker:
@@ -267,7 +272,10 @@ workflows:
       # - py27:
       #    is-py27: true
 
+      - py36
+
       - py37
+
       - py38-git-postgresql:
           use-git: true
           use-postgresql: true
