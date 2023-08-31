@@ -153,7 +153,7 @@ jobs:
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
-            coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings -x
+            coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings
 
       - run:
           name: Generate report
@@ -178,10 +178,10 @@ jobs:
     docker:
       - image: circleci/python:2.7
       
-  py37-git-postgresql:
+  py38-git-postgresql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
       # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
       - image: circleci/postgres:9.6-alpine
         environment:
@@ -194,10 +194,10 @@ jobs:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
       
-  py37-git-mysql:
+  py38-git-mysql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.8
       # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
       # Plugin caching_sha2_password could not be loaded
       # - image: circleci/mysql:8.0.4
@@ -268,10 +268,10 @@ workflows:
       #    is-py27: true
 
       - py37
-      - py37-git-postgresql:
+      - py38-git-postgresql:
           use-git: true
           use-postgresql: true
-      - py37-git-mysql:
+      - py38-git-mysql:
           use-git: true
           use-mysql: true
           
