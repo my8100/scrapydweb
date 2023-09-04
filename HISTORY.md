@@ -1,5 +1,10 @@
 Release History
 ===============
+1.4.1 (2023-08-31)
+------------------
+- Fix dependencies and release v1.4.1
+
+
 1.4.0 (2019-08-16)
 ------------------
 - New Features
