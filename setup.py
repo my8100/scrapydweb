@@ -36,7 +36,7 @@ setup(
         "APScheduler==3.5.3",  # Aug 15, 2018
         "click==7.0",  # Sep 26, 2018
         "colorama==0.4.0",  # Oct 10, 2018
-        "Flask==1.0.2",  # May 2, 2018
+        "Flask==2.2.5",  # May 2, 2018
         "Flask-Compress==1.4.0",  # Jan 5, 2017
         "Flask-SQLAlchemy==2.4.0",  # Apr 25, 2019
         "idna==2.7",  # Jun 11, 2018    

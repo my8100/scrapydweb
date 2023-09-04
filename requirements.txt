@@ -2,7 +2,7 @@ pip>=19.1.1
 APScheduler==3.5.3
 click==7.0
 colorama==0.4.0
-Flask==1.0.2
+Flask==2.2.5
 Flask-Compress==1.4.0
 Flask-SQLAlchemy==2.4.0
 idna==2.7
