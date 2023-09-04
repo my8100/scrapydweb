@@ -41,7 +41,7 @@ setup(
         "Flask-SQLAlchemy==2.4.0",  # Apr 25, 2019
         "idna==2.7",  # Jun 11, 2018    
         "itsdangerous==1.1.0",  # Oct 27, 2018
-        "Jinja2==2.10",  # Nov 9, 2017
+        "Jinja2==2.11.3",  # Nov 9, 2017
         "logparser==0.8.2",
         "MarkupSafe==1.1.1",  # Feb 24, 2019
         "pexpect==4.7.0",  # Apr 7, 2019

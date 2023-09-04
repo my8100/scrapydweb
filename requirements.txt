@@ -7,7 +7,7 @@ Flask-Compress==1.4.0
 Flask-SQLAlchemy==2.4.0
 idna==2.7
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 logparser==0.8.2
 MarkupSafe==1.1.1
 pexpect==4.7.0
