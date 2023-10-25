@@ -19,4 +19,4 @@ six==1.12.0
 SQLAlchemy==1.3.24
 tzlocal==1.5.1
 w3lib==1.19.0
-Werkzeug==0.14.1
+Werkzeug==3.0.1

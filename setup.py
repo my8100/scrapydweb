@@ -53,7 +53,7 @@ setup(
         "SQLAlchemy==1.3.24",  # Mar 31, 2021
         "tzlocal==1.5.1",  # Dec 1, 2017
         "w3lib==1.19.0",  # Jan 25, 2018
-        "Werkzeug==0.14.1",  # Jan 1, 2018
+        "Werkzeug==3.0.1",  # Jan 1, 2018
     ],
 
     entry_points={
