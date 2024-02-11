@@ -266,7 +266,7 @@ workflows:
       #    is-py27: true
       - py36
       - py37
-      - py38      
+      - py38
       - py39
       - py310-git-postgresql:
           use-git: true
@@ -280,6 +280,6 @@ workflows:
       - py310-postgresql:
           use-postgresql: true
       - py310-mysql:
-          use-mysql: true        
+          use-mysql: true
       - py311
       - py312
