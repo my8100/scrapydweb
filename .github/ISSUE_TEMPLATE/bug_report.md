@@ -28,8 +28,8 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment (please complete the following information):**
  - Operating system: [e.g. Win 10, macOS 10.14, Ubuntu 18, centOS 7.6, Debian 9.6 or Fedora 29]
- - Python version: [e.g. 2.7 or 3.8]
- - ScrapydWeb version: [e.g. 1.4.1 or latest code on GitHub]
+ - Python version: [e.g. 3.6 or 3.12]
+ - ScrapydWeb version: [e.g. 1.5.0 or latest code on GitHub]
  - ScrapydWeb related settings [e.g. 'ENABLE_AUTH = True']
  - Scrapyd version: [e.g. 1.2.1 or latest code on GitHub]
  - Scrapyd amount [e.g. 1 or 5]

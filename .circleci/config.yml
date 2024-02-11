@@ -1,20 +1,14 @@
 # Python CircleCI 2.1 configuration file
 version: 2.1
-
-
 orbs:
   codecov: codecov/codecov@1.0.2
-
-
 jobs:
-  py37: &test-template
+  py39: &test-template
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.9
     environment:
       SCRAPYDWEB_TESTMODE: True
-
     working_directory: ~/repo
-
     parameters:
       is-py27:
         type: boolean
@@ -39,13 +33,11 @@ jobs:
           name: Install telnet
           command: |
             sudo apt-get update && sudo apt-get install telnet
-
       - run:
           name: Setup env
           command: |
             mkdir ~/logs
             ls -l ~
-
       - checkout
       - when:
           condition: <<parameters.is-py27>>
@@ -54,7 +46,6 @@ jobs:
                 name: Create virtual env in PY2
                 command: |
                   virtualenv ./venv
-
       - unless:
           condition: <<parameters.is-py27>>
           steps:
@@ -62,7 +53,6 @@ jobs:
                 name: Create virtual env in PY3
                 command: |
                   python3 -m venv venv
-
       - when:
           condition: <<parameters.set-data-path>>
           steps:
@@ -112,7 +102,6 @@ jobs:
                   # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_timertasks"
                   # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_metadata"
                   # mysql -h 127.0.0.1 -u root -prootpw -e "create database scrapydweb_jobs"
-
       - run:
           name: Install dependencies
           command: |
@@ -125,7 +114,6 @@ jobs:
             pip install -r requirements.txt
             pip install -r requirements-tests.txt
             pip list
-
       - when:
           condition: <<parameters.use-git>>
           steps:
@@ -138,7 +126,6 @@ jobs:
                   pip install -U git+https://github.com/scrapy/scrapyd.git
                   pip install -U git+https://github.com/my8100/logparser.git
                   pip list
-
       - run:
           name: Launch Scrapyd
           command: |
@@ -150,7 +137,6 @@ jobs:
             sleep 5
             cat ~/scrapyd.log
             cd -
-
       - run:
           name: Run tests
           command: |
@@ -160,7 +146,6 @@ jobs:
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
             coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings
-
       - run:
           name: Generate report
           command: |
@@ -178,23 +163,28 @@ jobs:
           path: coverage.xml
       - codecov/upload:
           file: coverage.xml
-
   py27:
     <<: *test-template
     docker:
-      - image: circleci/python:2.7
-
+      - image: cimg/python:2.7
   py36:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6
-
-  py38-git-postgresql:
+      - image: cimg/python:3.6
+  py37:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8
-      # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      - image: circleci/postgres:9.6-alpine
+      - image: cimg/python:3.7
+  py38:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.8
+  py310-git-postgresql:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.10
+      # https://circleci.com/developer/images/image/cimg/postgres#image-tags
+      - image: cimg/postgres:9.6
         environment:
           POSTGRES_USER: circleci
           # psycopg2.OperationalError: FATAL: database "circleci" does not exist
@@ -204,16 +194,15 @@ jobs:
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
-      
-  py38-git-mysql:
+  py310-git-mysql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.10
       # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
       # Plugin caching_sha2_password could not be loaded
-      # - image: circleci/mysql:8.0.4
-      # https://circleci.com/docs/2.0/circleci-images/#mysql
-      - image: circleci/mysql:5.7.25
+      # - image: cimg/mysql:8.0.4
+      # https://circleci.com/developer/images/image/cimg/mysql#image-tags
+      - image: cimg/mysql:5.7
         environment:
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: test_db
@@ -222,22 +211,19 @@ jobs:
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
-
-  py38-sqlite:
+  py310-sqlite:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.10
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATA_PATH: '/home/circleci/repo/scrapydweb_data'
       DATABASE_URL: 'sqlite:////home/circleci/repo/scrapydweb_database'
-      
-  py38-postgresql:
+  py310-postgresql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8
-      # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      - image: circleci/postgres:9.6-alpine
+      - image: cimg/python:3.10
+      - image: cimg/postgres:9.6
         environment:
           POSTGRES_USER: circleci
           # psycopg2.OperationalError: FATAL: database "circleci" does not exist
@@ -247,16 +233,14 @@ jobs:
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'postgresql://circleci:fakepassword@localhost:5432'
-      
-  py38-mysql:
+  py310-mysql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.10
       # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
       # Plugin caching_sha2_password could not be loaded
-      # - image: circleci/mysql:8.0.4
-      # https://circleci.com/docs/2.0/circleci-images/#mysql
-      - image: circleci/mysql:5.7.25
+      # - image: cimg/mysql:8.0.4
+      - image: cimg/mysql:5.7
         environment:
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: test_db
@@ -265,43 +249,35 @@ jobs:
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATABASE_URL: 'mysql://root:rootpw@127.0.0.1:3306'
-
-  py39:
+  py311:
     <<: *test-template
     docker:
-      - image: circleci/python:3.9
-
-  py310:
+      - image: cimg/python:3.11
+  py312:
     <<: *test-template
     docker:
-      - image: circleci/python:3.10
-
-
+      - image: cimg/python:3.12
 workflows:
   test:
     jobs:
       # - py27:
       #    is-py27: true
-
       - py36
-
       - py37
-
-      - py38-git-postgresql:
+      - py38
+      - py39
+      - py310-git-postgresql:
           use-git: true
           use-postgresql: true
-      - py38-git-mysql:
+      - py310-git-mysql:
           use-git: true
           use-mysql: true
-          
-      - py38-sqlite:
+      - py310-sqlite:
           set-data-path: true
           use-sqlite: true
-      - py38-postgresql:
+      - py310-postgresql:
           use-postgresql: true
-      - py38-mysql:
+      - py310-mysql:
           use-mysql: true
-          
-      - py39
-
-      - py310
+      - py311
+      - py312
