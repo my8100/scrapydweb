@@ -5,7 +5,7 @@ orbs:
 jobs:
   py39: &test-template
     docker:
-      - image: circleci/python:3.9
+      - image: cimg/python:3.9
     environment:
       SCRAPYDWEB_TESTMODE: True
     working_directory: ~/repo
@@ -166,25 +166,25 @@ jobs:
   py27:
     <<: *test-template
     docker:
-      - image: circleci/python:2.7
+      - image: cimg/python:2.7
   py36:
     <<: *test-template
     docker:
-      - image: circleci/python:3.6
+      - image: cimg/python:3.6
   py37:
     <<: *test-template
     docker:
-      - image: circleci/python:3.7
+      - image: cimg/python:3.7
   py38:
     <<: *test-template
     docker:
-      - image: circleci/python:3.8
+      - image: cimg/python:3.8
   py310-git-postgresql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
       # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      - image: circleci/postgres:9.6-alpine
+      - image: cimg/postgres:9.6-alpine
         environment:
           POSTGRES_USER: circleci
           # psycopg2.OperationalError: FATAL: database "circleci" does not exist
@@ -197,12 +197,12 @@ jobs:
   py310-git-mysql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
       # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
       # Plugin caching_sha2_password could not be loaded
-      # - image: circleci/mysql:8.0.4
+      # - image: cimg/mysql:8.0.4
       # https://circleci.com/docs/2.0/circleci-images/#mysql
-      - image: circleci/mysql:5.7.25
+      - image: cimg/mysql:5.7.25
         environment:
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: test_db
@@ -214,7 +214,7 @@ jobs:
   py310-sqlite:
     <<: *test-template
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
     environment:
       SCRAPYDWEB_TESTMODE: True
       DATA_PATH: '/home/circleci/repo/scrapydweb_data'
@@ -222,9 +222,9 @@ jobs:
   py310-postgresql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
       # CircleCI PostgreSQL images available at: https://hub.docker.com/r/circleci/postgres/
-      - image: circleci/postgres:9.6-alpine
+      - image: cimg/postgres:9.6-alpine
         environment:
           POSTGRES_USER: circleci
           # psycopg2.OperationalError: FATAL: database "circleci" does not exist
@@ -237,12 +237,12 @@ jobs:
   py310-mysql:
     <<: *test-template
     docker:
-      - image: circleci/python:3.10
+      - image: cimg/python:3.10
       # https://circleci.com/docs/2.0/postgres-config/#example-mysql-project
       # Plugin caching_sha2_password could not be loaded
-      # - image: circleci/mysql:8.0.4
+      # - image: cimg/mysql:8.0.4
       # https://circleci.com/docs/2.0/circleci-images/#mysql
-      - image: circleci/mysql:5.7.25
+      - image: cimg/mysql:5.7.25
         environment:
           MYSQL_ROOT_PASSWORD: rootpw
           MYSQL_DATABASE: test_db
@@ -254,11 +254,11 @@ jobs:
   py311:
     <<: *test-template
     docker:
-      - image: circleci/python:3.11
+      - image: cimg/python:3.11
   py312:
     <<: *test-template
     docker:
-      - image: circleci/python:3.12        
+      - image: cimg/python:3.12
 workflows:
   test:
     jobs:
