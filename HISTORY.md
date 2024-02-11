@@ -1,5 +1,11 @@
 Release History
 ===============
+1.5.0 (2024-02-11)
+------------------
+- Update dependencies like Flask==2.0.0 
+- Support Python 3.6 to 3.12
+
+
 1.4.1 (2023-08-31)
 ------------------
 - Fix dependencies and release v1.4.1
