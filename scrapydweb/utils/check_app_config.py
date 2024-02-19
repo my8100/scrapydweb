@@ -35,7 +35,7 @@ SCRAPYD_SERVER_PATTERN = re.compile(r"""
                                     """, re.X)
 
 
-def check_app_config(config):
+def check_app_config(config, app):
     def check_assert(key, default, is_instance, allow_zero=True, non_empty=False, containing_type=None):
         if is_instance is int:
             if allow_zero:
@@ -110,8 +110,9 @@ def check_app_config(config):
         # Note that check_app_config() is executed multiple times in test
         if node not in jobs_table_map:
             jobs_table_map[node] = create_jobs_table(re.sub(STRICT_NAME_PATTERN, '_', scrapyd_server))
-    db.create_all(bind='jobs')
-    logger.debug("Created %s tables for JobsView", len(jobs_table_map))
+    with app.app_context():
+        db.create_all()
+        logger.debug("Created %s tables for JobsView", len(jobs_table_map))
 
     check_assert('LOCAL_SCRAPYD_LOGS_DIR', '', str)
     check_assert('LOCAL_SCRAPYD_SERVER', '', str)
