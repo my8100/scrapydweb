@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+
+{% block title %}timer tasks{% endblock %}
+
+{% block head %}
+  <style>
+  .demo-table-expand {font-size: 0;}
+  .demo-table-expand label {
+    color: #99a9bf;
+    width: 150px;
+  }
+  .demo-table-expand .el-form-item {
+    margin-bottom: 0;
+    margin-right: 0;
+    width: 33%;
+  }
+  .demo-table-expand .el-form-item label{text-align: right;}
+  .demo-table-expand .el-form-item .el-form-item__content{
+    margin-left: 30px;
+    text-align: left;
+    width: 200px;
+  }
+  </style>
+{% endblock %}
+
+
+{% block body %}
+<script>
+window.onload = function(){
+  if (location.search.indexOf('flash=') != -1) {
+    var timestamp = Math.floor(Date.now() / 1000);
+    history.pushState(null, '', [location.protocol, '//', location.host, location.pathname, '?t=', timestamp].join(''));
+  }
+};
+</script>
+
+
+<div>
+  <h2 style="display: inline-block;">Get the list of timer tasks.</h2>
+  <label title="click to {% if scheduler_action_button == 'ENABLED' %}disable{% else %}enable{% endif %} the scheduler for timer tasks">
+    <a class="button {% if scheduler_action_button == 'ENABLED' %}safe{% else %}danger{% endif %}" onclick="taskXHR('{{ url_scheduler_action }}');">
+      {{ scheduler_action_button }}
+    </a>
+  </label>
+  <label title="add a timer task">
+    <a class="button safe narrow" href="{{ url_add_task }}">+</a>
+  </label>
+  <label title="check out added tasks and exception log">
+    <a class="link" target="_blank" href="{{ url_tasks_history }}">history</a>
+  </label>
+</div>
+
+
+<div id="app">
+<template>
+  <el-table
+    ref="multipleTable"
+    :data="tableData"
+    style="width: 100%;"
+    tooltip-effect="dark"
+    empty-text="There is nothing to display."
+    :max-height="maxHeight"
+    :size="size"
+    @cell-click="handleCellClick"
+
+    highlight-current-row
+    @current-change="handleSelectRow"
+  >
+    <!-- :size=`mini` -->
+    <!-- default-sort would cause background color of the buttons flash once -->
+    <!-- :default-sort="{prop: 'status', order: 'descending'}" -->
+
+    <el-table-column type="expand" fixed>
+      <template slot-scope="props">
+        <el-form label-position="left" inline class="demo-table-expand">
+          <el-form-item label="create_time"><span>{{props.row.create_time}}</span></el-form-item>
+          <el-form-item label="year"><span>{{props.row.year}}</span></el-form-item>
+          <el-form-item label="start_date"><span>{{props.row.start_date}}</span></el-form-item>
+
+          <el-form-item label="update_time"><span>{{props.row.update_time}}</span></el-form-item>
+          <el-form-item label="month"><span>{{props.row.month}}</span></el-form-item>
+          <el-form-item label="end_date"><span>{{props.row.end_date}}</span></el-form-item>
+
+          <el-form-item label="version"><span>{{props.row.version}}</span></el-form-item>
+          <el-form-item label="day"><span>{{props.row.day}}</span></el-form-item>
+          <el-form-item label="timezone"><span>{{props.row.timezone}}</span></el-form-item>
+
+          <el-form-item label="jobid"><span>{{props.row.jobid}}</span></el-form-item>
+          <el-form-item label="week"><span>{{props.row.week}}</span></el-form-item>
+          <el-form-item label="jitter"><span>{{props.row.jitter}}</span></el-form-item>
+
+          <el-form-item></el-form-item>
+          <el-form-item label="day_of_week"><span>{{props.row.day_of_week}}</span></el-form-item>
+          <el-form-item label="misfire_grace_time"><span>{{props.row.misfire_grace_time}}</span></el-form-item>
+
+          <el-form-item></el-form-item>
+          <el-form-item label="hour"><span>{{props.row.hour}}</span></el-form-item>
+          <el-form-item label="coalesce"><span>{{props.row.coalesce}}</span></el-form-item>
+
+          <el-form-item></el-form-item>
+          <el-form-item label="minute"><span>{{props.row.minute}}</span></el-form-item>
+          <el-form-item label="max_instances"><span>{{props.row.max_instances}}</span></el-form-item>
+
+          <el-form-item></el-form-item>
+          <el-form-item label="second"><span>{{props.row.second}}</span></el-form-item>
+          <el-form-item></el-form-item>
+
+          <el-form-item label="settings_arguments"><span>{{props.row.settings_arguments}}</span></el-form-item>
+          <el-form-item></el-form-item>
+          <el-form-item label="selected_nodes"><span>{{props.row.selected_nodes}}</span></el-form-item>
+        </el-form>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="id" label="Task #" fixed sortable align="center" width="75"></el-table-column>
+    <el-table-column prop="name" label="Name" fixed sortable show-overflow-tooltip align="center" width="100"></el-table-column>
+    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150"></el-table-column>
+    <!-- default-sort would cause background color of the buttons flash once -->
+    <el-table-column prop="status" label="Status" fixed sortable :sort-orders="sortOrders" align="center" :sort-by=['status','id'] width="85">
+      <template slot-scope="scope">
+        <label :title="scope.row.status_label">
+          <a :class="scope.row.status_class" @click="handleStatusClick(scope.row.url_status)">{{scope.row.status}}</a>
+        </label>
+      </template>
+    </el-table-column>
+    <el-table-column prop="actions" label="Actions" sortable :sort-by=['index'] align="right" width="160">
+      <template slot-scope="scope">
+        <label title="click to fire the task right now">
+          <a class="state safe" :style="{ display: scope.row.display_fire }" @click="handleStatusClick(scope.row.url_fire)">Fire</a>
+        </label>
+        <label :title="scope.row.action_label">
+          <a :class="scope.row.action_class" @click="deleteRow(scope.$index, tableData)">{{scope.row.action}}</a>
+        </label>
+        <label title="click to update or copy the task">
+          <a class="state normal" @click="handleStatusClick(scope.row.url_edit)">Edit</a>
+        </label>
+      </template>
+    </el-table-column>
+    <el-table-column prop="prev_run_result" label="Prev run result" sortable align="center" :sort-method="sortPrevRunResult" :sort-orders="sortOrders" width="175">
+      <template slot-scope="scope">
+        <label :title="scope.row.prev_run_result_label">
+          <a :class="scope.row.prev_run_result_class" :href="scope.row.url_prev_run_result" :target="scope.row.prev_run_result_target">
+            <i class="el-icon-loading" :style="{ display: scope.row.prev_run_display_loading }"></i>
+            {{scope.row.prev_run_result}}
+          </a>
+        </label>
+      </template>
+    </el-table-column>
+    <!-- with jitter: 2019-01-01 00:00:01.123456+08:00 -->
+    <!-- Click the DISABLED button first -->
+    <el-table-column prop="next_run_time" label="Next run time" sortable align="center" width="240">
+      <template slot-scope="scope"><span :style="{ color: scope.row.next_run_time_color }">{{scope.row.next_run_time}}</span></template>
+    </el-table-column>
+    <el-table-column prop="task_results" label="Task results" sortable min-width="110" align="left" :sort-method="sortTaskResults" :sort-orders="sortOrders">
+      <template slot-scope="scope"><a :class="scope.row.task_results_class" :href="scope.row.url_task_results">{{scope.row.run_times}}</a></template>
+    </el-table-column>
+  </el-table>
+
+  <!-- total: the total number of items matching the query -->
+  <!-- page-size: the number of items to be displayed on a page. -->
+  <!-- page-count: the total number of pages -->
+  <!-- current-page: the current page number sensitive keywords -->
+  <!-- pager-count: number of page buttons -->
+  <el-pagination
+    background
+    :total='{{ tasks.total }}'
+    :page-sizes="[10, 100, 1000]"
+    :page-size='{{ tasks.per_page }}'
+    :page-count='{{ tasks.pages }}'
+    :current-page.sync="currentPage"
+
+    :pager-count="11"
+    layout="total, sizes, prev, pager, next"
+
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  >
+  </el-pagination>
+</template>
+</div>
+
+{% if tasks.items|length == 0 %}
+<!-- <p>No tasks found. Go to <a class="button safe" href="{{ url_add_task }}">Add Task</a></p> -->
+{% endif %}
+
+
+<script>
+// test name and settings_arguments:  'c:/a\r\n\u\t"\\
+// note that settings_arguments comes from json.dumps() repr: \\\\t\\\\r\\\\n
+var Main = {
+  data() {
+    return {
+      size: {% if tasks.per_page > 10 %}'mini'{% else %}'—'{% endif %},  // — | medium | small | mini
+      maxHeight: window.innerHeight - 200,
+      currentPage: {{ tasks.page }},  // the current page number (1 indexed)
+      sortOrders: ['descending','ascending',null],
+      tableData: [
+    {% for task in tasks.items %}
+      {
+        index: {{ task.index }},
+        id: {{ task.id }},
+        name: '{{ task.name|replace("\\", "\\\\")|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
+
+        status: '{{ task.status }}',
+        status_label: {% if task.status == 'Running' %}"click to pause the task"{% elif task.status == 'Paused' %}"click to resume the task"{% else %}"check out results of the task"{% endif %},
+        url_status: '{{ task.url_status }}',
+        status_class: 'state '+ {% if task.status == 'Running' %}'safe'{% elif task.status == 'Paused' %}'warning'{% else %}'normal'{% endif %},
+
+        action: '{{ task.action }}',
+        action_label: {% if task.action == 'Stop' %}"click to stop the task forever"{% else %}"click to delete the task and its results"{% endif %},
+        url_action: '{{ task.url_action }}',
+        action_class: 'state '+ {% if task.action == 'Stop' %}'danger'{% else %}'delete'{% endif %},
+
+        prev_run_result: '{{ task.prev_run_result }}',
+        prev_run_result_label: {% if task.prev_run_result == 'FAIL 0, PASS 0' %}'the task is being executed'{% else %}''{% endif %},
+        prev_run_display_loading: {% if task.prev_run_result == 'FAIL 0, PASS 0' %}''{% else %}'none'{% endif %},
+        url_prev_run_result: '{{ task.url_prev_run_result }}',
+        prev_run_result_class: 'state ' + {% if task.prev_run_result == 'N/A' %}'normal forbid'{% elif task.prev_run_result == 'FAIL 0, PASS 0' %}'warning'{% elif task.prev_run_result[:5] != 'FAIL ' or task.prev_run_result[:7] == 'FAIL 0,' %}'normal'{% else %}'danger'{% endif %},
+        prev_run_result_target: {% if task.prev_run_result == 'N/A' or task.prev_run_result[:5] == 'FAIL ' %}'_self'{% else %}'_blank'{% endif %},
+
+        next_run_time: '{{ task.next_run_time }}',
+        next_run_time_color: {% if 'DISABLED' in task.next_run_time %}'red'{% else %}'unset'{% endif %},
+        fail_times: {{ task.fail_times }},
+        run_times: {% if task.fail_times %}'FAIL {{ task.fail_times }} / {{ task.run_times }}'{% else %}{{ task.run_times }}{% endif %},
+        url_task_results: '{{ task.url_task_results }}',
+        task_results_class: {% if task.fail_times %}'state danger'{% else %}'state normal'{% endif %},
+
+        create_time: '{{ task.create_time }}',
+        update_time: '{{ task.update_time }}',
+        project: '{{ task.project }}',
+        version: '{{ task.version }}',
+        spider: '{{ task.spider }}',
+        jobid: '{{ task.jobid }}',
+        settings_arguments: '{{ task.settings_arguments|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
+        selected_nodes: '{{ task.selected_nodes }}',
+
+        year: '{{ task.year }}',
+        month: '{{ task.month }}',
+        day: '{{ task.day }}',
+        week: '{{ task.week }}',
+        day_of_week: '{{ task.day_of_week }}',
+        hour: '{{ task.hour }}',
+        minute: '{{ task.minute }}',
+        second: '{{ task.second }}',
+        start_date: '{{ task.start_date }}',
+        end_date: '{{ task.end_date }}',
+
+        timezone: '{{ task.timezone }}',
+        jitter: {{ task.jitter }},
+        misfire_grace_time: '{{ task.misfire_grace_time }}',
+        coalesce: '{{ task.coalesce }}',
+        max_instances: {{ task.max_instances }},
+
+        url_edit: '{{ task.url_edit }}',
+        url_fire: '{{ task.url_fire }}',
+        display_fire: {% if task.url_fire %}''{% else %}'none'{% endif %},
+      },
+    {% endfor %}
+      ],
+
+    }
+  },
+
+  methods: {
+    handleSelectRow(val) {
+      this.currentRow = val;
+    },
+    deleteRow(index, rows) {
+      // Stop task: '/9/tasks/xhr/remove/8/'
+      // Delete task: '/9/tasks/xhr/delete/8/'
+      var url = rows[index].url_action;
+      if (url.indexOf('/tasks/xhr/delete/') == -1) {
+        taskXHR(url);
+      } else {
+        deleteRowXHR(url);
+        rows.splice(index, 1);
+      }
+    },
+    handleStatusClick(url) {
+      console.log(`url: ${url}`);
+      if (url) {
+        if (url.indexOf('/tasks/xhr/') == -1) {
+          location.href = url;  // 'Finished' button in the 'Status' column
+        } else {
+          if (url.indexOf('/tasks/xhr/fire/') != -1) {
+            var timestamp = Math.floor(Date.now() / 1000);
+            history.pushState(null, '', [location.protocol, '//', location.host, location.pathname, '?t=', timestamp].join(''));
+          }
+          taskXHR(url);
+        }
+      }
+    },
+    handleSizeChange(val) {
+      console.log(`per_page: ${val}`);
+      location.href = '.?per_page=' + val;
+      // location.href = `.?per_page=${val}&page=1`;
+    },
+    handleCurrentChange(val) {
+      console.log(`page: ${val}`);
+      location.href = '.?page=' + val;
+    },
+    handleCellClick(row, column, cell, event) {
+      // console.log(row, column, cell, event);
+      // console.log(event.target.className);
+      if (event.target.className.indexOf('state') == -1) {
+        this.$refs.multipleTable.toggleRowExpansion(row);
+      }
+    },
+    sortPrevRunResult(a, b) {
+      if (a.prev_run_result == 'N/A' && b.prev_run_result != 'N/A') {
+        return -1;
+      } else if (a.prev_run_result != 'N/A' && b.prev_run_result == 'N/A') {
+        return 1;
+      } else if (a.prev_run_result.indexOf('FAIL') != -1 && b.prev_run_result.indexOf('FAIL') == -1) {
+        return 1;
+      } else if (a.prev_run_result.indexOf('FAIL') == -1 && b.prev_run_result.indexOf('FAIL') != -1) {
+        return -1;
+      } else if (a.prev_run_result == 'N/A' && b.prev_run_result == 'N/A') {
+        return a.id < b.id ?  -1 : 1;
+      } else if (a.prev_run_result.indexOf('FAIL') != -1 && b.prev_run_result.indexOf('FAIL') != -1) {
+        try {
+          var a_fail_pass_re = a.prev_run_result.match(/FAIL (\d+), PASS (\d+)/);
+          var b_fail_pass_re = b.prev_run_result.match(/FAIL (\d+), PASS (\d+)/);
+          var a_fail_count = parseInt(a_fail_pass_re[1]);
+          var a_pass_count = parseInt(a_fail_pass_re[2]);
+          var b_fail_count = parseInt(b_fail_pass_re[1]);
+          var b_pass_count = parseInt(b_fail_pass_re[2]);
+          return a_fail_count > b_fail_count ? 1 : a_fail_count < b_fail_count ? -1 : a_pass_count > b_pass_count ? 1 : a_pass_count < b_pass_count ? -1 : a.id > b.id ? 1 : -1;
+        } catch(err) {
+          return a.prev_run_result < b.prev_run_result ?  -1 : 1;
+        }
+      } else {
+        return a.prev_run_result > b.prev_run_result ?  1 : a.id > b.id ? 1 : -1;
+      }
+    },
+    sortTaskResults(a, b) {
+      if (a.fail_times || b.fail_times) {
+        return a.fail_times > b.fail_times ? 1 : -1;
+      } else {
+        return a.run_times > b.run_times ? 1 : -1;
+      }
+    },
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

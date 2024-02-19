@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}timer task job results{% endblock %}
+
+{% block head %}
+  <style>
+  .status_warn {
+    color: red;
+    font-weight: bold;
+  }
+  </style>
+{% endblock %}
+
+
+{% block body %}
+<script>
+//window.onload = function(){
+  //if (location.search.indexOf('flash=') != -1) {
+//    var timestamp = Math.floor(Date.now() / 1000);
+//    history.pushState(null, '', [location.protocol, '//', location.host, location.pathname, '?t=', timestamp].join(''));
+  //}
+//};
+</script>
+
+
+<h2>
+  <a class="button normal" href="{{ url_tasks }}">Tasks</a>
+  <a class="button normal" href="{{ url_task_results }}">Task #{{ task_id }} {% if task and task.name %}({{ task.name }}){% endif %}</a>
+  <a class="button warning forbid" href="javascript:;">Result #{{ task_result_id }}</a>
+  {% if task %}{{ task.project }}/{{ task.version }}/{{ task.spider }}/{{ task.jobid }}{% endif %}
+</h2>
+
+<div id="app">
+<template>
+  <el-table
+    ref="multipleTable"
+    :data="tableData"
+    style="width: 100%;"
+    tooltip-effect="dark"
+    empty-text="There is nothing to display."
+    :max-height="maxHeight"
+    :default-sort="{prop: 'status', order: 'ascending'}"
+    :size="size"
+
+    highlight-current-row
+    @current-change="handleSelectRow"
+  >
+    <el-table-column prop="index" label="Index" sortable align="center" width="70"></el-table-column>
+    <!-- <el-table-column prop="id" label="#" sortable align="center" width="80"></el-table-column> -->
+    <el-table-column prop="run_time" label="Run time" sortable align="center" width="145"></el-table-column>
+    <el-table-column prop="node" label="Node" sortable align="center" width="70"></el-table-column>
+    <el-table-column prop="server" label="Server" sortable show-overflow-tooltip align="center" width="160"></el-table-column>
+    <el-table-column prop="status_code" label="Status code" sortable align="center" width="110">
+      <template slot-scope="scope"><span :class="scope.row.status_code_class">{{scope.row.status_code}}</span></template>
+    </el-table-column>
+    <el-table-column prop="status" label="Status" sortable align="center" width="75">
+      <template slot-scope="scope"><span :class="scope.row.status_class">{{scope.row.status}}</span></template>
+    </el-table-column>
+    <el-table-column prop="stats" label="Stats" sortable :sort-method="sortStatus" align="center" width="105">
+      <template slot-scope="scope">
+        <a class="state multinode" :style="{ display: scope.row.display_clusterreports }" :href="scope.row.url_clusterreports" target="_blank">{{ g.multinode|safe }}</a>
+        <a :class="scope.row.stats_class" :href="scope.row.url_stats" target="_blank">{{scope.row.stats_button}}</a>
+      </template>
+    </el-table-column>
+    <el-table-column prop="result" label="Result" sortable :sort-method="sortStatus" align="left" min-width="250" show-overflow-tooltip></el-table-column>
+  </el-table>
+
+  <el-pagination
+    background
+    :total='{{ task_job_results.total }}'
+    :page-sizes="[10, 100, 1000]"
+    :page-size='{{ task_job_results.per_page }}'
+    :page-count='{{ task_job_results.pages }}'
+    :current-page.sync="currentPage"
+
+    :pager-count="11"
+    layout="total, sizes, prev, pager, next"
+
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  >
+  </el-pagination>
+</template>
+</div>
+
+
+<script>
+var Main = {
+  data() {
+    return {
+      size: {% if task_job_results.per_page > 10 %}'mini'{% else %}'—'{% endif %},
+      maxHeight: window.innerHeight - 200,
+      currentPage: {{ task_job_results.page }},
+      tableData: [
+    {% for task_job_result in task_job_results.items %}
+      {
+        index: {{ task_job_result.index }},
+        id: {{ task_job_result.id }},
+        run_time: '{{ task_job_result.run_time }}',
+        node: {{ task_job_result.node }},
+        server: '{{ task_job_result.server }}',
+        status_code: {{ task_job_result.status_code }},
+        status: '{{ task_job_result.status }}',
+        status_code_class: {% if task_job_result.status_code != 200 %}'status_warn'{% else %}''{% endif %},
+        status_class: {% if task_job_result.status != 'ok' %}'status_warn'{% else %}''{% endif %},
+
+        result: '{{ task_job_result.result|replace("&", "&amp;")|replace("<", "&lt;")|replace(">", "&gt;")|replace("\\", "/")|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
+
+        url_clusterreports: '{{ task_job_result.url_clusterreports }}',
+        display_clusterreports: {% if SCRAPYD_SERVERS_AMOUNT > 1 and task_job_result.status == 'ok' %}''{% else %}'none'{% endif %},
+
+        url_stats: '{{ task_job_result.url_stats or "javascript:;" }}',
+        stats_button: {% if task_job_result.url_stats %}'Stats'{% else %}'N/A'{% endif %},
+        stats_class:  {% if task_job_result.url_stats %}'state safe'{% else %}'state danger forbid'{% endif %},
+      },
+    {% endfor %}
+      ],
+
+    }
+  },
+
+  methods: {
+    handleSelectRow(val) {
+      this.currentRow = val;
+    },
+    handleCurrentChange(val) {
+      console.log(val);
+      location.href = '.?page=' + val;
+    },
+    handleSizeChange(val) {
+      console.log(`perpage ${val}`);
+      location.href = '.?per_page=' + val;
+    },
+    sortStatus(a, b) {
+      return a.status < b.status ? -1 : 1;
+    },
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

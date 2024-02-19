@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>error 500 - ScrapydWeb</title>
+</head>
+<body>
+
+<h1>500 (INTERNAL SERVER ERROR)</h1>
+
+<table border="1">
+<tbody>
+  <tr><th>Request URL</th><td><a href="{{ request.url }}" target="_blank">{{ request.url }}</a></td></tr>
+  <tr><th>Error</th><td>{{ error }}</td></tr>
+  <tr><th>Traceback</th><td><pre>{{ traceback }}</pre></td></tr>
+  <tr><th>OS</th><td>{{ os }}</td></tr>
+  <tr><th>Python</th><td>{{ python_version }}</td></tr>
+  <tr><th>ScrapydWeb</th><td>{{ scrapydweb_version }}</td></tr>
+  <tr><th>LogParser</th><td>{{ logparser_version }}</td></tr>
+  <tr><th>Scrapyd servers amount</th><td>{{ scrapyd_servers_amount }}</td></tr>
+  <tr><th>User-Agent</th><td>{{ request.user_agent }}</td></tr>
+  <tr><th>Request Method</th><td>{{ request.method }}</td></tr>
+  <tr><th>Request Args</th><td>{{ request.args }}</td></tr>
+  <tr><th>Form Data</th><td>{{ request.form }}</td></tr>
+  <tr><th>Files Data</th><td>{{ request.files }}</td></tr>
+  <tr><th>Request Referer</th><td>{{ request.headers.get("Referer") }}</td></tr>
+</tbody>
+</table>
+
+<h2>What To Do Next:</h2>
+<h3><a href="/" target="_blank">Step 1: Try to reproduce this behavior. &raquo;</a></h3>
+<h3><a href="javascript:;" onclick="myFunction()">Step 2: If reproducible, click to copy the table into Markdown.</a></h3>
+<h3><a href="{{ url_issues }}" target="_blank">Step 3: Report the bug with the info copied. &raquo;</a></h3>
+
+<textarea id="myInput" style="opacity: 0;">
+## 500 (INTERNAL SERVER ERROR): {{ error }}
+- **Request URL:** {{ request.url }}
+- **Traceback:**
+```
+{{ traceback }}
+```
+- **OS:** {{ os }}
+- **Python:** {{ python_version }}
+- **ScrapydWeb:** {{ scrapydweb_version }}
+- **LogParser:** {{ logparser_version }}
+- **Scrapyd servers amount:** {{ scrapyd_servers_amount }}
+- **User-Agent:** {{ request.user_agent }}
+- **Request Method:** {{ request.method }}
+- **Request Args:** {{ request.args }}
+- **Form Data:** {{ request.form }}
+- **Files Data:** {{ request.files }}
+- **Request Referer:** {{ request.headers.get("Referer") }}
+</textarea>
+
+<script>
+function myFunction() {
+  var copyText = document.getElementById("myInput");
+  copyText.select();
+  document.execCommand("copy");
+  alert("copied!");
+}
+</script>
+
+</body>
+</html>

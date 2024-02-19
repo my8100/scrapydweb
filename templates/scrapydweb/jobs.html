@@ -1,0 +1,354 @@
+{% extends 'base.html' %}
+
+{% block title %}jobs{% endblock %}
+
+{% block head %}
+  <style>
+  .count_info {
+    color: #67c23a;
+    font-weight: bold;
+  }
+  .count_warn {
+    color: red;
+    font-weight: bold;
+  }
+  </style>
+
+  {% if SCRAPYD_SERVERS_AMOUNT == 1 and (pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0) %}
+  <script type="text/javascript" src="https://my8100.herokuapp.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>
+  <script>setTimeout("checkLatestVersion({{ pageview }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 1000);</script>
+  {% else %}
+  <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
+  {% endif %}
+{% endblock %}
+
+
+{% block body %}
+{% if (SCRAPYD_SERVERS_AMOUNT == 1 and pageview == 1) or IS_IE_EDGE %}
+<script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
+{% endif %}
+
+<h2>
+  <a class="link" target="_blank" href="{{ url }}">Get the list of jobs of all projects in database.</a>
+  <label title="switch to non-database view">
+    <a class="button normal" href="{{ url_jobs_classic }}">Classic</a>
+  </label>
+  <label title="schedule a spider run">
+    <a class="button safe narrow" href="{{ url_schedule }}">+</a>
+  </label>
+  <span id="logparser_last_update" style="color: #67c23a;"></span>
+</h2>
+<h3 id="logparser_alert" style="color: red; display: none;"></h3>
+
+<div id="app">
+<template>
+  <el-table
+    ref="multipleTable"
+    :data="tableData"
+    tooltip-effect="dark"
+    empty-text="There is nothing to display."
+    :max-height="maxHeight"
+    style="width: 100%;"
+    :size="size"
+
+    highlight-current-row
+    @current-change="handleSelectRow"
+  >
+    <!-- :size=`—` -->
+    <!-- / — / medium / small / mini -->
+    <!-- :default-sort="{prop: 'runtime', order: 'descending'}" -->
+
+    <el-table-column prop="index" label="Index" fixed sortable align="center" width="70"></el-table-column>
+    <!-- 'abcdefghi0abcdefghi0' -->
+    <el-table-column prop="project" label="Project" fixed sortable show-overflow-tooltip align="center" width="150">
+      <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.project}}</span></template>
+    </el-table-column>
+    <el-table-column prop="spider" label="Spider" fixed sortable show-overflow-tooltip align="center" width="150">
+      <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.spider}}</span></template>
+    </el-table-column>
+    <!-- 'task_123456_2019-01-01T00_00_01' -->
+    <el-table-column prop="job" label="Job" fixed sortable show-overflow-tooltip :sort-method="sortJobWithTask" :sort-orders="sortOrders" align="center" width="215">
+      <template slot-scope="scope"><span :style="{ color: scope.row.pending_color }">{{scope.row.job}}</span></template>
+    </el-table-column>
+    <el-table-column prop="pages" label="Pages" fixed sortable :sort-method="sortPages" :sort-orders="sortOrders" align="center" width="80">
+      <template slot-scope="scope"><span :class="scope.row.pages_class">{{scope.row.pages}}</span></template>
+    </el-table-column>
+    <el-table-column prop="items" label="Items" fixed sortable :sort-method="sortItems" :sort-orders="sortOrders" align="center" width="80">
+      <template slot-scope="scope"><span :class="scope.row.items_class">{{scope.row.items}}</span></template>
+    </el-table-column>
+
+    <el-table-column prop="stats" label="Stats" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}105{% else %}65{% endif %}" :sort-method="sortByIndex">
+      <template slot-scope="scope">
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        <a class="state multinode" :style="{ display: scope.row.pending_display }" :href="scope.row.url_clusterreports">{{ g.multinode|safe }}</a>
+        {% endif %}
+        <a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_stats" target="_blank">Stats</a>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}115{% else %}90{% endif %}" :sort-method="sortByIndex">
+      <template slot-scope="scope">
+        <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}}</span>
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        <a class="state multinode" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">{{ g.multinode|safe }}</a>
+        {% endif %}
+        <a :class="scope.row.action_class" :style="{ display: scope.row.display_action }" @click="handleActionClick(scope.row.url_action)">{{scope.row.action}}</a>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="start" label="Start" sortable :sort-method="sortStart" :sort-orders="sortOrders" align="center" width="145"></el-table-column>
+    <!-- 16 days, 20:09:24 -->
+    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
+    <el-table-column prop="finish" label="Finish" sortable :sort-orders="sortOrders" align="center" width="145"></el-table-column>
+    <el-table-column prop="update_time" label="Update time" sortable :sort-orders="sortOrders" align="center" width="145"></el-table-column>
+    <el-table-column prop="pid" label="PID" sortable :sort-method="sortPID" :sort-orders="sortOrders" align="center" width="70">
+      <template slot-scope="scope"><span :style="{ color: scope.row.pid_color }">{{scope.row.pid}}</span></template>
+    </el-table-column>
+
+    <el-table-column prop="links" label="Links" sortable align="center" width="195" :sort-method="sortByIndex">
+      <template slot-scope="scope">
+        <a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_utf8" target="_blank">Log</a>
+        <a :class="scope.row.stats_class" :style="{ display: scope.row.pending_display }" :href="scope.row.url_source" target="_blank">Source</a>
+        <a :class="scope.row.stats_class" :style="{ display: scope.row.items_display }" :href="scope.row.url_items" target="_blank">Items</a>
+      </template>
+    </el-table-column>
+    <el-table-column prop="delete" label="Delete" sortable align="center" width="90" :sort-method="sortByIndex">
+      <!-- <template slot-scope="scope"><a class="state danger" :href="scope.row.url_delete" target="_blank">Delete</a></template> -->
+      <template slot-scope="scope"><a class="state delete" @click="deleteRow(scope.$index, tableData)">Delete</a></template>
+    </el-table-column>
+  </el-table>
+
+  <el-pagination
+    background
+    :total='{{ jobs.total }}'
+    :page-sizes="[10, 100, 1000]"
+    :page-size='{{ jobs.per_page }}'
+    :page-count='{{ jobs.pages }}'
+    :current-page.sync="currentPage"
+
+    :pager-count="11"
+    layout="total, sizes, prev, pager, next"
+
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  >
+  </el-pagination>
+</template>
+</div>
+
+
+<script>
+{% if JOBS_RELOAD_INTERVAL > 0 %}
+setTimeout("if(loading == false){window.location.reload(true);}else{console.log('loading: ' + loading);}", {{ JOBS_RELOAD_INTERVAL * 1000 }});
+{% endif %}
+</script>
+
+<script>
+// size: — | medium | small | mini
+// currentPage: the current page number (1 indexed)
+// project: 'abcdefghi0abcdefghi0'
+// job: 'task_123456_2019-02-11T14_42_00'
+// runtime: '16 days, 20:09:24'
+var Main = {
+  data() {
+    return {
+      size: {% if jobs.per_page > 10 %}'mini'{% else %}'—'{% endif %},
+      maxHeight: window.innerHeight - 250,
+      currentPage: {{ jobs.page }},
+      sortOrders: ['descending','ascending',null],
+      url_liststats: '{{ url_liststats }}',
+      tableData: [
+    {% for job in jobs.items %}
+      {
+        id: {{ job.id }},
+        index: {{ job.index }},
+        pending_color: {% if job.start %}'unset'{% else %}'red'{% endif %},
+        pending_display: {% if job.start %}''{% else %}'none'{% endif %},
+        project: '{{ job.project }}',
+        spider: '{{ job.spider }}',
+        job: '{{ job.job }}',
+        pid: '{{ job.pid }}',
+        start: '{{ job.start }}',
+        runtime: '{{ job.runtime }}',
+        finish: '{{ job.finish }}',
+        update_time: '{{ job.update_time }}',
+
+        to_be_killed: {% if job.to_be_killed %}true{% else %}false{% endif %},
+        pages: {% if job.pages is none %}''{% else %}'{{ job.pages }}'{% endif %},
+        items: {% if job.items is none %}''{% else %}'{{ job.items }}'{% endif %},
+        pages_class: {% if job.pages == 'N/A' %}''{% elif job.pages == 0 %}'count_warn'{% else %}'count_info'{% endif %},
+        items_class: {% if job.items == 'N/A' %}''{% elif job.items == 0 %}'count_warn'{% else %}'count_info'{% endif %},
+
+        stats_class: {% if job.finish %}'state normal'{% else %}'state safe'{% endif %},
+        url_stats: '{{ job.url_stats }}',
+        url_clusterreports: '{{ job.url_clusterreports }}',
+        url_utf8: '{{ job.url_utf8 }}',
+        url_source: '{{ job.url_source }}',
+        url_items: '{{ job.url_items }}',
+        items_display: {% if SHOW_SCRAPYD_ITEMS and job.url_items %}''{% else %}'none'{% endif %},
+
+        action: {% if job.finish %}'Start'{% elif job.pid %}'Stop'{% else %}'Cancel'{% endif %},
+        action_class: {% if job.finish %}'state safe'{% elif job.pid %}'state danger'{% else %}'state warning'{% endif %},
+        url_action: '{{ job.url_action }}',
+        url_multinode: '{{ job.url_multinode }}',
+
+        display_action: {% if not job.to_be_killed %}''{% else %}'none'{% endif %},
+        display_kill: {% if job.to_be_killed %}''{% else %}'none'{% endif %},
+        pid_color: {% if job.to_be_killed %}'red'{% else %}'unset'{% endif %},
+
+        url_delete: '{{ job.url_delete }}',
+      },
+    {% endfor %}
+      ],
+
+    }
+  },
+
+  created() {
+    this.updateStats(this.url_liststats);
+  },
+
+  methods: {
+    handleSelectRow(val) {
+      this.currentRow = val;
+    },
+    deleteRow(index, rows) {
+      deleteRowXHR(rows[index].url_delete);
+      rows.splice(index, 1);
+    },
+    handleActionClick(url) {
+      console.log(`url: ${url}`);
+      if (url.indexOf('/api/stop/') == -1) {
+        location.href = url;  // the 'Start' action
+      } else {
+        jobsXHR(url, forcestop=false);
+      }
+    },
+    handleCurrentChange(val) {
+      console.log(val);
+      showLoader();
+      location.href = '.?page=' + val;
+    },
+    handleSizeChange(val) {
+      console.log(`perpage ${val}`);
+      showLoader();
+      location.href = '.?per_page=' + val;
+    },
+    sortJobWithTask(a, b) {
+      var a_task_re = a.job.match(/task_(\d+)_(.+)/);
+      var b_task_re = b.job.match(/task_(\d+)_(.+)/);
+      if (a_task_re && b_task_re) {
+        return parseInt(a_task_re[1]) > parseInt(b_task_re[1]) ? 1 : parseInt(a_task_re[1]) < parseInt(b_task_re[1]) ? -1 : a_task_re[2] > b_task_re[2] ? 1 : -1;
+      } else {
+        return a.job > b.job ? 1 : -1;
+      }
+    },
+    sortPages(a, b) {
+      var a_pages = a.pages == 'N/A' ? -1 : parseInt(a.pages);
+      var b_pages = b.pages == 'N/A' ? -1 : parseInt(b.pages);
+      return a_pages > b_pages ? 1 : -1;
+    },
+    sortItems(a, b) {
+      var a_items = a.items == 'N/A' ? -1 : parseInt(a.items);
+      var b_items = b.items == 'N/A' ? -1 : parseInt(b.items);
+      return a_items > b_items ? 1 : -1;
+    },
+    sortByIndex(a, b) {
+      return a.index < b.index ? -1 : 1;
+    },
+    sortStart(a, b) {
+      if (!a.start && !b.start) {
+        return a.index > b.index ? -1 : 1;
+      } else if (!a.start) {
+        return 1;
+      } else if (!b.start) {
+        return -1;
+      } else {
+        return a.start > b.start ? 1 : -1;
+      }
+    },
+
+{% include 'scrapydweb/include_methods_sortruntime.html' %}
+
+    sortPID(a, b) {
+      return (parseInt(a.pid) || 0) > (parseInt(b.pid) || 0) ? 1 : -1;
+    },
+    updateStats:function(url) {
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            // console.log(obj);
+            if (obj.status == 'ok') {
+              for (var idx = 0; idx < vm.tableData.length; idx++) {
+                // console.log(idx, vm.tableData[idx]['pages'], vm.tableData[idx]['items']);
+                if (!vm.tableData[idx]['start']) {
+                  console.log("Skip pending job: ", vm.tableData[idx]['job']);
+                  continue;
+                }
+                try {
+                  var project = vm.tableData[idx]['project'];
+                  var spider = vm.tableData[idx]['spider'];
+                  var job = vm.tableData[idx]['job'];
+                  var pages = obj.datas[project][spider][job]['pages'];
+                  var items = obj.datas[project][spider][job]['items']
+
+                  if (pages === null) {
+                    vm.tableData[idx]['pages'] = 'N/A';
+                    vm.tableData[idx]['pages_class'] = '';
+                  } else {
+                    vm.tableData[idx]['pages'] = pages;
+                    vm.tableData[idx]['pages_class'] = pages == 0 ? 'count_warn' : 'count_info';
+                  }
+
+                  if (items === null) {
+                    vm.tableData[idx]['items'] = 'N/A';
+                    vm.tableData[idx]['items_class'] = '';
+                  } else {
+                    vm.tableData[idx]['items'] = items;
+                    vm.tableData[idx]['items_class'] = items == 0 ? 'count_warn' : 'count_info';
+                  }
+
+                  // console.log(vm.tableData[idx]['job'], vm.tableData[idx]['pages'], vm.tableData[idx]['items'])
+                } catch(err) {
+                  // console.log(err);
+                  console.log("stats for jobid " + vm.tableData[idx]['job'] + " not found" );
+                }
+              }
+
+              my$('#logparser_stats').style.display = 'block';  // flash in base.html
+              my$('#logparser_stats').innerText = "LogParser v" + obj.logparser_version + ", last updated at " + obj.last_update_time + ", {{ url_liststats_source }}";
+              my$('#logparser_last_update').innerText = "by LogParser: " + Math.ceil(Date.now() / 1000 - obj.last_update_timestamp) + " secs ago";
+              setInterval(function() {
+                var now_timestamp = Date.now() / 1000;
+                var seconds = Math.ceil(Date.now() / 1000 - obj.last_update_timestamp);
+                my$('#logparser_last_update').innerHTML = "by LogParser: " + "<span style='color: red;'>" + seconds + "</span> secs ago";
+              }, 1000);
+
+              // Update Jobs database
+              var r = new XMLHttpRequest
+              r.open('post', url.replace('/api/liststats', '/jobs'), Async = true);
+              r.send();
+            } else {
+              // '/api/stats/' would return "status": "error", "status_code": 404,
+              console.log(obj.status);
+              console.log(obj.logparser_version);
+              my$('#logparser_alert').style.display = '';
+              my$('#logparser_alert').style.color = 'red';
+              my$('#logparser_alert').innerText = obj.tip;
+            }
+          } else {
+            console.log(this.status);
+          }
+        }
+      };
+      req.open('post', url, Async = true);
+      req.send();
+    },
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

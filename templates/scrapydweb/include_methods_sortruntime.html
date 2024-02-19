@@ -1,0 +1,23 @@
+    calcRuntime(runtime) {
+      // 1 day, 0:25:11    0:01:08
+      if (!runtime) {
+        return 0;
+      }
+      var day_re = runtime.match(/(\d+) day/);
+      if (day_re) {
+        var day_s = day_re[1];
+      } else {
+        var day_s = '';
+      }
+      var time_re = runtime.match(/(\d+):(\d+):(\d+)/);
+      var hour_s = time_re[1];
+      var minute_s = time_re[2];
+      var second_s = time_re[3];
+      if (hour_s.length == 1) {
+        hour_s = '0' + hour_s;
+      }
+      return parseInt(day_s + hour_s + minute_s + second_s);
+    },
+    sortRuntime(a, b) {
+      return this.calcRuntime(a.runtime) > this.calcRuntime(b.runtime) ? 1 : -1;
+    },
