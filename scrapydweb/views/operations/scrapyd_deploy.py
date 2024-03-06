@@ -12,7 +12,10 @@ import sys
 import tempfile
 
 from flask import current_app as app
-from six.moves.configparser import SafeConfigParser
+try:
+    from six.moves.configparser import SafeConfigParser
+except ImportError:
+    from six.moves.configparser import RawConfigParser as SafeConfigParser
 
 
 _SETUP_PY_TEMPLATE = """# Automatically created by: scrapydweb x scrapyd-client
