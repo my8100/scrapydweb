@@ -53,7 +53,7 @@ class LogView(BaseView):
 
         # Note that self.LOCAL_SCRAPYD_LOGS_DIR may be an empty string
         # Extension like '.log' is excluded here.
-        self.url = u'http://{}/logs/{}/{}/{}'.format(self.SCRAPYD_SERVER, self.project, self.spider, self.job)
+        self.url = u'{}://{}/logs/{}/{}/{}'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER, self.project, self.spider, self.job)
         self.log_path = os.path.join(self.LOCAL_SCRAPYD_LOGS_DIR, self.project, self.spider, self.job)
 
         # For Log and Stats buttons in the Logs page: /a.log/?with_ext=True
@@ -66,7 +66,7 @@ class LogView(BaseView):
 
         # json file by LogParser
         self.json_path = os.path.join(self.LOCAL_SCRAPYD_LOGS_DIR, self.project, self.spider, job_without_ext+'.json')
-        self.json_url = u'http://{}/logs/{}/{}/{}.json'.format(self.SCRAPYD_SERVER, self.project, self.spider,
+        self.json_url = u'{}://{}/logs/{}/{}/{}.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER, self.project, self.spider,
                                                                job_without_ext)
 
         self.status_code = 0

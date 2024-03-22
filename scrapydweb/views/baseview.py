@@ -93,6 +93,7 @@ class BaseView(View):
 
         # Scrapyd
         self.SCRAPYD_SERVERS = app.config.get('SCRAPYD_SERVERS', []) or ['127.0.0.1:6800']
+        self.SCRAPYD_SERVERS_PROTOCOLS = app.config.get('SCRAPYD_SERVERS_PROTOCOLS', []) or ['http']
         self.SCRAPYD_SERVERS_AMOUNT = len(self.SCRAPYD_SERVERS)
         self.SCRAPYD_SERVERS_GROUPS = app.config.get('SCRAPYD_SERVERS_GROUPS', []) or ['']
         self.SCRAPYD_SERVERS_AUTHS = app.config.get('SCRAPYD_SERVERS_AUTHS', []) or [None]
@@ -183,6 +184,7 @@ class BaseView(View):
         assert 0 < self.node <= self.SCRAPYD_SERVERS_AMOUNT, \
             'node index error: %s, which should be between 1 and %s' % (self.node, self.SCRAPYD_SERVERS_AMOUNT)
         self.SCRAPYD_SERVER = self.SCRAPYD_SERVERS[self.node - 1]
+        self.SCRAPYD_SERVER_PROTOCOL = self.SCRAPYD_SERVERS_PROTOCOLS[self.node - 1]
         self.IS_LOCAL_SCRAPYD_SERVER = self.SCRAPYD_SERVER == self.LOCAL_SCRAPYD_SERVER
         self.GROUP = self.SCRAPYD_SERVERS_GROUPS[self.node - 1]
         self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.node - 1]

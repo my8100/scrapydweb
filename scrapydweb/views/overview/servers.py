@@ -19,7 +19,7 @@ class ServersView(BaseView):
         self.version_job = self.view_args['version_job']
         self.spider = self.view_args['spider']
 
-        self.url = 'http://%s/daemonstatus.json' % self.SCRAPYD_SERVER
+        self.url = '{}://{}/daemonstatus.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
         self.template = 'scrapydweb/servers.html'
         self.selected_nodes = []
 
