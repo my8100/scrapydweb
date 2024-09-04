@@ -1,0 +1,9 @@
+﻿name: searchgov-scrapydweb
+description: 'Search.gov forked repository of scrapydweb'
+license: 'https://github.com/GSA/searchgov-scrapydweb/blob/main/LICENSE'
+openSourceProject: 1
+governmentWideReuseProject: 1
+tags:
+    - search
+contact:
+    email: search@gsa.gov
