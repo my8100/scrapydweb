@@ -88,7 +88,7 @@
 
     <el-table-column prop="action" label="Action" sortable align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}115{% else %}90{% endif %}" :sort-method="sortByIndex">
       <template slot-scope="scope">
-        <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill {{scope.row.pid}}</span>
+        <span style="color: red;" :style="{ display: scope.row.display_kill }">Kill PID {{scope.row.pid}}</span>
         {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
         <a class="state multinode" :style="{ display: scope.row.display_action }" :href="scope.row.url_multinode">{{ g.multinode|safe }}</a>
         {% endif %}

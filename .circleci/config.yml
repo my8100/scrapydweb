@@ -13,6 +13,9 @@ jobs:
       is-py27:
         type: boolean
         default: false
+      use-scrapyd-v143:
+        type: boolean
+        default: true
       use-git:
         type: boolean
         default: false
@@ -126,6 +129,16 @@ jobs:
                   pip install -U git+https://github.com/scrapy/scrapyd.git
                   pip install -U git+https://github.com/my8100/logparser.git
                   pip list
+      - when:
+          condition: <<parameters.use-scrapyd-v143>>
+          steps:
+            - run:
+                name: scrapyd==1.4.3
+                command: |
+                  . venv/bin/activate
+                  pip list
+                  pip install scrapyd==1.4.3
+                  pip list
       - run:
           name: Launch Scrapyd
           command: |
@@ -179,6 +192,10 @@ jobs:
     <<: *test-template
     docker:
       - image: cimg/python:3.8
+  py39-scrapyd-latest:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.9
   py310-git-postgresql:
     <<: *test-template
     docker:
@@ -257,15 +274,21 @@ jobs:
     <<: *test-template
     docker:
       - image: cimg/python:3.12
+  py312-scrapyd-latest:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.12
 workflows:
   test:
     jobs:
       # - py27:
       #    is-py27: true
-      - py36
-      - py37
+      # - py36
+      # - py37
       - py38
       - py39
+      - py39-scrapyd-latest:
+          use-scrapyd-v143: false
       - py310-git-postgresql:
           use-git: true
           use-postgresql: true
@@ -281,3 +304,5 @@ workflows:
           use-mysql: true
       - py311
       - py312
+      - py312-scrapyd-latest:
+          use-scrapyd-v143: false
