@@ -117,7 +117,7 @@ def req(app, client, view='', kws=None, url='', data=None,
             with io.open('%s.html' % save, 'wb') as f:
                 f.write(response.data)
         text = get_text(response)
-        # print(text)
+        print('text', text)
         js = {}
         try:
             # js = response.get_json()
