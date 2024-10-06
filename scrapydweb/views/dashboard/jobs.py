@@ -96,7 +96,7 @@ class JobsView(BaseView):
 
     def dispatch_request(self, **kwargs):
         status_code, self.text = self.make_request(self.url, auth=self.AUTH, as_json=False)
-        if status_code != 200 or not re.search(r'<body><h1>Jobs</h1>', self.text):
+        if status_code != 200 or not re.search(r'<body>\s*<h1>Jobs</h1>', self.text):
             kwargs = dict(
                 node=self.node,
                 url=self.url,
