@@ -40,7 +40,7 @@ def main():
     # "scrapydweb -h" ends up here
     update_app_config(app.config, args)
     try:
-        check_app_config(app.config)
+        check_app_config(app.config, app)
     except AssertionError as err:
         logger.error("Check app config fail: ")
         sys.exit(u"\n{err}\n\nCheck and update your settings in {path}\n".format(

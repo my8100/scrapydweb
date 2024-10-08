@@ -69,7 +69,7 @@ class BaseView(View):
             self.logger.debug('request.args of %s\n%s', request.url, self.json_dumps(request.args))
         if request.form:
             self.logger.debug('request.form from %s\n%s', request.url, self.json_dumps(request.form))
-        if request.json:
+        if request.is_json:
             self.logger.debug('request.json from %s\n%s', request.url, self.json_dumps(request.json))
         if request.files:
             self.logger.debug('request.files from %s\n\n    %s\n', request.url, request.files)
