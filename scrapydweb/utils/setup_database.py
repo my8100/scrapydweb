@@ -2,6 +2,7 @@
 import os
 import re
 import sys
+from urllib.parse import quote as urlquote
 
 
 DB_APSCHEDULER = 'scrapydweb_apscheduler'
@@ -98,7 +99,7 @@ def setup_mysql(username, password, host, port):
         # Run scrapydweb: ModuleNotFoundError: No module named 'MySQLdb'
         pymysql.install_as_MySQLdb()
 
-    conn = pymysql.connect(host=host, port=int(port), user=username, password=password,
+    conn = pymysql.connect(host=host, port=int(port), user=username, password=urlquote(password),
                            charset='utf8', cursorclass=pymysql.cursors.DictCursor)
     cur = conn.cursor()
     for dbname in DBS:
@@ -131,7 +132,7 @@ def setup_postgresql(username, password, host, port):
     except (ImportError, AssertionError):
         sys.exit("Run command: %s" % install_command)
 
-    conn = psycopg2.connect(host=host, port=int(port), user=username, password=password)
+    conn = psycopg2.connect(host=host, port=int(port), user=username, password=urlquote(password))
     conn.set_isolation_level(0)  # https://wiki.postgresql.org/wiki/Psycopg2_Tutorial
     cur = conn.cursor()
     for dbname in DBS:
