@@ -16,7 +16,7 @@ class LogsView(BaseView):
         self.project = self.view_args['project']
         self.spider = self.view_args['spider']
 
-        self.url = 'http://{}/logs/{}{}'.format(self.SCRAPYD_SERVER,
+        self.url = '{}://{}/logs/{}{}'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER,
                                                 '%s/' % self.project if self.project else '',
                                                 '%s/' % self.spider if self.spider else '')
         if self.SCRAPYD_SERVER_PUBLIC_URL:
