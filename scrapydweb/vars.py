@@ -10,6 +10,7 @@ from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPP
 
 from .default_settings import DATA_PATH as default_data_path
 from .default_settings import DATABASE_URL as default_database_url
+from .default_settings import DATABASE_USE_SINGLE as default_database_use_single
 from .utils.setup_database import setup_database
 
 
@@ -22,11 +23,13 @@ try:
 except ImportError:
     custom_data_path = ''
     custom_database_url = ''
+    custom_database_use_single = False
 else:
     custom_data_path = getattr(custom_settings_module, 'DATA_PATH', '')
     custom_data_path = custom_data_path if isinstance(custom_data_path, str) else ''
     custom_database_url = getattr(custom_settings_module, 'DATABASE_URL', '')
     custom_database_url = custom_database_url if isinstance(custom_database_url, str) else ''
+    custom_database_use_single = getattr(custom_settings_module, 'DATABASE_USE_SINGLE', False)
 
 # For data storage
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -59,7 +62,8 @@ TIMER_TASKS_HISTORY_LOG = os.path.join(HISTORY_LOG, 'timer_tasks_history.log')
 
 # For database
 DATABASE_URL = custom_database_url or default_database_url or 'sqlite:///' + DATABASE_PATH
-results = setup_database(DATABASE_URL, DATABASE_PATH)
+DATABASE_USE_SINGLE = custom_database_use_single or default_database_use_single
+results = setup_database(DATABASE_URL, DATABASE_PATH, DATABASE_USE_SINGLE)
 APSCHEDULER_DATABASE_URI, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_BINDS, DATABASE_PATH = results
 
 # For check_app_config() and BaseView
