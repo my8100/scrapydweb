@@ -1,0 +1,29 @@
+{% extends 'base_mobileui.html' %}
+
+{% block title %}fail{% endblock %}
+
+{% block neck %}
+<a class="button normal" href="javascript:;" onclick="window.history.back();">Go back</a>
+<a class="button warning" target="_blank" href="http://{{ SCRAPYD_SERVERS[node-1] }}">Scrapyd server</a>
+{% endblock %}
+
+{% block body %}
+<div style="margin: 0 12px;">
+  {% if url %}
+  <h3 style="word-break: break-all;"><a class="link" target="_blank" href="{{ url }}">{{ url }}</a></h3>
+  {% endif %}
+
+  {% if status_code %}
+  <h3>status_code: {{ status_code }}</h3>
+  {% endif %}
+
+  <pre>
+  {{ text }}
+  {{ message }}
+  </pre>
+
+  {% if url %}
+  <!-- <iframe src="{{ url }}" style="width: 100%; height: 100%;">{{ url }}</iframe> -->
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+    <el-table-column prop="pages" label="Pages" fixed sortable align="center" width="80">
+      <template slot-scope="scope">
+        <p :class="scope.row.pages_class">{{scope.row.pages}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="items" label="Items" fixed sortable align="center" width="80">
+      <template slot-scope="scope">
+        <p :class="scope.row.items_class">{{scope.row.items}}</p>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="reason" label="Reason" sortable align="center" width="120" show-overflow-tooltip>
+      <template slot-scope="scope">
+        <p :class="scope.row.reason_class">{{scope.row.reason}}</p>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="log_critical_count" label="Critical" sortable align="center" width="75">
+      <template slot-scope="scope">
+        <p :class="scope.row.log_critical_class">{{scope.row.log_critical_count}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="log_error_count" label="Error" sortable align="center" width="70">
+      <template slot-scope="scope">
+        <p :class="scope.row.log_error_class">{{scope.row.log_error_count}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="log_warning_count" label="Warning" sortable align="center" width="85">
+      <template slot-scope="scope">
+        <p :class="scope.row.log_warning_class">{{scope.row.log_warning_count}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="log_redirect_count" label="Redirect" sortable align="center" width="85">
+      <template slot-scope="scope">
+        <p :class="scope.row.log_redirect_class">{{scope.row.log_redirect_count}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="log_retry_count" label="Retry" sortable align="center" width="70">
+      <template slot-scope="scope">
+        <p :class="scope.row.log_retry_class">{{scope.row.log_retry_count}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="log_ignore_count" label="Ignore" sortable align="center" width="75">
+      <template slot-scope="scope">
+        <p :class="scope.row.log_ignore_class">{{scope.row.log_ignore_count}}</p>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="latest_item" label="latest_item" sortable align="center" width="200" show-overflow-tooltip></el-table-column>

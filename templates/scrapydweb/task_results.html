@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}timer task results{% endblock %}
+
+{% block head %}
+  <style>
+  .count_info {
+    color: #67c23a;
+    font-weight: bold;
+  }
+  .count_warn {
+    color: red;
+    font-weight: bold;
+  }
+  </style>
+{% endblock %}
+
+
+{% block body %}
+<script>
+// Fire would jump with flash
+//window.onload = function(){
+  //if (location.search.indexOf('flash=') != -1) {
+//    var timestamp = Math.floor(Date.now() / 1000);
+//    history.pushState(null, '', [location.protocol, '//', location.host, location.pathname, '?t=', timestamp].join(''));
+  //}
+//};
+</script>
+
+
+<h2>
+  <a class="button normal" href="{{ url_tasks }}">Tasks</a>
+  <a class="button warning forbid" href="javascript:;">Task #{{ task_id }} {% if task and task.name %}({{ task.name }}){% endif %}</a>
+  {% if task %}{{ task.project }}/{{ task.version }}/{{ task.spider }}/{{ task.jobid }}{% endif %}
+</h2>
+
+<div id="app">
+<template>
+  <el-table
+    ref="multipleTable"
+    :data="tableData"
+    tooltip-effect="dark"
+    empty-text="There is nothing to display."
+    :max-height="maxHeight"
+    :default-sort="{prop: 'execute_time', order: 'descending'}"
+    style="width: 100%;"
+    :size="size"
+
+    highlight-current-row
+    @current-change="handleSelectRow"
+  >
+    <!-- :fit=false -->
+
+    <el-table-column prop="index" label="Index" sortable align="center" width="70"></el-table-column>
+    <!-- <el-table-column prop="id" label="#" sortable align="center" width="80"></el-table-column> -->
+    <el-table-column prop="execute_time" label="Execute time" sortable align="center" width="145"></el-table-column>
+    <el-table-column prop="fail_count" label="Fail count" sortable :sort-orders="sortOrders" align="center" width="100">
+      <template slot-scope="scope"><span :class="scope.row.fail_count_class">{{scope.row.fail_count}}</span></template>
+    </el-table-column>
+    <el-table-column prop="pass_count" label="Pass count" sortable align="center" width="105">
+      <template slot-scope="scope"><span :class="scope.row.pass_count_class">{{scope.row.pass_count}}</span></template>
+    </el-table-column>
+    <el-table-column prop="task_job_results" label="Job results" sortable :sort-method="sortJobResults" :sort-orders="sortOrders" align="center" width="100">
+       <template slot-scope="scope">
+      <a :class="scope.row.task_job_results_class" :href="scope.row.url_task_job_results">
+        <i class="el-icon-loading" :style="{ display: scope.row.task_job_results_display_loading }"></i>
+        Details
+      </a>
+      </template>
+    </el-table-column>
+    <el-table-column prop="action" label="Action" sortable :sort-method="sortJobResults" :sort-orders="sortOrders" align="left" min-width="75">
+      <template slot-scope="scope"><a class="state delete" @click="deleteRow(scope.$index, tableData)">Delete</a></template>
+    </el-table-column>
+  </el-table>
+
+  <el-pagination
+    background
+    :total='{{ task_results.total }}'
+    :page-sizes="[10, 100, 1000]"
+    :page-size='{{ task_results.per_page }}'
+    :page-count='{{ task_results.pages }}'
+    :current-page.sync="currentPage"
+
+    :pager-count="11"
+    layout="total, sizes, prev, pager, next"
+
+    @size-change="handleSizeChange"
+    @current-change="handleCurrentChange"
+  >
+  </el-pagination>
+</template>
+</div>
+
+
+<script>
+var Main = {
+  data() {
+    return {
+      size: {% if task_results.per_page > 10 %}'mini'{% else %}'—'{% endif %},
+      maxHeight: window.innerHeight - 200,
+      currentPage: {{ task_results.page }},
+      sortOrders: ['descending','ascending',null],
+      tableData: [
+    {% for task_result in task_results.items %}
+      {
+        index: {{ task_result.index }},
+        id: {{ task_result.id }},
+        execute_time: '{{ task_result.execute_time }}',
+        fail_count: {{ task_result.fail_count }},
+        pass_count: {{ task_result.pass_count }},
+        fail_count_class: {% if task_result.fail_count > 0 %}'count_warn'{% else %}''{% endif %},
+        pass_count_class: {% if task_result.pass_count > 0 %}''{% else %}'count_warn'{% endif %},
+
+        url_action: '{{ task_result.url_action }}',
+
+        url_task_job_results: '{{ task_result.url_task_job_results }}',
+        task_job_results_class:  {% if task_result.fail_count %}'state danger'{% elif task_result.pass_count %}'state safe'{% else %}'state warning'{% endif %},
+        task_job_results_display_loading: {% if task_result.fail_count or task_result.pass_count %}'none'{% else %}''{% endif %},
+      },
+    {% endfor %}
+      ],
+
+    }
+  },
+
+  methods: {
+    handleSelectRow(val) {
+      this.currentRow = val;
+    },
+    deleteRow(index, rows) {
+      deleteRowXHR(rows[index].url_action);
+      rows.splice(index, 1);
+    },
+    handleCurrentChange(val) {
+      console.log(val);
+      location.href = '.?page=' + val;
+    },
+    handleSizeChange(val) {
+      console.log(`perpage ${val}`);
+      location.href = '.?per_page=' + val;
+    },
+    sortJobResults(a, b) {
+      return a.fail_count > b.fail_count ? 1 : a.pass_count > b.pass_count ? -1 : 1;
+    },
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

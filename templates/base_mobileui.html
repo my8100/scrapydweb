@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %} - ScrapydWeb - mobileui</title>
+
+  <link rel="stylesheet" type="text/css" href="{{ static_css_style_mobileui }}">
+  <script type="text/javascript" src="{{ static_js_icons_menu }}"></script>
+  <link rel="stylesheet" type="text/css" href="{{ static_css_icon_upload_icon_right }}">
+
+  {% if g.IS_MOBILE %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown_mobileui }}">
+  {% else %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_dropdown }}">
+  {% endif %}
+
+
+  <link rel="icon" type="image/x-icon" href="{{ static_icon }}"  />
+  <link rel="shortcut icon" type="image/x-icon" href="{{ static_icon_shortcut }}"  />
+  <link rel="apple-touch-icon" href="{{ static_icon_apple_touch }}"  />
+
+  <style type="text/css">
+  </style>
+
+  <script type="text/javascript" src="{{ static_js_jquery_min }}"></script>
+  <script type="text/javascript" src="{{ static_js_common }}"></script>
+  {% block head %}{% endblock %}
+</head>
+
+
+<body>
+<nav>
+  <div class="dropdown">
+    {% if g.IS_MOBILE %}
+    <a class="dropbtn" onclick="handleDropdown();">
+    {% else %}
+    <a class="dropbtn">
+    {% endif %}
+      <span>{{ SCRAPYD_SERVERS[node-1] }}</span>
+      <svg class="icon anchor" aria-hidden="true">
+        <use xlink:href="#icon-down"></use>
+      </svg>
+    </a>
+
+    <div class="dropdown-content-wrap">
+      <div class="dropdown-content">
+      {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+        {% if SCRAPYD_SERVERS_GROUPS[loop.index0] and loop.changed(SCRAPYD_SERVERS_GROUPS[loop.index0]) %}
+        <div> --- {{ SCRAPYD_SERVERS_GROUPS[loop.index0] }} --- </div>
+        {% endif %}
+
+        <a {% if loop.index == node %}style="color: #409EFF; font-weight: 700;"{% endif %}
+        href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[loop.index0] }}');">
+        [{{ loop.index }}] {{ SCRAPYD_SERVER }}
+        </a>
+      {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  <div class="switch-node">
+    <a href="javascript:;" onclick="switchNode(-1);">&laquo;</a>
+    <span>{{ node }} / {{ SCRAPYD_SERVERS_AMOUNT }}</span>
+    <a href="javascript:;" onclick="switchNode(1);">&raquo;</a>
+  </div>
+  {% endif %}
+</nav>
+
+
+<main>
+  <div style="display: flex; word-break: keep-all; margin: 8px 12px; margin-right: 0px;">
+  <a class="button safe" href="javascript:;" onclick="forceLoader(window.location.pathname);">Desktop version</a>
+  {% block neck %}{% endblock %}
+  </div>
+
+  <div id="content">
+    {% block loader %}
+    <div class="loader" style="display: none;" onclick="hideLoader();"></div>
+    {% endblock %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      <ul class="flashes" style="display: none;">
+      {% if messages %}
+      {% for category, message in messages %}
+        <li class="{{ category }}">{{ message }}</li>
+      {% endfor %}
+      {% endif %}
+        <li id="logparser_stats" class="info" style="display: none;"></li>
+      </ul>
+    {% endwith %}
+
+    {% block body %}{% endblock %}
+  </div>
+</main>
+
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+<script>
+var loading = false;
+var node = {{ node }};
+var node_total = {{ SCRAPYD_SERVERS_AMOUNT }};
+
+function switchNode(change) {
+  var target = node + change;
+  if (target < 1) {
+    alert("Reaching the first node");
+    return;
+  } else if (target > node_total) {
+    alert("Reaching the final node");
+    return;
+  }
+
+  forceLoader(location.pathname.replace(/\/\d+/, '/'+target) + location.search);
+}
+</script>
+{% endif %}
+</body>
+</html>
