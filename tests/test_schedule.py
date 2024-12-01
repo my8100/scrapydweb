@@ -115,7 +115,7 @@ def test_run(app, client):
     sleep()
     __, js = req(app, client, view='api', kws=dict(node=node, opt='listjobs', project=cst.PROJECT))
     # Note that finished jobs are DESC in scrapyd v1.5.0
-    js['finished'].sort(key=lambda x: x['finish'], reverse=False)
+    js['finished'].sort(key=lambda x: x['end_time'], reverse=False)
     last_but_two_finished_job = js['finished'][-2]
     last_but_two_finished_job_start = last_but_two_finished_job['start_time'][:19]
     last_finished_job = js['finished'][-1]
