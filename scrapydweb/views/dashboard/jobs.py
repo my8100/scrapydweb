@@ -232,7 +232,7 @@ class JobsView(BaseView):
                     flash(msg, self.WARN if start else self.INFO)
                 seen_jobs.pop(unique_key)
             seen_jobs[unique_key] = job
-        for job in sorted(self.jobs, key=lambda x: (x['finish'], x['start']), reverse=True):  # Finished DESC
+        for job in reversed(self.jobs):  # Finished DESC
             if not job['finish']:
                 break
             unique_key = (job['project'], job['spider'], job['job'])
