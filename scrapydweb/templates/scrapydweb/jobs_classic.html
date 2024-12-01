@@ -31,7 +31,7 @@
 <h2>
   <a class="link" target="_blank" href="{{ url }}">Get the list of jobs of all projects after Scrapyd server started.</a>
   <label title="switch to database view">
-    <a class="button normal" href="{{ url_jobs_database }}">Database</a>
+    <a class="button normal" href="{{ url_jobs_database }}">Database View</a>
   </label>
   <label title="schedule a spider run">
     <a class="button safe narrow" href="{{ url_schedule }}">+</a>
@@ -140,7 +140,7 @@
 
 
 <div class="table wrap">
-  <h3>Finished ({{ finished_jobs|length }}) <strong style="color: red;">DESC</strong></h3>
+  <h3>Finished ({{ finished_jobs|length }}) <strong style="color: green;">ORDER BY finish DESC</strong></h3>
   <table>
     <thead>
       <tr>
