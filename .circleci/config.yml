@@ -15,7 +15,7 @@ jobs:
         default: false
       use-scrapyd-v143:
         type: boolean
-        default: true
+        default: false
       use-git:
         type: boolean
         default: false
@@ -192,7 +192,7 @@ jobs:
     <<: *test-template
     docker:
       - image: cimg/python:3.8
-  py39-scrapyd-latest:
+  py39-scrapyd-v143:
     <<: *test-template
     docker:
       - image: cimg/python:3.9
@@ -274,10 +274,14 @@ jobs:
     <<: *test-template
     docker:
       - image: cimg/python:3.12
-  py312-scrapyd-latest:
+  py312-scrapyd-v143:
     <<: *test-template
     docker:
       - image: cimg/python:3.12
+  py313:
+    <<: *test-template
+    docker:
+      - image: cimg/python:3.13
 workflows:
   test:
     jobs:
@@ -287,8 +291,8 @@ workflows:
       # - py37
       - py38
       - py39
-      - py39-scrapyd-latest:
-          use-scrapyd-v143: false
+      - py39-scrapyd-v143:
+          use-scrapyd-v143: true
       - py310-git-postgresql:
           use-git: true
           use-postgresql: true
@@ -304,5 +308,6 @@ workflows:
           use-mysql: true
       - py311
       - py312
-      - py312-scrapyd-latest:
-          use-scrapyd-v143: false
+      - py312-scrapyd-v143:
+          use-scrapyd-v143: true
+      - py313
