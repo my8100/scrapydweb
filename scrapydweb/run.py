@@ -14,6 +14,8 @@ from scrapydweb.common import authenticate, find_scrapydweb_settings_py, handle_
 from scrapydweb.vars import ROOT_DIR, SCRAPYDWEB_SETTINGS_PY, SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING
 from scrapydweb.utils.check_app_config import check_app_config
 
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 logger = logging.getLogger(__name__)
 apscheduler_logger = logging.getLogger('apscheduler')
