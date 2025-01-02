@@ -32,6 +32,26 @@ jobs:
       use-mysql:
         type: boolean
         default: false
+      allure-version:
+        description: Allure version to use
+        type: string
+        default: 2.13.1
+      allure-configuration-path:
+        description: Path to Allure configuration, uses default one if omitted
+        type: string
+        default: /usr/local/share/allure/config/allure.yml
+      allure-target-path:
+        description: Path for report directory
+        type: string
+        default: allure-report
+      allure-results-path:
+        description: Path to directory with test results
+        type: string
+        default: allure-results
+      allure-artifact-path:
+        description: Path that will be used when storing result as artifact
+        type: string
+        default: Report/Allure
     steps:
       - run:
           name: Install telnet
@@ -205,8 +225,42 @@ jobs:
           condition:
             equal: [ 1, 1 ]
           steps:
-            - allure/install
-            - allure/report
+            - run:
+                name: Allure archive download
+                command: >-
+                  curl -L https://github.com/allure-framework/allure2/releases/download/<<
+                  parameters.allure-version >>/allure-commandline-<< parameters.allure-version >>.zip -o
+                  /tmp/allure.zip
+                when: always
+            - run:
+                name: Archive extraction
+                command: unzip /tmp/allure.zip
+                when: always
+            - run:
+                name: Allure installation
+                command: sudo mv allure-<< parameters.allure-version >> /usr/local/share/allure
+                when: always
+            - run:
+                name: Allure binary symlinking
+                command: sudo ln -s /usr/local/share/allure/bin/allure /usr/local/bin/allure
+                when: always
+      - when:
+          condition:
+            equal: [ 1, 1 ]
+          steps:
+            - run:
+                name: >-
+                  Allure report generation (<< parameters.allure-results-path >> -> <<
+                  parameters.allure-target-path >>)
+                command: |
+                  allure generate \
+                    --config << parameters.allure-configuration-path >> \
+                    --report-dir << parameters.allure-target-path >> \
+                    << parameters.allure-results-path >>
+                when: always
+            - store_artifacts:
+                path: << parameters.allure-target-path >>
+                destination: << parameters.allure-artifact-path >>
   py27:
     <<: *test-template
     docker:
