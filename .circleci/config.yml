@@ -184,8 +184,11 @@ jobs:
             coveralls
           when:
             condition:
-              test_result:
-                status: any
+              or:
+                - test_result:
+                    status: passed
+                - test_result:
+                    status: failed
       - store_artifacts:
           path: htmlcov
       - store_artifacts:
