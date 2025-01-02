@@ -171,9 +171,6 @@ jobs:
             echo DATA_PATH: $DATA_PATH
             echo DATABASE_URL: $DATABASE_URL
             . venv/bin/activate
-            ls -la /usr/bin
-            which allure || echo 'ignore error'
-            /usr/bin/allure || echo 'ignore error'
             
             # For coverage
             coverage report
@@ -183,11 +180,14 @@ jobs:
             coveralls || echo 'ignore error'
             
             # For allure
+            # https://circleci.com/developer/orbs/orb/ayte/allure
             ls -la allure-results
             ls -la /usr/bin
+            ls -la /usr/local/bin
             which allure || echo 'ignore error'
             /usr/bin/allure || echo 'ignore error'
-            allure generate allure-results -o allure-report --clean
+            /usr/local/bin/allure || echo 'ignore error'
+            /usr/local/bin/allure generate allure-results -o allure-report --clean
             ls -la
             ls -la allure-report
       - store_artifacts:
