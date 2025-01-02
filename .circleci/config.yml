@@ -199,10 +199,14 @@ jobs:
             # - coveralls/upload
             # https://discuss.circleci.com/t/how-can-we-publish-pytest-results-to-circleci-using-allure-reports/37830/2
             # https://circleci.com/developer/orbs/orb/ayte/allure
-            - allure/install:
-                when: always
-            - allure/report:
-                when: always
+            # - allure/install
+            # - allure/report
+      - when:
+          condition:
+            equal: [ 1, 1 ]
+          steps:
+            - allure/install
+            - allure/report
   py27:
     <<: *test-template
     docker:
