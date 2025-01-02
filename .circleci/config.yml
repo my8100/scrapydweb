@@ -180,7 +180,7 @@ jobs:
             
             # For allure
             ls -la allure-results
-            allure generate allure-results -o allure-report --clean
+            /usr/bin/allure generate allure-results -o allure-report --clean
             ls -la
             ls -la allure-report
       - store_artifacts:
