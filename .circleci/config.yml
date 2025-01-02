@@ -186,6 +186,7 @@ jobs:
                   ls -la
                   ls -la allure-results || echo 'ignore error'
                   coveralls
+                when: always
             - store_artifacts:
                 path: htmlcov
             - store_artifacts:
