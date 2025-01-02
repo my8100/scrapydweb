@@ -43,6 +43,11 @@ jobs:
             sudo apt-get update
             # sudo apt-get install -y allure
       - run:
+          name: Set JAVA_HOME
+          command: |
+            echo "export JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64" >> $BASH_ENV
+            source $BASH_ENV
+      - run:
           name: Setup env
           command: |
             mkdir ~/logs
