@@ -169,7 +169,7 @@ jobs:
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
-            coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests/test_z_cleantest.py
+            coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests
       - run:
           name: Generate report
           command: |
@@ -189,7 +189,10 @@ jobs:
       - codecov/upload:
           file: coverage.xml
       # https://circleci.com/developer/orbs/orb/codecov/codecov
-#      - codecov/upload
+      # - codecov/upload
+      # https://circleci.com/developer/orbs/orb/coveralls/coveralls
+      # - coveralls/upload
+      # https://discuss.circleci.com/t/how-can-we-publish-pytest-results-to-circleci-using-allure-reports/37830/2
       # https://circleci.com/developer/orbs/orb/ayte/allure
       - allure/install
       - allure/report
