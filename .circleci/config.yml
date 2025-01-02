@@ -37,6 +37,11 @@ jobs:
           command: |
             sudo apt-get update && sudo apt-get install telnet
       - run:
+          name: Install Allure
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y allure
+      - run:
           name: Setup env
           command: |
             mkdir ~/logs
@@ -158,9 +163,9 @@ jobs:
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
-            coverage run --source=scrapydweb -m pytest tests -s -vv -l --disable-warnings
+            coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests
       - run:
-          name: Generate report
+          name: Generate Coverage report
           command: |
             echo DATA_PATH: $DATA_PATH
             echo DATABASE_URL: $DATABASE_URL
@@ -176,6 +181,17 @@ jobs:
           path: coverage.xml
       - codecov/upload:
           file: coverage.xml
+      - run:
+          name: Generate Allure report
+          command: |
+            . venv/bin/activate
+            ls -la allure-report
+            allure generate allure-results -o allure-report --clean
+            ls -la
+            ls -la allure-report
+      - store_artifacts:
+          path: allure-report
+          destination: allure-report
   py27:
     <<: *test-template
     docker:
