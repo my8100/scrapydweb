@@ -173,6 +173,7 @@ jobs:
             . venv/bin/activate
             
             # For coverage
+            # https://circleci.com/developer/orbs/orb/codecov/codecov
             coverage report
             coverage html
             coverage xml
@@ -187,9 +188,9 @@ jobs:
             which allure || echo 'ignore error'
             /usr/bin/allure || echo 'ignore error'
             /usr/local/bin/allure || echo 'ignore error'
-            /usr/local/bin/allure generate allure-results -o allure-report --clean
+            # /usr/local/bin/allure generate allure-results -o allure-report --clean
             ls -la
-            ls -la allure-report
+            # ls -la allure-report
       - store_artifacts:
           path: htmlcov
       - store_artifacts:
@@ -199,6 +200,9 @@ jobs:
       - store_artifacts:
           path: allure-report
           destination: allure-report
+      #- codecov/upload
+      - allure/install
+      - allure/report
   py27:
     <<: *test-template
     docker:
