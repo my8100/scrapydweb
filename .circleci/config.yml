@@ -188,38 +188,18 @@ jobs:
                 status: any
       - store_artifacts:
           path: htmlcov
-          when:
-            condition:
-              test_result:
-                status: any
       - store_artifacts:
           path: coverage.xml
-          when:
-            condition:
-              test_result:
-                status: any
       - codecov/upload:
           file: coverage.xml
-          when:
-            condition:
-              test_result:
-                status: any
       # https://circleci.com/developer/orbs/orb/codecov/codecov
       # - codecov/upload
       # https://circleci.com/developer/orbs/orb/coveralls/coveralls
       # - coveralls/upload
       # https://discuss.circleci.com/t/how-can-we-publish-pytest-results-to-circleci-using-allure-reports/37830/2
       # https://circleci.com/developer/orbs/orb/ayte/allure
-      - allure/install:
-        when:
-          condition:
-            test_result:
-              status: any
-      - allure/report:
-          when:
-            condition:
-              test_result:
-                status: any
+      - allure/install
+      - allure/report
   py27:
     <<: *test-template
     docker:
