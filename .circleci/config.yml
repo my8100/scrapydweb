@@ -181,7 +181,9 @@ jobs:
             
             # For allure
             ls -la allure-results
-            which allure
+            ls -la /usr/bin
+            which allure || echo 'ignore error'
+            /usr/bin/allure || echo 'ignore error'
             allure generate allure-results -o allure-report --clean
             ls -la
             ls -la allure-report
