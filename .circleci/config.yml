@@ -179,7 +179,7 @@ jobs:
             coveralls
             
             # For allure
-            ls -la allure-report
+            ls -la allure-results
             allure generate allure-results -o allure-report --clean
             ls -la
             ls -la allure-report
