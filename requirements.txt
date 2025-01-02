@@ -8,7 +8,7 @@ Flask-SQLAlchemy==2.4.0
 idna==2.7
 itsdangerous==2.0.0
 Jinja2==3.0.0
-logparser==0.8.2
+logparser==0.8.3
 MarkupSafe==2.0.0
 pexpect==4.7.0
 ptyprocess==0.6.0
