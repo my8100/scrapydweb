@@ -1,8 +1,7 @@
 # Python CircleCI 2.1 configuration file
 version: 2.1
 orbs:
-  codecov: codecov/codecov@5.0.3
-  coveralls: coveralls/coveralls@2.2.5
+  codecov: codecov/codecov@1.0.2
   allure: ayte/allure@0.1.3
 jobs:
   py39: &test-template
@@ -177,22 +176,20 @@ jobs:
             echo DATA_PATH: $DATA_PATH
             echo DATABASE_URL: $DATABASE_URL
             . venv/bin/activate
-#            coverage report
-#            coverage html
-#            coverage xml
-#            ls -la
-#            ls -la allure-results || echo 'ignore error'
-#            coveralls
-#      - store_artifacts:
-#          path: htmlcov
-#      - store_artifacts:
-#          path: coverage.xml
-#      - codecov/upload:
-#          file: coverage.xml
+            coverage report
+            coverage html
+            coverage xml
+            ls -la
+            ls -la allure-results || echo 'ignore error'
+            coveralls
+      - store_artifacts:
+          path: htmlcov
+      - store_artifacts:
+          path: coverage.xml
+      - codecov/upload:
+          file: coverage.xml
       # https://circleci.com/developer/orbs/orb/codecov/codecov
-      - codecov/upload
-      # https://circleci.com/developer/orbs/orb/coveralls/coveralls
-      - coveralls/upload
+#      - codecov/upload
       # https://circleci.com/developer/orbs/orb/ayte/allure
       - allure/install
       - allure/report
