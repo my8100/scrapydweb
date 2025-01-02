@@ -170,7 +170,8 @@ jobs:
             . venv/bin/activate
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
-            coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests/test_z_cleantest.py
+            # coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests/test_z_cleantest.py
+            pytest --cov=scrapydwe -s -vv -l --disable-warnings --alluredir=allure-results tests/test_z_cleantest.py
       - run:
           name: Generate report
           command: |
