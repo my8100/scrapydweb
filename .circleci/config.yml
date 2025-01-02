@@ -170,39 +170,37 @@ jobs:
             flake8 . --count --exclude=./venv* --select=E9,F63,F7,F82 --show-source --statistics
             coverage erase
             coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests
-      - run:
-          name: Generate report
-          command: |
-            echo DATA_PATH: $DATA_PATH
-            echo DATABASE_URL: $DATABASE_URL
-            . venv/bin/activate
-            coverage report
-            coverage html
-            coverage xml
-            ls -la
-            ls -la allure-results || echo 'ignore error'
-            coveralls
-          when:
-            condition:
-              or:
-                - test_result:
-                    status: passed
-                - test_result:
-                    status: failed
-      - store_artifacts:
-          path: htmlcov
-      - store_artifacts:
-          path: coverage.xml
-      - codecov/upload:
-          file: coverage.xml
-      # https://circleci.com/developer/orbs/orb/codecov/codecov
-      # - codecov/upload
-      # https://circleci.com/developer/orbs/orb/coveralls/coveralls
-      # - coveralls/upload
-      # https://discuss.circleci.com/t/how-can-we-publish-pytest-results-to-circleci-using-allure-reports/37830/2
-      # https://circleci.com/developer/orbs/orb/ayte/allure
-      - allure/install
-      - allure/report
+      - when:
+          condition:
+            test_result:
+              status: any
+          steps:
+            - run:
+                name: Generate report
+                command: |
+                  echo DATA_PATH: $DATA_PATH
+                  echo DATABASE_URL: $DATABASE_URL
+                  . venv/bin/activate
+                  coverage report
+                  coverage html
+                  coverage xml
+                  ls -la
+                  ls -la allure-results || echo 'ignore error'
+                  coveralls
+            - store_artifacts:
+                path: htmlcov
+            - store_artifacts:
+                path: coverage.xml
+            - codecov/upload:
+                file: coverage.xml
+            # https://circleci.com/developer/orbs/orb/codecov/codecov
+            # - codecov/upload
+            # https://circleci.com/developer/orbs/orb/coveralls/coveralls
+            # - coveralls/upload
+            # https://discuss.circleci.com/t/how-can-we-publish-pytest-results-to-circleci-using-allure-reports/37830/2
+            # https://circleci.com/developer/orbs/orb/ayte/allure
+            - allure/install
+            - allure/report
   py27:
     <<: *test-template
     docker:
