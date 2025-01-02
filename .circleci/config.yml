@@ -165,30 +165,30 @@ jobs:
             coverage erase
             coverage run --source=scrapydweb -m pytest -s -vv -l --disable-warnings --alluredir=allure-results tests
       - run:
-          name: Generate Coverage report
+          name: Generate report
           command: |
             echo DATA_PATH: $DATA_PATH
             echo DATABASE_URL: $DATABASE_URL
             . venv/bin/activate
+            
+            # For coverage
             coverage report
             coverage html
             coverage xml
             ls -la
             coveralls
+            
+            # For allure
+            ls -la allure-report
+            allure generate allure-results -o allure-report --clean
+            ls -la
+            ls -la allure-report
       - store_artifacts:
           path: htmlcov
       - store_artifacts:
           path: coverage.xml
       - codecov/upload:
           file: coverage.xml
-      - run:
-          name: Generate Allure report
-          command: |
-            . venv/bin/activate
-            ls -la allure-report
-            allure generate allure-results -o allure-report --clean
-            ls -la
-            ls -la allure-report
       - store_artifacts:
           path: allure-report
           destination: allure-report
