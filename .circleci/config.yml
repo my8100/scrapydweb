@@ -2,6 +2,7 @@
 version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.2
+  allure: ayte/allure@0.1.3
 jobs:
   py39: &test-template
     docker:
@@ -180,15 +181,15 @@ jobs:
             
             # For allure
             ls -la allure-results
-            /usr/bin/allure generate allure-results -o allure-report --clean
-            ls -la
-            ls -la allure-report
       - store_artifacts:
           path: htmlcov
       - store_artifacts:
           path: coverage.xml
       - codecov/upload:
           file: coverage.xml
+      - allure/generate:
+          result_dir: allure-results
+          report_dir: allure-report
       - store_artifacts:
           path: allure-report
           destination: allure-report
