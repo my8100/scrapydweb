@@ -4,6 +4,7 @@ coverage
 pytest
 # pytest-cov
 coveralls
+allure-pytest
 
 scrapy
 scrapyd

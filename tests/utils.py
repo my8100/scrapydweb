@@ -117,14 +117,14 @@ def req(app, client, view='', kws=None, url='', data=None,
             with io.open('%s.html' % save, 'wb') as f:
                 f.write(response.data)
         text = get_text(response)
-        print('text', text)
-        js = {}
         try:
             # js = response.get_json()
             js = json.loads(text)
-        except ValueError:  # issubclass(JSONDecodeError, ValueError)
-            pass
-        print("js: %s" % json.dumps(js, sort_keys=True, indent=4, ensure_ascii=False))
+        except (TypeError, ValueError) as err:  # issubclass(JSONDecodeError, ValueError)
+            js = {}
+            print(time.ctime(), 'text not js:', text)
+        else:
+            print(time.ctime(), "js: %s" % json.dumps(js, sort_keys=True, indent=4, ensure_ascii=False))
         try:
             if isinstance(ins, string_types):
                 try:
@@ -212,6 +212,7 @@ def switch_scrapyd(app):
 
 
 def sleep(seconds=10):
+    print(time.ctime(), "Sleep %ss" % seconds)
     time.sleep(seconds)
 
 
