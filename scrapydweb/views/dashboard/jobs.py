@@ -27,6 +27,7 @@ STATUS_FINISHED = '2'
 NOT_DELETED = '0'
 DELETED = '1'
 HREF_PATTERN = re.compile(r"""href=['"](.+?)['"]""")  # Temp support for Scrapyd v1.3.0 (not released)
+# See also scrapydweb/utils/poll.py
 JOB_PATTERN = re.compile(r"""
                             <tr>\s*
                                 <td>(?P<Project>.*?)</td>\s*
@@ -426,10 +427,9 @@ class JobsView(BaseView):
             ))
             return
 
+        self.finished_jobs.sort(key=lambda x: (x['finish'], x['start']), reverse=True)  # Finished DESC
         if self.JOBS_FINISHED_JOBS_LIMIT > 0:
-            self.finished_jobs = self.finished_jobs[::-1][:self.JOBS_FINISHED_JOBS_LIMIT]
-        else:
-            self.finished_jobs = self.finished_jobs[::-1]
+            self.finished_jobs = self.finished_jobs[:self.JOBS_FINISHED_JOBS_LIMIT]
         self.kwargs.update(dict(
             colspan=14,
             url_jobs_database=url_for('jobs', node=self.node, style='database'),
