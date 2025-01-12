@@ -131,18 +131,18 @@ def test_run(app, client):
     #     nos=['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
     text, js = req(app, client, view='jobs', kws=dict(node=node, style='database'))
     for idx, nos in enumerate(['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start], 1):
-        print("%s nos: %s" % (idx, nos))
+        print("idx %s nos: %s" % (idx, nos))
         try:
             assert nos not in text, "%s is found in %s" % (nos, text)
         except AssertionError as err:
-            if scrapyd_version > '1.4.3' and 'start:' in err:
+            if scrapyd_version > '1.4.3' and 'start:' in str(err):
                 print("Temp ignore error for scrapyd %s: %s" % (scrapyd_version, err))
     for idx, ins in enumerate(["Vue.extend(Main)", "start: '%s'," % last_finished_job_start, flash], 1):
-        print("%s ins: %s" % (idx, ins))
+        print("idx %s ins: %s" % (idx, ins))
         try:
             assert ins in text, "%s is not found in %s" % (ins, text)
         except AssertionError as err:
-            if scrapyd_version > '1.4.3' and flash in err:
+            if scrapyd_version > '1.4.3' and flash in str(err):
                 print("Temp ignore error for scrapyd %s: %s" % (scrapyd_version, err))
 
     # flash only once
