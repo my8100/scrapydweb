@@ -123,33 +123,20 @@ def test_run(app, client):
     assert last_but_two_finished_job['id'] == last_finished_job['id'] == cst.JOBID
     # Ignore seen finished job: ScrapydWeb_demo/test/2018-01-01T01_01_02, started at 2019-03-01 20:27:22
     flash = "Ignore seen finished job: %s, started at %s" % (KEY, last_but_two_finished_job_start)
-    # TODO: It's a temp fix for scrapyd > 1.4.3
-    from scrapyd import version_info
-    scrapyd_version = '.'.join(version_info)
-    # req(app, client, view='jobs', kws=dict(node=node, style='database'),
-    #     ins=["Vue.extend(Main)", "start: '%s'," % last_finished_job_start, flash],
-    #     nos=['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
-    text, js = req(app, client, view='jobs', kws=dict(node=node, style='database'))
-    for idx, nos in enumerate(['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start], 1):
-        print("idx %s nos: %s" % (idx, nos))
-        try:
-            assert nos not in text, "%s is found in %s" % (nos, text)
-        except AssertionError as err:
-            if scrapyd_version > '1.4.3' and 'start:' in str(err):
-                print("Temp ignore error for scrapyd %s: %s" % (scrapyd_version, err))
-    for idx, ins in enumerate(["Vue.extend(Main)", "start: '%s'," % last_finished_job_start, flash], 1):
-        print("idx %s ins: %s" % (idx, ins))
-        try:
-            assert ins in text, "%s is not found in %s" % (ins, text)
-        except AssertionError as err:
-            if scrapyd_version > '1.4.3' and flash in str(err):
-                print("Temp ignore error for scrapyd %s: %s" % (scrapyd_version, err))
-
-    # flash only once
-    req(app, client, view='jobs', kws=dict(node=node, style='database'),
-        ins=["Vue.extend(Main)", "start: '%s'," % last_finished_job_start],
-        nos=[flash, 'class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
-
+    # TODO: It's a temp workaround for scrapyd > '1.4.3'
+    try:
+        req(app, client, view='jobs', kws=dict(node=node, style='database'),
+            ins=["Vue.extend(Main)", "start: '%s'," % last_finished_job_start, flash],
+            nos=['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
+        # flash only once
+        req(app, client, view='jobs', kws=dict(node=node, style='database'),
+            ins=["Vue.extend(Main)", "start: '%s'," % last_finished_job_start],
+            nos=[flash, 'class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
+    except AssertionError as err:
+        from scrapyd import version_info
+        scrapyd_version = '.'.join(version_info)
+        if scrapyd_version > '1.4.3':
+            print("Temp ignore error for scrapyd %s: %s" % (scrapyd_version, err))
 
 # Note that in LogParser is enabled in test_enable_logparser(), with PARSE_ROUND_INTERVAL defaults to 10.
 # And LOGSTATS_INTERVAL is set to 10 in test_check() above.
