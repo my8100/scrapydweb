@@ -42,7 +42,7 @@ setup(
         "idna==2.7",  # Jun 11, 2018
         "itsdangerous==2.0.0",  # May 12, 2021
         "Jinja2==3.0.0",  # May 12, 2021
-        "logparser==0.8.2",
+        "logparser>=0.8.4",
         "MarkupSafe==2.0.0",  # May 12, 2021
         "pexpect==4.7.0",  # Apr 7, 2019
         "ptyprocess==0.6.0",  # Jun 22, 2018
@@ -71,5 +71,6 @@ setup(
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
     ]
 )
