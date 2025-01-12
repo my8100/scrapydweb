@@ -123,9 +123,18 @@ def test_run(app, client):
     assert last_but_two_finished_job['id'] == last_finished_job['id'] == cst.JOBID
     # Ignore seen finished job: ScrapydWeb_demo/test/2018-01-01T01_01_02, started at 2019-03-01 20:27:22
     flash = "Ignore seen finished job: %s, started at %s" % (KEY, last_but_two_finished_job_start)
-    req(app, client, view='jobs', kws=dict(node=node, style='database'),
-        ins=[flash, "Vue.extend(Main)", "start: '%s'," % last_finished_job_start],
-        nos=['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
+    # TODO: It's a temp fix for scrapyd > 1.4.3
+    # req(app, client, view='jobs', kws=dict(node=node, style='database'),
+    #     ins=["Vue.extend(Main)", "start: '%s'," % last_finished_job_start, flash],
+    #     nos=['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start])
+    text, js = req(app, client, view='jobs', kws=dict(node=node, style='database'))
+    for nos in ['class="table wrap"', "start: '%s'," % last_but_two_finished_job_start]:
+        print("nos: %s" % nos)
+        assert nos not in text, "%s is found in %s" % (nos, text)
+    for ins in ["Vue.extend(Main)", "start: '%s'," % last_finished_job_start, flash]:
+        print("ins: %s" % ins)
+        assert ins in text, "%s is not found in %s" % (ins, text)
+
     # flash only once
     req(app, client, view='jobs', kws=dict(node=node, style='database'),
         ins=["Vue.extend(Main)", "start: '%s'," % last_finished_job_start],
