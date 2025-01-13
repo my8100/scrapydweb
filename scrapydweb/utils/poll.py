@@ -45,7 +45,7 @@ JOB_KEYS = ['project', 'spider', 'job', 'pid', 'start', 'runtime', 'finish', 'lo
 class Poll(object):
     logger = logger
 
-    def __init__(self, url_scrapydweb, username, password,
+    def __init__(self, url_scrapydweb, username, password, scrapyd_servers_protocols,
                  scrapyd_servers, scrapyd_servers_auths,
                  poll_round_interval, poll_request_interval,
                  main_pid, verbose, exit_timeout=0):
@@ -53,6 +53,7 @@ class Poll(object):
         self.auth = (username, password) if username and password else None
 
         self.scrapyd_servers = scrapyd_servers
+        self.scrapyd_servers_protocols = scrapyd_servers_protocols
         self.scrapyd_servers_auths = scrapyd_servers_auths
 
         self.session = requests.Session()
@@ -180,12 +181,12 @@ class Poll(object):
             return r
 
     def run(self):
-        for node, (scrapyd_server, auth) in enumerate(zip(self.scrapyd_servers, self.scrapyd_servers_auths), 1):
+        for node, (scrapyd_server_protocol, scrapyd_server, auth) in enumerate(zip(self.scrapyd_servers_protocols, self.scrapyd_servers, self.scrapyd_servers_auths), 1):
             # Update Jobs history
             # url_jobs = self.url_scrapydweb + '/%s/jobs/' % node
             # self.make_request(url_jobs, auth=self.auth, post=True)
 
-            url_jobs = 'http://%s/jobs' % scrapyd_server
+            url_jobs = '{}://{}/jobs'.format(scrapyd_server_protocol, scrapyd_server)
             # json.loads(json.dumps({'auth':(1,2)})) => {'auth': [1, 2]}
             auth = tuple(auth) if auth else None  # TypeError: 'list' object is not callable
             try:
@@ -228,11 +229,12 @@ class Poll(object):
 
 
 def main(args):
-    keys = ('url_scrapydweb', 'username', 'password',
+    keys = ('url_scrapydweb', 'username', 'password', 'scrapyd_servers_protocols',
             'scrapyd_servers', 'scrapyd_servers_auths',
             'poll_round_interval', 'poll_request_interval',
             'main_pid', 'verbose', 'exit_timeout')
     kwargs = dict(zip(keys, args))
+    kwargs['scrapyd_servers_protocols'] = json.loads(kwargs['scrapyd_servers_protocols'])
     kwargs['scrapyd_servers'] = json.loads(kwargs['scrapyd_servers'])
     kwargs['scrapyd_servers_auths'] = json.loads(kwargs['scrapyd_servers_auths'])
     kwargs['poll_round_interval'] = int(kwargs['poll_round_interval'])

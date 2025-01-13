@@ -333,20 +333,22 @@ def check_scrapyd_servers(config):
     servers = []
     for idx, (server, public_url) in enumerate(zip(SCRAPYD_SERVERS, SCRAPYD_SERVERS_PUBLIC_URLS)):
         if isinstance(server, tuple):
-            assert len(server) == 5, ("Scrapyd server should be a tuple of 5 elements, "
+            assert len(server) == 6, ("Scrapyd server should be a tuple of 6 elements, "
                                       "current value: %s" % str(server))
-            usr, psw, ip, port, group = server
+            usr, psw, protocol, ip, port, group = server
         else:
-            usr, psw, ip, port, group = re.search(SCRAPYD_SERVER_PATTERN, server.strip()).groups()
+            # TODO: handle protocol
+            usr, psw, protocol, ip, port, group = re.search(SCRAPYD_SERVER_PATTERN, server.strip()).groups()
+        protocol = protocol.strip() if protocol and protocol.strip() else 'http'
         ip = ip.strip() if ip and ip.strip() else '127.0.0.1'
         port = port.strip() if port and port.strip() else '6800'
         group = group.strip() if group and group.strip() else ''
         auth = (usr, psw) if usr and psw else None
         public_url = public_url.strip(' /')
-        servers.append((group, ip, port, auth, public_url))
+        servers.append((group, protocol, ip, port, auth, public_url))
 
     def key_func(arg):
-        _group, _ip, _port, _auth, _public_url = arg
+        _group, _protocol, _ip, _port, _auth, _public_url = arg
         parts = _ip.split('.')
         parts = [('0' * (3 - len(part)) + part) for part in parts]
         return [_group, '.'.join(parts), int(_port)]
@@ -354,19 +356,20 @@ def check_scrapyd_servers(config):
     servers = sorted(set(servers), key=key_func)
     check_scrapyd_connectivity(servers)
 
-    config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for (group, ip, port, auth, public_url) in servers]
-    config['SCRAPYD_SERVERS_GROUPS'] = [group for (group, ip, port, auth, public_url) in servers]
-    config['SCRAPYD_SERVERS_AUTHS'] = [auth for (group, ip, port, auth, public_url) in servers]
-    config['SCRAPYD_SERVERS_PUBLIC_URLS'] = [public_url for (group, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for (group, protocol, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_GROUPS'] = [group for (group, protocol, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_PROTOCOLS'] = [protocol for (group, protocol, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_AUTHS'] = [auth for (group, protocol, ip, port, auth, public_url) in servers]
+    config['SCRAPYD_SERVERS_PUBLIC_URLS'] = [public_url for (group, protocol, ip, port, auth, public_url) in servers]
 
 
 def check_scrapyd_connectivity(servers):
     logger.debug("Checking connectivity of SCRAPYD_SERVERS...")
 
     def check_connectivity(server):
-        (_group, _ip, _port, _auth, _public_url) = server
+        (_group, __protocol, _ip, _port, _auth, _public_url) = server
         try:
-            url = 'http://%s:%s' % (_ip, _port)
+            url = '%s://%s:%s' % (__protocol, _ip, _port)
             r = session.get(url, auth=_auth, timeout=10)
             assert r.status_code == 200, "%s got status_code %s" % (url, r.status_code)
         except Exception as err:
@@ -385,9 +388,9 @@ def check_scrapyd_connectivity(servers):
     print("\nIndex {group:<20} {server:<21} Connectivity Auth".format(
           group='Group', server='Scrapyd IP:Port'))
     print(HASH)
-    for idx, ((group, ip, port, auth, public_url), result) in enumerate(zip(servers, results), 1):
+    for idx, ((group, protocol, ip, port, auth, public_url), result) in enumerate(zip(servers, results), 1):
         print("{idx:_<5} {group:_<20} {server:_<22} {result:_<11} {auth}".format(
-              idx=idx, group=group or 'None', server='%s:%s' % (ip, port), auth=auth, result=str(result)))
+              idx=idx, group=group or 'None', server='%s://%s:%s' % (protocol, ip, port), auth=auth, result=str(result)))
     print(HASH + '\n')
 
     assert any(results), "None of your SCRAPYD_SERVERS could be connected. "

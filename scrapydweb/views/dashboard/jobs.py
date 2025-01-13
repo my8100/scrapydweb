@@ -66,7 +66,7 @@ class JobsView(BaseView):
             self.logger.debug("Change per_page to %s", self.metadata['per_page'])
         self.page = request.args.get('page', default=1, type=int)
 
-        self.url = 'http://%s/jobs' % self.SCRAPYD_SERVER
+        self.url = '{}://{}/jobs'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
         if self.SCRAPYD_SERVER_PUBLIC_URL:
             self.public_url = '%s/jobs' % self.SCRAPYD_SERVER_PUBLIC_URL
         else:
@@ -412,7 +412,7 @@ class JobsView(BaseView):
             url=self.url,
             url_schedule=url_for('schedule', node=self.node),
             url_liststats=url_for('api', node=self.node, opt='liststats'),
-            url_liststats_source='http://%s/logs/stats.json' % self.SCRAPYD_SERVER,
+            url_liststats_source='{}://{}/logs/stats.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER),
             SCRAPYD_SERVER=self.SCRAPYD_SERVER.split(':')[0],
             LOGPARSER_VERSION=self.LOGPARSER_VERSION,
             JOBS_RELOAD_INTERVAL=self.JOBS_RELOAD_INTERVAL,

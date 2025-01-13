@@ -29,6 +29,7 @@ scrapydweb/data/demo_projects/ScrapydWeb_demo - 副本/*
 
 
 venv/
+.venv/
 
 *.pyc
 __pycache__/
@@ -45,3 +46,4 @@ build/
 *.egg-info/
 
 .idea
+.vscode/launch.json

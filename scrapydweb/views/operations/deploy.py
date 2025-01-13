@@ -40,7 +40,7 @@ class DeployView(BaseView):
     def __init__(self):
         super(DeployView, self).__init__()
 
-        self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
+        self.url = '{}://{}/{}.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER, 'addversion')
         self.template = 'scrapydweb/deploy.html'
 
         self.scrapy_cfg_list = []
@@ -284,11 +284,11 @@ class DeployUploadView(BaseView):
         if self.selected_nodes_amount:
             self.selected_nodes = self.get_selected_nodes()
             self.first_selected_node = self.selected_nodes[0]
-            self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVERS[self.first_selected_node - 1], 'addversion')
+            self.url = '{}://{}/{}.json'.format(self.SCRAPYD_SERVERS_PROTOCOLS[self.first_selected_node - 1], self.SCRAPYD_SERVERS[self.first_selected_node - 1], 'addversion')
             # Note that self.first_selected_node != self.node
             self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.first_selected_node - 1]
         else:
-            self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
+            self.url = '{}://{}/{}.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER, 'addversion')
 
         # Error: Project names must begin with a letter and contain only letters, numbers and underscores
         self.project = re.sub(self.STRICT_NAME_PATTERN, '_', request.form.get('project', '')) or self.get_now_string()
@@ -446,7 +446,7 @@ class DeployXhrView(BaseView):
         self.project = self.view_args['project']
         self.version = self.view_args['version']
 
-        self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, 'addversion')
+        self.url = '{}://{}/{}.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER, 'addversion')
 
         self.slot = slot
 
