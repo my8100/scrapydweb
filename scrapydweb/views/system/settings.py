@@ -90,6 +90,9 @@ class SettingsView(BaseView):
         # Timer Tasks
         self.kwargs['scheduler_state'] = SCHEDULER_STATE_DICT[self.scheduler.state]
         self.kwargs['JOBS_SNAPSHOT_INTERVAL'] = self.JOBS_SNAPSHOT_INTERVAL
+        self.kwargs['CHECK_TASK_RESULT_INTERVAL'] = self.CHECK_TASK_RESULT_INTERVAL
+        self.kwargs['KEEP_TASK_RESULT_LIMIT'] = self.KEEP_TASK_RESULT_LIMIT
+        self.kwargs['KEEP_TASK_RESULT_WITHIN_DAYS'] = self.KEEP_TASK_RESULT_WITHIN_DAYS
 
         # Run Spider
         self.kwargs['run_spider_details'] = self.json_dumps(dict(

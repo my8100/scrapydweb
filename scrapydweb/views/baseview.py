@@ -111,6 +111,9 @@ class BaseView(View):
         # Timer Tasks
         self.scheduler = scheduler
         self.JOBS_SNAPSHOT_INTERVAL = app.config.get('JOBS_SNAPSHOT_INTERVAL', 300)
+        self.CHECK_TASK_RESULT_INTERVAL = app.config.get('CHECK_TASK_RESULT_INTERVAL', 300)
+        self.KEEP_TASK_RESULT_LIMIT = app.config.get('KEEP_TASK_RESULT_LIMIT', 1000)
+        self.KEEP_TASK_RESULT_WITHIN_DAYS = app.config.get('KEEP_TASK_RESULT_WITHIN_DAYS', 31)
 
         # Run Spider
         self.SCHEDULE_EXPAND_SETTINGS_ARGUMENTS = app.config.get('SCHEDULE_EXPAND_SETTINGS_ARGUMENTS', False)

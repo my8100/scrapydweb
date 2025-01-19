@@ -117,7 +117,7 @@ SCRAPYD_SERVERS_PUBLIC_URLS = None
 ############################## LogParser ######################################
 # Whether to backup the stats json files locally after you visit the Stats page of a job
 # so that it is still accessible even if the original logfile has been deleted.
-# The default is True, set it to False to disable this behaviour.
+# The default is True, set it to False to disable this behavior.
 BACKUP_STATS_JSON_FILE = True
 
 
@@ -127,9 +127,26 @@ BACKUP_STATS_JSON_FILE = True
 
 # The default is 300, which means ScrapydWeb would automatically create a snapshot of the Jobs page
 # and save the jobs info in the database in the background every 300 seconds.
-# Note that this behaviour would be paused if the scheduler for timer tasks is disabled.
-# Set it to 0 to disable this behaviour.
+# Note that this behavior would be paused if the scheduler for timer tasks is disabled.
+# Set it to 0 to disable this behavior.
 JOBS_SNAPSHOT_INTERVAL = 300
+
+
+# The default is 300, which means ScrapydWeb would automatically check the amount of task results of all timer tasks
+# in the background every 300 seconds to delete some outdated records in the database.
+# This option works only when either KEEP_TASK_RESULT_LIMIT or KEEP_TASK_RESULT_WITHIN_DAYS is not 0.
+# Note that this behavior would be paused if the scheduler for timer tasks is disabled.
+# Set it to 0 to disable this behavior.
+CHECK_TASK_RESULT_INTERVAL = 300
+
+# The default is 1000, which means only the latest 1000 timer task results would not be deleted from the database.
+# See also CHECK_TASK_RESULT_INTERVAL. Set it to 0 to disable this behavior.
+KEEP_TASK_RESULT_LIMIT = 1000
+
+# The default is 31, which means only the timer task results executed within recent 31 days
+# would not be deleted from the database.
+# See also CHECK_TASK_RESULT_INTERVAL. Set it to 0 to disable this behavior.
+KEEP_TASK_RESULT_WITHIN_DAYS = 31
 
 
 ############################## Run Spider #####################################

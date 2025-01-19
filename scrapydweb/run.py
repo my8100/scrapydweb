@@ -8,6 +8,7 @@ import sys
 from flask import request
 
 # from . import create_app  # --debug: ImportError: cannot import name 'create_app'
+# python -m scrapydweb.run
 from scrapydweb import create_app
 from scrapydweb.__version__ import __description__, __version__
 from scrapydweb.common import authenticate, find_scrapydweb_settings_py, handle_metadata, handle_slash
