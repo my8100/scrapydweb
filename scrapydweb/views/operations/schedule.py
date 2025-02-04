@@ -260,7 +260,7 @@ class ScheduleCheckView(BaseView):
                 part = re.sub(r'\s*=\s*', '=', part)
                 if '=' not in part:
                     continue
-                m_setting = re.match(r'setting=([A-Z_]{6,31}=.+)', part)  # 'EDITOR' 'DOWNLOADER_CLIENTCONTEXTFACTORY'
+                m_setting = re.match(r'setting=([^=]+=.+)', part)
                 if m_setting:
                     self.data['setting'].append(m_setting.group(1))
                     continue
