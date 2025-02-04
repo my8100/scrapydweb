@@ -158,11 +158,9 @@ def setup_postgresql(username, password, host, port):
         except:
             try:
                 cur.execute("CREATE DATABASE %s" % dbname)
+            except psycopg2.errors.DuplicateDatabase:
+                pass
             except Exception as err:
-                # psycopg2.ProgrammingError: database "scrapydweb_apscheduler" already exists
-                if 'exists' in str(err):
-                    pass
-                else:
-                    raise
+                raise err
     cur.close()
     conn.close()
