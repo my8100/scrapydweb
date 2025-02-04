@@ -194,8 +194,8 @@ DAEMONSTATUS_REFRESH_INTERVAL = 10
 # 1. Visit https://api.slack.com/apps and press the "Create New App" button.
 # 2. Enter your App Name (e.g. myapp)and select one of your Slack Workspaces, the press "Create App".
 # 3. Click the "OAuth & Permissions" menu in the sidebar on the left side of the page.
-# 4. Scroll down the page and find out "Select Permission Scopes" in the "Scopes" section
-# 5. Enter "send" and select "Send messages as <your-app-name>", then press "Save Changes"
+# 4. Scroll down the page and find out "Bot Token Scopes" in the "Scopes" section
+# 5. Enter "write" and select "chat:write.public Send messages to channels <your-app-name> isn't a member of"
 # 6. Scroll up the page and press "Install App to Workspace", then press "Install"
 # 7. Copy the "OAuth Access Token", e.g. xoxp-123-456-789-abcde
 # See https://api.slack.com/apps for more info
