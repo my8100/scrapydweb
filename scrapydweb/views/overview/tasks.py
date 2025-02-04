@@ -1,16 +1,16 @@
 # coding: utf-8
-from datetime import datetime
 import json
 import logging
 import traceback
+from datetime import datetime
 
 from flask import Blueprint, flash, render_template, request, send_file, url_for
+from sqlalchemy import func
 
+from ..baseview import BaseView
 from ...common import handle_metadata
 from ...models import Task, TaskResult, TaskJobResult, db
 from ...vars import SCHEDULER_STATE_DICT, STATE_PAUSED, STATE_RUNNING, TIMER_TASKS_HISTORY_LOG
-from ..baseview import BaseView
-
 
 apscheduler_logger = logging.getLogger('apscheduler')
 metadata = dict(per_page=handle_metadata().get('tasks_per_page', 100))
@@ -121,32 +121,50 @@ class TasksView(BaseView):
     def process_tasks(self, tasks):
         with db.session.no_autoflush:  # To avoid in place updating
             # for task in tasks:  # TypeError: 'Pagination' object is not iterable  # tasks.item: list
+            task_id_list = map(lambda inner_task: inner_task.id, tasks.items)
+            if len(task_id_list) > 0:
+                task_result_list = db.session.query(TaskResult.id, TaskResult.task_id, func.sum(TaskResult.fail_count),
+                                                    func.sum(TaskResult.pass_count),
+                                                    func.count(TaskResult.id)).order_by(TaskResult.id.desc()).group_by(
+                    TaskResult.task_id).filter(TaskResult.task_id.in_(task_id_list)).all()
+            else:
+                task_result_list = []
+
+            # for task in tasks:  # TypeError: 'Pagination' object is not iterable  # tasks.item: list
             for index, task in enumerate(tasks.items, (tasks.page - 1) * tasks.per_page + 1):
                 # Columns: Name | Prev run result | Task results
+                # task_result_list: (id, task_id, fail_count, pass_count, total_count)
+                task_results = filter(lambda inner_result: inner_result[1] == task.id,
+                                      task_result_list)  # type: list
+                if task_results:
+                    task_result = {'id': task_results[0][0], 'task_id': task_results[0][1],
+                                   'fail_count': task_results[0][2], 'pass_count': task_results[0][3],
+                                   'total_count': task_results[0][4]}
+                else:
+                    task_result = None
                 task.index = index
                 task.name = task.name or ''
                 task.timezone = task.timezone or self.scheduler.timezone
                 task.create_time = self.remove_microsecond(task.create_time)
                 task.update_time = self.remove_microsecond(task.update_time)
-                task_results = TaskResult.query.filter_by(task_id=task.id).order_by(TaskResult.id.desc())
-                task.run_times = task_results.count()
+                task.run_times = task_result['total_count'] if task_result else 0
                 task.url_task_results = url_for('tasks', node=self.node, task_id=task.id)
                 if task.run_times > 0:
-                    task.fail_times = sum([int(t.fail_count > 0) for t in task_results])
-                    latest_task_result = task_results[0]
-                    if latest_task_result.fail_count == 0 and latest_task_result.pass_count == 1:
-                        task_job_result = TaskJobResult.query.filter_by(task_result_id=latest_task_result.id).order_by(
-                            TaskJobResult.id.desc()).first()
-                        task.prev_run_result = task_job_result.result[-19:]  # task_N_2019-01-01T00_00_01
-                        task.url_prev_run_result = url_for('log', node=task_job_result.node, opt='stats',
-                                                           project=task.project, spider=task.spider,
-                                                           job=task_job_result.result)
-                    else:
-                        # 'FAIL 0, PASS 0' if execute_task() has not finished
-                        task.prev_run_result = 'FAIL %s, PASS %s' % (latest_task_result.fail_count,
-                                                                     latest_task_result.pass_count)
-                        task.url_prev_run_result = url_for('tasks', node=self.node,
-                                                           task_id=task.id, task_result_id=latest_task_result.id)
+                    task.fail_times = task_result['fail_count'] if task_result else 0
+                    if task_result:
+                        if task_result['fail_count'] == 0 and task_result['pass_count'] == 1:
+                            task_job_result = TaskJobResult.query.filter_by(task_result_id=task_result['id']).order_by(
+                                TaskJobResult.id.desc()).first()
+                            task.prev_run_result = task_job_result.result[-19:]  # task_N_2019-01-01T00_00_01
+                            task.url_prev_run_result = url_for('log', node=task_job_result.node, opt='stats',
+                                                               project=task.project, spider=task.spider,
+                                                               job=task_job_result.result)
+                        else:
+                            # 'FAIL 0, PASS 0' if execute_task() has not finished
+                            task.prev_run_result = 'FAIL %s, PASS %s' % (task_result['fail_count'],
+                                                                         task_result['pass_count'])
+                            task.url_prev_run_result = url_for('tasks', node=self.node,
+                                                               task_id=task.id, task_result_id=task_result['id'])
                 else:
                     task.fail_times = 0
                     task.prev_run_result = self.NA
