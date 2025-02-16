@@ -401,11 +401,12 @@ def check_scrapyd_connectivity(servers):
         try:
             url = 'http://%s:%s' % (_ip, _port)
             r = session.get(url, auth=_auth, timeout=10)
-            assert r.status_code == 200, "%s got status_code %s" % (url, r.status_code)
+            assert r.status_code == 200, "%s with auth %s got status_code %s" % (url, _auth, r.status_code)
         except Exception as err:
             logger.error(err)
             return False
         else:
+            logger.debug("%s with auth %s got status_code %s" % (url, _auth, r.status_code))
             return True
 
     # with ThreadPool(min(len(servers), 100)) as pool:  # Works in python 3.3 and up

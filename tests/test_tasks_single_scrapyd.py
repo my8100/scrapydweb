@@ -870,6 +870,8 @@ def test_history(app, client):
                             ])
 
 def test_check_task_result_interval(app, client):
+    __, js = req_single_scrapyd(app, client, view='tasks.xhr', kws=dict(node=NODE, action='delete'))
+    print("test_check_task_result_interval: %s" % js)
     app.config['ENABLE_MONITOR'] = False
     app.config['CHECK_TASK_RESULT_INTERVAL'] = 5
     check_app_config(app.config)
