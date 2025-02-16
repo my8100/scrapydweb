@@ -1,5 +1,12 @@
 Release History
 ===============
+1.6.0 (2025-02-16)
+------------------
+- Support Python 3.13 and Scrapyd v1.5.0
+- Support deleting timer task results automatically
+- Update config file to scrapydweb_settings_v11.py
+
+
 1.5.0 (2024-02-11)
 ------------------
 - Update dependencies like Flask==2.0.0 
