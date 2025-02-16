@@ -138,9 +138,15 @@ def load_custom_settings(config):
                       file=SCRAPYDWEB_SETTINGS_PY))
         else:
             sys.exit("\nATTENTION:\nYou may encounter ERROR if there are any running timer tasks added in v1.2.0,\n"
-                     "and you have to restart scrapydweb and manually edit the tasks to resume them.\n"
-                     "\nThe config file '{file}' has been copied to current working directory.\n"
-                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n".format(
+                     "and you have to restart scrapydweb and manually edit the tasks to resume them.\n\n"
+                     "The config file '{file}' has been copied to current working directory.\n"
+                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n\n"
+                     "New options to control the amount of task results of all timer tasks:\n"
+                     "##########\n"
+                     "CHECK_TASK_RESULT_INTERVAL = 300\n"
+                     "KEEP_TASK_RESULT_LIMIT = 1000\n"
+                     "KEEP_TASK_RESULT_WITHIN_DAYS = 31\n"
+                     "##########\n".format(
                       file=SCRAPYDWEB_SETTINGS_PY))
 
 
