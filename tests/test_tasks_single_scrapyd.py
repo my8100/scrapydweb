@@ -8,6 +8,7 @@ from flask import url_for
 from six.moves.urllib.parse import unquote_plus
 from tzlocal import get_localzone
 
+from scrapydweb.utils.check_app_config import check_app_config
 from tests.utils import cst, req_single_scrapyd, sleep, upload_file_deploy
 
 
@@ -867,3 +868,12 @@ def test_history(app, client):
                             "assert js['status_code'] == 200 and js['status'] == 'ok'",
                             "Task #%s deleted" % task_id,
                             ])
+
+def test_check_task_result_interval(app, client):
+    app.config['ENABLE_MONITOR'] = False
+    app.config['CHECK_TASK_RESULT_INTERVAL'] = 5
+    app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']
+    check_app_config(app.config)
+    sleep(8)
+    __, js = req_single_scrapyd(app, client, view='tasks.xhr', kws=dict(node=NODE, action='delete'))
+    print("test_check_task_result_interval: %s" % js)

@@ -1,10 +1,11 @@
 # coding: utf-8
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import traceback
 
 from flask import Blueprint, flash, render_template, request, send_file, url_for
+from sqlalchemy import and_
 
 from ...common import handle_metadata
 from ...models import Task, TaskResult, TaskJobResult, db
@@ -272,6 +273,7 @@ class TasksXhrView(BaseView):
         self.task = Task.query.get(self.task_id) if self.task_id else None
         self.apscheduler_job = self.scheduler.get_job(str(self.task_id)) if self.task_id else None  # Return type: Job|None
         self.js = dict(action=self.action, task_id=self.task_id, task_result_id=self.task_result_id, url=request.url)
+        # self.logger.warning(self.js)
 
     def dispatch_request(self, **kwargs):
         try:
@@ -293,8 +295,10 @@ class TasksXhrView(BaseView):
         elif self.action == 'delete':  # delete a task_result|task
             if self.task_result_id:
                 self.delete_task_result()
-            else:
+            elif self.task_id:
                 self.delete_task()
+            else:
+                self.delete_outdated_task_results()
         elif self.action == 'dump':  # For test only
             self.dump_task_data()
         elif self.action == 'fire':  # update next_run_time
@@ -425,3 +429,38 @@ class TasksXhrView(BaseView):
         else:
             records = Task.query.all()
         self.js['ids'] = [i.id for i in records]
+
+    def delete_outdated_task_results(self):
+        # The condition equals to: pass_count != 0 or fail_count != 0
+        condition = ~and_(TaskResult.pass_count == 0, TaskResult.fail_count == 0)
+
+        if self.KEEP_TASK_RESULT_LIMIT:
+            count_before = TaskResult.query.count()
+            task_results = TaskResult.query.filter(condition).order_by(
+                TaskResult.execute_time.desc()).offset(self.KEEP_TASK_RESULT_LIMIT).all()
+            for task_result in task_results:
+                self.logger.debug("delete TaskResult: %s" % task_result)
+                db.session.delete(task_result)
+            db.session.commit()
+            count_after = TaskResult.query.count()
+            self.logger.info("KEEP_TASK_RESULT_LIMIT: %s, total TaskResult: from %s to %s" % (
+                self.KEEP_TASK_RESULT_LIMIT, count_before, count_after))
+            self.js.update(amount_limit=dict(KEEP_TASK_RESULT_LIMIT=self.KEEP_TASK_RESULT_LIMIT,
+                                             count_before=count_before, count_after=count_after))
+
+        if self.KEEP_TASK_RESULT_WITHIN_DAYS:
+            count_before = TaskResult.query.count()
+            # timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=0, weeks=0)
+            n_days_ago = datetime.now() - timedelta(days=self.KEEP_TASK_RESULT_WITHIN_DAYS)
+
+            task_results = TaskResult.query.filter(TaskResult.execute_time <= n_days_ago, condition).all()
+            for task_result in task_results:
+                self.logger.debug("delete TaskResult: %s" % task_result)
+                db.session.delete(task_result)
+            db.session.commit()
+
+            count_after = TaskResult.query.count()
+            self.logger.info("KEEP_TASK_RESULT_WITHIN_DAYS: %s, total TaskResult: from %s to %s" % (
+                self.KEEP_TASK_RESULT_WITHIN_DAYS, count_before, count_after))
+            self.js.update(day_limit=dict(KEEP_TASK_RESULT_WITHIN_DAYS=self.KEEP_TASK_RESULT_WITHIN_DAYS,
+                                          count_before=count_before, count_after=count_after))
