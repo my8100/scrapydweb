@@ -104,6 +104,7 @@ def check_app_config(config):
         logger.info("Setting up SCRAPY_PROJECTS_DIR: %s", handle_slash(SCRAPY_PROJECTS_DIR))
 
     # Scrapyd
+    check_assert('CHECK_SCRAPYD_SERVERS', True, bool)
     check_scrapyd_servers(config)
     # For JobsView
     for node, scrapyd_server in enumerate(config['SCRAPYD_SERVERS'], 1):
@@ -385,7 +386,8 @@ def check_scrapyd_servers(config):
         return [_group, '.'.join(parts), int(_port)]
 
     servers = sorted(set(servers), key=key_func)
-    check_scrapyd_connectivity(servers)
+    if config.get('CHECK_SCRAPYD_SERVERS', True):
+        check_scrapyd_connectivity(servers)
 
     config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for (group, ip, port, auth, public_url) in servers]
     config['SCRAPYD_SERVERS_GROUPS'] = [group for (group, ip, port, auth, public_url) in servers]

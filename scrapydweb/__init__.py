@@ -13,7 +13,7 @@ from logparser import __version__ as LOGPARSER_VERSION
 from .__version__ import __url__, __version__
 from .common import handle_metadata
 from .models import Metadata, db
-from .vars import PYTHON_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
+from .vars import PYTHON_VERSION, SCRAPY_VERSION, SCRAPYD_VERSION, SQLALCHEMY_BINDS, SQLALCHEMY_DATABASE_URI
 # from .utils.scheduler import scheduler
 
 
@@ -54,6 +54,8 @@ def internal_server_error(error):
         python_version=PYTHON_VERSION,
         scrapydweb_version=__version__,
         logparser_version=LOGPARSER_VERSION,
+        scrapy_version=SCRAPY_VERSION,
+        scrapyd_version=SCRAPYD_VERSION,
         scrapyd_servers_amount=len(current_app.config.get('SCRAPYD_SERVERS', []))
     )
     return render_template('500.html', **kwargs), 500
@@ -308,6 +310,8 @@ def handle_template_context(app):
             GITHUB_URL=__url__,
             PYTHON_VERSION=PYTHON_VERSION,
             SCRAPYDWEB_VERSION=__version__,
+            SCRAPY_VERSION=SCRAPY_VERSION,
+            SCRAPYD_VERSION=SCRAPYD_VERSION,
 
             # static_css_common=url_for(STATIC, filename='%s/css/common.css' % VERSION),
             static_css_dropdown=url_for(STATIC, filename='%s/css/dropdown.css' % VERSION),

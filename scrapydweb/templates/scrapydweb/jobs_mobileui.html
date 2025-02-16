@@ -39,7 +39,7 @@
   <script type="text/javascript" src="{{ static_js_stacktable }}"></script>
 
   {% if pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0 %}
-  <script type="text/javascript" src="https://my8100.pythonanywhere.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>
+  <script type="text/javascript" src="https://my8100.pythonanywhere.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&sc={{ SCRAPY_VERSION }}&sd={{ SCRAPYD_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>
   <script>setTimeout("checkLatestVersion({{ pageview }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 1000);</script>
   {% else %}
   <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>

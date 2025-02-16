@@ -15,6 +15,17 @@ from .utils.setup_database import setup_database
 
 PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
 PY2 = sys.version_info.major < 3
+
+try:
+    from scrapy import __version__ as SCRAPY_VERSION
+except ImportError:
+    SCRAPY_VERSION = '0.0.0'
+
+try:
+    from scrapyd import __version__ as SCRAPYD_VERSION
+except ImportError:
+    SCRAPYD_VERSION = '0.0.0'
+
 SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v11.py'
 sys.path.append(os.getcwd())
 try:
