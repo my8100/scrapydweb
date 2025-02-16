@@ -183,6 +183,13 @@ def parse_args(config):
         help="current: ENABLE_AUTH = %s, append '--disable_auth' to disable basic auth for web UI" % ENABLE_AUTH
     )
 
+    CHECK_SCRAPYD_SERVERS = config.get('CHECK_SCRAPYD_SERVERS', True)
+    parser.add_argument(
+        '-dc', '--disable_check_scrapyd',
+        action='store_true',
+        help="current: CHECK_SCRAPYD_SERVERS = %s, append '--disable_check_scrapyd' skip checking connectivity of scrapyd" % CHECK_SCRAPYD_SERVERS
+    )
+
     ENABLE_LOGPARSER = config.get('ENABLE_LOGPARSER', False)
     parser.add_argument(
         '-dlp', '--disable_logparser',
@@ -240,6 +247,8 @@ def update_app_config(config, args):
     # action='store_true': default False
     if args.disable_auth:
         config['ENABLE_AUTH'] = False
+    if args.disable_check_scrapyd:
+        config['CHECK_SCRAPYD_SERVERS'] = False
     if args.disable_logparser:
         config['ENABLE_LOGPARSER'] = False
     if args.switch_scheduler_state:

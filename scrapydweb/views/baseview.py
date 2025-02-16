@@ -16,11 +16,12 @@ from ..vars import (ALLOWED_SCRAPYD_LOG_EXTENSIONS, APSCHEDULER_DATABASE_URI,
                     DATA_PATH, DEMO_PROJECTS_PATH, DEPLOY_PATH, PARSE_PATH,
                     ALERT_TRIGGER_KEYS, LEGAL_NAME_PATTERN, SCHEDULE_ADDITIONAL,
                     SCHEDULE_PATH, STATE_PAUSED, STATE_RUNNING, STATS_PATH, STRICT_NAME_PATTERN,
-                    SCRAPY_VERSION, SCRAPYD_VERSION)
+                    PYTHON_VERSION, SCRAPY_VERSION, SCRAPYD_VERSION)
 from ..utils.scheduler import scheduler
 
 
 class BaseView(View):
+    PYTHON_VERSION = PYTHON_VERSION
     SCRAPYDWEB_VERSION = SCRAPYDWEB_VERSION
     LOGPARSER_VERSION = LOGPARSER_VERSION
     SCRAPY_VERSION = SCRAPY_VERSION
@@ -102,6 +103,7 @@ class BaseView(View):
         self.SCRAPYD_SERVERS_PUBLIC_URLS = (app.config.get('SCRAPYD_SERVERS_PUBLIC_URLS', None)
                                             or [''] * self.SCRAPYD_SERVERS_AMOUNT)
 
+        self.CHECK_SCRAPYD_SERVERS = app.config.get('CHECK_SCRAPYD_SERVERS', True)
         self.LOCAL_SCRAPYD_SERVER = app.config.get('LOCAL_SCRAPYD_SERVER', '')
         self.LOCAL_SCRAPYD_LOGS_DIR = app.config.get('LOCAL_SCRAPYD_LOGS_DIR', '')
         self.SCRAPYD_LOG_EXTENSIONS = (app.config.get('SCRAPYD_LOG_EXTENSIONS', [])

@@ -51,6 +51,8 @@ SCRAPYD_SERVERS = [
     ('username', 'password', 'localhost', '6801', 'group'),
 ]
 
+# The default is True, set it to False to skip checking connectivity of scrapyd at startup.
+CHECK_SCRAPYD_SERVERS = True
 
 # It's recommended to update the three options below
 # if both ScrapydWeb and one of your Scrapyd servers run on the same machine.

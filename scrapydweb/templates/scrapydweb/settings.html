@@ -13,6 +13,7 @@
 
 <div class="wrap collapse-wrap">
   <ul class="collapse">
+    <li><div class="title"><h4>Python version: {{ python_version }}</h4></div></li>
     <li>
       <div class="title"><h4>default_settings.py</h4><i class="iconfont icon-right"></i></div>
       <p>{{ DEFAULT_SETTINGS_PY_PATH }}</p>
@@ -34,6 +35,7 @@
     <div class="wrap collapse-wrap">
       <h3>ScrapydWeb</h3>
       <ul class="collapse">
+        <li><div class="title"><h4>version: {{ scrapydweb_version }}</h4></div></li>
         <li>
           <div class="title"><h4>* server *</h4><i class="iconfont icon-right"></i></div>
           <pre>{{ scrapydweb_server }}</pre>
@@ -48,6 +50,7 @@
     <div class="wrap collapse-wrap">
       <h3>Scrapy</h3>
       <ul class="collapse">
+        <li><div class="title"><h4>version: {{ scrapy_version }}</h4></div></li>
         <li>
           <div class="title"><h4>SCRAPY_PROJECTS_DIR</h4><i class="iconfont icon-right"></i></div>
           <pre>{{ SCRAPY_PROJECTS_DIR }}</pre>
@@ -58,10 +61,12 @@
     <div class="wrap collapse-wrap">
       <h3>Scrapyd</h3>
       <ul class="collapse">
+        <li><div class="title"><h4>version: {{ scrapyd_version }}</h4></div></li>
         <li>
           <div class="title"><h4>* servers *</h4><i class="iconfont icon-right"></i></div>
           <pre>{{ servers }}</pre>
         </li>
+        <li><div class="title"><h4>CHECK_SCRAPYD_SERVERS = {{ CHECK_SCRAPYD_SERVERS }}</h4></div></li>
         <li>
           <div class="title"><h4>LOCAL_SCRAPYD_SERVER</h4><i class="iconfont icon-right"></i></div>
           <pre>{{ LOCAL_SCRAPYD_SERVER }}</pre>
@@ -80,8 +85,8 @@
     <div class="wrap collapse-wrap">
       <h3>LogParser</h3>
       <ul class="collapse">
-        <li><div class="title"><h4>ENABLE_LOGPARSER = {{ ENABLE_LOGPARSER }}</h4></div></li>
         <li><div class="title"><h4>version: {{ logparser_version }}</h4></div></li>
+        <li><div class="title"><h4>ENABLE_LOGPARSER = {{ ENABLE_LOGPARSER }}</h4></div></li>
         <li>
           <div class="title"><h4>settings.py</h4><i class="iconfont icon-right"></i></div>
           <p>{{ logparser_settings_py_path }}</p>
