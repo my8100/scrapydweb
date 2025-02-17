@@ -1,0 +1,938 @@
+body,
+div,
+ul,
+ol,
+li,
+p,
+input {
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    min-width: 600px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: rgba(0,0,0,0.05);
+    font-size: 16px;
+    font-family: Cambria, Georgia, Times, "Times New Roman", serif;
+    color: #555;
+}
+
+.icon {
+    width: 1.25em;
+    height: 1.25em;
+    vertical-align: -0.175em;
+    fill: currentColor;
+    overflow: hidden;
+}
+
+
+em.normal {color: #feb324;}
+em.pass {color: #67c23a;}
+em.fail {color: red;}
+
+em.normal,
+em.pass,
+em.fail {
+    font-size: large;
+    font-weight: bold;
+}
+
+.forbid {cursor: not-allowed;}
+
+pre {
+    white-space: pre-wrap;
+    background-color: #e3e3e3;
+}
+
+a {
+    cursor: pointer;
+    text-decoration: none;
+    color: #409EFF;
+}
+
+aside a {color: #909090;}
+aside a:hover {color: #3d3d3d;}
+
+
+a.link {color: #2980B9;}
+a.link:hover {color: #409EFF;}
+a.link:visited {
+    /* color: #9B59B6; */
+}
+
+a.request {text-decoration: underline;}
+
+
+ul,
+ol {
+    list-style: none;
+}
+
+/* ul#links{ */
+    /* position: absolute; */
+    /* bottom: 0; */
+    /* margin-top: 30px; */
+    /* margin-bottom: 30px; */
+/* } */
+/* @media (max-height: 800px) { */
+  /* ul#links { position: relative; } */
+/* } */
+
+.github {
+    margin: 16px 0 16px 20px;
+}
+
+.clear-float {
+    zoom: 1;
+}
+
+/* ==for IE6/7 Maxthon2== */
+.clear-float:after {
+    clear: both;
+    content: '';
+    display: block;
+    width: 0;
+    height: 0;
+    visibility: hidden;
+}
+
+
+/* ==for FF/chrome/opera/IE8== */
+nav {
+    height: 50px;
+    min-height: 50px;
+    line-height: 50px;
+    box-shadow: 0 0 18px 0 #d4dee6;
+    color: #909090;
+    padding-right: 60px;
+    display: flex;
+
+    background: #fff;
+    border-bottom: 1px solid #e3e3e3;
+}
+
+nav>.title {
+    display: inline-block;
+    font-size: 20px;
+    width: 160px;
+    min-width: 160px;
+    color: #fff;
+    background: #feb324;
+    text-align: center;
+    position: relative;
+
+    height: 51px;
+}
+
+nav>.title:after {
+    content: '';
+    position: absolute;
+    display: block;
+    width: 0;
+    height: 0;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-top: 10px solid #feb324;
+    border-bottom: 10px solid transparent;
+    top: 100%;
+    left: 0;
+}
+
+nav>.title>.version {
+    font-size: 14px;
+    color: #aaa;
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 100%;
+    z-index: 1;
+}
+
+nav>.switch-node {
+    text-align: center;
+    min-width: 100px;
+    z-index: 2;
+}
+nav>.switch-node>a {
+    color: #909090;
+    line-height: 50px;
+    font-size: 30px;
+    padding: 0 10px;
+}
+nav>.switch-node>a:hover {color: #409EFF;}
+nav>.switch-node span {font-size: 18px;}
+
+
+nav>#nav_daemonstatus{
+    flex-grow: 1;
+    text-align: right;
+}
+
+nav>#nav_daemonstatus>li{
+    display: inline-block;
+}
+
+/* https://www.w3schools.com/howto/howto_css_arrows.asp */
+nav i {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  font-size: 16px;
+  width: 4px;
+  height: 4px;
+}
+
+#nav_daemonstatus span {
+    margin-left: 4px;
+    margin-right: 24px;
+}
+
+
+main {
+    display: flex;
+    flex-grow: 1;
+    /* Fix the bug that <nav> scrolls in the Run Spider and the Settings page */
+    height: -moz-calc(100% - 51px);  /* Firefox */
+    height: -webkit-calc(100% - 51px);  /* WebKit */
+    height: -o-calc(100% - 51px);  /* Opera */
+    height: calc(100% - 51px);  /* Standard */
+}
+
+main>aside {
+    box-sizing: border-box;
+    min-width: 160px;
+    background-color: #343131;
+    /* padding: 50px 0; */
+    padding-top: 24px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    /* overflow-y: hidden; */
+    /* flex-grow: 1; */
+    /* overflow-y: scroll; */
+}
+
+main>aside:hover {
+    /* overflow-y: scroll; */
+}
+
+main>aside h3 {
+    color: #fcfcfc;
+    line-height: 32px;
+    cursor: default;
+    font-size: 16px;
+    padding: 0 20px;
+    margin: 0;
+}
+
+main>aside a {
+    box-sizing: border-box;
+    width: 100%;
+    display: inline-block;
+    line-height: 24px;
+    padding-left: 20px;
+    font-size: 14px;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
+}
+
+main>aside ul {
+    transition: height .1s ease-in-out;
+    overflow: hidden;
+    /* height: auto; */
+}
+
+main>aside li a:hover {
+    background: #fcfcfc;
+    fill: #555;
+}
+
+main>aside li a.active {
+    color: #409EFF;
+    fill: #409EFF;
+    font-weight: 500;
+}
+
+main>aside li a > span {
+    padding-left: 5px;
+}
+
+
+main>aside #scrapydweb_version{
+    color: #67c23a;
+    height: 30px;
+    padding-left: 0px;
+}
+
+main>aside li#pypi{height: 35px;}
+main>aside li#pypi a{
+    padding-left: 0px;
+    margin-left: 20px;
+    margin-top: 5px;
+    width: min-content;
+    height: 20px;
+}
+main>aside li#pypi a:hover{
+    background: none;
+    opacity: 0.7;
+}
+
+main>aside li.github{
+    height: 25px;
+    padding-top: 5px;
+    padding-left: 20px;
+}
+
+main>.content-wrap {
+    flex-grow: 1;
+    overflow: hidden;
+    display: flex;
+}
+
+
+
+
+#content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    /* align-items: center; */
+    box-sizing: border-box;
+    /* height: 100%; */
+    overflow-x: hidden;
+    overflow-y: scroll;
+    margin-right: -15px;
+    padding: 16px 24px;
+    /* font-family: Consolas, 'Lucida Console', 'DejaVu Sans Mono', monospace; */
+    font-family: "Gotham Rounded A", "Gotham Rounded B", "Gotham Rounded", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+}
+
+#content>h2 {word-break: break-all;}
+#content>h3 {word-break: break-all;}
+
+#content .flashes li{
+    list-style: none;
+    font-size: 14px;
+    margin:12px 0;
+    padding: 6px 8px;
+    width: fit-content;
+    border-radius: 4px;
+}
+#content .flashes li.info{
+    color: #61b962;
+    background-color: #dff0d8;
+}
+#content .flashes li.warning{
+    color: #f56c6c;
+    background-color: #fef0f0;
+}
+
+
+
+
+.upload {
+    display: flex;
+    font-size: 14px;
+}
+
+.upload>.upload-button {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 25px;
+    outline: 0;
+    background: #feb324;
+    color: #3d3d3d;
+    transition: all .3s ease-out;
+    box-shadow: 1px 1px 1px 0 #d4dee6, -1px -1px 1px 0 #d4dee6;
+}
+
+.upload>.upload-button:hover {
+    opacity: 0.7;
+}
+
+.upload>.upload-button>input {
+    width: 1px;
+    position: absolute;
+    opacity: 0.01;
+}
+
+.upload>.filename {
+    cursor: default;
+    width: 265px;
+    line-height: 30px;
+    padding: 0 25px;
+}
+
+.upload>.submit {
+    display: inline-block;
+    padding: 0 20px;
+    height: 30px;
+    line-height: 30px;
+    font-size: 24px;
+    text-align: center;
+    background: #fcfcfc;
+    box-shadow: 1px 1px 1px 0 #d4dee6, -1px -1px 1px 0 #d4dee6;
+    transition: all .3s ease-out;
+}
+
+.upload>.submit:hover {
+    background: #fff;
+}
+
+
+.iconfont.icon-upload::before {
+    font-size: 26px;
+    font-weight: 500;
+    color: #feb324;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.wrap {
+    padding: 8px 16px;
+    margin-bottom: 20px;
+    box-shadow: 1px 2px 3px 0 #d4dee6;
+    background: #fcfcfc;
+}
+
+.table>h3 {
+    margin: 5px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table tr {
+    text-align: center;
+    height: 30px;
+    border-bottom: 1px solid #ebeef5;
+    padding: 0 20px;
+    position: relative;
+}
+
+table th {
+    font-weight: 500;
+    background: #faf8e9;
+}
+
+table>tbody>tr {
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.popover {
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+
+table>tbody tr .hover {
+    display: inline-block;
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: red;
+}
+
+table>tbody tr:nth-child(2n) {
+    background: #fafafa;
+}
+
+table>tbody tr:nth-child(2n+1) {
+}
+
+table>tbody tr:last-child {
+    border-bottom: 0;
+}
+
+.vertical-table th,
+.vertical-table td {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.vertical-table th {
+    font-weight: 700;
+}
+
+.vertical-table td {
+    text-align: left;
+}
+
+/* https://stackoverflow.com/questions/49095440/width-fit-content-working-on-chrome-but-not-explorer */
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/width#Browser_compatibility */
+.vertical-table {
+    /* width: fit-content; */
+    display: table;
+}
+
+
+.state,
+.button {
+    border-radius: 3px;
+    padding: 3px 10px;
+    opacity: 1;
+    color: #fff;
+    transition: all 0.1s ease-out;
+}
+
+.state:hover,
+.button:hover {
+    opacity: 0.7;
+    color: #fff;
+}
+
+.button {
+    font-size: 20px;
+    font-weight: 400;
+    margin-right: 8px;
+    padding: 5px 20px;
+}
+
+.button.big {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.button.narrow {
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.state.normal, .button.normal{
+    background: #409EFF;
+}
+
+.state.safe, .button.safe {
+    background: #67c23a;
+}
+
+.state.delete, .button.delete {
+    background: #909399;
+}
+
+.state.warning, .button.warning {
+    background: #feb324;
+}
+
+.state.danger, .button.danger {
+    background: #fd6b6e;
+}
+
+.state.multinode, .button.multinode {
+    background: #7E57C2;
+}
+
+
+
+
+.tab-header {
+    border-bottom: 2px solid #ddd;
+}
+
+.tab-header>li {
+    float: left;
+    padding: 10px 20px;
+    font-weight: 400;
+    cursor: pointer;
+}
+
+.tab-header>li.active {
+    color: #409EFF;
+    box-shadow: 0 2px 0 0 #409EFF;
+}
+
+.tab-header>li:hover {
+  color: #409EFF;
+}
+
+.tab-content>li {
+  display: none;
+  padding: 24px 8px 16px 8px;
+}
+
+.tab-content>li.active {
+  display: block;
+}
+
+
+.collapse >li {
+    border-bottom: 1px solid #ebeef5;
+    padding: 10px 0;
+    overflow-y: hidden;
+    height: 45px;
+}
+
+.collapse >li:last-child {
+    border-bottom: none;
+}
+.collapse > li.active {
+    height: auto;
+}
+.collapse-wrap h3 {
+    color: #feb324;
+    border-bottom: 2px solid #ddd;
+    padding: 10px 0;
+    margin: 0;
+}
+.collapse .title {
+    position: relative;
+}
+.collapse h4{
+    margin: 0;
+    line-height: 50px;
+    cursor: pointer;
+    font-weight: 400;
+    color: #707070;
+}
+
+.collapse-wrap h4:hover {
+    color: #3d3d3d;
+}
+.collapse > li.active h4 {
+    color: #3d3d3d;
+}
+
+.collapse p{
+    line-height: 30px;
+}
+.collapse i.icon-right{
+    position: absolute;
+    right: 10px;
+    top: 0;
+    font-weight: 400;
+    width: 50px;
+    line-height: 50px;
+    text-align: center;
+    color: #707070;
+    transition: .2s all ease-in-out;
+
+    transform: rotate(90deg);
+}
+
+.collapse > li.active i.icon-right{
+    transform: rotate(-90deg);
+}
+
+
+
+
+/* loader START */
+/* https://www.w3schools.com/howto/howto_css_loader.asp */
+/* https://stackoverflow.com/questions/6256043/css-position-loading-indicator-in-the-center-of-the-screen */
+.loader {
+    z-index:5000;
+    cursor: pointer;
+    position: fixed;
+    left: 50%;
+    top: 35%;
+    border: 10px solid #f3f3f37a;
+    border-radius: 50%;
+    border-top: 10px solid #feb324;
+    width: 100px;
+    height: 100px;
+    -webkit-animation: spin 0.5s linear infinite;  /* Safari */
+    animation: spin 0.5s linear infinite;
+}
+
+/* Safari */
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+/* loader END */
+
+
+
+
+/* https://stackoverflow.com/questions/17714705/how-to-use-checkbox-inside-select-option#answer-27547021 */
+/* https://stackoverflow.com/questions/15632287/set-max-height-on-inner-div-so-scroll-bars-appear-but-not-on-parent-div */
+.multiselect {
+    width: 300px;
+}
+
+.form-item-error{
+    color: #f56c6c;
+    display: none;
+    font-size: 12px;
+    line-height: 1;
+    padding-top: 4px;
+    /* position: absolute; */
+    /* top: 100%; */
+    /* left: 0; */
+    margin-bottom: -16px;
+}
+
+#content_package .icon.anchor,
+.multiselect .icon.anchor{
+    width: 1rem;
+    height: 1rem;
+    transition: all .3s ease-out;
+
+    height: 40px;
+    position: absolute;
+    right: 10px;
+}
+
+.selectBox {
+    position: relative;
+}
+
+.overSelect {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    cursor: pointer;
+}
+
+.overSelect:hover {
+    /* border: 1px solid #dcdfe6; */
+}
+
+#checkboxes {
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+    color: #606266;
+    /* display: block; */
+    font-size: 14px;
+    max-height: 45vh;  /* 240px */
+    overflow-y: hidden;
+    /* padding-left: 5px; */
+    -webkit-box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+
+}
+
+#checkboxes:hover{
+    overflow-y: scroll;
+}
+
+
+/* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp START */
+/* Width */
+main>aside::-webkit-scrollbar,
+.folders-content::-webkit-scrollbar,
+#checkboxes::-webkit-scrollbar {
+    width: 6px;
+}
+
+/* Track */
+main>aside::-webkit-scrollbar-track,
+.folders-content::-webkit-scrollbar-track,
+#checkboxes::-webkit-scrollbar-track {
+    border-radius: 6px;
+}
+
+/* Handle */
+main>aside::-webkit-scrollbar-thumb {
+    background: #bdbdbd;
+    border-radius: 6px;
+}
+.folders-content::-webkit-scrollbar-thumb,
+#checkboxes::-webkit-scrollbar-thumb {
+    background: #9093994d;
+    border-radius: 6px;
+}
+
+/* Handle on hover */
+main>aside::-webkit-scrollbar-thumb:hover {
+    background: #9e9e9e;
+    /* opacity: 0.7; */
+}
+.folders-content::-webkit-scrollbar-thumb:hover,
+#checkboxes::-webkit-scrollbar-thumb:hover {
+    background: #90939980;
+}
+/* https://www.w3schools.com/howto/howto_css_custom_scrollbar.asp END */
+
+
+#checkboxes label {
+    color: #606266;
+    cursor: pointer;
+    display: block;
+    height: 34px;
+    line-height: 34px;
+    padding: 0 20px;
+}
+
+#checkboxes label:hover {
+    background-color: #f5f7fa;
+    /* color: #333; */
+    /* font-weight: 500; */
+}
+
+#checkboxes>label:nth-child(1),
+#checkboxes>label:nth-child(2),
+#checkboxes>label:nth-child(3) {
+    font-weight: 700;
+}
+
+#checkboxes label input{margin-right: 5px;}
+
+#checkboxes span {
+    color: red;
+    padding-left: 16px;
+}
+
+#nodes_checkboxes {
+    width: max-content;
+    width: -moz-max-content;  /* Firefox on Ubuntu */
+}
+
+
+/* skip unselected nodes START */
+/* https://www.w3schools.com/howto/howto_css_switch.asp */
+label.skip-node {
+    position: relative;
+    display: inline-block;
+    width: 30px;
+    height: 17px;
+}
+
+label.skip-node input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+span.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e3e3e3;
+    -webkit-transition: .2s;
+    transition: .2s;
+}
+
+span.slider:before {
+    position: absolute;
+    content: "";
+    height: 13px;
+    width: 13px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    -webkit-transition: .2s;
+    transition: .2s;
+}
+
+input:checked + span.slider {
+    background-color: #67c23a;
+}
+
+input:focus + span.slider {
+    box-shadow: 0 0 1px #67c23a;
+}
+
+input:checked + span.slider:before {
+    -webkit-transform: translateX(13px);
+    -ms-transform: translateX(13px);
+    transform: translateX(13px);
+}
+
+/* Rounded sliders */
+span.slider.round {
+    border-radius: 17px;
+}
+
+span.slider.round:before {
+    border-radius: 50%;
+}
+/* skip unselected nodes END */
+
+
+
+
+/* two-div-blocks-on-same-line START */
+/* https://stackoverflow.com/questions/10451445/two-div-blocks-on-same-line */
+.line-container {
+    display: flex;
+    margin-bottom: 22px;
+}
+
+.line-container .key {
+    color: #606266;
+    display: inline-block;
+    font-size: 16px;
+    line-height: 40px;
+    padding-right: 12px;
+    text-align: right;
+    width: 118px;
+}
+
+.line-container .key span {
+    color: #f56c6c;
+    margin-right: 4px;
+}
+
+.line-container .value {
+    border: 1px solid #dcdfe6;
+    background-color: #fff;
+    border-radius: 4px;
+    color: #606266;
+    font-size: 14px;
+    height: 40px;
+    line-height: 40px;
+    padding: 0 15px;
+    width: 300px;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+}
+
+.line-container .value:hover {
+    border: 1px solid #c0c4cc;
+}
+
+.line-container .value:focus {
+    border: 1px solid #409EFF;
+}
+
+.line-container .value.readonly{
+    background-color: #e3e3e3;
+    cursor: not-allowed;
+    opacity: 1;
+}
+/* two-div-blocks-on-same-line END */
+
+
+
+
+/* reports START */
+.count_font {
+    font-size: 16px;
+    font-weight: bold;
+}
+.count_normal {
+    color: #409EFF;
+}
+.count_safe {
+    color: #67c23a;
+}
+.count_warning {
+    color: orange;
+}
+.count_danger {
+    color: red;
+}
+/* reports END */

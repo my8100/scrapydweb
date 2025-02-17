@@ -1,0 +1,81 @@
+{% extends 'base_mobileui.html' %}
+
+{% block title %}log{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_utf8_mobileui }}">
+  <style>
+    h3 {word-break: break-all;}
+  </style>
+{% endblock %}
+
+{% block loader %}
+<div class="loader" style="display: block;" onclick="hideLoader();"></div>
+{% endblock %}
+
+
+{% block neck %}
+<a class="button normal" href="javascript:;" onclick="forceLoader('{{ g.url_jobs_list[node-1] }}');">Jobs</a>
+<a class="button warning" href="javascript:;" onclick="forceLoader('{{ url_opt_opposite }}')">Stats</a>
+{% endblock %}
+
+
+{% block body %}
+<div class="go-top">
+  <div class="arrow"></div>
+  <div class="stick"></div>
+</div>
+<div class="go-bottom">
+  <div class="arrow"></div>
+  <div class="stick"></div>
+</div>
+
+
+<div id="log" class="wrap" style="padding: 1px 12px;">
+<h3>PROJECT ({{ project }})<br>SPIDER ({{ spider }})</h3>
+<pre>{{ text }}</pre>
+
+<h3>PROJECT ({{ project }})<br>SPIDER ({{ spider }})</h3>
+{% if url_refresh %}
+<a id="refresh_button" class="button danger" href="javascript:;" onclick="forceLoader('{{ url_refresh }}');">
+Press to refresh
+</a>
+<br>
+<br>
+{% endif %}
+</div>
+
+
+<script>
+$(function() {
+  //$(window).scroll(function() {
+  $(document).ready(function() {
+    hideLoader();
+
+    $('div.go-top').show();
+    $('div.go-bottom').show();
+    goLogBottom();
+  });
+
+  $('div.go-top').click(function() {
+    goContentTop();
+  });
+  $('div.go-bottom').click(function() {
+    goLogBottom();
+  });
+});
+</script>
+
+
+<script>
+const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
+
+{% if url_refresh %}
+setInterval(function() {
+  var now_timestamp = Date.now() / 1000;
+  var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+  my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> secs ago, press to reload (SLOW)";
+}, 1000);
+{% endif %}
+</script>
+{% endblock %}
