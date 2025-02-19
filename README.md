@@ -30,8 +30,6 @@
 This project is supported by [IPRoyal](https://iproyal.com/?r=802099). You can get premium quality proxies at unbeatable prices
 with a discount using [this referral link](https://iproyal.com/?r=802099)!
 
-![IPRoyal](/assets/iproyal.png)
-
 
 ## :stars: Features
 <details>
