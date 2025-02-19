@@ -26,7 +26,14 @@
 [:link: scrapydweb.herokuapp.com](https://scrapydweb.herokuapp.com)
 
 
-## :star: Features
+## :rocket: Sponsor
+This project is supported by [IPRoyal](https://iproyal.com/?r=802099). You can get premium quality proxies at unbeatable prices
+with a discount using [this referral link](https://iproyal.com/?r=802099)!
+
+![IPRoyal](/assets/iproyal.png)
+
+
+## :stars: Features
 <details>
 <summary>View contents</summary>
 
@@ -157,3 +164,7 @@ Detailed changes for each release are documented in the [:link: HISTORY.md](http
 
 ## :copyright: License
 This project is licensed under the GNU General Public License v3.0 - see the [:link: LICENSE](https://github.com/my8100/scrapydweb/blob/master/LICENSE) file for details.
+
+
+## :star: Stargazers over time
+[![Stargazers over time](https://starchart.cc/my8100/scrapydweb.svg?variant=adaptive)](https://starchart.cc/my8100/scrapydweb)
