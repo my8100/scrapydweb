@@ -17,7 +17,7 @@ class ApiView(BaseView):
         self.project = self.view_args['project']
         self.version_spider_job = self.view_args['version_spider_job']
 
-        self.url = 'http://{}/{}.json'.format(self.SCRAPYD_SERVER, API_MAP.get(self.opt, self.opt))
+        self.url = '{}://{}/{}.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER, API_MAP.get(self.opt, self.opt))
         self.data = None
         self.status_code = 0
         self.js = {}

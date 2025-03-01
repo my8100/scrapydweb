@@ -61,7 +61,7 @@ class ScheduleView(BaseView):
         self.task_id = request.args.get('task_id', default=None, type=int)
         self.task = None
 
-        self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
+        self.url = '{}://{}/schedule.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
         self.template = 'scrapydweb/schedule.html'
         self.kwargs = {}
 
@@ -214,7 +214,7 @@ class ScheduleCheckView(BaseView):
     def __init__(self):
         super(ScheduleCheckView, self).__init__()
 
-        self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
+        self.url = '{}://{}/schedule.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
         self.template = 'scrapydweb/schedule.html'
 
         self.filename = ''
@@ -228,7 +228,7 @@ class ScheduleCheckView(BaseView):
         # self.logger.warning(self.json_dumps(self.data))  # TypeError: Object of type datetime is not JSON serializable
         cmd = generate_cmd(self.AUTH, self.url, self.data)
         # '-d' may be in project name, like 'ScrapydWeb-demo'
-        cmd = re.sub(r'(curl -u\s+.*?:.*?)\s+(http://)', r'\1 \\\r\n\2', cmd)
+        cmd = re.sub(r'(curl -u\s+.*?:.*?)\s+({}://)'.format(self.SCRAPYD_SERVER_PROTOCOL), r'\1 \\\r\n\2', cmd)
         cmd = re.sub(r'\s+-d\s+', ' \\\r\n-d ', cmd)
         cmd = re.sub(r'\s+--data-urlencode\s+', ' \\\r\n--data-urlencode ', cmd)
         return self.json_dumps({'filename': self.filename, 'cmd': cmd}, as_response=True)
@@ -365,12 +365,12 @@ class ScheduleRunView(BaseView):
         if self.selected_nodes_amount:
             self.selected_nodes = self.get_selected_nodes()
             self.first_selected_node = self.selected_nodes[0]
-            self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVERS[self.first_selected_node - 1]
+            self.url = '{}://{}/schedule.json'.format(self.SCRAPYD_SERVERS_PROTOCOLS[self.first_selected_node - 1], self.SCRAPYD_SERVERS[self.first_selected_node - 1])
             # Note that self.first_selected_node != self.node
             self.AUTH = self.SCRAPYD_SERVERS_AUTHS[self.first_selected_node - 1]
         else:
             self.selected_nodes = [self.node]
-            self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
+            self.url = '{}://{}/schedule.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
 
         # in handle_action():   self.data.pop('__task_data', {})    self.task_data.pop
         self.data = self.slot.data.get(self.filename, {})
@@ -598,7 +598,7 @@ class ScheduleXhrView(BaseView):
         super(ScheduleXhrView, self).__init__()
 
         self.filename = self.view_args['filename']
-        self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
+        self.url = '{}://{}/schedule.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
         self.slot = slot
         self.data = None
 
@@ -619,7 +619,7 @@ class ScheduleTaskView(BaseView):
     def __init__(self):
         super(ScheduleTaskView, self).__init__()
 
-        self.url = 'http://%s/schedule.json' % self.SCRAPYD_SERVER
+        self.url = '{}://{}/schedule.json'.format(self.SCRAPYD_SERVER_PROTOCOL, self.SCRAPYD_SERVER)
         self.task_id = request.form['task_id']
         self.jobid = request.form['jobid']
         self.data = {}
