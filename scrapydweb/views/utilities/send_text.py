@@ -59,7 +59,7 @@ class SendTextApiView(BaseView):
 
         self.text = self.view_args['text'] or request.args.get('text', None)
         if not self.text:
-            self.text = self.json_dumps(self.form) if self.form else 'test'
+            self.text = self.form.get('text') if self.form else 'test'
         self.logger.debug('text: %s', self.text)
 
         self.js = {}

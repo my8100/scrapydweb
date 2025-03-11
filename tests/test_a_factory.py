@@ -43,7 +43,7 @@ def test_check_app_config(app, client):
 
     # ['username:password@127.0.0.1:6800', ]
     app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']
-    check_app_config(app.config)
+    check_app_config(app.config, app)
 
     strings = []
 
@@ -66,7 +66,7 @@ def test_check_app_config(app, client):
 
         # ['username:password@127.0.0.1:6800', ]
         app.config['SCRAPYD_SERVERS'] = app.config['_SCRAPYD_SERVERS']
-        check_app_config(app.config)
+        check_app_config(app.config, app)
 
         assert app.config['LOGPARSER_PID'] is None
         assert app.config['POLL_PID'] is None
