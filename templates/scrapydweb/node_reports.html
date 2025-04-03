@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block title %}servers{% endblock %}
+
+{% block head %}
+  <style>
+  </style>
+{% endblock %}
+
+{% block body %}
+<h2>
+  <a class="link" target="_blank" href="{{ url }}">Get the reports of running and finished jobs of all projects after Scrapyd server started.</a>
+  <label title="schedule a spider run">
+    <a class="button safe narrow" href="{{ url_schedule }}">+</a>
+  </label>
+</h2>
+
+<form method="post" enctype="multipart/form-data" hidden></form>
+
+<div id="app">
+<template>
+  <el-button-group>
+    <el-button type="primary" @click="fetchRemainingReports" icon="el-icon-download" size="medium">Fetch remaining reports</el-button>
+    <!-- <el-button type="success" @click="fetchReports" icon="el-icon-download" size="medium">Fetch next 20 reports</el-button> -->
+  </el-button-group>
+
+  <el-table
+    ref="multipleTable"
+    :data="tableData"
+    style="width: 100%;"
+    tooltip-effect="dark"
+    empty-text="There is nothing to display."
+    :max-height="maxHeight"
+    highlight-current-row
+
+    {% if running_jobs|length + finished_jobs|length > 10 %}
+    :size=`mini`
+    {% else %}
+    :size=`--`
+    {% endif %}
+  >
+
+    <el-table-column prop="index" label="Index" fixed sortable :sort-method="sortIndexFinish" :sort-orders="sortOrders" align="center" width="70">
+      <template slot-scope="scope">
+        <p style="display: none;">{{scope.row.index0}} </p>
+        <p>{{scope.row.index}}</p>
+      </template>
+    </el-table-column>
+    <el-table-column prop="stats" label="Stats" fixed sortable :sort-method="sortStatus" align="center" width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}120{% else %}100{% endif %}">
+      <template slot-scope="scope">
+        <em :class="scope.row.loading_class"  v-bind:style="{display: scope.row.stats_loading_display}">{{scope.row.loading}}</em>
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        <a class="state multinode" :style="{ display: scope.row.stats_display }" :href="scope.row.multinode_url">{{ g.multinode|safe }}</a>
+        {% endif %}
+        <a target="_blank" :class="scope.row.stats_class" v-bind:style="{display: scope.row.stats_display}" :href="scope.row.stats_url">{{scope.row.stats}}</a>
+      </template>
+    </el-table-column>
+
+    <el-table-column prop="spider" label="Spider" fixed sortable align="center" width="150" show-overflow-tooltip></el-table-column>
+    <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
+    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
+
+{% include 'scrapydweb/include_reports_template_table.html' %}
+
+    <el-table-column prop="project" label="Project" sortable align="center" width="150" show-overflow-tooltip></el-table-column>
+    <el-table-column prop="spider" label="Spider" sortable align="center" width="150" show-overflow-tooltip></el-table-column>
+    <el-table-column prop="job" label="job" sortable align="center" width="250" show-overflow-tooltip></el-table-column>
+    <el-table-column prop="start" label="Start" sortable align="center" width="145"></el-table-column>
+    <el-table-column prop="runtime" label="Runtime" sortable :sort-method="sortRuntime" :sort-orders="sortOrders" align="center" width="125"></el-table-column>
+    <el-table-column prop="finish" label="Finish" sortable align="center" width="145"></el-table-column>
+  </el-table>
+</template>
+</div>
+
+
+<script>
+
+
+var Main = {
+  data() {
+    return {
+      maxHeight: window.innerHeight - 200,
+      sortOrders: ['descending', 'ascending', null],
+      url_report: '{{ url_report }}',
+      fetch_min: 0,
+      fetch_step: 20,
+      scrollLeftRecord: 0,
+      tableData: [
+  {% for jobs in [running_jobs, finished_jobs] %}
+    {% for job in jobs %}
+      {
+        index0: -1,
+
+        {% if job.finish %}
+        index: {{ loop.revindex }},
+        {% else %}
+        index: {{ loop.index }},
+        {% endif %}
+        project: '{{ job.project }}',
+        spider: '{{ job.spider }}',
+        job: '{{ job.job }}',
+
+        loading: 'lazy loading',
+        loading_class: '',
+        loaded: false,
+
+        multinode_url: '',
+
+{% include 'scrapydweb/include_reports_tabledata.html' %}
+
+        start: '{{ job.start }}',
+        finish: '{{ job.finish }}',
+        runtime: '{{ job.runtime }}',
+        // runtime: '16 days, 20:09:24',
+      },
+    {% endfor %}
+  {% endfor %}
+      ],
+    }
+  },
+
+  created() {
+    this.fetchReports();
+  },
+
+  mounted() {
+    var _this = this;
+
+    for (var idx in _this.tableData) {
+      _this.tableData[idx].index0 = parseInt(idx);
+    }
+
+    var bodyWrapper = _this.$refs.multipleTable.bodyWrapper;
+    bodyWrapper.onscroll = _this.debounce(function () {
+      var scrollLeftNow = $(bodyWrapper).scrollLeft();
+      if (scrollLeftNow != _this.scrollLeftRecord) {
+        _this.scrollLeftRecord = scrollLeftNow;
+        console.log('scroll horizontally');
+        return;
+      }
+      var tBody = bodyWrapper.children[0].children[1];
+      var tRows = tBody.children;
+      $(tRows).each(function (index) {
+        // console.log($(this));
+        var index0 = $(this)[0].textContent.match(/(\d+)/)[1];
+        index = parseInt(index0);
+        if(_this.isVisible($(this), $(bodyWrapper))) {
+          var job = _this.tableData[index];
+          console.log(index + 1, 'visible', job.loaded);
+          if (!job.loaded) {
+            console.log('to load');
+            _this.fetchOneReport(index);
+          }
+        }
+      });
+    }, 500);
+  },
+
+  methods: {
+    isVisible:function ($node, $parent) {
+      var scrollTop = $parent.scrollTop();
+      var top = $node[0].offsetTop;
+      var halfHeight = $node[0].offsetHeight / 2;
+      var pareHeight = $parent.height();
+      // console.log('scrollTop', scrollTop);
+      // console.log('top', top);
+      // console.log('pareHeight', pareHeight);
+      if(scrollTop <= (top + halfHeight) && (top + halfHeight) < (scrollTop + pareHeight)) {
+        // $node.addClass('visible');
+        return true;
+      } else {
+        return false;
+      }
+    },
+
+    debounce:function(func, wait, immediate) {
+      // timer
+      var timeout;
+      return function() {
+          // Clear the timer before triggering scroll handler
+          clearTimeout(timeout);
+          // Wait N ms before handling
+          timeout = setTimeout(func, wait);
+      };
+    },
+
+    fetchOneReport:function(idx) {
+      var job = this.tableData[idx];
+      var url = this.url_report.replace(/PROJECT_PLACEHOLDER/, job.project).replace(/SPIDER_PLACEHOLDER/, job.spider).replace(/JOB_PLACEHOLDER/, job.job);
+      this.xhrReport(idx, url);
+      job.loading = 'loading...';
+      job.loading_class = 'normal';
+    },
+
+    fetchReports:function() {
+      console.log(this.fetch_min, this.fetch_step);
+      for (var idx in this.tableData.slice(this.fetch_min, this.fetch_min+this.fetch_step)) {
+          idx = parseInt(idx) + this.fetch_min;
+          if (!this.tableData[idx].loaded) {
+            this.fetchOneReport(idx);
+          }
+      }
+      this.fetch_min = this.fetch_min + this.fetch_step;
+    },
+
+    fetchRemainingReports:function() {
+      this.fetch_step = Infinity;
+      this.fetchReports();
+    },
+
+    xhrReport:function(idx, url) {
+      var _this = this;
+      _this.tableData[idx].loaded = true;
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          vm.tableData[idx].stats_loading_display = 'none';
+          vm.tableData[idx].stats_display = '';
+          vm.tableData[idx].stats_url = url.replace(/\/log\/report\//, '/log/stats/');
+          vm.tableData[idx].multinode_url = url.replace(/\/log\/report\//, '/clusterreports/');
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if (obj.status == 'ok') {
+              // console.log(idx, obj);
+              vm.tableData[idx].stats = 'Stats';
+              if (vm.tableData[idx].finish) {
+                vm.tableData[idx].stats_class = 'state normal';
+              } else {
+                vm.tableData[idx].stats_class = 'state safe';
+              }
+
+{% include 'scrapydweb/include_reports_xhrreport.html' %}
+
+            } else {
+              vm.tableData[idx].stats = obj.status || 'N/A';
+              vm.tableData[idx].stats_class = 'state danger';
+            }
+          } else {
+            vm.tableData[idx].stats = this.status;
+            vm.tableData[idx].stats_class = 'state warning';
+          }
+        }
+      };
+      req.open('post', url, Async=true);
+      req.send();
+    },
+
+    sortIndexFinish(a, b) {
+      if ((a.finish && b.finish) || (!a.finish && !b.finish)) {
+        return a.index > b.index ? 1 : -1;
+      } else {
+        return a.finish ? 1 : -1;
+      }
+    },
+
+    sortStatus(a, b) {
+      return a.stats_display+a.stats_class+a.stats > b.stats_display+b.stats_class+b.stats ? 1 : -1;
+    },
+
+{% include 'scrapydweb/include_methods_sortruntime.html' %}
+
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

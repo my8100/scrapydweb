@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}multinode results{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_multinode }}">
+  <script type="text/javascript" src="{{ static_js_multinode }}"></script>
+{% endblock %}
+
+
+{% block body %}
+<h2><a class="link" target="_blank" href="{{ url_xhr }}">{{ title }}</a></h2>
+
+
+<div class="table wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>
+          <input type="checkbox" id="checkAll" />
+          <a class="state warning" href="javascript:;" onclick="invertSelection();">invert selection</a>
+        </th>
+        <th>Index</th>
+
+        {% if opt == 'stop' %}
+        <th>Jobs</th>
+        {% else %}
+        <th>Projects</th>
+        {% endif %}
+
+        <th>Node name</th>
+        <th>Status</th>
+        <th>Project</th>
+
+        {% if opt == 'stop' %}
+        <th>Job</th>
+        <th>Prev state</th>
+        {% elif opt == 'delversion' %}
+        <th>Version</th>
+        {% endif %}
+      </tr>
+    </thead>
+
+  <form method="post" enctype="multipart/form-data">
+    <tbody>
+  {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+    {% if loop.index in selected_nodes %}
+      <tr>
+        <td><input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}" /></td>
+        <td >{{ loop.index }}</td>
+        <td>
+          <a
+          class={% if loop.index == node %}"state safe"{% else %}"state normal"{% endif %}
+          href={% if opt == 'stop' %}"{{ g.url_jobs_list[loop.index-1] }}"{% else %}"{{ url_projects_list[loop.index-1] }}"{% endif %}
+          target={% if selected_nodes|length > 1 %}"_blank"{% else %}"_self"{% endif %}
+          >{{ SCRAPYD_SERVERS[loop.index-1] }}</a>
+        </td>
+        <td id="node_name_{{ loop.index }}"></td>
+        <td id="status_{{ loop.index }}"></td>
+        <td id="project_{{ loop.index }}"></td>
+
+        {% if opt == 'stop' %}
+        <td id="job_{{ loop.index }}"></td>
+        <td id="prevstate_{{ loop.index }}"></td>
+        {% elif opt == 'delversion' %}
+        <td id="version_{{ loop.index }}"></td>
+        {% endif %}
+      </tr>
+    {% endif %}
+  {% endfor %}
+    </tbody>
+  </form>
+  </table>
+
+  <div class="action">
+    <a class="button safe big" href="javascript:;" onclick="passToServers();">{{ btn_servers|safe }}</a>
+  </div>
+</div>
+
+
+<script>
+var selected_nodes = {{ selected_nodes }};
+var url_xhr = "{{ url_xhr }}";
+var url_servers = "{{ url_servers }}";
+
+
+window.onload = function(){
+  $('#checkAll').click(function () {
+    $('table input:checkbox').not(this).prop('checked', this.checked);
+  });
+
+{% if selected_nodes|length > 1 %}
+  setTimeout("fireXHR();", 500);
+{% else %}
+  execXHR(selected_nodes[0], url_xhr);
+{% endif %}
+}
+
+
+function fireXHR(){
+  //var r = confirm("Start to execute command on multinodes?");
+  //if(r == false) {
+  //  return;
+  //}
+
+  for (var idx in selected_nodes) {
+    var url = url_xhr.replace(/\/\d+/, '/'+selected_nodes[idx]);
+    execXHR(selected_nodes[idx], url);
+  }
+}
+
+
+function execXHR(idx, url){
+  my$('#'+'status_'+idx).innerHTML = '<em class="normal">loading...</em>';
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var obj = JSON.parse(this.responseText);
+        if (obj.status == 'ok') {
+          console.log('#'+'node_name_'+idx, obj.node_name);
+          my$('#'+'node_name_'+idx).innerHTML = obj.node_name;
+          my$('#'+'status_'+idx).innerHTML = '<em class="pass">'+obj.status+'</em>';
+          my$('#'+'project_'+idx).innerHTML = "{{ project }}";
+
+          {% if opt == 'stop' %}
+          my$('#'+'job_'+idx).innerHTML = "{{ version_job }}";
+          my$('#'+'prevstate_'+idx).innerHTML = obj.prevstate || "null";
+          {% elif opt == 'delversion' %}
+          my$('#'+'version_'+idx).innerHTML = "{{ version_job }}";
+          {% endif %}
+
+          my$('#'+'checkbox_'+idx).checked = true;
+        } else {
+          my$('#'+'status_'+idx).innerHTML = getRequestFailHtml(url, 'status', obj.status);
+        }
+      } else {
+        my$('#'+'status_'+idx).innerHTML = getRequestFailHtml(url, 'code', this.status);
+      }
+    }
+  };
+  req.open("post", url, Async=true);
+  req.send();
+}
+</script>
+{% endblock %}

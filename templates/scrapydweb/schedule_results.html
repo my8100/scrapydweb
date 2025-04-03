@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}run results{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_multinode }}">
+  <script type="text/javascript" src="{{ static_js_multinode }}"></script>
+{% endblock %}
+
+
+{% block body %}
+<h2>Run Spider</h2>
+
+<div class="table wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>
+          <input type="checkbox" id="checkAll" />
+          <a class="state warning" href="javascript:;" onclick="invertSelection();">invert selection</a>
+        </th>
+        <th>Index</th>
+        <th>Stats</th>
+        <th>Node Name</th>
+        <th>Status</th>
+        <th>Project</th>
+        <th>Version</th>
+        <th>Spider</th>
+        <th>Jobid</th>
+      </tr>
+    </thead>
+
+  <form method="post" enctype="multipart/form-data">
+    <tbody>
+      <tr>
+        <td><input type="checkbox" id="checkbox_{{ first_selected_node }}" name="{{ first_selected_node }}" checked /></td>
+        <td>{{ first_selected_node }}</td>
+        <td>
+          <a
+          class={% if first_selected_node == node %}"state safe"{% else %}"state normal"{% endif %}
+          href="{{ url_stats_list[first_selected_node-1] }}"
+          target={% if selected_nodes|length > 1 %}"_blank"{% else %}"_self"{% endif %}
+          >{{ SCRAPYD_SERVERS[first_selected_node-1] }}</a>
+        </td>
+        <td>{{ js['node_name'] }}</td>
+        <td><em class="pass">{{ js['status'] }}</em></td>
+        <td>{{ project }}</td>
+        <td>{{ version }}</td>
+        <td>{{ spider }}</td>
+        <td>{{ js['jobid'] }}</td>
+      </tr>
+
+  {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+    {% if loop.index in selected_nodes and loop.index != first_selected_node %}
+      <tr>
+        <td><input type="checkbox" id="checkbox_{{ loop.index }}" name="{{ loop.index }}" /></td>
+        <td >{{ loop.index }}</td>
+        <td>
+          <a
+          class={% if loop.index == node %}"state safe"{% else %}"state normal"{% endif %}
+          href="{{ url_stats_list[loop.index-1] }}"
+          target={% if selected_nodes|length > 1 %}"_blank"{% else %}"_self"{% endif %}
+          >{{ SCRAPYD_SERVERS[loop.index-1] }}</a>
+        </td>
+        <td id="node_name_{{ loop.index }}"></td>
+        <td id="status_{{ loop.index }}"></td>
+        <td id="project_{{ loop.index }}"></td>
+        <td id="version_{{ loop.index }}"></td>
+        <td id="spider_{{ loop.index }}"></td>
+        <td id="jobid_{{ loop.index }}"></td>
+      </tr>
+    {% endif %}
+  {% endfor %}
+
+    </tbody>
+  </form>
+  </table>
+
+  <div class="action">
+    <a class="button safe big" href="javascript:;" onclick="passToServers();">Servers &raquo; Get Reports</a>
+  </div>
+</div>
+
+<script>
+var first_selected_node = {{ first_selected_node }};
+var selected_nodes = {{ selected_nodes }};
+
+var url_xhr = "{{ url_xhr }}";
+var url_servers = "{{ url_servers }}";
+
+
+window.onload = function(){
+  $('#checkAll').click(function () {
+    $('table input:checkbox').not(this).prop('checked', this.checked);
+  });
+
+{% if selected_nodes|length > 1 %}
+  setTimeout("fireXHR();", 500);
+{% endif %}
+}
+
+
+{% if selected_nodes|length > 1 %}
+function fireXHR(){
+  //var r = confirm("Start to run spider on remaining nodes?");
+  //if(r == false) {
+  //  return;
+  //}
+
+  for (var idx in selected_nodes) {
+    if (selected_nodes[idx] != first_selected_node) {
+      var url = url_xhr.replace(/\/\d+/, '/'+selected_nodes[idx]);
+      execXHR(selected_nodes[idx], url);
+    }
+  }
+}
+
+
+function execXHR(idx, url){
+  my$('#'+'status_'+idx).innerHTML = '<em class="normal">loading...</em>';
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var obj = JSON.parse(this.responseText);
+        if (obj.status == 'ok') {
+          console.log('#'+'node_name_'+idx, obj.node_name);
+          my$('#'+'node_name_'+idx).innerHTML = obj.node_name;
+          my$('#'+'status_'+idx).innerHTML = '<em class="pass">'+obj.status+'</em>';
+          my$('#'+'project_'+idx).innerHTML = "{{ project }}";
+          my$('#'+'version_'+idx).innerHTML = "{{ version }}";
+          my$('#'+'spider_'+idx).innerHTML = "{{ spider }}";
+          my$('#'+'jobid_'+idx).innerHTML = obj.jobid;
+          my$('#'+'checkbox_'+idx).checked = true;
+        } else {
+          my$('#'+'status_'+idx).innerHTML = getRequestFailHtml(url, 'status', obj.status);
+        }
+      } else {
+        my$('#'+'status_'+idx).innerHTML = getRequestFailHtml(url, 'code', this.status);
+      }
+    }
+  };
+  req.open("post", url, Async=true);
+  req.send();
+}
+{% endif %}
+</script>
+{% endblock %}

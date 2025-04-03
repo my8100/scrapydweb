@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}projects{% endblock %}
+
+{% block head %}
+  <style>
+  .collapse h4 {line-height: 55px;}
+  .button, .state {margin-right: 5px;}
+  </style>
+{% endblock %}
+
+{% block body %}
+<h2>
+  <a class="link" target="_blank" href="{{ url }}">Get the list of projects uploaded to this Scrapy server.</a>
+  <label title="deploy a project or add a version">
+    <a class="button safe narrow" href="{{ url_deploy }}">+</a>
+  </label>
+</h2>
+
+<div class="wrap collapse-wrap">
+  <h3>{{ node_name }}</h3>
+  <ul class="collapse">
+    {% if not results %}
+    <li>No projects found. Go to <a class="button safe" href="{{ url_deploy }}">Deploy Project</a></li>
+    {% endif %}
+
+  {% for project, url_listversions in results %}
+    <li id="project_{{ project }}">
+      <div class="title" onclick="execXHR('{{ url_listversions }}', 'versions_of_{{ project }}'); this.onclick=null;">
+        <h4>{{ project }}</h4>
+        <i class="iconfont icon-right"></i>
+      </div>
+      <div id="versions_of_{{ project }}"></div>
+    </li>
+  {% endfor %}
+  </ul>
+</div>
+
+
+<script>
+function execXHR(url, id, popup){
+  if (popup !== undefined) {
+    var r = confirm(popup);
+    if (r == false) {
+      return;
+    }
+  }
+  showLoader();
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      hideLoader();
+      if (this.status == 200) {
+        my$('#'+id).innerHTML = this.responseText;
+      } else {
+        my$('#'+id).innerHTML = getRequestFailHtml(url, 'code', this.status);
+        //alert("REQUEST got code: " + this.status);
+      }
+    }
+  };
+  req.open('post', url, Async = true);
+  req.send();
+}
+</script>
+
+<script>
+// handle collapse components
+(function () {
+  var collapse = my$('.collapse');
+  var titles = my$$('.collapse .title');
+  var lis = my$$('.collapse li');
+  titles.forEach(function(title) {
+    title.addEventListener('click', function(e){
+      var index = [].indexOf.call(titles, this);
+      lis[index].classList.toggle('active');
+    });
+  });
+})();
+</script>
+{% endblock %}

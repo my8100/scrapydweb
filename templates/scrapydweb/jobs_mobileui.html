@@ -1,0 +1,289 @@
+{% extends 'base_mobileui.html' %}
+
+{% block title %}jobs{% endblock %}
+
+{% block head %}
+  <link rel="stylesheet" type="text/css" href="{{ static_css_stacktable }}">
+  <style>
+  table {
+    background: #fcfcfc;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  table#jobs {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  td {word-break: keep-all;}
+  td a {word-break: keep-all;}
+  th {background-color: #faf8e9;} /* #ddd */
+  th.st-head-row:not(.st-head-row-main) {padding: 8px 10px;}
+  th.st-head-row-main {display: none;}
+  th.st-head-row, td.st-val {word-break: break-all;}
+  .st-key {width: 20%;}
+  .st-val {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    padding-left: 5%;
+    text-align: left;
+  }
+  .state {padding: 0 20px;}
+  .pending_jobs {color: red;}
+  /* th.st-head-row {text-align: left;} */
+  th.category-head {
+    padding-left: 10px;
+    text-align: left;
+  }
+  </style>
+  <script type="text/javascript" src="{{ static_js_stacktable }}"></script>
+
+  {% if pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0 %}
+  <script type="text/javascript" src="https://my8100.herokuapp.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>
+  <script>setTimeout("checkLatestVersion({{ pageview }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 1000);</script>
+  {% else %}
+  <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
+  {% endif %}
+{% endblock %}
+
+
+{% block neck %}
+<a id="switch_table_style" class="button normal" href="javascript:;">Restyle table</a>
+<a class="button multinode" target="_blank" href="{{ SCRAPYD_SERVERS_PUBLIC_URLS[node-1] or 'http://' + SCRAPYD_SERVERS[node-1] }}">Scrapyd server</a>
+{% endblock %}
+
+
+{% block body %}
+<table id="jobs", border="1">
+  <tr>
+    <th>Project</th>
+    <th>Spider</th>
+    {% if SHOW_JOBS_JOB_COLUMN %}
+    <th>Job</th>
+    {% endif %}
+
+    <th>PID</th>
+    <th>Start</th>
+    <th>Runtime</th>
+    <th>Finish</th>
+    <th>Pages</th>
+    <th>Items</th>
+    <th>Stats</th>
+    <th>Log</th>
+    {% if SHOW_SCRAPYD_ITEMS and ((running_jobs and (running_jobs[0]['url_items'] or running_jobs[-1]['url_items'])) or (finished_jobs and (finished_jobs[0]['url_items'] or finished_jobs[-1]['url_items']))) %}
+    <th>Items</th>
+    {% endif %}
+    <th>Action</th>
+    <th>Forcestop</th>
+  </tr>
+
+
+  <tr>
+    <th colspan="{{ colspan }}" class="category-head">Pending ({{ pending_jobs|length }})</th>
+  </tr>
+{% for job in pending_jobs %}
+  <tr class="pending_jobs">
+    <td>{{ job['project'] }}</td>
+    <td>{{ job['spider'] }}</td>
+     {% if SHOW_JOBS_JOB_COLUMN %}
+    <td>{{ job['job'] }}</td>
+    {% endif %}
+
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td><a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false);">Cancel</a></td>
+  </tr>
+{% endfor %}
+
+
+  <tr>
+    <th colspan="{{ colspan }}" class="category-head">Running ({{ running_jobs|length }})
+    <strong class="logparser_last_update" style="color: #67c23a;"></strong>
+    </th>
+  </tr>
+{% for job in running_jobs %}
+  <tr>
+    <td>{{ job['project'] }}</td>
+    <td>{{ job['spider'] }}</td>
+    {% if SHOW_JOBS_JOB_COLUMN %}
+    <td>{{ job['job'] }}</td>
+    {% endif %}
+
+    <td>{{ job['pid'] }}</td>
+    <td>{{ job['start'] }}</td>
+    <td>{{ job['runtime'] }}</td>
+    <td>{{ job['finish'] }}</td>
+    <td class="running{{ loop.index }}pages">N/A</td>
+    <td class="running{{ loop.index }}items">N/A</td>
+    <td><a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a></td>
+    <td><a class="state normal" target="_blank" href="{{ job['url_utf8'] }}">Log</a></td>
+    {% if SHOW_SCRAPYD_ITEMS and job['url_items'] %}
+    <td><a class="state normal" target="_blank" href="{{ job['url_items'] }}">Items</a></td>
+    {% endif %}
+    <td><a class="state warning" href="javascript:;" onclick="jobsXHR('{{ job['url_stop'] }}', forcestop=false);">Stop</a></td>
+    <td><a class="state danger" href="javascript:;" onclick="jobsXHR('{{ job['url_forcestop'] }}', forcestop=true);">Forcestop</a></td>
+  </tr>
+{% endfor %}
+
+
+  <tr>
+    <th colspan="{{ colspan }}" class="category-head">Finished ({{ finished_jobs|length }})
+    <strong style="color: red;">DESC</strong>
+    </th>
+  </tr>
+{% for job in finished_jobs %}
+  <tr>
+    <td>{{ job['project'] }}</td>
+    <td>{{ job['spider'] }}</td>
+    {% if SHOW_JOBS_JOB_COLUMN %}
+    <td>{{ job['job'] }}</td>
+    {% endif %}
+
+    <td>{{ job['pid'] }}</td>
+    <td>{{ job['start'] }}</td>
+    <td>{{ job['runtime'] }}</td>
+    <td>{{ job['finish'] }}</td>
+    <td class="finished{{ loop.index }}pages">N/A</td>
+    <td class="finished{{ loop.index }}items">N/A</td>
+    <td><a class="state normal" target="_blank" href="{{ job['url_stats'] }}">Stats</a></td>
+    <td><a class="state normal" target="_blank" href="{{ job['url_utf8'] }}">Log</a></td>
+    {% if SHOW_SCRAPYD_ITEMS and job['url_items'] %}
+    <td><a class="state normal" target="_blank" href="{{ job['url_items'] }}">Items</a></td>
+    {% endif %}
+    <td><a class="state safe" href="javascript:;" onclick="jobsXHR('{{ job['url_start'] }}', forcestop=false);">Start</a></td>
+  </tr>
+{% endfor %}
+</table>
+
+
+<script>
+// http://www.webcarpenter.com/blog/99-8-Responsive-Data-Tables-that-Look-Great-on-Mobile-Devices
+// http://johnpolacek.github.io/stacktable.js/#
+$('#jobs').stacktable();
+//$('#jobs').stacktable({myClass:'left'});
+//my$('.stacktable.large-only').style.width = 'auto';
+//my$('.stacktable.small-only').style.width = 'auto';
+
+//if(window.innerHeight > window.innerWidth) {
+//  my$('.stacktable.large-only').style.display = 'none';
+//  my$('.stacktable.small-only').style.display = 'table';
+//}
+
+$(document).on('click', '#switch_table_style', function(e) {
+  var r = confirm("Simply rotate your screen to get the table restyled. Force restyle anyway?");
+  if (r == false) {
+    return;
+  }
+  e.preventDefault();
+  if (my$('.stacktable.large-only').clientHeight != 0) {
+    my$('.stacktable.large-only').style.display = 'none';
+    my$('.stacktable.small-only').style.display = 'table';
+  } else {
+    my$('.stacktable.large-only').style.display = 'table';
+    my$('.stacktable.small-only').style.display = 'none';
+  }
+});
+</script>
+
+<script>
+{% if JOBS_RELOAD_INTERVAL > 0 %}
+setTimeout("if(loading == false){window.location.reload(true);}else{console.log('loading: ' + loading);}", {{ JOBS_RELOAD_INTERVAL * 1000 }});
+{% endif %}
+
+var running_jobs = {
+{% for job in running_jobs %}
+  'running{{ loop.index }}': {
+    'project': "{{ job['project'] }}",
+    'spider': "{{ job['spider'] }}",
+    'job': "{{ job['job'] }}"
+  },
+{% endfor %}
+};
+
+var finished_jobs = {
+{% for job in finished_jobs %}
+  'finished{{ loop.index }}': {
+    'project': "{{ job['project'] }}",
+    'spider': "{{ job['spider'] }}",
+    'job': "{{ job['job'] }}"
+  },
+{% endfor %}
+};
+
+window.onload = function() {
+  var req = new XMLHttpRequest();
+  req.onreadystatechange = function() {
+    if (this.readyState == 4) {
+      if (this.status == 200) {
+        var obj = JSON.parse(this.responseText);
+        if (obj.status == 'ok') {
+          for (var index in [running_jobs, finished_jobs]) {
+            var jobs = [running_jobs, finished_jobs][index];
+            for (var key in jobs) {
+              try {
+                var job = jobs[key]; // dict object
+                for (var idx in ['pages', 'items']) {
+                  var kind = ['pages', 'items'][idx];
+                  var count = obj.datas[job.project][job.spider][job.job][kind];
+                  var elements = my$$('.' + key + kind);  // table small-only and large-only
+                  for (var i = 0; i < elements.length; i++) {
+                    var element = elements[i];
+                    if (count !== null) {
+                      element.style.fontWeight = 'bold';
+                      element.style.color = count == 0 ? 'red' : '#67c23a';
+                      element.innerHTML = count;
+                    }
+                  }
+                  console.log(kind + " of jobid " + job.job + ": " + count);
+                }
+              } catch(err) {
+                // console.log(err);
+                console.log(kind + " of jobid " + job.job + " not found" );
+              }
+            }
+          }
+
+          var logparser_last_updates = my$$('.logparser_last_update');
+          for (var k = 0; k < logparser_last_updates.length; k++) {
+            logparser_last_updates[k].innerText = "by LogParser: " + Math.ceil(Date.now() / 1000 - obj.last_update_timestamp) + " secs ago";
+          }
+          setInterval(function() {
+            var now_timestamp = Date.now() / 1000;
+            var seconds = Math.ceil(Date.now() / 1000 - obj.last_update_timestamp);
+            var logparser_last_updates = my$$('.logparser_last_update');
+            for (var k = 0; k < logparser_last_updates.length; k++) {
+              logparser_last_updates[k].innerHTML = "by LogParser: " + "<span style='color: red;'>" + seconds + "</span> secs ago";
+            }
+          }, 1000);
+
+          // Update Jobs database
+          var r = new XMLHttpRequest();
+          r.open('post', '{{ url_liststats }}'.replace('/api/liststats', '/jobs'), Async = true);
+          r.send();
+        } else {
+          // '/api/stats/' would return "status": "error", "status_code": 404,
+          console.log(obj.status);
+          console.log(obj.logparser_version);
+          var logparser_last_updates = my$$('.logparser_last_update');
+          for (var k = 0; k < logparser_last_updates.length; k++) {
+            logparser_last_updates[k].style.color = 'red';
+            logparser_last_updates[k].innerText = obj.tip;
+          }
+        }
+      } else {
+        console.log(this.status);
+      }
+    }
+  };
+  req.open("post", "{{ url_liststats }}", Async=true);
+  req.send();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+<div style="border: 1px solid #f56c6c;">
+  <a class="request" target="_blank" href="{{ url }}">REQUEST</a><em class="fail"> got status: {{ status }}</em>
+
+  <pre>{{ text }}</pre>
+
+  <div{% if not tip %} style="display: none;"{% endif %}>
+    <h2>Tip</h2>
+    <div>{{ tip }}</div>
+  </div>
+
+  <div style="margin: 16px 0;">
+    You can <a class="button safe" href="{{ url_deploy }}">Deploy Project</a>with another project name or
+    <a class="button danger" href="javascript:;"
+    onclick="execXHR('{{ url_delproject }}', 'versions_of_{{ project }}', 'Delete project \'{{ project }}\'?');">
+    Delete Project
+    </a>
+  </div>
+</div>

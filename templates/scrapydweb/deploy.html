@@ -1,0 +1,649 @@
+{% extends 'base.html' %}
+
+{% block title %}deploy project{% endblock %}
+
+{% block head %}
+  <style>
+    #tar {
+      margin-left: 55px;
+      width: fit-content;
+      width: -moz-fit-content;
+    }
+    .table {padding-right: 16px;}
+
+    #select-file-button>input {
+      width: 1px;
+      /* position: absolute; */  /* to avoid white area in the bottom after showCheckboxes */
+      opacity: 0.01;
+    }
+
+    ::placeholder { /* Chrome, Firefox, Opera, Safari 10.1+ */
+      color: #c0c4cc;
+      font-size: 14px;
+      opacity: 1; /* Firefox */
+    }
+
+    .tab-content>li {
+      padding-bottom: 0px;
+      padding-top: 30px;
+    }
+
+
+    .folders-content-wrap {
+      background-color: #fff;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      -webkit-box-sizing: border-box;
+      box-sizing: border-box;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      display: none;
+      max-height: 50vh;
+      overflow: hidden;
+      position: absolute;  /* absolute static*/
+      top: 100%;
+      transform: translateY(1px);
+      min-width: 300px;
+      z-index: 9999;
+    }
+    .folders-content {
+      overflow-y: hidden;
+      flex-grow: 1;
+    }
+    .folders-content:hover {
+      overflow-y: scroll;
+    }
+    .folders-content div {
+      color: #606266;
+      font-size: 14px;
+      height: 34px;
+      line-height: 34px;
+      padding: 0 20px;
+      white-space: pre;
+    }
+    .folders-content div:hover {
+      background-color: #f5f7fa;
+    }
+
+    #multinodes .link {margin-left: 140px;}
+    #multinodes .key {width: 128px;}
+  </style>
+
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  <script type="text/javascript" src="{{ static_js_multinode }}"></script>
+  {% endif %}
+{% endblock %}
+
+
+{% block body %}
+<h2>
+  <a class="link" target="_blank" href="{{ url }}">Add a version to a project, creating the project if it doesn't exist.</a>
+  <label title="manage existing projects and versions">
+    <a class="button safe narrow" href="{{ url_projects }}">+</a>
+  </label>
+</h2>
+
+
+<div class="wrap collapse-wrap">
+  <ul class="collapse">
+    <li>
+      <div class="title">
+        <h4>HELP</h4>
+        <i class="iconfont icon-right"></i>
+      </div>
+
+      <p>Deploying your project involves packaging it and uploading the egg file to Scrapyd.
+        (See <a class="link" target="_blank" href="https://scrapyd.readthedocs.org/en/latest/api.html#addversion-json">Scrapyd addversion.json</a>)
+        You can do this manually, but the easiest way is to use the scrapyd-deploy tool.
+        (See <a class="link" target="_blank" href="https://github.com/scrapy/scrapyd-client">scrapyd-client</a>)
+      </p>
+      <br>
+      <p>Note: Scrapyd uses the distutils LooseVersion to interpret the version numbers you provide.
+        (See <a class="link" target="_blank" href="http://epydoc.sourceforge.net/stdlib/distutils.version.LooseVersion-class.html">_ClassType LooseVersion</a>)
+        And setting the version arbitrarily may cause the scrapyd API 'listversions' to raise error like "builtins.TypeError: '&lt;' not supported between instances of 'str' and 'int'".
+      </p>
+      <br>
+      <div style="margin-left: 8px;">
+        <p><strong>Auto packaging (projects stored in the ScrapydWeb host)</strong></p>
+        <p>Step 1: set up the SCRAPY_PROJECTS_DIR option for locating projects before starting up ScrapydWeb</p>
+        <p>Step 2: select any project found in SCRAPY_PROJECTS_DIR to deploy via this page</p>
+        <br>
+        <p><strong>Upload an egg file (from any host)</strong></p>
+        <p>Step 0: execute the "pip install scrapyd-client" command</p>
+        <p>Step 1: cd into your project's root, then execute the "scrapyd-deploy --build-egg projectname.egg" command</p>
+        <p>Step 2: upload the built egg file via this page</p>
+        <br>
+        <p><strong>Upload a compressed file (from any host)</strong></p>
+        <p>Step 1: compress your project folder into an archive file (.zip) with an archiving software or via the tar command:
+          <pre id="tar">$ tar -czvf projectname.tar.gz /path/to/your/projectname</pre>
+        </p>
+        <p>Step 2: upload the compressed file via this page</p>
+      </div>
+    </li>
+
+    <li>
+      <div class="title">
+        <h4>SCRAPY_PROJECTS_DIR</h4>
+        <i class="iconfont icon-right"></i>
+      </div>
+      <ul>
+        <p>{{ SCRAPY_PROJECTS_DIR }}</p>
+      </ul>
+    </li>
+
+  </ul>
+</div>
+
+
+<div class="tab-wrap wrap">
+  <ul class="tab tab-header clear-float">
+    <li id="header_package">Auto packaging</li>
+    <li id="header_upload">Upload file</li>
+  </ul>
+  <ul class="tab tab-content">
+    <li id="content_package">
+      <!-- <p style="margin-left: 130px;" href="{{ url_servers }}">{{ projects|length|string }} projects found</p> -->
+      {% if folders|length == 0 %}
+      <h3>No projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR option in the config file.</h3>
+      {% endif %}
+      <div class="line-container">
+        <div class="key">folder</div>
+        <div class="value" style="position: relative; padding: 0; cursor: {% if folders|length == 0 %}not-allowed{% else %}pointer{% endif %};">
+          <input type="text" id="folder_selected" value="{{ latest_folder }}" hidden />
+          <div onclick="handleDropdownProjects();" style="padding: 0 15px; height: 40px;">
+            <span id="folder_selected_statement">{{ latest_folder }}</span>
+            <svg class="icon anchor" aria-hidden="true">
+              <use xlink:href="#icon-down"></use>
+            </svg>
+          </div>
+          <div class="folders-content-wrap">
+            <div class="folders-content">
+            {% for folder in folders %}
+              <div>{{ folder }}</div>
+            {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="key" style="padding-left: 12px; width: unset;">({{ projects|length|string }} project{% if projects|length != 1 %}s{% endif %})</div>
+      </div>
+
+      <div class="line-container">
+        <div class="key"><span>*</span>project</div>
+        <div>
+          <input type="text" id="project_name" class="value readonly" readonly="readonly" placeholder="the project name" />
+          <div class="form-item-error">the project name is required</div>
+        </div>
+      </div>
+
+      <div class="line-container">
+        <div class="key">version</div>
+        <div>
+          <input type="text" id="modification_time" class="value readonly" readonly="readonly" placeholder="the project version" />
+          <div class="form-item-error">the project version is required</div>
+        </div>
+      </div>
+    </li>
+
+    <li id="content_upload">
+      <div class="line-container">
+        <div class="key">file</div>
+        <div>
+          <input type="text" id="filename" class="value readonly" readonly="readonly" placeholder="support file type: egg, zip, and tar.gz" />
+          <div class="form-item-error">select a file to upload</div>
+        </div>
+        <div id="filesize" class="key" style="padding-left: 12px; width: unset;"></div>
+      </div>
+
+      <div class="line-container">
+        <div class="key"><span>*</span>project</div>
+        <div>
+          <input type="text" id="project" class="value readonly" readonly="readonly" placeholder="the project name" />
+          <div class="form-item-error">the project name is required</div>
+        </div>
+      </div>
+
+      <div class="line-container">
+        <div class="key">version</div>
+        <div>
+          <input type="text" id="version" class="value readonly" readonly="readonly" placeholder="the project version" />
+          <div class="form-item-error">the project version is required</div>
+        </div>
+      </div>
+    </li>
+  </ul>
+
+  <form method="post" action="{{ url_deploy_upload }}" enctype="multipart/form-data">
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+{% include 'scrapydweb/include_multinodes_checkboxes.html' %}
+  {% endif %}
+  </form>
+
+  <div class="line-container" style="margin-left: 140px;">
+    <label id="select-file-button" class="button warning big">
+      <!-- macOS cannot select '.tar.gz' file if '.tar.gz' is added in accept -->
+      <input type="file" id="file" name="file" accept=".egg, .zip, .gz" />
+      Select File
+    </label>
+    <a id="submit" class="button safe big" href="javascript:;" onclick="package();">Package & Deploy</a>
+  </div>
+</div>
+
+
+<script>
+// To avoid: var projects = [u'12345678901234567890',]
+var folders = [{% for folder in folders %}'{{ folder }}', {% endfor %}];
+var projects = [{% for project in projects %}'{{ project }}', {% endfor %}];
+var modification_times = {{ modification_times|safe }};
+// console.log(folders);
+// console.log(projects);
+// console.log(modification_times);
+
+// https://stackoverflow.com/questions/574941/best-way-to-track-onchange-as-you-type-in-input-type-text
+const typeProjectHandler = function(e) {
+  var id = e.target.id;
+  if ($.trim(e.target.value)) {
+    my$('#' + id).style.border = "1px solid #67c23a";
+    my$('#' + id + ' ~ .form-item-error').style.display = 'none';
+  } else {
+    my$('#' + id).style.border = "1px solid #f56c6c";
+    my$('#' + id + ' ~ .form-item-error').style.display = 'block';
+  }
+}
+</script>
+
+
+<!-- 'Auto packaging' tab -->
+<script>
+my$('#project_name').addEventListener('input', typeProjectHandler);
+
+function updatePackageInputs() {
+  //var folder = my$('input[name="folder_selected"]').value;
+  var folder = my$('#folder_selected').value;
+  if (folder.length > 35) {
+    my$('#folder_selected_statement').innerText = folder.slice(0, 16) + '...' + folder.slice(-16, );
+  } else {
+    my$('#folder_selected_statement').innerText = folder;  //<span>
+  }
+
+  var idx = folders.indexOf(folder);
+  var project = projects[idx];
+  var version = modification_times[idx];
+  my$('#project_name').value = project || '';
+  my$('#modification_time').value = version || '';
+
+  if (!folder) {
+    my$('#project_name').readOnly = true;
+    my$('#project_name').classList.add('readonly');
+  } else {
+    my$('#project_name').readOnly = false;
+    my$('#project_name').classList.remove('readonly');
+  }
+
+}
+
+$(function(){
+  updatePackageInputs();
+});
+
+
+function checkPackageInputs() {
+  var arr = ['#project_name', '#modification_time']; //'#folder_selected',
+  for (var idx in arr) {
+    var sel = arr[idx];
+    if (!my$(sel).value) {
+      my$(sel).style.border = "1px solid #f56c6c";
+      my$(sel + ' ~ .form-item-error').style.display = 'block';
+    } else {
+      my$(sel).style.border = "1px solid #67c23a";
+      my$(sel + ' ~ .form-item-error').style.display = 'none';
+    }
+  }
+}
+
+
+var div_folder_arr = my$$('.folders-content div');
+function handleDropdownProjects(folder_selected) {
+  console.log('handleDropdownProjects');
+  {% if folders|length == 0 %}
+  alert("No projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR option in the config file.");
+  return;
+  {% endif %}
+
+  my$('#content_package .value').style.border = "1px solid #409EFF";
+
+  var x = my$('.folders-content-wrap');
+  if (x.style.display != 'flex') {
+    my$('#content_package .icon.anchor').style.transform = 'rotate(-180deg)';
+    x.style.display = 'flex';
+    div_folder_arr.forEach(function(elem) {
+      if (elem.innerText == my$('#folder_selected').value) {
+        elem.style.color = '#409EFF';
+        elem.style.fontWeight = 700;
+      } else {
+        elem.style.color = '#606266';
+        elem.style.fontWeight = 400;
+      }
+    });
+  } else {
+    my$('#content_package .value').style.border = "1px solid #67c23a";
+    my$('#content_package .icon.anchor').style.transform = 'rotate(0deg)';
+    x.style.display = 'none';
+  }
+
+  if (folder_selected !== undefined) {
+    my$('#folder_selected').value = folder_selected;
+    updatePackageInputs();
+  }
+  checkPackageInputs();
+}
+
+
+div_folder_arr.forEach(function(elem) {
+  elem.addEventListener('click', function() {
+    handleDropdownProjects(elem.innerText);
+  });
+});
+
+//https://www.w3schools.com/howto/howto_custom_select.asp
+//https://stackoverflow.com/questions/6463486/jquery-drop-down-menu-closing-by-clicking-outside
+$(document).click(function(){
+  var x = my$('.folders-content-wrap');
+  if (x.style.display == 'flex') {
+    x.style.display = 'none';
+    my$('#content_package .value').style.border = "1px solid #67c23a";
+    my$('#content_package .icon.anchor').style.transform = 'rotate(0deg)';
+  }
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  showCheckboxes('click_outside_close');
+  {% endif %}
+});
+$('#content_package .value').click(function(e){
+  e.stopPropagation();
+});
+
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+$('.multiselect').click(function(e){
+  e.stopPropagation();
+});
+{% endif %}
+
+
+function package() {
+  var folder = my$('#folder_selected').value; //hidden
+  var project = my$('#project_name').value;  //editable
+  //var version = modification_times[folders.indexOf(folder)];
+  var version = my$('#modification_time').value;  //readonly
+
+  {% if folders|length == 0 %}
+  alert("No projects found in '{{ SCRAPY_PROJECTS_DIR }}' of the ScrapydWeb host, check and update the SCRAPY_PROJECTS_DIR option in the config file.");
+  return;
+  {% endif %}
+
+  if (!my$('#project_name').value || !my$('#modification_time').value) {
+    checkPackageInputs();
+    return;
+  }
+
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  if (checked_amount == 0) {
+    //alert("Select at least one node");
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+    return;
+  }
+  {% endif %}
+
+  var form = my$('form');
+
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'folder';
+  input.value = folder;
+  form.appendChild(input);
+
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'project';
+  input.value = project;
+  form.appendChild(input);
+
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'version';
+  input.value = version;
+  form.appendChild(input);
+
+  my$('form').submit();
+  showLoader();
+}
+</script>
+
+
+<!-- 'Upload file' tab -->
+<script>
+my$('#project').addEventListener('input', typeProjectHandler);
+
+function checkUploadInputs() {
+  //if (my$('#file').files[0] === undefined) {
+  var arr = ['#filename', '#project', '#version'];
+  for (var idx in arr) {
+    var sel = arr[idx];
+    if (!my$(sel).value) {
+      my$(sel).style.border = "1px solid #f56c6c";
+      my$(sel + ' ~ .form-item-error').style.display = 'block';
+    } else {
+      my$(sel).style.border = "1px solid #67c23a";
+      my$(sel + ' ~ .form-item-error').style.display = 'none';
+    }
+  }
+}
+
+
+function resetUploadInputs() {
+  my$('#filename').value = '';
+  my$('#filesize').innerText = '';
+  my$('#project').value = '';
+  my$('#version').value = '';
+  my$('#project').readOnly = true;
+  my$('#project').classList.add('readonly');
+  checkUploadInputs();
+}
+
+
+my$('#file').onchange = function() {
+  var eggfile = my$('#file').files[0];
+  if (eggfile === undefined) {
+    //my$('form').reset();
+    resetUploadInputs();
+    return;
+  }
+
+  var parts = eggfile.name.split('.');
+  var filetype = parts[parts.length - 1];
+  if (['egg', 'zip'].indexOf(filetype) == -1 && eggfile.name.indexOf('.tar.gz') == -1) {
+    resetUploadInputs();
+    return;
+  }
+
+  my$('#filename').value = eggfile.name;
+  var size = Math.ceil(eggfile.size / 1024).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  my$('#filesize').innerText = '(' + size + ' KB)';
+  my$('#project').value = parts[0];
+  my$('#project').readOnly = false;
+  my$('#project').classList.remove('readonly');
+  //my$('#version').value = eggfile.lastModifiedDate.toISOString().slice(0,19).replace(/:/g, "_");
+  var d = new Date(eggfile.lastModified);
+  d.setMinutes(d.getMinutes()-d.getTimezoneOffset());
+  my$('#version').value = d.toISOString().slice(0,19).replace(/:/g, "_");
+  checkUploadInputs();
+};
+
+
+function upload() {
+  var filename = my$('#filename').value;
+  var project = my$('#project').value;
+  var version = my$('#version').value;
+
+  if (my$('#file').files[0] === undefined || !filename || !project || !version ) {
+    checkUploadInputs();
+    return;
+  }
+
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  if (checked_amount == 0) {
+    //alert("Select at least one node");
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+    return;
+  }
+  {% endif %}
+
+  var form = my$('form');
+
+  //var input = my$('#file').cloneNode(true);
+  //input.style = "display: none;";
+  //form.appendChild(input);
+
+  //For compatibility with Safari: https://stackoverflow.com/a/528996/10517783
+  var real = $('#file');
+  var cloned = real.clone(true);
+  //console.log(cloned);
+  real.hide();
+  cloned.insertAfter(real);
+  real.appendTo('form');
+
+
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'project';
+  input.value = project;
+  form.appendChild(input);
+
+  var input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = 'version';
+  input.value = version;
+  form.appendChild(input);
+
+  my$('form').submit();
+  showLoader();
+}
+</script>
+
+
+<!-- tab switcher -->
+<script>
+// handle collapse components
+(function () {
+  var collapse = my$('.collapse');
+  var titles = my$$('.collapse .title');
+  var lis = my$$('.collapse li');
+  titles.forEach(function(title) {
+    title.addEventListener('click', function(e){
+      var index = [].indexOf.call(titles, this);
+      lis[index].classList.toggle('active');
+    });
+  });
+})();
+
+
+// tab switcher
+function switchButtons(active_tab) {
+  if (active_tab == 'package') {
+    my$('#select-file-button').style.display = 'none';
+    my$('#submit').onclick = package;
+    my$('#submit').text = "Package & Deploy";
+  } else {
+    my$('#select-file-button').style.display = 'block';
+    my$('#submit').onclick = upload;
+    my$('#submit').text = "Upload & Deploy";
+  }
+}
+
+(function() {
+  if (window.localStorage) {
+    var active_tab = localStorage.getItem('deploy_tab') || 'package';
+  } else {
+    var active_tab = 'package';
+  }
+  // before ScrapydWeb v1.2.0: deploy_tab: "eggify"
+  if (!my$('#header_' + active_tab)) {
+    console.log(active_tab);
+    active_tab = 'package';
+    console.log(active_tab);
+  }
+  my$('#header_' + active_tab).classList.add('active');
+  my$('#content_' + active_tab).classList.add('active');
+  switchButtons(active_tab);
+
+  var index = -1;
+  var tabHeaders = my$$('.tab-header>li');
+  var tabContents = my$$('.tab-content>li');
+  my$('.tab-header').addEventListener('click', function(e) {
+    var target = e.target;
+    //console.log(target.id);
+    if (target.tagName.toLowerCase() !== 'li') return;
+    index = Array.prototype.indexOf.call(tabHeaders, target);
+    tabHeaders.forEach(function(el) {
+      el.classList.remove('active');
+    });
+    target.classList.add('active');
+    tabContents.forEach(function(el) {
+      el.classList.remove('active');
+    });
+    tabContents[index].classList.add('active');
+
+    var active_tab = target.id.split('_')[1];
+    switchButtons(active_tab);
+    if (window.localStorage) {
+      localStorage.setItem('deploy_tab', active_tab);
+    }
+  });
+})();
+</script>
+
+
+<script>
+// Put off
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+window.onload = function() {
+  {% if selected_nodes == [] %}
+  if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) {
+    var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+    var nodesSelected_new = [];
+    for (var idx in nodesSelected) {
+      try {
+        var n = nodesSelected[idx];
+        my$('#checkbox_'+n).checked = true;
+        nodesSelected_new.push(n);
+      } catch(err) {console.log(err);}
+    }
+  } else {
+    my$('#checkbox_'+{{ node }}).checked = true;
+  }
+  {% endif %}
+
+  $('#checkAll').click(function () {
+    $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
+    my$('#checkCurrent').checked = false;
+    my$('#syncFromServersPage').checked = false;
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  $('#checkCurrent').click(function () {
+    $('#checkboxes input:checkbox').not(this).prop('checked', false);
+    my$('#checkCurrent').checked = true;
+    my$('#checkbox_'+{{ node }}).checked = true;
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  $('#syncFromServersPage').click(function () {
+    syncFromServersPage({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  $('#nodes_checkboxes input[type=checkbox]').change(function() {
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
+}
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,954 @@
+{% extends 'base.html' %}
+
+{% block title %}servers{% endblock %}
+
+{% block head %}
+  <style>
+  /* #app {margin-bottom: 20px;} */
+  .el-tabs {margin-bottom: 20px;}
+  .switch {margin-top: 10px;}
+  .item {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 1px;
+  }
+  #invert_selection {margin-top: 7px;}
+  .el-button--warning.is-plain {color: #feb324;}
+  .el-button--warning.is-plain:active, .el-button--warning.is-plain:focus, .el-button--warning.is-plain:hover {
+    background: #feb324;
+    border-color: #feb324;
+  }
+  #total .el-badge__content {background-color: #67c23a;}
+  #displayed .el-badge__content {background-color: #67c23a;}
+  #selected .el-badge__content {background-color: #fd6b6e;} /* red */
+  .el-button.is-disabled {cursor: default;}
+  .el-button.is-disabled:hover {cursor: default;}
+  .el-button--danger {background-color: #fd6b6e;}
+  .el-button--warning {background-color: #feb324;} /* orange */
+  .el-button {
+    border: 0;
+    font-size: 18px;
+  }
+  .el-switch__core {
+    background: #e3e3e3;
+    border: 1px solid #e3e3e3;
+  }
+  </style>
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 and (pageview == 1 or pageview % CHECK_LATEST_VERSION_FREQ == 0) %}
+  <script type="text/javascript" src="https://my8100.herokuapp.com/check_update?scrapydweb={{ SCRAPYDWEB_VERSION }}&n={{ SCRAPYD_SERVERS_AMOUNT }}&v={{ PYTHON_VERSION }}&f={{ FEATURES }}&pv={{ pageview }}"></script>
+  <script>setTimeout("checkLatestVersion({{ pageview }}, '{{ SCRAPYDWEB_VERSION }}', '{{ GITHUB_URL }}');", 2000);</script>
+  {% else %}
+  <script>if(window.localStorage && localStorage.getItem('github') !== null) {localStorage.removeItem('github');}</script>
+  {% endif %}
+{% endblock %}
+
+
+{% block body %}
+{% if (SCRAPYD_SERVERS_AMOUNT > 1 and pageview == 1) or IS_IE_EDGE %}
+<script>(function () {try {checkBrowser();} catch(err) {console.log(err);}})();</script>
+{% endif %}
+
+
+<h2><a class="link" target="_blank" href="{{ url }}">Monitor and control all of your Scrapyd servers.</a></h2>
+
+<form method="post" enctype="multipart/form-data" hidden></form>
+
+<div id="app">
+<template>
+  <el-tabs v-model="activeTab" type="border-card" @tab-click="handleTabClick">
+    <el-tab-pane label="Deploy Project" name="deploy">
+      <el-button type="primary" @click="deployProject">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Deploy Project</el-button>
+    </el-tab-pane>
+
+    <el-tab-pane label="Run Spider" name="schedule">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name (optional)" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.version" placeholder="version ({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.spider" placeholder="the spider name (optional)" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="success" @click="runSpider">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Run Spider</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    <el-tab-pane label="Stop Job" name="stop">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.jobid" placeholder="the job id" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="danger" @click="stopJob">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Stop Job</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+    <el-tab-pane label="Get Reports" name="getreports">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.spider" placeholder="the spider name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.jobid" placeholder="the job id" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="primary" @click="getReports">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Get Reports</el-button>
+      </el-col>
+    </el-tab-pane>
+    {% endif %}
+
+    <el-tab-pane label="List Stats" name="liststats">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.jobid" placeholder="the job id" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="primary" @click="listStats" plain>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Stats</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    <el-tab-pane label="List Projects" name="listprojects">
+      <el-button type="primary" @click="listProjects" plain>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Projects</el-button>
+    </el-tab-pane>
+
+    <el-tab-pane label="List Versions" name="listversions">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="primary" @click="listVersions" plain>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Versions</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    <el-tab-pane label="List Spiders" name="listspiders">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.version" placeholder="version ({{ DEFAULT_LATEST_VERSION }})" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="primary" @click="listSpiders" plain>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Spiders</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    <el-tab-pane label="List Running Jobs" name="listjobs">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="primary" @click="listJobs" plain>{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}List Running Jobs</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    <el-tab-pane label="Delete Version" name="delversion">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-input v-model="input.version_delversion" placeholder="the project version" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="info" @click="deleteVersion">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Version</el-button>
+      </el-col>
+    </el-tab-pane>
+
+    <el-tab-pane label="Delete Project" name="delproject">
+      <el-col :span="5">
+        <el-input v-model="input.project" placeholder="the project name" clearable></el-input>
+      </el-col>
+      <el-col :span="5">
+        <el-button type="danger" @click="deleteProject">{% if SCRAPYD_SERVERS_AMOUNT > 1 %}Multinode {% endif %}Delete Project</el-button>
+      </el-col>
+    </el-tab-pane>
+  </el-tabs>
+
+
+  <el-col :span="4">
+    <el-button id="invert_selection" @click="invertSelection" type="warning" size="mini" plain>invert selection</el-button>
+  </el-col>
+
+  <el-col :span="3">
+    <el-select v-model="selected_column" placeholder="select a column to filter">
+      <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value">
+      </el-option>
+    </el-select>
+  </el-col>
+  <el-col :span="5">
+    <el-input v-model="filter" placeholder="type to filter" prefix-icon="el-icon-search" clearable>
+    </el-input>
+  </el-col>
+  <el-col class="line" :span="0.1">&nbsp;</el-col>
+  <el-col :span="3">
+    <el-switch v-model="invert_filter" active-color="#67c23a" active-text="invert filter" inactive-text="" class="switch"></el-switch>
+  </el-col>
+
+  <span id="total"><el-badge :value={{ SCRAPYD_SERVERS_AMOUNT }} class="item">
+    <el-button type="text" disabled>total</el-button>
+  </el-badge></span>
+  <span id="displayed"><el-badge :value="tableDataComputed.length" class="item">
+    <el-button type="text" disabled>displayed</el-button>
+  </el-badge></span>
+  <span id="selected"><el-badge :value="nodesSelected.length" class="item">
+    <el-button type="text" disabled>selected</el-button>
+  </el-badge></span>
+
+
+  <el-table
+    ref="multipleTable"
+    :data="tableDataComputed"
+    style="width: 100%;"
+    tooltip-effect="dark"
+    empty-text="There are no results that match your search."
+    :row-key="getRowKeys"
+    @selection-change="handleSelectionChange"
+    @cell-click="handleCellClick"
+    :max-height="maxHeight"
+
+    highlight-current-row
+    @current-change="handleSelectRow"
+
+    {% if SCRAPYD_SERVERS_AMOUNT > 10 %}
+    :size=`mini`
+    {% else %}
+    :size=`--`
+    {% endif %}
+
+    {% if selected_nodes %}
+    :default-sort="{prop: 'selected', order: 'ascending'}"
+    {% else %}
+    :default-sort="{prop: 'index', order: 'ascending'}"
+    {% endif %}
+  >
+
+    <el-table-column type="selection" align="center" :reserve-selection="true" fixed></el-table-column>
+    <el-table-column prop="index" label="Node" sortable width="70" align="center" fixed></el-table-column>
+    <el-table-column prop="selected" label="Selected" sortable width="90" align="center" fixed></el-table-column>
+    <el-table-column prop="group" label="Group" sortable width="120" align="center" show-overflow-tooltip fixed></el-table-column>
+    <el-table-column prop="jobs" label="Scrapyd server" sortable width="200" align="left" show-overflow-tooltip
+      header-align="center" :sort-method="sortScrapydServer" fixed>
+      <template slot-scope="scope">
+        <a :class="scope.row.cls"
+
+        {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+        target="_blank"
+        {% endif %}
+
+        :href="scope.row.jobs">
+        {{scope.row.SCRAPYD_SERVER}}
+        </a>
+      </template>
+    </el-table-column>
+    <el-table-column prop="node_name" label="Hostname" sortable width="120" align="center" show-overflow-tooltip :formatter="formatter" fixed></el-table-column>
+
+    <el-table-column prop="pending" label="Pending" sortable width="85" align="center" :sort-method="sortPending" v-if="showDaemonStatus">
+        <template slot-scope="scope">
+          <div v-bind:class="scope.row.pendingClass">{{scope.row.pending}}</div>
+        </template>
+    </el-table-column>
+    <el-table-column prop="running" label="Running" sortable width="85" align="center" :sort-method="sortRunning" v-if="showDaemonStatus">
+        <template slot-scope="scope">
+          <div v-bind:class="scope.row.runningClass">{{scope.row.running}}</div>
+        </template>
+    </el-table-column>
+    <el-table-column prop="finished" label="Finished" sortable width="90" align="center" :sort-method="sortFinished"  v-if="showDaemonStatus">
+    </el-table-column>
+
+    <el-table-column prop="listinfo" label="Status / List info" sortable min-width="135" align="left" show-overflow-tooltip :sort-method="sortListinfo">
+      <template slot-scope="scope">
+        <a target="_blank" class="request" v-bind:style="{ display: scope.row.display_listinfo }" :href="scope.row.url_listinfo">REQUEST</a>
+        <em v-bind:class="scope.row.emClass">{{scope.row.return_listinfo}}</em>
+      </template>
+    </el-table-column>
+  </el-table>
+</template>
+</div>
+
+
+
+<!-- <script type="text/babel"> -->
+<script>
+var Main = {
+  data() {
+    return {
+      showDaemonStatus: true,
+      flag_listinfo: 'status',
+      maxHeight: window.innerHeight - 350,
+      options: [{
+        value: '',
+        label: 'All Columns'
+      }, {
+        value: 'index',
+        label: 'Index'
+      }, {
+        value: 'selected',
+        label: 'Selected'
+      }, {
+        value: 'group',
+        label: 'Group'
+      }, {
+        value: 'SCRAPYD_SERVER', // jobs
+        label: 'Scrapyd server'
+      }, {
+        value: 'node_name',
+        label: 'Hostname'
+      }, {
+        value: 'return_listinfo', // status
+        label: 'Status / List info'
+      }, {
+        value: 'pending',
+        label: 'Pending'
+      }, {
+        value: 'running',
+        label: 'Running'
+      }, {
+        value: 'finished',
+        label: 'Finished'
+      }],
+      selected_column: '',
+
+      nodesSelected: [],
+      filter: '',
+      invert_filter: false,
+
+      activeTab: '{{ opt or "deploy" }}',
+
+      input: {
+        project: '{{ project or "" }}',
+
+        {% if opt not in ['stop', 'getreports'] %}
+        version: '{{ version_job or DEFAULT_LATEST_VERSION }}',
+        {% else %}
+        version: '{{ DEFAULT_LATEST_VERSION }}',
+        {% endif %}
+
+        {% if opt not in ['stop', 'getreports'] and version_job != DEFAULT_LATEST_VERSION %}
+        version_delversion: '{{ version_job or "" }}',
+        {% else %}
+        version_delversion: '',
+        {% endif %}
+
+        {% if opt in ['schedule', 'getreports'] %}
+        spider: '{{ spider or "" }}',
+        {% else %}
+        spider: '',
+        {% endif %}
+
+        {% if opt in ['stop', 'liststats', 'getreports'] %}
+        jobid: '{{ version_job }}',
+        {% else %}
+        jobid: '',
+        {% endif %}
+      },
+
+      tableData: [
+    {% for SCRAPYD_SERVER in SCRAPYD_SERVERS %}
+      {
+        selected: 'no',
+        index: {{ loop.index }},
+        group: '{{ SCRAPYD_SERVERS_GROUPS[loop.index-1] }}',
+        SCRAPYD_SERVER: '{{ SCRAPYD_SERVER }}',
+
+        {% if loop.index == node %}
+        cls: 'state safe',
+        {% else %}
+        cls: 'state normal',
+        {% endif %}
+
+        jobs: '{{ g.url_jobs_list[loop.index-1] }}',
+        node_name: '',
+
+        display_listinfo: 'none',
+        url_listinfo: '',
+        return_listinfo: 'loading...',
+        emClass: 'normal',
+
+        pending: '',
+        // pendingStyleObject: {},
+        pendingClass: 'normal',
+        running: '',
+        runningClass: 'normal',
+        finished: '',
+
+        //node_name: undefined,  // would trigger updating view?!
+      },
+    {% endfor %}
+      ]
+    }
+  },
+
+  created() {
+    this.fillInputs();
+
+    for (var idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]) {
+      var url_daemonstatus = '{{ url_daemonstatus }}'.replace(/\/\d+/, '/'+(parseInt(idx)+1));
+      this.updateServers(idx, url_daemonstatus);
+    }
+  },
+
+{% if selected_nodes %}
+  mounted(){
+    this.toggleSelection([
+    {% for selected_node in selected_nodes %}
+      this.tableData[{{ selected_node }}-1],
+    {% endfor %}
+    ]);
+  },
+{% else %}
+  mounted(){
+    if (window.localStorage) {
+      var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+      var nodesSelected_new = [];
+      for (var idx in nodesSelected) {
+        try {
+          var node = nodesSelected[idx];
+          this.toggleSelection([this.tableData[node-1]]);
+          nodesSelected_new.push(node);
+        } catch(err) {console.log(err);}
+      }
+      localStorage.setItem('nodesSelected', JSON.stringify(nodesSelected_new));
+      console.log(localStorage.nodesSelected);
+      if (nodesSelected_new.length != 0) {
+        this.$refs.multipleTable.sort(prop='selected', order='ascending');
+      }
+    }
+  },
+{% endif %}
+
+  computed:{
+    tableDataComputed:function(){
+      //console.log(this);
+      var filter = this.filter.toLowerCase();
+      var selected_column = this.selected_column;
+      var invert_filter = this.invert_filter;
+      if (filter) {
+        rst = this.tableData.filter(function(dataNews){
+          //console.log(Object.keys(dataNews))
+          //return Object.keys(dataNews).some(function(key){
+          //return ['index', 'jobs', 'node_name', 'status', 'pending', 'running', 'finished', 'projects'].some(function(key){
+          return ['index', 'selected', 'group', 'SCRAPYD_SERVER', 'node_name', 'return_listinfo', 'pending', 'running', 'finished'].some(function(key){
+            if (selected_column) {
+              if (invert_filter) {
+                return key == selected_column && String(dataNews[key]).toLowerCase().indexOf(filter) == -1
+              } else {
+                //console.log(String(dataNews[key])+'#####'+key);
+                return key == selected_column && String(dataNews[key]).toLowerCase().indexOf(filter) > -1
+              }
+            } else {
+              if (invert_filter) {
+                //return String(dataNews[key]).toLowerCase().indexOf(filter) == -1
+                return (String(dataNews['index']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['selected']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['group']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['SCRAPYD_SERVER']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['node_name']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['return_listinfo']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['pending']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['running']).toLowerCase().indexOf(filter) == -1
+                  && String(dataNews['finished']).toLowerCase().indexOf(filter) == -1
+                  )
+              } else {
+                return String(dataNews[key]).toLowerCase().indexOf(filter) > -1
+              }
+            }
+          })
+        })
+        if (Object.keys(rst).length == {{ SCRAPYD_SERVERS_AMOUNT }}) {
+          my$('#displayed .el-badge__content').style.backgroundColor = '#67c23a';
+        } else {
+          my$('#displayed .el-badge__content').style.backgroundColor = '#feb324';
+        }
+        return rst;
+      }
+      if (my$('#displayed .el-badge__content')) {
+        my$('#displayed .el-badge__content').style.backgroundColor = '#67c23a';
+      }
+      return this.tableData
+    }
+  },
+
+  methods: {
+    handleSelectRow(val) {
+      this.currentRow = val;
+    },
+    storeInput(key) {
+      if (window.localStorage && this.input[key]) {
+        localStorage.setItem(key, this.input[key]);
+      }
+    },
+
+    fillInputs() {
+      if (window.localStorage) {
+        var inputs = ['project', 'version', 'version_delversion', 'spider', 'jobid'];
+        for (var idx in inputs) {
+          var key = inputs[idx];
+          if (this.input[key]) {
+            this.storeInput(key);
+          } else {
+            this.input[key] = localStorage.getItem(key) || '';
+          }
+        }
+
+        {% if opt %}
+        localStorage.setItem('servers_tab', '{{ opt }}');
+        {% else %}
+        this.activeTab = localStorage.getItem('servers_tab') || 'deploy';
+        {% endif %}
+      }
+      this.input.version = this.input.version || "{{ DEFAULT_LATEST_VERSION }}";
+    },
+
+    invertSelection() {
+      //console.log(this.nodesSelected);
+      //console.log(this.tableData);
+      //console.log(this.tableDataComputed);
+      for (var idx in this.tableDataComputed) {
+        var row = this.tableDataComputed[idx];
+        //console.log(row);
+        if (this.nodesSelected.indexOf(row.index) > -1) {
+          this.$refs.multipleTable.toggleRowSelection(row, false);
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row, true);
+        }
+      }
+      //console.log(this.nodesSelected);
+    },
+
+    handleCellClick(row, column, cell, event) {
+      //console.log(row, column, cell, event);
+      if (column.property == 'listinfo' && row.display_listinfo == 'none'
+        && row.return_listinfo != '' && row.return_listinfo != 'ok' && row.return_listinfo != 'loading...' ) {
+        //alert(row.return_listinfo);
+        //this.$alert('<pre>'+row.return_listinfo+'</pre>', 'title',{
+        //  dangerouslyUseHTMLString: true
+        //});
+        var left = (screen.width-450)/2;
+        var top = (screen.height-600)/2;
+        var w = window.open("", "_blank", "left="+left+", top="+top+", width=450, height=600, toolbar=yes, location=yes, directories=no, status=no, menubar=yes, scrollbars=yes, resizable=no, copyhistory=yes");
+        w.document.open();
+        w.document.write("<pre>"+row.return_listinfo+"</pre>");
+        w.document.close();
+      } else if (['state safe', 'state normal', 'request'].indexOf(event.target.className) == -1) {
+        if (this.nodesSelected.indexOf(row.index) > -1) {
+          this.$refs.multipleTable.toggleRowSelection(row, false);
+        } else {
+          this.$refs.multipleTable.toggleRowSelection(row, true);
+        }
+      } else {
+        //console.log(row, column, cell, event);
+        //console.log(event.target.className);
+      }
+    },
+
+    toggleSelection(rows) {
+      if (rows) {
+        rows.forEach(row => {
+          this.$refs.multipleTable.toggleRowSelection(row, true);
+        });
+      } else {
+        this.$refs.multipleTable.clearSelection();
+      }
+    },
+
+    sortScrapydServer(a, b) {
+      var [a_ip, a_port] = a.SCRAPYD_SERVER.split(':');
+      var [a1, a2, a3, a4] = a_ip.split('.');
+      [a1, a2, a3, a4] = [parseInt(a1), parseInt(a2), parseInt(a3), parseInt(a4)];
+      a_port = parseInt(a_port);
+
+      var [b_ip, b_port] = b.SCRAPYD_SERVER.split(':');
+      var [b1, b2, b3, b4] = b_ip.split('.');
+      [b1, b2, b3, b4] = [parseInt(b1), parseInt(b2), parseInt(b3), parseInt(b4)];
+      b_port = parseInt(b_port);
+
+      return a1 < b1 ? -1 : a1 > b1 ? 1: a2 < b2 ? -1 : a2 > b2 ? 1 : a3 < b3 ? -1 : a3 > b3 ? 1 : a4 < b4 ? -1 : a4 > b4 ? 1 : a_port < b_port ? -1 : a_port > b_port ? 1 : 0;
+    },
+
+    sortListinfo(a, b) {
+      return a.return_listinfo < b.return_listinfo ? -1 : a.return_listinfo > b.return_listinfo ? 1 : 0;
+    },
+
+    sortEmptyZero(a, b) {
+      A = (a === "") ? -1 : a;
+      B = (b === "") ? -1 : b;
+      return A < B ? -1 : A > B ? 1 : 0;
+    },
+
+    sortPending(a, b) {
+      return this.sortEmptyZero(a.pending, b.pending);
+    },
+
+    sortRunning(a, b) {
+      return this.sortEmptyZero(a.running, b.running);
+    },
+
+    sortFinished(a, b) {
+      return this.sortEmptyZero(a.finished, b.finished);
+    },
+
+    formatter(row, column) {
+      return row.node_name;
+    },
+
+    handleSelectionChange(val) {
+      this.nodesSelected = val.map(function (item) {
+        return item.index;
+      });
+      //console.log(this.nodesSelected);
+
+      if (window.localStorage) {
+        localStorage.setItem('nodesSelected', JSON.stringify(this.nodesSelected));
+        //console.log(localStorage.nodesSelected);
+      }
+
+      if (this.nodesSelected.length == {{ SCRAPYD_SERVERS_AMOUNT }}) {
+        my$('#selected .el-badge__content').style.backgroundColor = '#67c23a';
+      } else {
+        my$('#selected .el-badge__content').style.backgroundColor = '#fd6b6e';
+      }
+
+      for (var idx in this.tableData) {
+        //console.log(this.tableData[idx].index);
+        if (this.nodesSelected.indexOf(this.tableData[idx].index) > -1) {
+          this.tableData[idx].selected = "YES";
+        } else {
+          this.tableData[idx].selected = "no";
+        }
+      }
+    },
+
+    getRowKeys(row) {
+      return row.index;
+    },
+
+    handleTabClick(tab, event) {
+      //console.log(tab, event);
+      if (window.localStorage) {
+        localStorage.setItem('servers_tab', tab.name);
+      }
+    },
+
+    updateServers:function(idx, url) {
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if (obj.status == 'ok') {
+              //console.log(idx, obj.node_name);
+              vm.tableData[idx]['node_name'] = obj.node_name;
+              //console.log(vm.flag_listinfo);
+              if (vm.flag_listinfo == 'status') {
+                //vm.tableData[idx]['status'] = obj.status;
+                vm.tableData[idx]['emClass'] = "pass";
+                vm.tableData[idx]['return_listinfo'] = obj.status;
+              }
+
+              vm.tableData[idx]['pending'] = obj.pending;
+              if (obj.pending !== 0) {
+                // vm.tableData[idx]['pendingStyleObject'] = {color: 'red', fontSize: '30px', fontWeight: 'bold'};
+                vm.tableData[idx]['pendingClass'] = 'count_font count_danger';
+              }
+              vm.tableData[idx]['running'] = obj.running;
+              if (obj.running !== 0) {
+                vm.tableData[idx]['runningClass'] = 'count_font count_safe';
+              }
+              vm.tableData[idx]['finished'] = obj.finished;
+
+              // Update Jobs database
+              var r = new XMLHttpRequest();
+              r.open('post', url.replace('/api/daemonstatus', '/jobs'), Async = true);
+              r.send();
+
+            } else {
+              if (vm.flag_listinfo == 'status') {
+                vm.tableData[idx]['node_name'] = obj.node_name || '';
+                vm.tableData[idx]['display_listinfo'] = "";
+                vm.tableData[idx]['url_listinfo'] = url;
+                vm.tableData[idx]['return_listinfo'] = " got status: "+obj.status;
+                vm.tableData[idx]['emClass'] = "fail";
+              }
+            }
+          } else {
+            if (vm.flag_listinfo == 'status') {
+              vm.tableData[idx]['display_listinfo'] = "";
+              vm.tableData[idx]['url_listinfo'] = url;
+              vm.tableData[idx]['return_listinfo'] = " got code: "+this.status;
+              vm.tableData[idx]['emClass'] = "fail";
+            }
+          }
+        }
+      };
+      req.open("post", url, Async = true);
+      req.send();
+    },
+
+    updateListinfo:function(idx, url, flag) {
+      vm.tableData[idx]['display_listinfo'] = "none";
+      vm.tableData[idx]['url_listinfo'] = "";
+      vm.tableData[idx]['emClass'] = "normal";
+      vm.tableData[idx]['return_listinfo'] = "loading...";
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        //console.log(vm.flag_listinfo);
+        if (this.readyState == 4 && vm.flag_listinfo == flag) {
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if (obj.status == 'ok') {
+              vm.tableData[idx]['emClass'] = "";
+              if (flag == 'liststats') {
+                if (obj.tip) {
+                  vm.tableData[idx]['return_listinfo'] = obj.tip;
+                } else {
+                  vm.tableData[idx]['return_listinfo'] = JSON.stringify({'pages': obj.details.pages, 'items': obj.details.items, 'logparser_version': obj.details.logparser_version, 'details': obj.details}, null, 4);
+                }
+              } else if (flag == 'listprojects') {
+                vm.tableData[idx]['return_listinfo'] = JSON.stringify({'projects': obj.projects}, null, 4);
+              } else if (flag == 'listversions') {
+                vm.tableData[idx]['return_listinfo'] = JSON.stringify({'versions': obj.versions}, null, 4);
+              } else if (flag == 'listspiders') {
+                vm.tableData[idx]['return_listinfo'] = JSON.stringify({'spiders': obj.spiders}, null, 4);
+              } else if (flag == 'listjobs') {
+
+                var running = obj.running.map(function (item) {
+                  //var item_new = {'spider': item.spider, 'jobid': item.id, 'pid': item.pid};
+                  //return item_new;
+                  return item;
+                });
+                vm.tableData[idx]['return_listinfo'] = JSON.stringify({'running_jobs': running}, null, 4);
+              }
+            } else {
+              vm.tableData[idx]['display_listinfo'] = "";
+              vm.tableData[idx]['url_listinfo'] = url;
+              vm.tableData[idx]['return_listinfo'] = " got status: "+obj.status;
+              vm.tableData[idx]['emClass'] = "fail";
+            }
+          } else {
+            vm.tableData[idx]['display_listinfo'] = "";
+            vm.tableData[idx]['url_listinfo'] = url;
+            vm.tableData[idx]['return_listinfo'] = " got code: "+this.status;
+            vm.tableData[idx]['emClass'] = "fail";
+          }
+        }
+      };
+      req.open('post', url, Async = true);
+      req.send();
+    },
+
+    checkInput(key, msg) {
+      if (!this.input[key]) {
+        alert(msg+" is required");
+        return true;
+      } else {
+        this.storeInput(key);
+      }
+    },
+
+    checkNodesSelected() {
+      if (!this.nodesSelected.length) {
+        alert("Select at least one node");
+        return true;
+      }
+    },
+
+    execUpdateListinfo(url, flag) {
+      //var spans = my$$('.listinfo');
+      //console.log(this.flag_listinfo, flag);
+      for (var idx in [...Array({{ SCRAPYD_SERVERS_AMOUNT }}).keys()]) {
+        var node = parseInt(idx) + 1;
+        //console.log(node, this.nodesSelected);
+        vm.showDaemonStatus = false;
+        vm.tableData[idx]['pending'] = "";
+        vm.tableData[idx]['running'] = "";
+        vm.tableData[idx]['finished'] = "";
+        if (this.nodesSelected.indexOf(node) > -1) {
+          var url_new = url.replace(/\/\d+/, '/'+parseInt(node));
+          this.updateListinfo(idx, url_new, flag);
+        } else {
+          this.tableData[idx]['display_listinfo'] = "none";
+          this.tableData[idx]['url_listinfo'] = "";
+          this.tableData[idx]['return_listinfo'] = "";
+          this.tableData[idx]['emClass'] = "normal";
+        }
+      }
+    },
+
+    getReports() {
+      if (this.checkNodesSelected()) {
+        return;
+      } else {
+        this.storeInput('project');
+        this.storeInput('spider');
+        this.storeInput('jobid');
+      }
+      var url_schedule = '{{ url_getreports }}';
+      this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/SPIDER_PLACEHOLDER/, this.input.spider).replace(/JOB_PLACEHOLDER/, this.input.jobid));
+    },
+
+    listStats() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkInput('jobid', "the job id")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+
+      var url_liststats = "{{ url_liststats }}"
+      this.flag_listinfo = "liststats";
+      this.execUpdateListinfo(url_liststats.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/JOB_PLACEHOLDER/, this.input.jobid), "liststats");
+    },
+
+    listProjects() {
+      if (this.checkNodesSelected()) {
+        return;
+      }
+      var url_listprojects = "{{ url_listprojects }}"
+      this.flag_listinfo = "listprojects";
+      this.execUpdateListinfo(url_listprojects, "listprojects");
+    },
+
+    listVersions() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+      var url_listversions = "{{ url_listversions }}";
+      this.flag_listinfo = "listversions";
+      this.execUpdateListinfo(url_listversions.replace(/PROJECT_PLACEHOLDER/, this.input.project), "listversions");
+    },
+
+    listSpiders() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+      var url_listspiders = "{{ url_listspiders }}";
+      var DEFAULT_LATEST_VERSION = "{{ DEFAULT_LATEST_VERSION }}";
+      this.flag_listinfo = "listspiders";
+      if (this.input.version == DEFAULT_LATEST_VERSION || this.input.version == "") {
+        this.execUpdateListinfo(url_listspiders.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, DEFAULT_LATEST_VERSION), "listspiders");
+      } else {
+        this.execUpdateListinfo(url_listspiders.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version), "listspiders");
+      }
+    },
+
+    listJobs() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+      var url_listjobs = "{{ url_listjobs }}";
+      this.flag_listinfo = "listjobs";
+      this.execUpdateListinfo(url_listjobs.replace(/PROJECT_PLACEHOLDER/, this.input.project), "listjobs");
+    },
+
+    updateSubmitForm(action) {
+      var form = my$('form');
+      for (var idx in this.nodesSelected) {
+        //var name = this.nodesSelected[idx];
+        //my$("form input[name='"+name+"']").value = 'on';
+        var input = document.createElement('input');
+        input.type = 'text';
+        input.name = this.nodesSelected[idx];
+        input.value = 'on';
+        form.appendChild(input);
+
+      }
+      form.action = action;
+      form.submit();
+      showLoader();
+    },
+
+    deployProject() {
+      if (this.checkNodesSelected()) {
+        return;
+      }
+      this.updateSubmitForm("{{ url_deploy }}");
+    },
+
+    runSpider() {
+      if (this.checkNodesSelected()) {
+        return;
+      } else {
+        this.storeInput('project');
+        this.storeInput('version');
+        this.storeInput('spider');
+      }
+
+      var url_schedule = "{{ url_schedule }}";
+      if (this.input.project && this.input.version && this.input.spider) {
+        this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version).replace(/SPIDER_PLACEHOLDER/, this.input.spider));
+      } else if (this.input.project && this.input.version) {
+        this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version).replace(/SPIDER_PLACEHOLDER\//, ""));
+      } else if (this.input.project ) {
+        this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER\//, "").replace(/SPIDER_PLACEHOLDER\//, ""));
+      } else {
+        this.updateSubmitForm(url_schedule.replace(/PROJECT_PLACEHOLDER\//, "").replace(/VERSION_PLACEHOLDER\//, "").replace(/SPIDER_PLACEHOLDER\//, ""));
+      }
+    },
+
+    stopJob() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkInput('jobid', "the job id")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+
+      var url_stop = "{{ url_stop }}";
+      this.updateSubmitForm(url_stop.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/JOB_PLACEHOLDER/, this.input.jobid));
+    },
+
+    deleteVersion() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkInput('version_delversion', "the project version")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+
+      var url_delversion = "{{ url_delversion }}";
+      this.updateSubmitForm(url_delversion.replace(/PROJECT_PLACEHOLDER/, this.input.project).replace(/VERSION_PLACEHOLDER/, this.input.version_delversion));
+    },
+
+    deleteProject() {
+      if (this.checkInput('project', "the project name")) {
+        return;
+      }
+      if (this.checkNodesSelected()) {
+        return;
+      }
+
+      var url_delproject = "{{ url_delproject }}";
+      this.updateSubmitForm(url_delproject.replace(/PROJECT_PLACEHOLDER/, this.input.project));
+    },
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+{% endblock %}

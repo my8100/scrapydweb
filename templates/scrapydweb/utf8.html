@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}log{% endblock %}
+
+{% block head %}
+  <style>
+    /* See stats.css */
+    #content pre {white-space: pre-wrap;}
+  </style>
+  <link rel="stylesheet" type="text/css" href="{{ static_css_utf8 }}">
+{% endblock %}
+
+{% block loader %}
+<div class="loader" style="display: block;" onclick="hideLoader();"></div>
+{% endblock %}
+
+
+{% block body %}
+<div class="go-top">
+  <div class="arrow"></div>
+  <div class="stick"></div>
+</div>
+<div class="go-bottom">
+  <div class="arrow"></div>
+  <div class="stick"></div>
+</div>
+
+<h3>PROJECT ({{ project }}), SPIDER ({{ spider }})</h3>
+
+<div class="wrap collapse-wrap">
+  <!-- <h3>INFO</h3> -->
+  <ul class="collapse">
+    <li>
+      <div class="title">
+        <h4>Stats</h4>
+        <i class="iconfont icon-right"></i>
+      </div>
+      <p><a class="link" href="{{ url_opt_opposite }}" target="_blank">{{ url_opt_opposite }}</a></p>
+    </li>
+    <li>
+      <div class="title">
+        <h4>Source</h4>
+        <i class="iconfont icon-right"></i>
+      </div>
+      <p><a class="link" href="{{ url_source }}" target="_blank">{{ url_source }}</a></p>
+    </li>
+  </ul>
+</div>
+
+
+<div id="log">
+  <pre>{{ text }}</pre>
+</div>
+<h3>PROJECT ({{ project }}), SPIDER ({{ spider }})</h3>
+{% if url_refresh %}
+<a id="refresh_button" class="button danger" href="{{ url_refresh }}" onclick="showLoader();">Click to refresh</a>
+{% endif %}
+
+
+<script>
+$(function() {
+  //$(window).scroll(function() {
+  $(document).ready(function() {
+    hideLoader();
+
+    $('div.go-top').show();
+    $('div.go-bottom').show();
+    goLogBottom();
+  });
+
+  $('div.go-top').click(function() {
+    goContentTop();
+  });
+  $('div.go-bottom').click(function() {
+    goLogBottom();
+  });
+});
+</script>
+
+
+<script>
+const LAST_UPDATE_TIMESTAMP = {{ last_update_timestamp }};
+
+{% if url_refresh %}
+setInterval(function() {
+  var now_timestamp = Date.now() / 1000;
+  var seconds = Math.ceil(now_timestamp - LAST_UPDATE_TIMESTAMP);
+  my$('#refresh_button').innerHTML = "Loaded <span style='color: black;'>" + seconds + "</span> secs ago, click to hard reload (SLOW)";
+}, 1000);
+{% endif %}
+</script>
+
+
+<script>
+// handle collapse components
+(function () {
+  var collapse = my$('.collapse');
+  var titles = my$$('.collapse .title');
+  var lis = my$$('.collapse li');
+  titles.forEach(function(title) {
+    title.addEventListener('click', function(e){
+      var index = [].indexOf.call(titles, this);
+      lis[index].classList.toggle('active');
+    });
+  });
+})();
+</script>
+{% endblock %}

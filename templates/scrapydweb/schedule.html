@@ -1,0 +1,919 @@
+{% extends 'base.html' %}
+
+{% block title %}run spider{% endblock %}
+
+{% block head %}
+  <!-- <script src="//unpkg.com/vue/dist/vue.js"></script> -->
+  <!-- <script src="//unpkg.com/element-ui@2.4.6/lib/index.js"></script> -->
+  <!-- <link rel="stylesheet" type="text/css" href="//unpkg.com/element-ui@2.4.6/lib/theme-chalk/index.css"> -->
+
+  <style>
+    #help {margin-top: 8px;}
+    #help li {margin-bottom: 8px;}
+    #message {
+      display: none;
+      margin-left: 10px;
+      margin-top: 8px;
+      padding-top: 8px;
+      width: 700px;
+    }
+    #app {padding-top: 16px;}
+    #cmd {
+      background-color: #e3e3e3;
+      cursor: not-allowed;
+      opacity: 1;
+    }
+    #help li span{
+      background: #fff;
+      border: solid 1px #e1e4e5;
+      color: #E74C3C;
+      font-size: 90%;
+      max-width: 100%;
+      padding: 2px 5px;
+      white-space: nowrap;
+    }
+
+    /* .el-icon-question {font-size: large;} */
+    .put-off {display: none;}
+
+    .el-select {width: 300px;}
+    .el-switch__core {
+      background: #e3e3e3;
+      border: 1px solid #e3e3e3;
+    }
+
+    #settings_arguments .el-form-item__label {color: #409EFF;}
+    #time_task .el-form-item__label {color: #feb324;}
+    #time_task .main_settings .el-form-item__label {color: #67c23a;}
+
+    #multinodes .link {margin-left: 200px;}
+    #multinodes .key {width: 188px;}
+  </style>
+
+  {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  <script type="text/javascript" src="{{ static_js_multinode }}"></script>
+  {% endif %}
+{% endblock %}
+
+
+{% block body %}
+<div>
+  <h2 style="display: inline-block;">
+    <a class="link" target="_blank" href="{{ url }}">Schedule a spider run (also known as a job), returning the job id.</a>
+  </h2>
+  <label title="deploy a project or add a version">
+    <a class="button safe narrow" href="{{ url_deploy }}">+</a>
+  </label>
+  <label title="check out the history of running spiders">
+    <a class="link" target="_blank" href="{{ url_schedule_history }}">history</a>
+  </label>
+</div>
+
+<div class="wrap collapse-wrap">
+  <ul class="collapse">
+    <li>
+      <div class="title">
+        <h4>HELP</h4>
+        <i class="iconfont icon-right"></i>
+      </div>
+
+      <ul id="help">
+        <b>Run Spider</b><br><br>
+        <li><span>project</span> (string, required) - the project name</li>
+        <li><span>_version</span> (string, optional) - the version of the project to use, default: the latest version</li>
+        <li><span>spider</span> (string, required) - the spider name</li>
+        <li><span>jobid</span> (string, optional) - a job id used to identify the job, overrides the default generated UUID</li>
+        <li><span>setting</span> (string, optional) - a Scrapy setting to use when running the spider.
+          (See <a class="request" target="_blank" href="https://doc.scrapy.org/en/latest/topics/settings.html">Scrapy settings</a>)
+        </li>
+        <li>any other parameter is passed as spider argument.
+          (See <a class="request" target="_blank" href="https://doc.scrapy.org/en/latest/topics/spiders.html#spider-arguments">Scrapy spider-arguments</a>)
+        </li>
+        <br>
+        <b>Timer Task</b><br><br>
+        <li>To get the local <span>timezone</span> of your host:
+<pre>$ pip install tzlocal
+from tzlocal import get_localzone
+print(get_localzone())</pre>
+        </li>
+        <br>
+        <li>Keep in mind that the <span>start_date</span> limit would become invalid if you select the <span>action</span> to fire the task right now.</li>
+        <br>
+        <li>Also note that the <span>misfire_grace_time</span> would be saved as None if it's set to 0, which means that the scheduler would reschedule the misfired task no matter how long it has been missed.</li>
+        <li>Otherwise, just set <span>misfire_grace_time</span> to 1 to ignore any misfired task missed by more than 1 second.</li>
+        <br>
+        <li>
+          Check out <a class="request" target="_blank" href="https://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html#module-apscheduler.triggers.cron">apscheduler.triggers.cron</a>
+          and <a class="request" target="_blank" href="https://apscheduler.readthedocs.io/en/latest/modules/schedulers/base.html#apscheduler.schedulers.base.BaseScheduler.add_job">apscheduler.schedulers.base.BaseScheduler.add_job</a>
+          and <a class="request" target="_blank" href="https://apscheduler.readthedocs.io/en/latest/userguide.html#limiting-the-number-of-concurrently-executing-instances-of-a-job">userguide</a> for more info.
+        </li>
+      </ul>
+    </li>
+  </ul>
+</div>
+
+
+<div class="wrap" style="padding-bottom: 24px;">
+  <div id="message"></div>
+
+  <div id="app">
+    <el-form id="form" :rules="rules" ref="form" :model="form" label-width="200px">
+
+      <el-form-item label="Scrapyd server">
+        <el-select id="node" v-model="form.selectedSCRAPYD_SERVER" placeholder="Select a node" @change="loadSCRAPYD_SERVERS">
+          <el-option v-for="SCRAPYD_SERVER in SCRAPYD_SERVERS" :key="SCRAPYD_SERVER" :label="SCRAPYD_SERVER" :value="SCRAPYD_SERVER"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="project" prop="selectedProject">
+        <el-select id="projects" v-model="form.selectedProject" placeholder="Select a project" @visible-change="loadProjects" @change="loadVersions" no-data-text="No projects found">
+          <el-option v-for="project in projects" :key="project" :label="project" :value="project"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="_version" prop="selectedVersion">
+        <el-select id="versions" v-model="form.selectedVersion" placeholder="Select a version" no-data-text="Select a project first..." @change="loadSpiders">
+          <el-option v-for="version in versions" :key="version" :label="version" :value="version"></el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="spider" prop="selectedSpider">
+        <el-select id="spiders" v-model="form.selectedSpider" placeholder="Select a spider" no-data-text="Select a version first...">
+          <el-option v-for="spider in spiders" :key="spider" :label="spider" :value="spider"></el-option>
+        </el-select>
+      </el-form-item>
+
+
+      <el-form-item label="settings & arguments">
+        <el-switch v-model="form.expandSettingsArguments"></el-switch>
+      </el-form-item>
+
+      <div id="settings_arguments" v-show="form.expandSettingsArguments">
+        <el-form-item label="jobid">
+          <el-col :span="9">
+            <el-input v-model="form.jobid" placeholder="The job id used to identify the job" clearable></el-input>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="USER_AGENT">
+          <el-col :span="9">
+            <el-select v-model="form.USER_AGENT" placeholder="The default User-Agent for crawling" clearable>
+              <el-option :label="form.CUSTOM_USER_AGENT" value="custom"></el-option>
+              <el-option label="Mozilla/5.0 Windows NT Chrome..." value="Chrome"></el-option>
+              <el-option label="Mozilla/5.0 iPhone Safari..." value="iPhone"></el-option>
+              <el-option label="Mozilla/5.0 iPad Safari..." value="iPad"></el-option>
+              <el-option label="Mozilla/5.0 Linux; Android..." value="Android"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="ROBOTSTXT_OBEY">
+          <el-col :span="9">
+            <el-select v-model="form.ROBOTSTXT_OBEY" placeholder="Whether to respect robots.txt policies" clearable>
+              <el-option label="True" value="True"></el-option>
+              <el-option label="False" value="False"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="COOKIES_ENABLED">
+          <el-col :span="9">
+            <el-select v-model="form.COOKIES_ENABLED" placeholder="Whether to enable cookies middleware" clearable>
+              <el-option label="True" value="True"></el-option>
+              <el-option label="False" value="False"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="CONCURRENT_REQUESTS">
+          <el-col :span="9">
+            <el-input v-model="form.CONCURRENT_REQUESTS" placeholder="Defaults to 16 in Scrapy" clearable></el-input>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="DOWNLOAD_DELAY">
+          <el-col :span="9">
+            <el-input v-model="form.DOWNLOAD_DELAY" placeholder="Defaults to 0 in Scrapy" clearable></el-input>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="additional">
+          <el-col :span="9">
+            <el-input type="textarea" v-model="form.additional" :autosize="{ minRows: 4, maxRows: 10}" placeholder="-d setting=CLOSESPIDER_ITEMCOUNT=1 -d arg1=val1" clearable></el-input>
+          </el-col>
+        </el-form-item>
+      </div>
+
+
+      <el-form-item label="timer task">
+        <el-switch v-model="form.expandTimerTask" @change='timerTaskSwitch' active-color="#67c23a"></el-switch>
+      </el-form-item>
+
+      <div id="time_task" v-show="form.expandTimerTask">
+        {% if task_id %}
+        <el-form-item class="main_settings" label="target">
+          <el-col :span="9">
+            <el-select v-model="form.replace_existing" @change='timerTaskReplaceExisting'>
+              <el-option :label="`Update task #` + form.task_id" value="True"></el-option>
+              <el-option label="Save as a new task" value="False"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+        {% endif %}
+
+        <el-form-item class="main_settings" label="action">
+          <el-col :span="9">
+            <el-select v-model="form.action" @change='timerTaskAction'>
+              <el-option label="Add Task" value="add"></el-option>
+              <el-option label="Add Task & Fire Right Now" value="add_fire"></el-option>
+              <el-option label="Add Task & Pause It" value="add_pause"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+        <el-form-item  class="main_settings" label="name">
+          <el-col :span="9">
+            <el-input v-model="form.name" placeholder="Textual description of the task (optional)" clearable></el-input>
+          </el-col>
+        </el-form-item>
+
+        <el-form-item label="year" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.year" placeholder="4-digit year, e.g. 2019; Defaults to * for any year" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">4-digit year, e.g. 2019;<br/>Defaults to * for any year</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item label="month" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.month" placeholder="1-12; Defaults to * for any month" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">month (1-12);<br/>Defaults to * for any month;<br/>e.g. 1,6-8 equals to 1,6,7,8</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item class="main_settings" label="day">
+          <el-col :span="9">
+            <el-input v-model="form.day" placeholder="1-31; Defaults to * for any day" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">day (1-31);<br/>Defaults to * for any day;<br/>Can be `1st mon` or `last sun` of the month</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item label="week" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.week" placeholder="1-53; Defaults to * for any week" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">ISO week (1-53);<br/>Defaults to * for any week;<br/>`import datetime; print(datetime.date(2019, 12, 31).isocalendar()[1])`</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <!-- <el-form-item class="main_settings" label="day_of_week (*)"> -->
+          <!-- <el-col :span="9"> -->
+            <!-- <el-input v-model="form.day_of_week" placeholder="0-6 or mon,tue,wed,thu,fri,sat,sun; Use mon-fri for all workdays" clearable></el-input> -->
+          <!-- </el-col> -->
+        <!-- </el-form-item> -->
+        <el-form-item class="main_settings" label="day_of_week">
+          <el-col :span="9">
+            <el-select v-model="form.day_of_week" placeholder="multiple select or leave blank for *" multiple>
+              <el-option
+                v-for="item in day_of_week_options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+        <el-form-item class="main_settings" label="hour">
+          <el-col :span="9">
+            <el-input v-model="form.hour" placeholder="0-23; Defaults to * for any hour" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">hour (0-23);<br/>Defaults to * for any hour;<br/>e.g. 9,17,8-20/4 equals to 8,9,12,16,17,20</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item class="main_settings" label="minute">
+          <el-col :span="9">
+            <el-input v-model="form.minute" placeholder="0-59; Defaults to 0 instead of *" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">minute (0-59);<br/>Defaults to 0 instead of *;<br/>e.g. */10 to fire every 10 mins</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item label="second" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.second" placeholder="0-59; Defaults to 0 instead of *; Caution with value *" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">second (0-59);<br/>Defaults to 0 instead of *;<br/>Caution with value *</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+
+        <el-form-item label="start_date" v-show="form.expandTimerTaskMoreSettings">
+          <el-date-picker
+            v-model="form.start_date" type="datetime" placeholder="optional (inclusive)" default-time="12:00:00" value-format="yyyy-MM-dd HH:mm:ss">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="end_date" v-show="form.expandTimerTaskMoreSettings">
+          <el-date-picker
+            v-model="form.end_date" type="datetime" placeholder="optional (inclusive)" default-time="12:00:00" value-format="yyyy-MM-dd HH:mm:ss">
+          </el-date-picker>
+        </el-form-item>
+        <el-form-item label="timezone" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.timezone" :placeholder="`Defaults to ` + form._timezone" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">To get the local timezone of your host,<br/>run command 'pip install tzlocal' first,<br/>then execute `from tzlocal import get_localzone; print(get_localzone())`</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item label="jitter" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.jitter" placeholder="Execute task by random delay of [-N, +N] secs; Defaults to 0" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">Execute task by random delay of [-N, +N] secs;<br/>Defaults to 0;<br/>Search 'jitter' in apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+
+        <el-form-item label="misfire_grace_time" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.misfire_grace_time" placeholder="Max tolerance of delay for misfired task; Defaults to 600 secs" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">Max tolerance of delay for misfired task;<br/>Defaults to 600 secs;<br/>See apscheduler.readthedocs.io/en/latest/userguide.html#missed-job-executions-and-coalescing</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+        <el-form-item label="coalesce" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-select v-model="form.coalesce">
+              <el-option label="True: default, recommended" value="True"></el-option>
+              <el-option label="False: may run more than once in succession" value="False"></el-option>
+            </el-select>
+          </el-col>
+        </el-form-item>
+        <el-form-item label="max_instances" v-show="form.expandTimerTaskMoreSettings">
+          <el-col :span="9">
+            <el-input v-model="form.max_instances" placeholder="Max concurrently running instances of this task; Defaults to 1" clearable></el-input>
+          </el-col>
+          <el-tooltip class="put-off" placement="right">
+            <div slot="content">Max concurrently running instances of this task;<br/>Defaults to 1;<br/>See apscheduler.readthedocs.io/en/latest/userguide.html#limiting-the-number-of-concurrently-executing-instances-of-a-job</div>
+            <i class="el-icon-question"></i>
+          </el-tooltip>
+        </el-form-item>
+
+        <el-form-item class="main_settings" label="show more timer settings">
+          <el-switch v-model="form.expandTimerTaskMoreSettings" active-color="#feb324"></el-switch>
+        </el-form-item>
+      </div>
+
+
+      <el-form-item label="curl command" prop="cmd">
+        <el-col :span="9">
+           <el-input id="cmd" type="textarea" v-model="form.cmd" :autosize="{ minRows: 7, maxRows: 10}" readonly="readonly" placeholder="Click the 'Check CMD' button below to preview"></el-input>
+        </el-col>
+      </el-form-item>
+
+    </el-form>
+  </div>
+
+  <div class="put-off">
+    <form id="form_run_spider" method="post" action="{{ url_schedule_run }}" enctype="multipart/form-data">
+      <input type="text" name="filename" hidden />
+    {% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  {% include 'scrapydweb/include_multinodes_checkboxes.html' %}
+    {% endif %}
+    </form>
+
+    <div style="margin: 34px 0 16px 200px;">
+      <a class="button warning big" href="javascript:;" onclick="vm.checkCMD('form');">Check CMD</a>
+      <a id="run_spider" class="button safe big" href="javascript:;" onclick="runSpider('form');">Run Spider</a>
+    </div>
+  </div>
+</div>
+
+
+<script>
+var url_listprojects = "{{ url_listprojects }}";
+var url_listversions = "{{ url_listversions }}";
+var url_listspiders = "{{ url_listspiders }}";
+var url_schedule_check = "{{ url_schedule_check }}";
+
+
+
+
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+//https://stackoverflow.com/questions/6463486/jquery-drop-down-menu-closing-by-clicking-outside
+$(document).click(function(){
+  showCheckboxes('click_outside_close');
+});
+
+$('.multiselect').click(function(e){
+  e.stopPropagation();
+});
+
+
+// Put off
+window.onload = function(){
+  {% if selected_nodes == [] %}
+  if (window.localStorage && JSON.parse(localStorage.getItem('nodesSelected') || "[]").length != 0) {
+    var nodesSelected = JSON.parse(localStorage.getItem('nodesSelected') || "[]");
+    var nodesSelected_new = [];
+    for (var idx in nodesSelected) {
+      try {
+        var n = nodesSelected[idx];
+        my$('#checkbox_'+n).checked = true;
+        nodesSelected_new.push(n);
+      } catch(err) {console.log(err);}
+    }
+  } else {
+    //my$('#checkbox_'+{{ node }}).checked = true;
+    my$('#checkbox_'+{{ first_selected_node }}).checked = true;
+  }
+  {% endif %}
+
+  $('#checkAll').click(function () {
+    $('#checkboxes input:checkbox').not(this).prop('checked', this.checked);
+    my$('#checkCurrent').checked = false;
+    my$('#syncFromServersPage').checked = false;
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  $('#checkCurrent').click(function () {
+    $('#checkboxes input:checkbox').not(this).prop('checked', false);
+    my$('#checkCurrent').checked = true;
+    my$('#checkbox_'+{{ node }}).checked = true;
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  $('#syncFromServersPage').click(function () {
+    syncFromServersPage({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  $('#nodes_checkboxes input[type=checkbox]').change(function() {
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+  });
+
+  checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }}); //For navigate back
+}
+{% endif %}
+
+
+function handleMessage(message){
+  if (message === undefined) {
+    my$('#message').innerHTML = '';
+    my$('#message').style.display = 'none';
+  } else {
+    my$('#message').innerHTML = message;
+    my$('#message').style.display = 'block';
+    my$('#message').style.border = "1px solid #f56c6c";
+  }
+}
+
+
+function runSpider(formName){
+  if (!my$('#form').cmd.value) {
+    //alert("Click the 'Check CMD' button first");
+    //vm.$refs[formName].validate();
+    vm.$refs[formName].validate((valid) => {
+      if (valid) {
+        console.log('validate pass');
+      } else {
+        console.log('validate fail');
+        vm.$refs[formName].validateField('selectedProject', (error) => {if(!error){console.log('selectedProject pass');} else {goContentTop(); return false;} });
+        vm.$refs[formName].validateField('selectedVersion', (error) => {if(!error){console.log('selectedVersion pass');} else {goContentTop(); return false;} });
+        vm.$refs[formName].validateField('selectedSpider', (error) => {if(!error){console.log('selectedSpider pass');} else {goContentTop(); return false;} });
+        return false;
+      }
+    });
+    return;
+  }
+
+{% if SCRAPYD_SERVERS_AMOUNT > 1 %}
+  if (checked_amount == 0) {
+    //alert("Select at least one node");
+    checkCheckboxes({{ SCRAPYD_SERVERS_AMOUNT }});
+    return;
+  }
+{% endif %}
+
+  my$('#form_run_spider').submit();
+  showLoader();
+}
+
+
+var now = new Date();
+now.setMinutes(now.getMinutes()-now.getTimezoneOffset());
+
+var Main = {
+  data() {
+    return {
+      SCRAPYD_SERVERS:{{ SCRAPYD_SERVERS|safe }},
+      //projects:["proxy","output","output1"],
+      projects:[],
+      versions:[],
+      spiders:[],
+
+      form: {
+        selectedSCRAPYD_SERVER: "{{ SCRAPYD_SERVERS[first_selected_node-1] }}",
+        selectedProject: undefined,
+        selectedVersion: undefined,
+        selectedSpider: undefined,
+
+        // jobid: now.toISOString().slice(0,19).replace(/:/g, "_"),
+        jobid: '{{ jobid }}',
+        CUSTOM_USER_AGENT: '{{ CUSTOM_USER_AGENT }}',
+        USER_AGENT: '{{ USER_AGENT }}',
+        ROBOTSTXT_OBEY: '{{ ROBOTSTXT_OBEY }}',
+        COOKIES_ENABLED: '{{ COOKIES_ENABLED }}',
+        CONCURRENT_REQUESTS: '{{ CONCURRENT_REQUESTS }}',
+        DOWNLOAD_DELAY: '{{ DOWNLOAD_DELAY }}',
+        additional: '{{ additional|replace("\r\n", "CR+LF")|replace("\\", "\\\\")|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|replace("CR+LF", "\\r\\n")|safe }}',
+
+        task_id: {{ task_id }},
+        replace_existing: '{{ replace_existing }}',
+        action: '{{ action }}',
+        trigger: '{{ trigger }}',
+        name: '{{ name|replace("\\", "\\\\")|replace("'", "\\'")|replace("\r", " ")|replace("\n", " ")|safe }}',
+
+        year: '{{ year }}',
+        month: '{{ month }}',
+        day: '{{ day }}',
+        week: '{{ week }}',
+        day_of_week: {{ day_of_week|safe }},  // 'mon-fri'  ['*']
+        hour: '{{ hour }}',  // '9,17,8-20/4'
+        minute: '{{ minute }}',  // '0'
+        second: '{{ second }}',
+
+        start_date: '{{ start_date }}',
+        end_date: '{{ end_date }}',
+
+        timezone: '{{ timezone }}',
+        _timezone: '{{ timezone }}',
+        jitter: {{ jitter }},  // 0
+        misfire_grace_time: {{ misfire_grace_time }},  // 600
+        coalesce: '{{ coalesce }}',
+        max_instances: {{ max_instances }},  // 1
+
+        cmd: undefined,
+        expandSettingsArguments: {% if expand_settings_arguments %}true{% else %}false{% endif %},
+        expandTimerTask: {% if expand_timer_task %}true{% else %}false{% endif %},
+        expandTimerTaskMoreSettings: false,
+      },
+      day_of_week_options: [
+        {value: '*', label: '*'},
+        {value: 'mon-fri', label: 'Monday-Friday'},
+        {value: 'mon', label: 'Monday'},
+        {value: 'tue', label: 'Tuesday'},
+        {value: 'wed', label: 'Wednesday'},
+        {value: 'thu', label: 'Thursday'},
+        {value: 'fri', label: 'Friday'},
+        {value: 'sat', label: 'Saturday'},
+        {value: 'sun', label: 'Sunday'},
+      ],
+
+      rules: {
+        selectedProject: [{ required: true, message: 'project is required', trigger: 'change' }],
+        selectedVersion: [{ required: true, message: 'version is required', trigger: 'change' }],
+        selectedSpider: [{ required: true, message: 'spider is required', trigger: 'change' }],
+        cmd: [{ required: true, message: "Click the 'Check CMD' button first", trigger: 'change' }],
+      },
+
+      timer_task_action_label_dict: {
+        'add': 'Add Task',
+        'add_fire': 'Add Task & Fire Right Now',
+        'add_pause': 'Add Task & Pause It',
+      }
+    };
+  },
+
+
+  created() {
+    // this.form.COOKIES_ENABLED = 'False';
+    // this.form.action = 'add_fire';
+    // this.form.coalesce = 'True';
+    // {% if expand_timer_task %}
+    // my$('#run_spider').text = this.timer_task_action_label_dict[this.form.action];
+    // {% endif %}
+    this.timerTaskSwitch(this.form.expandTimerTask);
+    if (!this.form.jobid) {
+      this.form.jobid = now.toISOString().slice(0,19).replace(/:/g, "_");
+    }
+
+
+{% if project %}
+  	this.form.selectedProject = '{{ project }}';
+
+  {% if version %}
+    this.form.selectedVersion = '{{ version }}';
+    this.loadSpiders();
+
+    {% if spider %}
+    this.form.selectedSpider = '{{ spider }}';
+    {% endif %}
+
+  {% else %}
+    this.loadVersions();
+  {% endif %}
+
+{% endif %}
+  },
+
+  mounted(){
+    // To avoid flashing help info
+    $('.put-off').removeClass('put-off');
+  },
+
+  methods: {
+    timerTaskSwitch(callback) {
+      if (callback) {
+        //my$('#run_spider').text = this.timer_task_action_label_dict[this.form.action];
+        this.timerTaskAction(this.form.action);
+      } else {
+        my$('#run_spider').text = 'Run Spider';
+      }
+    },
+    timerTaskReplaceExisting(callback) {
+      this.timerTaskAction(this.form.action);
+    },
+    timerTaskAction(callback) {
+      if (this.form.task_id) {
+        if (this.form.replace_existing == 'True') {
+          var update_or_new = 'update';
+        } else {
+          var update_or_new = 'new';
+        }
+        my$('#run_spider').text = "[" + update_or_new + "] "+ this.timer_task_action_label_dict[callback];
+      } else {
+        my$('#run_spider').text = this.timer_task_action_label_dict[callback];
+      }
+    },
+    checkCMD(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          console.log('validate pass');
+        } else {
+          console.log('validate fail');
+          return false;
+        }
+      });
+
+      console.log(JSON.stringify(this.form));
+
+      var formData = new FormData();
+      if (this.form.selectedProject && this.form.selectedVersion && this.form.selectedSpider) {
+        formData.append('project', this.form.selectedProject);
+        formData.append('_version', this.form.selectedVersion);
+        formData.append('spider', this.form.selectedSpider);
+      } else {
+        goContentTop();
+        //alert('Select a project first');
+        return;
+      }
+
+      if (this.form.expandSettingsArguments) {
+        formData.append('jobid', this.form.jobid);
+        formData.append('USER_AGENT', this.form.USER_AGENT);
+        formData.append('ROBOTSTXT_OBEY', this.form.ROBOTSTXT_OBEY);
+        formData.append('COOKIES_ENABLED', this.form.COOKIES_ENABLED);
+        formData.append('CONCURRENT_REQUESTS', this.form.CONCURRENT_REQUESTS); //  || '16'
+        formData.append('DOWNLOAD_DELAY', this.form.DOWNLOAD_DELAY);  //  || '0'
+        formData.append('additional', this.form.additional);
+      }
+
+      if (this.form.expandTimerTask) {
+        formData.append('action', this.form.action);
+        formData.append('task_id', this.form.task_id);
+
+        formData.append('trigger', this.form.trigger);
+        formData.append('name', this.form.name);
+        formData.append('replace_existing', this.form.replace_existing);
+
+        formData.append('year', this.form.year);
+        formData.append('month', this.form.month);
+        formData.append('day', this.form.day);
+        formData.append('week', this.form.week);
+        formData.append('day_of_week', this.form.day_of_week);
+        formData.append('hour', this.form.hour);
+        formData.append('minute', this.form.minute);
+        formData.append('second', this.form.second);
+        formData.append('start_date', this.form.start_date || '');  // Would be null and pass 'null' after clear
+        formData.append('end_date', this.form.end_date || '');  // Would be null and pass 'null' after clear
+
+        formData.append('timezone', this.form.timezone);
+        formData.append('jitter', this.form.jitter);
+        formData.append('misfire_grace_time', this.form.misfire_grace_time);
+        formData.append('coalesce', this.form.coalesce);
+        formData.append('max_instances', this.form.max_instances);
+      }
+
+      handleMessage();
+      showLoader();
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          hideLoader();
+          if (this.status == 200) {
+            obj = JSON.parse(this.responseText);
+            my$('#form').cmd.value = obj.cmd;
+            my$('#form_run_spider').filename.value = obj.filename;
+            console.log(my$('#form_run_spider').filename.value);
+
+            vm.$refs[formName].clearValidate('cmd');
+          } else {
+            alert("REQUEST got code: " + this.status + ". Check out the log of ScrapydWeb.");
+          }
+        }
+      };
+      var url_schedule_check_new = url_schedule_check.replace(/\/\d+/, '/'+(parseInt(this.SCRAPYD_SERVERS.indexOf(this.form.selectedSCRAPYD_SERVER))+1));
+      req.open("post", url_schedule_check_new, Async = true);
+      req.send(formData);
+    },
+
+    loadSCRAPYD_SERVERS:function(cba) {
+      handleMessage();
+      this.projects = [];
+      this.versions = [];
+      this.spiders = [];
+      this.form.selectedProject = undefined;
+      this.form.selectedVersion = undefined;
+      this.form.selectedSpider = undefined;
+    },
+
+    //cba: visible-change callback arg, true when select options displayed, else false
+    loadProjects:function(cba) {
+      if (cba) {
+        handleMessage();
+        goContentTop();
+        showLoader();
+        this.projects = [];
+        this.versions = [];
+        this.spiders = [];
+        this.form.selectedProject = undefined;
+        this.form.selectedVersion = undefined;
+        this.form.selectedSpider = undefined;
+
+        //fetch("{{ url_listprojects }}")
+        var url_listprojects_new = url_listprojects.replace(/\/\d+/, '/'+(parseInt(this.SCRAPYD_SERVERS.indexOf(this.form.selectedSCRAPYD_SERVER))+1));
+        var req = new XMLHttpRequest();
+        req.onreadystatechange = function() {
+          if (this.readyState == 4) {
+            hideLoader();
+            if (this.status == 200) {
+              var obj = JSON.parse(this.responseText);
+              if (obj.status != 'ok') {
+                //alert("REQUEST got status: "+obj.status);
+                var tip = obj.tip || '';
+                if (tip) {
+                  tip = '<h3>Tip</h3>' + tip;
+                }
+                var message = obj.message || '';
+                if (message) {
+                  obj.message = "See details below";
+                  message = '<h3>Details</h3><pre>' + message + '</pre>';
+                }
+                var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
+                handleMessage(getRequestFailHtml(url_listprojects_new, 'status', obj.status)+text+tip+message);
+              } else {
+                vm.projects = obj.projects;
+                if (vm.projects.length == 0) {
+                  alert("No projects found. Check out the Projects page.");
+                }
+              }
+            } else {
+              //alert("REQUEST got code: "+this.status);
+              handleMessage(getRequestFailHtml(url_listprojects_new, 'code', this.status)+'<pre>Check out the log of ScrapydWeb.</pre>');
+            }
+          }
+        };
+        req.open("post", url_listprojects_new, Async = true);
+        req.send();
+      }
+    },
+
+    loadVersions:function() {
+      handleMessage();
+      goContentTop();
+      showLoader();
+      this.versions = [];
+      this.spiders = [];
+      this.form.selectedVersion = undefined;
+      this.form.selectedSpider = undefined;
+
+      //fetch("{{ url_listversions }}".replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject))
+      //.then(res=>res.json())
+      //.then(
+      //  res => {
+      //    this.versions = res.versions;
+      //  }
+      //);
+      //hideLoader();
+
+      var url_listversions_new = url_listversions.replace(/\/\d+/, '/'+(parseInt(this.SCRAPYD_SERVERS.indexOf(this.form.selectedSCRAPYD_SERVER))+1));
+      url_listversions_new = url_listversions_new.replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject);
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          hideLoader();
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if (obj.status != 'ok') {
+              //alert("REQUEST got status: "+obj.status);
+              var tip = obj.tip || '';
+              if (tip) {
+                tip = '<h3>Tip</h3>' + tip;
+              }
+              var message = obj.message || '';
+              if (message) {
+                obj.message = "See details below";
+                message = '<h3>Details</h3><pre>' + message + '</pre>';
+              }
+              var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
+              handleMessage(getRequestFailHtml(url_listversions_new, 'status', obj.status)+text+tip+message);
+            } else {
+              vm.versions = ['default: the latest version'].concat(obj.versions);
+            }
+          } else {
+            //alert("REQUEST got code: "+this.status);
+            handleMessage(getRequestFailHtml(url_listversions_new, 'code', this.status)+'<pre>Check out the log of ScrapydWeb.</pre>');
+          }
+        }
+      };
+      req.open("post", url_listversions_new, Async = true);
+      req.send();
+    },
+
+    loadSpiders:function() {
+      handleMessage();
+      goContentTop();
+      showLoader();
+      this.spiders = [];
+      this.form.selectedSpider = undefined;
+
+      //fetch("{{ url_listspiders }}".replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject).replace(/VERSION_PLACEHOLDER/, this.form.selectedVersion))
+      var url_listspiders_new = url_listspiders.replace(/\/\d+/, '/'+(parseInt(this.SCRAPYD_SERVERS.indexOf(this.form.selectedSCRAPYD_SERVER))+1));
+      url_listspiders_new = url_listspiders_new.replace(/PROJECT_PLACEHOLDER/, this.form.selectedProject).replace(/VERSION_PLACEHOLDER/, this.form.selectedVersion);
+      var req = new XMLHttpRequest();
+      req.onreadystatechange = function() {
+        if (this.readyState == 4) {
+          hideLoader();
+          if (this.status == 200) {
+            var obj = JSON.parse(this.responseText);
+            if (obj.status != 'ok') {
+              //alert("REQUEST got status: "+obj.status);
+              var tip = obj.tip || '';
+              if (tip) {
+                tip = '<h3>Tip</h3>' + tip;
+              }
+              var message = obj.message || '';
+              if (message) {
+                obj.message = "See details below";
+                message = '<h3>Details</h3><pre>' + message + '</pre>';
+              }
+              var text = '<pre>'+JSON.stringify(obj, null, 4)+'</pre>';
+              handleMessage(getRequestFailHtml(url_listspiders_new, 'status', obj.status)+text+tip+message);
+            } else {
+              vm.spiders = obj.spiders;
+            }
+          } else {
+            //alert("REQUEST got code: "+this.status);
+            handleMessage(getRequestFailHtml(url_listspiders_new, 'code', this.status)+'<pre>Check out the log of ScrapydWeb.</pre>');
+          }
+        }
+      };
+      req.open("post", url_listspiders_new, Async = true);
+      req.send();
+    }
+  }
+}
+var Ctor = Vue.extend(Main);
+vm = new Ctor().$mount('#app');
+</script>
+
+
+<script>
+// handle collapse components
+(function () {
+  var collapse = my$('.collapse');
+  var titles = my$$('.collapse .title');
+  var lis = my$$('.collapse li');
+  titles.forEach(function(title) {
+    title.addEventListener('click', function(e){
+      var index = [].indexOf.call(titles, this);
+      lis[index].classList.toggle('active');
+    });
+  });
+})();
+</script>
+{% endblock %}
