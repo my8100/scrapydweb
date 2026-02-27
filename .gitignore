@@ -5,6 +5,7 @@ scrapydweb_settings_v*.py
 
 tests/*.html
 tests/data/
+allure-results/
 
 
 scrapydweb/data/*

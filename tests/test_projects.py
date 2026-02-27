@@ -39,7 +39,8 @@ def test_listspiders_del(app, client):
         d['listspiders_fail'] = dict(
             url=url_for('projects', node=1, opt='listspiders',
                         project=cst.FAKE_PROJECT, version_spider_job=cst.FAKE_VERSION),
-            checks=['listspiders.json', 'No such file or directory']
+            # project 'FAKE_PROJECT' not found
+            checks=['listspiders.json', 'See details below']
         )
 
         d['delversion'] = dict(
@@ -66,5 +67,6 @@ def test_listspiders_del(app, client):
                 upload_file_deploy(app, client, filename='demo.zip', project=cst.PROJECT, redirect_project=cst.PROJECT)
             response = client.get(v['url'])
             text = get_text(response)
+            # print('text', text)
             for c in v['checks']:
                 assert c in text

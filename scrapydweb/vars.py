@@ -15,7 +15,18 @@ from .utils.setup_database import setup_database
 
 PYTHON_VERSION = '.'.join([str(n) for n in sys.version_info[:3]])
 PY2 = sys.version_info.major < 3
-SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v10.py'
+
+try:
+    from scrapy import __version__ as SCRAPY_VERSION
+except ImportError:
+    SCRAPY_VERSION = '0.0.0'
+
+try:
+    from scrapyd import __version__ as SCRAPYD_VERSION
+except ImportError:
+    SCRAPYD_VERSION = '0.0.0'
+
+SCRAPYDWEB_SETTINGS_PY = 'scrapydweb_settings_v11.py'
 sys.path.append(os.getcwd())
 try:
     custom_settings_module = importlib.import_module(os.path.splitext(SCRAPYDWEB_SETTINGS_PY)[0])
@@ -89,11 +100,12 @@ DIRECTORY_PATTERN = re.compile(r"""
                                     <tr\sclass="(?P<odd_even>odd|even)">\n
                                         \s+<td>(?P<filename>.*?)</td>\n
                                         \s+<td>(?P<size>.*?)</td>\n
+                                        (?:\s+<td>(?P<last_modified>.*?)</td>\n)?
                                         \s+<td>(?P<content_type>.*?)</td>\n
                                         \s+<td>(?P<content_encoding>.*?)</td>\n
                                     </tr>
                                 """, re.X)
-DIRECTORY_KEYS = ['odd_even', 'filename', 'size', 'content_type', 'content_encoding']
+DIRECTORY_KEYS = ['odd_even', 'filename', 'size', 'last_modified', 'content_type', 'content_encoding']
 HREF_NAME_PATTERN = re.compile(r'href="(.+?)">(.+?)<')
 
 # For JobsView

@@ -8,6 +8,7 @@ import sys
 from flask import request
 
 # from . import create_app  # --debug: ImportError: cannot import name 'create_app'
+# python -m scrapydweb.run
 from scrapydweb import create_app
 from scrapydweb.__version__ import __description__, __version__
 from scrapydweb.common import authenticate, find_scrapydweb_settings_py, handle_metadata, handle_slash
@@ -137,9 +138,15 @@ def load_custom_settings(config):
                       file=SCRAPYDWEB_SETTINGS_PY))
         else:
             sys.exit("\nATTENTION:\nYou may encounter ERROR if there are any running timer tasks added in v1.2.0,\n"
-                     "and you have to restart scrapydweb and manually edit the tasks to resume them.\n"
-                     "\nThe config file '{file}' has been copied to current working directory.\n"
-                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n".format(
+                     "and you have to restart scrapydweb and manually edit the tasks to resume them.\n\n"
+                     "The config file '{file}' has been copied to current working directory.\n"
+                     "Please add your SCRAPYD_SERVERS in the config file and restart scrapydweb.\n\n"
+                     "New options to control the amount of task results of all timer tasks:\n"
+                     "##########\n"
+                     "CHECK_TASK_RESULT_INTERVAL = 300\n"
+                     "KEEP_TASK_RESULT_LIMIT = 1000\n"
+                     "KEEP_TASK_RESULT_WITHIN_DAYS = 31\n"
+                     "##########\n".format(
                       file=SCRAPYDWEB_SETTINGS_PY))
 
 
@@ -174,6 +181,13 @@ def parse_args(config):
         '-da', '--disable_auth',
         action='store_true',
         help="current: ENABLE_AUTH = %s, append '--disable_auth' to disable basic auth for web UI" % ENABLE_AUTH
+    )
+
+    CHECK_SCRAPYD_SERVERS = config.get('CHECK_SCRAPYD_SERVERS', True)
+    parser.add_argument(
+        '-dc', '--disable_check_scrapyd',
+        action='store_true',
+        help="current: CHECK_SCRAPYD_SERVERS = %s, append '--disable_check_scrapyd' skip checking connectivity of scrapyd" % CHECK_SCRAPYD_SERVERS
     )
 
     ENABLE_LOGPARSER = config.get('ENABLE_LOGPARSER', False)
@@ -233,6 +247,8 @@ def update_app_config(config, args):
     # action='store_true': default False
     if args.disable_auth:
         config['ENABLE_AUTH'] = False
+    if args.disable_check_scrapyd:
+        config['CHECK_SCRAPYD_SERVERS'] = False
     if args.disable_logparser:
         config['ENABLE_LOGPARSER'] = False
     if args.switch_scheduler_state:

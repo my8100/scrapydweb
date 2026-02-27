@@ -31,6 +31,7 @@ def test_auto_packaging_select_option(app, client):
 
 # {'status': 'error', 'message': 'Traceback
 # ...TypeError:...activate_egg(eggpath)...\'tuple\' object is not an iterator\r\n'}
+# egg is not a ZIP file (if using curl, use egg=@path not egg=path)
 def test_addversion(app, client):
     data = {
         '1': 'on',
@@ -39,7 +40,7 @@ def test_addversion(app, client):
         'version': 'fakeversion',
         'file': (BytesIO(b'my file contents'), "fake.egg")
     }
-    req(app, client, view='deploy.upload', kws=dict(node=2), data=data, ins='activate_egg')
+    req(app, client, view='deploy.upload', kws=dict(node=2), data=data, ins=['Fail to deploy project', 'egg'])
 
 
 # <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">

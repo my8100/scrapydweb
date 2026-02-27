@@ -53,6 +53,8 @@ class SettingsView(BaseView):
         self.kwargs['POLL_PID'] = self.POLL_PID
 
         # ScrapydWeb
+        self.kwargs['python_version'] = self.PYTHON_VERSION
+        self.kwargs['scrapydweb_version'] = self.SCRAPYDWEB_VERSION
         self.kwargs['scrapydweb_server'] = self.json_dumps(dict(
             SCRAPYDWEB_BIND=self.SCRAPYDWEB_BIND,
             SCRAPYDWEB_PORT=self.SCRAPYDWEB_PORT,
@@ -68,15 +70,18 @@ class SettingsView(BaseView):
         ))
 
         # Scrapy
+        self.kwargs['scrapy_version'] = self.SCRAPY_VERSION
         self.kwargs['SCRAPY_PROJECTS_DIR'] = self.handle_slash(self.SCRAPY_PROJECTS_DIR) or "''"
 
         # Scrapyd
+        self.kwargs['scrapyd_version'] = self.SCRAPYD_VERSION
         servers = defaultdict(list)
         for group, server, auth in zip(self.SCRAPYD_SERVERS_GROUPS, self.SCRAPYD_SERVERS, self.SCRAPYD_SERVERS_AUTHS):
             _server = '%s:%s@%s' % (self.protect(auth[0]), self.protect(auth[1]), server) if auth else server
             servers[group].append(_server)
 
         self.kwargs['servers'] = self.json_dumps(servers)
+        self.kwargs['CHECK_SCRAPYD_SERVERS'] = self.CHECK_SCRAPYD_SERVERS
         self.kwargs['LOCAL_SCRAPYD_SERVER'] = self.LOCAL_SCRAPYD_SERVER or "''"
         self.kwargs['LOCAL_SCRAPYD_LOGS_DIR'] = self.handle_slash(self.LOCAL_SCRAPYD_LOGS_DIR) or "''"
         self.kwargs['SCRAPYD_LOG_EXTENSIONS'] = self.SCRAPYD_LOG_EXTENSIONS
@@ -90,6 +95,9 @@ class SettingsView(BaseView):
         # Timer Tasks
         self.kwargs['scheduler_state'] = SCHEDULER_STATE_DICT[self.scheduler.state]
         self.kwargs['JOBS_SNAPSHOT_INTERVAL'] = self.JOBS_SNAPSHOT_INTERVAL
+        self.kwargs['CHECK_TASK_RESULT_INTERVAL'] = self.CHECK_TASK_RESULT_INTERVAL
+        self.kwargs['KEEP_TASK_RESULT_LIMIT'] = self.KEEP_TASK_RESULT_LIMIT
+        self.kwargs['KEEP_TASK_RESULT_WITHIN_DAYS'] = self.KEEP_TASK_RESULT_WITHIN_DAYS
 
         # Run Spider
         self.kwargs['run_spider_details'] = self.json_dumps(dict(

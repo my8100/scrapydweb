@@ -24,17 +24,18 @@ _handler.setFormatter(_formatter)
 logger.addHandler(_handler)
 
 IN_WINDOWS = platform.system() == 'Windows'
+# See also scrapydweb/views/dashboard/jobs.py
 JOB_PATTERN = re.compile(r"""
-                            <tr>
-                                <td>(?P<Project>.*?)</td>
-                                <td>(?P<Spider>.*?)</td>
-                                <td>(?P<Job>.*?)</td>
-                                (?:<td>(?P<PID>.*?)</td>)?
-                                (?:<td>(?P<Start>.*?)</td>)?
-                                (?:<td>(?P<Runtime>.*?)</td>)?
-                                (?:<td>(?P<Finish>.*?)</td>)?
-                                (?:<td>(?P<Log>.*?)</td>)?
-                                (?:<td>(?P<Items>.*?)</td>)?
+                            <tr>\s*
+                                <td>(?P<Project>.*?)</td>\s*
+                                <td>(?P<Spider>.*?)</td>\s*
+                                <td>(?P<Job>.*?)</td>\s*
+                                (?:<td>(?P<PID>.*?)</td>\s*)?
+                                (?:<td>(?P<Start>.*?)</td>\s*)?
+                                (?:<td>(?P<Runtime>.*?)</td>\s*)?
+                                (?:<td>(?P<Finish>.*?)</td>\s*)?
+                                (?:<td>(?P<Log>.*?)</td>\s*)?
+                                (?:<td>(?P<Items>.*?)</td>\s*)?
                                 [\w\W]*?  # Temp support for Scrapyd v1.3.0 (not released)
                             </tr>
                           """, re.X)

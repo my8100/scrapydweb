@@ -104,6 +104,7 @@ def check_app_config(config):
         logger.info("Setting up SCRAPY_PROJECTS_DIR: %s", handle_slash(SCRAPY_PROJECTS_DIR))
 
     # Scrapyd
+    check_assert('CHECK_SCRAPYD_SERVERS', True, bool)
     check_scrapyd_servers(config)
     # For JobsView
     for node, scrapyd_server in enumerate(config['SCRAPYD_SERVERS'], 1):
@@ -307,6 +308,28 @@ def check_app_config(config):
                                       trigger='interval', seconds=JOBS_SNAPSHOT_INTERVAL,
                                       misfire_grace_time=60, coalesce=True, max_instances=1, jobstore='memory'))
 
+    check_assert('CHECK_TASK_RESULT_INTERVAL', 300, int)
+    check_assert('KEEP_TASK_RESULT_LIMIT', 1000, int)
+    check_assert('KEEP_TASK_RESULT_WITHIN_DAYS', 31, int)
+    CHECK_TASK_RESULT_INTERVAL = config.get('CHECK_TASK_RESULT_INTERVAL', 300)
+    KEEP_TASK_RESULT_LIMIT = config.get('KEEP_TASK_RESULT_LIMIT', 1000)
+    KEEP_TASK_RESULT_WITHIN_DAYS = config.get('KEEP_TASK_RESULT_WITHIN_DAYS', 31)
+
+    logger.info('CHECK_TASK_RESULT_INTERVAL: %s' % CHECK_TASK_RESULT_INTERVAL)
+    logger.info('KEEP_TASK_RESULT_LIMIT: %s' % KEEP_TASK_RESULT_LIMIT)
+    logger.info('KEEP_TASK_RESULT_WITHIN_DAYS: %s' % KEEP_TASK_RESULT_WITHIN_DAYS)
+    if CHECK_TASK_RESULT_INTERVAL and (KEEP_TASK_RESULT_LIMIT or KEEP_TASK_RESULT_WITHIN_DAYS):
+        username = config.get('USERNAME', '')
+        password = config.get('PASSWORD', '')
+        kwargs = dict(
+            url=config['URL_SCRAPYDWEB'] + handle_metadata().get('url_delete_task_result',
+                                                                 '/1/tasks/xhr/delete/1/2/'),
+            auth=(username, password) if username and password else None,
+        )
+        logger.info(scheduler.add_job(id='delete_task_result', replace_existing=True,
+                                      func=delete_task_result, args=None, kwargs=kwargs,
+                                      trigger='interval', seconds=CHECK_TASK_RESULT_INTERVAL,
+                                      misfire_grace_time=60, coalesce=True, max_instances=1, jobstore='memory'))
     # Subprocess
     init_subprocess(config)
 
@@ -321,6 +344,17 @@ def create_jobs_snapshot(url_jobs, auth, nodes):
             print("Fail to create jobs snapshot: %s\n%s" % (url_jobs, err))
         # else:
         #     print(url_jobs, r.status_code)
+
+
+def delete_task_result(url, auth):
+    url = re.sub(r'(\d+/)+$', '', url)
+    try:
+        r = session.post(url, auth=auth, timeout=60)
+        assert r.status_code == 200, "Request got status_code: %s" % r.status_code
+    except Exception as err:
+        print("Fail to delete task result: %s\n%s" % (url, err))
+    # else:
+    #     print('delete_task_result', url, r.status_code, r.json())
 
 
 def check_scrapyd_servers(config):
@@ -352,7 +386,8 @@ def check_scrapyd_servers(config):
         return [_group, '.'.join(parts), int(_port)]
 
     servers = sorted(set(servers), key=key_func)
-    check_scrapyd_connectivity(servers)
+    if config.get('CHECK_SCRAPYD_SERVERS', True):
+        check_scrapyd_connectivity(servers)
 
     config['SCRAPYD_SERVERS'] = ['%s:%s' % (ip, port) for (group, ip, port, auth, public_url) in servers]
     config['SCRAPYD_SERVERS_GROUPS'] = [group for (group, ip, port, auth, public_url) in servers]
@@ -368,11 +403,12 @@ def check_scrapyd_connectivity(servers):
         try:
             url = 'http://%s:%s' % (_ip, _port)
             r = session.get(url, auth=_auth, timeout=10)
-            assert r.status_code == 200, "%s got status_code %s" % (url, r.status_code)
+            assert r.status_code == 200, "%s with auth %s got status_code %s" % (url, _auth, r.status_code)
         except Exception as err:
             logger.error(err)
             return False
         else:
+            logger.debug("%s with auth %s got status_code %s" % (url, _auth, r.status_code))
             return True
 
     # with ThreadPool(min(len(servers), 100)) as pool:  # Works in python 3.3 and up

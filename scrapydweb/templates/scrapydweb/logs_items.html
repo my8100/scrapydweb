@@ -49,6 +49,7 @@
     <el-table-column prop="content_type" label="Content type" sortable width="135" align="center"></el-table-column>
     <el-table-column prop="content_encoding" label="Encoding" sortable width="95" align="center"></el-table-column>
     <el-table-column prop="size" label="Size" sortable width="100" align="center" :sort-method="sortSize" :sort-orders=['descending','ascending',null]></el-table-column>
+    <el-table-column prop="last_modified" label="Last modified" sortable width="140" align="center"></el-table-column>
 
     {% if project and spider %}
     <el-table-column prop="stats" label="Stats" sortable width="{% if SCRAPYD_SERVERS_AMOUNT > 1 %}105{% else %}65{% endif %}" align="center">
@@ -87,6 +88,7 @@ var Main = {
         content_type: '{{ row["content_type"] }}',
         content_encoding: '{{ row["content_encoding"] }}',
         size: '{{ row["size"] }}',
+        last_modified: '{{ row["last_modified"] }}',
 
         {% if project and spider %}
         url_clusterreports: '{{ row["url_clusterreports"] }}',
