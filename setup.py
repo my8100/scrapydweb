@@ -34,12 +34,12 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         "APScheduler==3.6.0",  # Mar 18, 2019
-        "click==7.1.2",  # Apr 28, 2020
+        "click>=7.1.2",  # Apr 28, 2020
         "colorama==0.4.0",  # Oct 10, 2018
         "Flask==2.0.0",  # May 12, 2021
         "Flask-Compress==1.4.0",  # Jan 5, 2017
         "Flask-SQLAlchemy==2.4.0",  # Apr 25, 2019
-        "idna==2.7",  # Jun 11, 2018
+        "idna==2.8",  # Jun 11, 2018
         "itsdangerous==2.0.0",  # May 12, 2021
         "Jinja2==3.0.0",  # May 12, 2021
         "logparser>=0.8.4",
