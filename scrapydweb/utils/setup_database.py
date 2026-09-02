@@ -11,7 +11,7 @@ DB_JOBS = 'scrapydweb_jobs'
 DBS = [DB_APSCHEDULER, DB_TIMERTASKS, DB_METADATA, DB_JOBS]
 
 PATTERN_MYSQL = re.compile(r'mysql://(.+?)(?::(.+?))?@(.+?):(\d+)')
-PATTERN_POSTGRESQL = re.compile(r'(?:postgres|postgresql)://(.+?)(?::(.+?))?@(.+?):(\d+)')
+PATTERN_POSTGRESQL = re.compile(r'(?:postgres|postgresql)://(.+?)(?::(.+?))?@(.+?):(\d+)(?:/(.+?))?(?:\?.*)?$')
 PATTERN_SQLITE = re.compile(r'sqlite:///(.+)$')
 
 SCRAPYDWEB_TESTMODE = os.environ.get('SCRAPYDWEB_TESTMODE', 'False').lower() == 'true'
@@ -117,7 +117,7 @@ def setup_mysql(username, password, host, port):
     conn.close()
 
 
-def setup_postgresql(username, password, host, port):
+def setup_postgresql(username, password, host, port, dbname=None):
     """
     https://github.com/my8100/notes/blob/master/back_end/the-flask-mega-tutorial.md
     When working with database servers such as MySQL and PostgreSQL,
@@ -131,7 +131,7 @@ def setup_postgresql(username, password, host, port):
     except (ImportError, AssertionError):
         sys.exit("Run command: %s" % install_command)
 
-    conn = psycopg2.connect(host=host, port=int(port), user=username, password=password)
+    conn = psycopg2.connect(host=host, port=int(port), user=username, password=password, dbname=dbname or username)
     conn.set_isolation_level(0)  # https://wiki.postgresql.org/wiki/Psycopg2_Tutorial
     cur = conn.cursor()
     for dbname in DBS:
