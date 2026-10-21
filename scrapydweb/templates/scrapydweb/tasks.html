@@ -130,7 +130,7 @@ window.onload = function(){
           <a class="state safe" :style="{ display: scope.row.display_fire }" @click="handleStatusClick(scope.row.url_fire)">Fire</a>
         </label>
         <label :title="scope.row.action_label">
-          <a :class="scope.row.action_class" @click="deleteRow(scope.$index, tableData)">{{scope.row.action}}</a>
+          <a :class="scope.row.action_class" @click="deleteRow(scope.row, tableData)">{{scope.row.action}}</a>
         </label>
         <label title="click to update or copy the task">
           <a class="state normal" @click="handleStatusClick(scope.row.url_edit)">Edit</a>
@@ -266,15 +266,16 @@ var Main = {
     handleSelectRow(val) {
       this.currentRow = val;
     },
-    deleteRow(index, rows) {
+    deleteRow(row, rows) {
       // Stop task: '/9/tasks/xhr/remove/8/'
       // Delete task: '/9/tasks/xhr/delete/8/'
-      var url = rows[index].url_action;
+      // Use the row object rather than scope.$index, which is the index in the sorted view, not in tableData
+      var url = row.url_action;
       if (url.indexOf('/tasks/xhr/delete/') == -1) {
         taskXHR(url);
       } else {
         deleteRowXHR(url);
-        rows.splice(index, 1);
+        rows.splice(rows.indexOf(row), 1);
       }
     },
     handleStatusClick(url) {
