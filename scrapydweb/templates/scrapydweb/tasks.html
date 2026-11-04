@@ -20,6 +20,18 @@
     text-align: left;
     width: 200px;
   }
+  .item {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-top: 1px;
+  }
+  .switch {margin-top: 10px;}
+  #total .el-badge__content {background-color: #67c23a;}
+  #displayed .el-badge__content {background-color: #67c23a;}
+  .el-switch__core {
+    background: #e3e3e3;
+    border: 1px solid #e3e3e3;
+  }
   </style>
 {% endblock %}
 
@@ -53,9 +65,29 @@ window.onload = function(){
 
 <div id="app">
 <template>
+  <el-col :span="3">
+    <el-select v-model="selected_column" placeholder="select a column to filter">
+      <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value"></el-option>
+    </el-select>
+  </el-col>
+  <el-col :span="5">
+    <el-input v-model="filter" placeholder="search name / project / spider / status" prefix-icon="el-icon-search" clearable></el-input>
+  </el-col>
+  <el-col class="line" :span="0.1">&nbsp;</el-col>
+  <el-col :span="3">
+    <el-switch v-model="invert_filter" active-color="#67c23a" active-text="invert filter" inactive-text="" class="switch"></el-switch>
+  </el-col>
+
+  <span id="total"><el-badge :value='{{ tasks.total }}' class="item">
+    <el-button type="text" disabled>total</el-button>
+  </el-badge></span>
+  <span id="displayed"><el-badge :value="tableDataComputed.length" class="item">
+    <el-button type="text" disabled>displayed</el-button>
+  </el-badge></span>
+
   <el-table
     ref="multipleTable"
-    :data="tableData"
+    :data="tableDataComputed"
     style="width: 100%;"
     tooltip-effect="dark"
     empty-text="There is nothing to display."
@@ -195,6 +227,19 @@ var Main = {
       maxHeight: window.innerHeight - 200,
       currentPage: {{ tasks.page }},  // the current page number (1 indexed)
       sortOrders: ['descending','ascending',null],
+      options: [
+        {value: '', label: 'All Columns'},
+        {value: 'id', label: 'Task #'},
+        {value: 'name', label: 'Name'},
+        {value: 'project', label: 'Project'},
+        {value: 'spider', label: 'Spider'},
+        {value: 'status', label: 'Status'},
+        {value: 'prev_run_result', label: 'Prev run result'},
+        {value: 'next_run_time', label: 'Next run time'},
+      ],
+      selected_column: '',
+      filter: '',
+      invert_filter: false,
       tableData: [
     {% for task in tasks.items %}
       {
@@ -342,7 +387,29 @@ var Main = {
         return a.run_times > b.run_times ? 1 : -1;
       }
     },
-  }
+  },
+
+  computed: {
+    tableDataComputed() {
+      var filter = this.filter.toLowerCase();
+      var selected_column = this.selected_column;
+      var invert_filter = this.invert_filter;
+      var columns = ['id', 'name', 'project', 'spider', 'status', 'prev_run_result', 'next_run_time'];
+      if (!filter) {
+        return this.tableData;
+      }
+      return this.tableData.filter(function(task) {
+        if (selected_column) {
+          var matched = String(task[selected_column]).toLowerCase().indexOf(filter) > -1;
+          return invert_filter ? !matched : matched;
+        }
+        var matched = columns.some(function(key) {
+          return String(task[key]).toLowerCase().indexOf(filter) > -1;
+        });
+        return invert_filter ? !matched : matched;
+      });
+    },
+  },
 }
 var Ctor = Vue.extend(Main);
 vm = new Ctor().$mount('#app');
